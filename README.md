@@ -26,44 +26,46 @@ Vibe.UI is a comprehensive, production-ready Blazor component library inspired b
 - **Comprehensive Testing** - Unit and integration tests with bUnit and xUnit
 - **Demo Application** - Interactive showcase of all components
 
-## Getting Started
+## Installation
 
-### Quick Start with CLI (Recommended)
+### Option 1: CLI (Recommended - Full Control)
 
-Install the Vibe CLI globally:
+Install components as source code you can customize:
 
 ```bash
+# Install CLI tool
 dotnet tool install -g Vibe.UI.CLI
-```
 
-Initialize Vibe.UI in your Blazor project:
-
-```bash
-cd your-blazor-project
+# Initialize in your project
+cd MyBlazorApp
 vibe init
-```
 
-Add components as needed:
-
-```bash
+# Add components
 vibe add button
-vibe add dialog
+vibe add input
 vibe add card
 ```
 
-List all available components:
+**Benefits:**
+- ✅ Full source code ownership
+- ✅ Customize any component
+- ✅ Zero package dependencies
+- ✅ shadcn/ui style workflow
 
-```bash
-vibe list
-```
+Infrastructure goes in `Vibe/`, components in `Components/vibe/`.
 
-### Manual Installation
+### Option 2: NuGet Package
 
-Alternatively, add the Vibe.UI library manually:
+Use pre-built components from package:
 
 ```bash
 dotnet add package Vibe.UI
 ```
+
+**Benefits:**
+- ✅ Quick setup
+- ✅ Automatic updates
+- ✅ Smaller project files
 
 ### Register Services
 

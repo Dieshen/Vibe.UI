@@ -1,32 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vibe.UI Demo</title>
-    <base href="/" />
-    <link href="css/app.css" rel="stylesheet" />
-    <link href="Vibe.UI.Demo.styles.css" rel="stylesheet" />
-</head>
-
-<body>
-    <div id="app">
-        <Router AppAssembly="@typeof(App).Assembly">
-            <Found Context="routeData">
-                <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-                <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-            </Found>
-            <NotFound>
-                <PageTitle>Not found</PageTitle>
-                <LayoutView Layout="@typeof(MainLayout)">
-                    <p role="alert">Sorry, there's nothing at this address.</p>
-                </LayoutView>
-            </NotFound>
-        </Router>
-    </div>
-
-    <script src="_framework/blazor.webassembly.js"></script>
-</body>
-
-</html>
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found - Vibe.UI Demo</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <div class="not-found">
+                <h1>404 - Page Not Found</h1>
+                <p>Sorry, there's nothing at this address.</p>
+                <p><a href="/">Return to Home</a></p>
+            </div>
+        </LayoutView>
+    </NotFound>
+</Router>

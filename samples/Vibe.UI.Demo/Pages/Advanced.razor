@@ -1,0 +1,259 @@
+@page "/advanced"
+
+<PageTitle>Advanced Components - Vibe.UI Demo</PageTitle>
+
+<div class="component-section">
+    <h1>Advanced Components</h1>
+    <p>Complex, feature-rich components for advanced use cases.</p>
+
+    <h2>KanbanBoard</h2>
+    <div class="demo-container">
+        <h3>Task Management Board</h3>
+        <KanbanBoard Columns="@kanbanColumns" OnCardClicked="HandleCardClicked" OnCardMoved="HandleCardMoved" />
+    </div>
+
+    <h2>TreeView</h2>
+    <div class="demo-container">
+        <h3>Hierarchical Data</h3>
+        <TreeView Items="@treeItems">
+            <ItemTemplate Context="node">
+                <TreeViewNode
+                    Label="@node.Label"
+                    Icon="@node.Icon"
+                    HasChildren="@node.HasChildren"
+                    @bind-IsExpanded="node.IsExpanded">
+                    @if (node.Children != null)
+                    {
+                        @foreach (var child in node.Children)
+                        {
+                            <TreeViewNode
+                                Label="@child.Label"
+                                Icon="@child.Icon" />
+                        }
+                    }
+                </TreeViewNode>
+            </ItemTemplate>
+        </TreeView>
+    </div>
+
+    <h2>VirtualScroll</h2>
+    <div class="demo-container">
+        <h3>Virtualized List (10,000 items)</h3>
+        <VirtualScroll
+            Items="@largeDataset"
+            ItemHeight="50"
+            Height="400">
+            <ItemTemplate Context="item">
+                <div style="padding: 1rem; border-bottom: 1px solid var(--vibe-border);">
+                    <strong>Item #@item.Id</strong> - @item.Name
+                </div>
+            </ItemTemplate>
+        </VirtualScroll>
+    </div>
+
+    <h2>Calendar</h2>
+    <div class="demo-container">
+        <h3>Date Calendar</h3>
+        <Calendar
+            @bind-SelectedDate="selectedDate"
+            OnDateSelected="HandleDateSelected" />
+        <p>Selected: @selectedDate.ToShortDateString()</p>
+    </div>
+
+    <h2>DatePicker</h2>
+    <div class="demo-container">
+        <h3>Date Input with Calendar</h3>
+        <DatePicker
+            Label="Select Date"
+            @bind-Value="pickerDate"
+            MinDate="DateTime.Today"
+            MaxDate="DateTime.Today.AddMonths(6)" />
+        <p>Selected: @pickerDate?.ToShortDateString()</p>
+    </div>
+
+    <h2>DateRangePicker</h2>
+    <div class="demo-container">
+        <h3>Date Range Selection</h3>
+        <DateRangePicker
+            Label="Select Date Range"
+            @bind-StartDate="startDate"
+            @bind-EndDate="endDate" />
+        <p>Range: @startDate?.ToShortDateString() - @endDate?.ToShortDateString()</p>
+    </div>
+
+    <h2>Carousel</h2>
+    <div class="demo-container">
+        <h3>Image Carousel</h3>
+        <Carousel AutoPlay="true" Interval="3000">
+            <CarouselItem>
+                <div style="height: 300px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                    Slide 1
+                </div>
+            </CarouselItem>
+            <CarouselItem>
+                <div style="height: 300px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                    Slide 2
+                </div>
+            </CarouselItem>
+            <CarouselItem>
+                <div style="height: 300px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                    Slide 3
+                </div>
+            </CarouselItem>
+        </Carousel>
+    </div>
+
+    <h2>Accordion</h2>
+    <div class="demo-container">
+        <h3>Collapsible Sections</h3>
+        <Accordion>
+            <AccordionItem Title="What is Vibe.UI?">
+                <p>Vibe.UI is a comprehensive Blazor component library with 93+ beautifully designed components.</p>
+            </AccordionItem>
+            <AccordionItem Title="Is it free to use?">
+                <p>Yes! Vibe.UI is completely free and open source under the MIT license.</p>
+            </AccordionItem>
+            <AccordionItem Title="Does it support dark mode?">
+                <p>Absolutely! All components support both light and dark themes out of the box.</p>
+            </AccordionItem>
+            <AccordionItem Title="Can I customize the components?">
+                <p>Yes, components are highly customizable through CSS variables and component props.</p>
+            </AccordionItem>
+        </Accordion>
+    </div>
+
+    <h2>Collapsible</h2>
+    <div class="demo-container">
+        <h3>Expandable Content</h3>
+        <Collapsible @bind-IsOpen="collapsibleOpen">
+            <Card style="margin-top: 1rem;">
+                <Button @onclick="() => collapsibleOpen = !collapsibleOpen">
+                    @(collapsibleOpen ? "Hide" : "Show") Details
+                </Button>
+                @if (collapsibleOpen)
+                {
+                    <div style="margin-top: 1rem;">
+                        <h4>Additional Information</h4>
+                        <p>This content is hidden by default and can be toggled by clicking the button above.</p>
+                        <p>Use collapsible components to conserve screen space and improve information hierarchy.</p>
+                    </div>
+                }
+            </Card>
+        </Collapsible>
+    </div>
+
+    <h2>InputOTP</h2>
+    <div class="demo-container">
+        <h3>One-Time Password Input</h3>
+        <InputOTP
+            Length="6"
+            @bind-Value="otpValue"
+            OnComplete="HandleOTPComplete" />
+        <p>OTP: @otpValue</p>
+    </div>
+</div>
+
+@code {
+    private List<KanbanColumn> kanbanColumns = new()
+    {
+        new KanbanColumn { Id = "todo", Title = "To Do" },
+        new KanbanColumn { Id = "inprogress", Title = "In Progress" },
+        new KanbanColumn { Id = "done", Title = "Done" }
+    };
+
+    private List<KanbanItem> kanbanItems = new()
+    {
+        new KanbanItem { Id = "1", Title = "Design homepage", Description = "Create mockups", Priority = "high", ColumnId = "todo" },
+        new KanbanItem { Id = "2", Title = "Implement auth", Description = "Add login/signup", Priority = "medium", ColumnId = "inprogress" },
+        new KanbanItem { Id = "3", Title = "Write tests", Description = "Unit tests", Priority = "low", ColumnId = "done" }
+    };
+
+    private List<TreeNode> treeItems = new()
+    {
+        new TreeNode
+        {
+            Label = "Documents",
+            Icon = "folder",
+            HasChildren = true,
+            Children = new List<TreeNode>
+            {
+                new TreeNode { Label = "Report.pdf", Icon = "file" },
+                new TreeNode { Label = "Presentation.pptx", Icon = "file" }
+            }
+        },
+        new TreeNode
+        {
+            Label = "Images",
+            Icon = "folder",
+            HasChildren = true,
+            Children = new List<TreeNode>
+            {
+                new TreeNode { Label = "Photo1.jpg", Icon = "image" },
+                new TreeNode { Label = "Photo2.png", Icon = "image" }
+            }
+        }
+    };
+
+    private List<VirtualItem> largeDataset = Enumerable.Range(1, 10000)
+        .Select(i => new VirtualItem { Id = i, Name = $"Item {i}" })
+        .ToList();
+
+    private DateTime selectedDate = DateTime.Today;
+    private DateTime? pickerDate = DateTime.Today;
+    private DateTime? startDate = DateTime.Today;
+    private DateTime? endDate = DateTime.Today.AddDays(7);
+    private bool collapsibleOpen = false;
+    private string otpValue = "";
+
+    private void HandleItemMoved(KanbanItem item, string newColumnId)
+    {
+        item.ColumnId = newColumnId;
+    }
+
+    private void HandleDateSelected(DateTime date)
+    {
+        selectedDate = date;
+    }
+
+    private void HandleOTPComplete(string otp)
+    {
+        // Handle OTP complete
+    }
+
+    public class KanbanColumn
+    {
+        public string Id { get; set; } = "";
+        public string Title { get; set; } = "";
+    }
+
+    public class KanbanItem
+    {
+        public string Id { get; set; } = "";
+        public string Title { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string Priority { get; set; } = "";
+        public string ColumnId { get; set; } = "";
+    }
+
+    public class TreeNode
+    {
+        public string Label { get; set; } = "";
+        public string Icon { get; set; } = "";
+        public bool HasChildren { get; set; }
+        public bool IsExpanded { get; set; }
+        public List<TreeNode>? Children { get; set; }
+    }
+
+    public class VirtualItem
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+    }
+}
+
+<style>
+    .kanban-card {
+        margin-bottom: 0.5rem;
+        cursor: move;
+    }
+</style>

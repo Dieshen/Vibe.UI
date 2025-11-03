@@ -1,0 +1,179 @@
+@page "/overlay"
+@inject IDialogService DialogService
+@inject IToastService ToastService
+
+<PageTitle>Overlay Components - Vibe.UI Demo</PageTitle>
+
+<div class="component-section">
+    <h1>Overlay Components</h1>
+    <p>Modal dialogs, popovers, tooltips, and other overlay elements.</p>
+
+    <h2>Dialog</h2>
+    <div class="demo-container">
+        <h3>Basic Dialog</h3>
+        <Button @onclick="() => showDialog = true">Open Dialog</Button>
+
+        @if (showDialog)
+        {
+            <Dialog @bind-IsOpen="showDialog">
+                <div class="dialog-header">
+                    <h3>Dialog Title</h3>
+                </div>
+                <div class="dialog-content">
+                    <p>This is a simple dialog with some content.</p>
+                    <p>You can put any content here including forms, images, or other components.</p>
+                </div>
+                <div class="dialog-footer">
+                    <Button Variant="primary" @onclick="() => showDialog = false">OK</Button>
+                    <Button Variant="outline" @onclick="() => showDialog = false">Cancel</Button>
+                </div>
+            </Dialog>
+        }
+
+        <h3>Confirmation Dialog</h3>
+        <Button @onclick="ShowConfirmDialog" Variant="destructive">Delete Item</Button>
+    </div>
+
+
+    <h2>Toast</h2>
+    <div class="demo-container">
+        <h3>Toast Notifications</h3>
+        <div class="demo-grid">
+            <Button @onclick='() => ShowToast("success")'>Success Toast</Button>
+            <Button @onclick='() => ShowToast("error")'>Error Toast</Button>
+            <Button @onclick='() => ShowToast("warning")'>Warning Toast</Button>
+            <Button @onclick='() => ShowToast("info")'>Info Toast</Button>
+        </div>
+
+        <ToastContainer />
+    </div>
+
+    <h2>Tooltip</h2>
+    <div class="demo-container">
+        <h3>Basic Tooltips</h3>
+        <div class="demo-grid">
+            <Tooltip Content="This is a tooltip">
+                <TriggerContent>
+                    <Button>Hover Me</Button>
+                </TriggerContent>
+            </Tooltip>
+
+            <Tooltip Content="Tooltip on the right" Placement="right">
+                <TriggerContent>
+                    <Button>Right Tooltip</Button>
+                </TriggerContent>
+            </Tooltip>
+
+            <Tooltip Content="Tooltip on top" Placement="top">
+                <TriggerContent>
+                    <Button>Top Tooltip</Button>
+                </TriggerContent>
+            </Tooltip>
+
+            <Tooltip Content="Tooltip on bottom" Placement="bottom">
+                <TriggerContent>
+                    <Button>Bottom Tooltip</Button>
+                </TriggerContent>
+            </Tooltip>
+        </div>
+    </div>
+
+    <h2>Popover</h2>
+    <div class="demo-container">
+        <h3>Basic Popover</h3>
+        <Popover>
+            <TriggerContent>
+                <Button>Open Popover</Button>
+            </TriggerContent>
+            <PopoverContent>
+                <h4>Popover Title</h4>
+                <p>This is a popover with more detailed content than a tooltip.</p>
+                <Button Size="small">Action</Button>
+            </PopoverContent>
+        </Popover>
+
+        <h3>Form in Popover</h3>
+        <Popover>
+            <TriggerContent>
+                <Button>Quick Settings</Button>
+            </TriggerContent>
+            <PopoverContent>
+                <h4>Settings</h4>
+                <Checkbox Label="Enable notifications" />
+                <Checkbox Label="Auto-save" />
+                <Checkbox Label="Dark mode" />
+                <div style="margin-top: 1rem;">
+                    <Button Size="small" Variant="primary">Save</Button>
+                </div>
+            </PopoverContent>
+        </Popover>
+    </div>
+
+    <h2>Drawer</h2>
+    <div class="demo-container">
+        <h3>Side Drawer</h3>
+        <div class="demo-grid">
+            <Button @onclick='() => { drawerSide = "left"; showDrawer = true; }'>Left Drawer</Button>
+            <Button @onclick='() => { drawerSide = "right"; showDrawer = true; }'>Right Drawer</Button>
+            <Button @onclick='() => { drawerSide = "top"; showDrawer = true; }'>Top Drawer</Button>
+            <Button @onclick='() => { drawerSide = "bottom"; showDrawer = true; }'>Bottom Drawer</Button>
+        </div>
+
+        @if (showDrawer)
+        {
+            <Drawer @bind-IsOpen="showDrawer" Side="@drawerSide">
+                <div class="drawer-header">
+                    <h3>Drawer from @drawerSide</h3>
+                </div>
+                <div class="drawer-content">
+                    <p>This drawer slides in from the @drawerSide side of the screen.</p>
+                    <p>You can put any content here including navigation menus, forms, or settings.</p>
+                </div>
+                <div class="drawer-footer">
+                    <Button @onclick="() => showDrawer = false">Close</Button>
+                </div>
+            </Drawer>
+        }
+    </div>
+
+</div>
+
+@code {
+    private bool showDialog = false;
+    private bool showDrawer = false;
+    private string drawerSide = "right";
+
+    private async Task ShowConfirmDialog()
+    {
+        var result = await DialogService.ShowConfirmAsync(
+            "Delete Item",
+            "Are you sure you want to delete this item? This action cannot be undone.",
+            "Delete",
+            "Cancel"
+        );
+
+        if (result)
+        {
+            await ToastService.ShowSuccessAsync("Item deleted successfully");
+        }
+    }
+
+    private async Task ShowToast(string type)
+    {
+        switch (type)
+        {
+            case "success":
+                await ToastService.ShowSuccessAsync("Success!", "Operation completed successfully.");
+                break;
+            case "error":
+                await ToastService.ShowErrorAsync("Error!", "Something went wrong.");
+                break;
+            case "warning":
+                await ToastService.ShowWarningAsync("Warning!", "Please review this action.");
+                break;
+            case "info":
+                await ToastService.ShowInfoAsync("Info", "Here's some useful information.");
+                break;
+        }
+    }
+}

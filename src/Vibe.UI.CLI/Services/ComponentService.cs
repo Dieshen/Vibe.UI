@@ -33,30 +33,61 @@ public class ComponentService
         return razorFiles.Select(Path.GetFileNameWithoutExtension).ToList();
     }
 
-    public async Task InstallComponentAsync(string projectPath, string componentsDir, string componentName, bool overwrite = false)
+    public async Task InstallComponentAsync(
+        string projectPath,
+        string componentsDir,
+        string componentName,
+        bool overwrite = false,
+        string? customName = null,
+        string? customOutputDir = null)
     {
         var component = GetComponent(componentName);
         if (component == null)
             throw new InvalidOperationException($"Component '{componentName}' not found.");
 
-        var targetDir = Path.Combine(projectPath, componentsDir, component.Category);
+        // Determine target directory - use custom output dir or default flat structure (like shadcn/ui)
+        var targetDir = string.IsNullOrEmpty(customOutputDir)
+            ? Path.Combine(projectPath, componentsDir)
+            : Path.Combine(projectPath, customOutputDir);
+
         Directory.CreateDirectory(targetDir);
 
+        // Determine component file name - use custom name or original name
+        var outputComponentName = customName ?? component.Name;
+
+        // Get source component path
+        var sourcePath = GetComponentSourcePath(component.Name, component.Category);
+
         // Copy .razor file
-        var razorFile = Path.Combine(targetDir, $"{component.Name}.razor");
+        var razorFile = Path.Combine(targetDir, $"{outputComponentName}.razor");
         if (!File.Exists(razorFile) || overwrite)
         {
-            var razorContent = GetComponentTemplate(component.Name);
+            var razorContent = await GetComponentContentAsync(sourcePath, component.Name);
+
+            // Rename component if custom name provided
+            if (!string.IsNullOrEmpty(customName))
+            {
+                razorContent = RenameComponentInContent(razorContent, component.Name, customName);
+            }
+
             await File.WriteAllTextAsync(razorFile, razorContent);
         }
 
-        // Copy .razor.css file if component has CSS
-        if (component.HasCss)
+        // Copy .razor.css file if it exists
+        var sourceCssPath = $"{sourcePath}.css";
+        if (File.Exists(sourceCssPath))
         {
-            var cssFile = Path.Combine(targetDir, $"{component.Name}.razor.css");
+            var cssFile = Path.Combine(targetDir, $"{outputComponentName}.razor.css");
             if (!File.Exists(cssFile) || overwrite)
             {
-                var cssContent = GetComponentCssTemplate(component.Name);
+                var cssContent = await File.ReadAllTextAsync(sourceCssPath);
+
+                // Update CSS class names if renamed
+                if (!string.IsNullOrEmpty(customName))
+                {
+                    cssContent = RenameCssClasses(cssContent, component.Name, customName);
+                }
+
                 await File.WriteAllTextAsync(cssFile, cssContent);
             }
         }
@@ -187,38 +218,102 @@ public class ComponentService
         return components;
     }
 
-    private string GetComponentTemplate(string componentName)
+    /// <summary>
+    /// Gets the source path for a component file.
+    /// Attempts multiple locations to find the component.
+    /// </summary>
+    private string GetComponentSourcePath(string componentName, string category)
     {
-        // This would ideally load from embedded resources or template files
-        // For now, return a placeholder
-        return $@"@namespace Vibe.UI.Components
-@inherits ThemedComponentBase
+        // Get the directory where the CLI assembly is located
+        var assemblyLocation = Path.GetDirectoryName(typeof(ComponentService).Assembly.Location);
+        if (assemblyLocation == null)
+            throw new InvalidOperationException("Could not determine CLI assembly location");
 
-<div class=""vibe-{componentName.ToLowerInvariant()}"">
-    @ChildContent
-</div>
+        // Try multiple possible paths for component sources
+        var possiblePaths = new[]
+        {
+            // 1. Development mode: relative to CLI project
+            Path.GetFullPath(Path.Combine(assemblyLocation, "..", "..", "..", "..", "..", "src", "Vibe.UI", "Components", category, $"{componentName}.razor")),
 
-@code {{
-    [Parameter]
-    public RenderFragment? ChildContent {{ get; set; }}
+            // 2. Packaged with CLI in Templates folder (adjacent to tools folder)
+            Path.Combine(assemblyLocation, "Templates", "Components", category, $"{componentName}.razor"),
 
-    [Parameter]
-    public string? CssClass {{ get; set; }}
+            // 3. Dotnet global tool: Templates folder in package root (../../.. from tools/net9.0/any)
+            Path.GetFullPath(Path.Combine(assemblyLocation, "..", "..", "..", "Templates", "Components", category, $"{componentName}.razor")),
 
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? AdditionalAttributes {{ get; set; }}
+            // 4. Current directory structure (if running from repo root)
+            Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "src", "Vibe.UI", "Components", category, $"{componentName}.razor"))
+        };
 
-    private string CombinedCssClass => CombineClasses(
-        ""vibe-{componentName.ToLowerInvariant()}"",
-        CssClass
-    );
-}}";
+        foreach (var path in possiblePaths)
+        {
+            if (File.Exists(path))
+            {
+                return path;
+            }
+        }
+
+        throw new FileNotFoundException(
+            $"Component source file not found for {componentName}. " +
+            $"Searched locations: {string.Join(", ", possiblePaths)}");
     }
 
-    private string GetComponentCssTemplate(string componentName)
+    /// <summary>
+    /// Reads the component content from the source file.
+    /// </summary>
+    private async Task<string> GetComponentContentAsync(string sourcePath, string componentName)
     {
-        return $@".vibe-{componentName.ToLowerInvariant()} {{
-    /* Add component styles here */
-}}";
+        if (!File.Exists(sourcePath))
+        {
+            throw new FileNotFoundException($"Component source file not found: {sourcePath}");
+        }
+
+        return await File.ReadAllTextAsync(sourcePath);
+    }
+
+    /// <summary>
+    /// Renames component class and references in the razor content.
+    /// </summary>
+    private string RenameComponentInContent(string content, string originalName, string newName)
+    {
+        // Replace class name references
+        // This handles cases like: public class Button, partial class Button, etc.
+        content = System.Text.RegularExpressions.Regex.Replace(
+            content,
+            $@"\b{originalName}\b",
+            newName,
+            System.Text.RegularExpressions.RegexOptions.None);
+
+        return content;
+    }
+
+    /// <summary>
+    /// Renames CSS class names to match the renamed component.
+    /// </summary>
+    private string RenameCssClasses(string cssContent, string originalName, string newName)
+    {
+        // Replace CSS class names that include the component name
+        // For example: .vibe-button -> .vibe-custombutton (kebab-case)
+        var originalKebab = ToKebabCase(originalName);
+        var newKebab = ToKebabCase(newName);
+
+        cssContent = cssContent.Replace($"vibe-{originalKebab}", $"vibe-{newKebab}");
+
+        return cssContent;
+    }
+
+    /// <summary>
+    /// Converts PascalCase to kebab-case.
+    /// </summary>
+    private string ToKebabCase(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return value;
+
+        return System.Text.RegularExpressions.Regex.Replace(
+            value,
+            "([a-z])([A-Z])",
+            "$1-$2"
+        ).ToLowerInvariant();
     }
 }

@@ -1,0 +1,79 @@
+@page "/navigation"
+
+<PageTitle>Navigation Components - Vibe.UI Demo</PageTitle>
+
+<div class="component-section">
+    <h1>Navigation Components</h1>
+    <p>Components for application navigation and routing.</p>
+
+    <h2>Tabs</h2>
+    <div class="demo-container">
+        <h3>Basic Tabs</h3>
+        <Tabs @bind-ActiveTab="activeTab">
+            <TabItem Value="tab1" Label="Profile">
+                <div style="padding: 1rem;">
+                    <h4>Profile Information</h4>
+                    <p>View and edit your profile details here.</p>
+                </div>
+            </TabItem>
+            <TabItem Value="tab2" Label="Settings">
+                <div style="padding: 1rem;">
+                    <h4>Settings</h4>
+                    <p>Configure your application preferences.</p>
+                </div>
+            </TabItem>
+            <TabItem Value="tab3" Label="Security">
+                <div style="padding: 1rem;">
+                    <h4>Security Settings</h4>
+                    <p>Manage passwords and authentication.</p>
+                </div>
+            </TabItem>
+        </Tabs>
+    </div>
+
+    <h2>Breadcrumb</h2>
+    <div class="demo-container">
+        <h3>Basic Breadcrumb</h3>
+        <Breadcrumb>
+            <BreadcrumbItem Href="/">Home</BreadcrumbItem>
+            <BreadcrumbItem Href="/components">Components</BreadcrumbItem>
+            <BreadcrumbItem Href="/components/navigation">Navigation</BreadcrumbItem>
+            <BreadcrumbItem Active="true">Breadcrumb</BreadcrumbItem>
+        </Breadcrumb>
+
+        <h3>With Icons</h3>
+        <Breadcrumb>
+            <BreadcrumbItem Href="/" Icon="🏠">Home</BreadcrumbItem>
+            <BreadcrumbItem Href="/docs" Icon="📚">Documentation</BreadcrumbItem>
+            <BreadcrumbItem Active="true" Icon="📄">Current Page</BreadcrumbItem>
+        </Breadcrumb>
+    </div>
+
+    <h2>Pagination</h2>
+    <div class="demo-container">
+        <h3>Basic Pagination</h3>
+        <Pagination
+            CurrentPage="@currentPage"
+            TotalPages="10"
+            OnPageChanged="HandlePageChanged" />
+        <p>Current Page: @currentPage</p>
+
+        <h3>With More Pages</h3>
+        <Pagination
+            CurrentPage="@largePage"
+            TotalPages="100"
+            OnPageChanged="(page) => largePage = page" />
+    </div>
+
+</div>
+
+@code {
+    private string activeTab = "tab1";
+    private int currentPage = 1;
+    private int largePage = 50;
+
+    private void HandlePageChanged(int page)
+    {
+        currentPage = page;
+    }
+}

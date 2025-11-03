@@ -27,12 +27,29 @@ public class AddCommand : AsyncCommand<AddCommand.Settings>
         [CommandOption("-p|--path")]
         [DefaultValue(".")]
         public string ProjectPath { get; init; } = ".";
+
+        [Description("Custom name for the component")]
+        [CommandOption("-n|--name")]
+        public string? Name { get; init; }
+
+        [Description("Custom output directory for the component")]
+        [CommandOption("--output")]
+        public string? Output { get; init; }
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
         var configService = new ConfigService();
         var componentService = new ComponentService();
+
+        // Check if vibe init was run
+        var infrastructurePath = Path.Combine(settings.ProjectPath, "Vibe", "Base", "ThemedComponentBase.cs");
+        if (!File.Exists(infrastructurePath))
+        {
+            AnsiConsole.MarkupLine("[yellow]Warning:[/] Vibe.UI infrastructure not found.");
+            AnsiConsole.MarkupLine("Run [blue]vibe init[/] first to copy the required infrastructure.");
+            return 1;
+        }
 
         // Load configuration
         var config = await configService.LoadConfigAsync(settings.ProjectPath);
@@ -91,7 +108,7 @@ public class AddCommand : AsyncCommand<AddCommand.Settings>
         await AnsiConsole.Status()
             .StartAsync($"Installing {component.Name}...", async ctx =>
             {
-                // Install dependencies first
+                // Install dependencies first (dependencies don't get renamed or custom output)
                 if (component.Dependencies?.Any() == true)
                 {
                     foreach (var dep in component.Dependencies)
@@ -101,20 +118,35 @@ public class AddCommand : AsyncCommand<AddCommand.Settings>
                             settings.ProjectPath,
                             config.ComponentsDirectory,
                             dep,
-                            settings.Overwrite);
+                            settings.Overwrite,
+                            customName: null,
+                            customOutputDir: settings.Output);
                     }
                 }
 
-                // Install the component
+                // Install the component with custom name and output directory
                 ctx.Status($"Installing {component.Name}...");
                 await componentService.InstallComponentAsync(
                     settings.ProjectPath,
                     config.ComponentsDirectory,
                     componentName,
-                    settings.Overwrite);
+                    settings.Overwrite,
+                    customName: settings.Name,
+                    customOutputDir: settings.Output);
             });
 
-        AnsiConsole.MarkupLine($"\n[green]✓[/] {component.Name} added successfully!");
+        var displayName = settings.Name ?? component.Name;
+        AnsiConsole.MarkupLine($"\n[green]✓[/] {displayName} added successfully!");
+
+        if (!string.IsNullOrEmpty(settings.Name))
+        {
+            AnsiConsole.MarkupLine($"[dim]Renamed from {component.Name} to {settings.Name}[/]");
+        }
+
+        if (!string.IsNullOrEmpty(settings.Output))
+        {
+            AnsiConsole.MarkupLine($"[dim]Output directory: {settings.Output}[/]");
+        }
 
         // Show usage example
         if (!string.IsNullOrEmpty(component.Example))

@@ -4,10 +4,23 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Title>Vibe.UI</Title>
-    <Description>A modern Blazor component library with comprehensive theme management</Description>
-    <Authors>Vibe.UI Team</Authors>
-    <PackageTags>blazor;components;ui;themes;themeable</PackageTags>
+    <PackageId>Vibe.UI</PackageId>
+    <Version>1.0.0</Version>
+    <Title>Vibe.UI - Modern Blazor Component Library</Title>
+    <Authors>Brock</Authors>
+    <Description>Pre-built Blazor component library with 93+ components (theming, forms, charts, and more).
+
+PREFER CLI APPROACH? Use Vibe.UI.CLI for source code control:
+  dotnet tool install -g Vibe.UI.CLI
+  vibe init
+
+This package is for users who prefer package references over managing source code.</Description>
+    <PackageTags>blazor;components;ui;themes;charts;forms;shadcn</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/Dieshen/Vibe.UI</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/Dieshen/Vibe.UI</PackageProjectUrl>
+    <PackageReadmeFile>README.nuget.md</PackageReadmeFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
@@ -24,6 +37,11 @@
     <Content Update="wwwroot\themeInterop.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="../../icon.png" Pack="true" PackagePath="" Condition="Exists('../../icon.png')" />
+    <None Include="README.nuget.md" Pack="true" PackagePath="" />
   </ItemGroup>
 
 </Project>
