@@ -106,13 +106,13 @@ jobs:
         path: ./packages/*.nupkg
         retention-days: 90
 
-    - name: Create release comment
+    - name: Update release notes
       if: github.event_name == 'release'
       uses: actions/github-script@v7
       with:
         script: |
           const version = '${{ steps.version.outputs.version }}';
-          const body = `## 📦 NuGet Packages Published
+          const releaseNotes = `## 📦 NuGet Packages Published
 
           The following packages have been published to NuGet.org:
 
@@ -131,11 +131,15 @@ jobs:
           dotnet tool install -g Vibe.UI.CLI --version ${version}
           \`\`\`
 
-          It may take a few minutes for the packages to appear in search results.`;
+          It may take a few minutes for the packages to appear in search results.
 
-          github.rest.issues.createComment({
+          ---
+
+          ${context.payload.release.body || ''}`;
+
+          await github.rest.repos.updateRelease({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            issue_number: context.payload.release.id,
-            body: body
+            release_id: context.payload.release.id,
+            body: releaseNotes
           });
