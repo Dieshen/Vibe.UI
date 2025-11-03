@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vibe.UI.Tests", "tests\Vibe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vibe.UI.CLI.Tests", "tests\Vibe.UI.CLI.Tests\Vibe.UI.CLI.Tests.csproj", "{E1F2A3B4-C5D6-7890-1234-567890ABCDEF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vibe.UI.VS2022", "extensions\vs2022\Vibe.UI.VS2022.csproj", "{D4E5F6A7-B8C9-0123-DEF1-234567890123}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_Solution Items", "_Solution Items", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
@@ -26,15 +24,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{F6A7B8C9-D0E1-2345-F123-456789012345}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{A7B8C9D0-E1F2-3456-1234-567890123456}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "extensions", "extensions", "{B8C9D0E1-F2A3-4567-2345-678901234567}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vscode", "vscode", "{C9D0E1F2-A3B4-5678-3456-789012345678}"
-	ProjectSection(SolutionItems) = preProject
-		extensions\vscode\package.json = extensions\vscode\package.json
-		extensions\vscode\README.md = extensions\vscode\README.md
-		extensions\vscode\tsconfig.json = extensions\vscode\tsconfig.json
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vibe.UI.Docs", "samples\Vibe.UI.Docs\Vibe.UI.Docs.csproj", "{B0EEF91C-8B87-472F-88AE-80542C14FB1A}"
 EndProject
@@ -96,18 +85,6 @@ Global
 		{E1F2A3B4-C5D6-7890-1234-567890ABCDEF}.Release|x64.Build.0 = Release|Any CPU
 		{E1F2A3B4-C5D6-7890-1234-567890ABCDEF}.Release|x86.ActiveCfg = Release|Any CPU
 		{E1F2A3B4-C5D6-7890-1234-567890ABCDEF}.Release|x86.Build.0 = Release|Any CPU
-		{D4E5F6A7-B8C9-0123-DEF1-234567890123}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D4E5F6A7-B8C9-0123-DEF1-234567890123}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D4E5F6A7-B8C9-0123-DEF1-234567890123}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{D4E5F6A7-B8C9-0123-DEF1-234567890123}.Debug|x64.Build.0 = Debug|Any CPU
-		{D4E5F6A7-B8C9-0123-DEF1-234567890123}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{D4E5F6A7-B8C9-0123-DEF1-234567890123}.Debug|x86.Build.0 = Debug|Any CPU
-		{D4E5F6A7-B8C9-0123-DEF1-234567890123}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D4E5F6A7-B8C9-0123-DEF1-234567890123}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D4E5F6A7-B8C9-0123-DEF1-234567890123}.Release|x64.ActiveCfg = Release|Any CPU
-		{D4E5F6A7-B8C9-0123-DEF1-234567890123}.Release|x64.Build.0 = Release|Any CPU
-		{D4E5F6A7-B8C9-0123-DEF1-234567890123}.Release|x86.ActiveCfg = Release|Any CPU
-		{D4E5F6A7-B8C9-0123-DEF1-234567890123}.Release|x86.Build.0 = Release|Any CPU
 		{B0EEF91C-8B87-472F-88AE-80542C14FB1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B0EEF91C-8B87-472F-88AE-80542C14FB1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0EEF91C-8B87-472F-88AE-80542C14FB1A}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -129,8 +106,6 @@ Global
 		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890} = {E5F6A7B8-C9D0-1234-EF12-345678901234}
 		{B2C3D4E5-F6A7-8901-BCDE-F12345678901} = {F6A7B8C9-D0E1-2345-F123-456789012345}
 		{E1F2A3B4-C5D6-7890-1234-567890ABCDEF} = {F6A7B8C9-D0E1-2345-F123-456789012345}
-		{D4E5F6A7-B8C9-0123-DEF1-234567890123} = {B8C9D0E1-F2A3-4567-2345-678901234567}
-		{C9D0E1F2-A3B4-5678-3456-789012345678} = {B8C9D0E1-F2A3-4567-2345-678901234567}
 		{B0EEF91C-8B87-472F-88AE-80542C14FB1A} = {A7B8C9D0-E1F2-3456-1234-567890123456}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

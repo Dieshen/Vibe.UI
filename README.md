@@ -1,5 +1,6 @@
 # Vibe.UI
-
+[![build](https://img.shields.io/github/actions/workflow/status/Dieshen/Vibe.UI/ci.yml
+)](https://github.com/Dieshen/Vibe.UI/actions/workflows/ci.yml)
 [![NuGet](https://img.shields.io/nuget/v/Vibe.UI.svg)](https://www.nuget.org/packages/Vibe.UI/)
 [![codecov](https://codecov.io/gh/Dieshen/Vibe.UI/branch/main/graph/badge.svg)](https://codecov.io/gh/Dieshen/Vibe.UI)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
