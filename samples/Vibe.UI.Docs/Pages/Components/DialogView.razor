@@ -50,11 +50,11 @@
                     <div style="display: flex; flex-direction: column; gap: 1rem;">
                         <div>
                             <label>Name:</label>
-                            <Input @bind-Value="@formName" Placeholder="Enter your name" />
+                            <Input Value="@formName" ValueChanged="@((string v) => formName = v)" Placeholder="Enter your name" />
                         </div>
                         <div>
                             <label>Email:</label>
-                            <Input @bind-Value="@formEmail" Type="email" Placeholder="your@email.com" />
+                            <Input Value="@formEmail" ValueChanged="@((string v) => formEmail = v)" Type="email" Placeholder="your@email.com" />
                         </div>
                     </div>
                 </ChildContent>

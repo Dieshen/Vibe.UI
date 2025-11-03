@@ -15,16 +15,16 @@
             <div>
                 <h4 style="margin-bottom: 0.75rem;">Basic Form with Validation</h4>
                 <Form Model="@userModel" OnSubmit="@HandleValidSubmit" FormName="user-form">
-                    <FormField Label="Name">
-                        <Input @bind-Value="@userModel.Name" Placeholder="Enter your name" />
+                    <FormField TValue="string" Label="Name">
+                        <Input Value="@userModel.Name" ValueChanged="@((string v) => userModel.Name = v)" Placeholder="Enter your name" />
                     </FormField>
 
-                    <FormField Label="Email">
-                        <Input Type="email" @bind-Value="@userModel.Email" Placeholder="you@example.com" />
+                    <FormField TValue="string" Label="Email">
+                        <Input Type="email" Value="@userModel.Email" ValueChanged="@((string v) => userModel.Email = v)" Placeholder="you@example.com" />
                     </FormField>
 
-                    <FormField Label="Message">
-                        <Textarea @bind-Value="@userModel.Message" Placeholder="Your message..." Rows="4" />
+                    <FormField TValue="string" Label="Message">
+                        <Textarea Value="@userModel.Message" ValueChanged="@((string v) => userModel.Message = v)" Placeholder="Your message..." Rows="4" />
                     </FormField>
 
                     <div style="margin-top: 1rem;">

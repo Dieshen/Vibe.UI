@@ -1,7 +1,13 @@
-Vibe.UI
-======
+# Vibe.UI
 
-Vibe.UI is a comprehensive, production-ready Blazor component library inspired by Shadcn UI, built with Razor components and C#. Complete with **90+ components**, comprehensive theming, Chart.js integration, form validation, icon library, testing infrastructure, CLI tooling, and IDE extensions.
+[![Build](https://github.com/Dieshen/Vibe.UI/actions/workflows/ci.yml/badge.svg)](https://github.com/Dieshen/Vibe.UI/actions/workflows/ci.yml)
+[![NuGet](https://img.shields.io/nuget/v/Vibe.UI.svg)](https://www.nuget.org/packages/Vibe.UI/)
+[![codecov](https://codecov.io/gh/Dieshen/Vibe.UI/branch/main/graph/badge.svg)](https://codecov.io/gh/Dieshen/Vibe.UI)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
+A comprehensive, production-ready Blazor component library inspired by Shadcn UI, built with Razor components and C#. Complete with **90+ components**, comprehensive theming, Chart.js integration, form validation, icon library, testing infrastructure, CLI tooling, and IDE extensions.
+
+> **Built for developers who want full control.** Copy components into your project and customize them, or use our NuGet package for quick integration.
 
 ## Features
 
@@ -350,25 +356,25 @@ builder.Services.AddVibe.UI(options => {
 
 Vibe.UI uses CSS variables for theming. Here are the main variables:
 
-| Variable | Purpose |
-|----------|---------|
-| `--vibe-background` | Background color |
-| `--vibe-foreground` | Text color |
-| `--vibe-primary` | Primary color |
-| `--vibe-primary-foreground` | Text color on primary background |
-| `--vibe-secondary` | Secondary color |
+| Variable                      | Purpose                            |
+| ----------------------------- | ---------------------------------- |
+| `--vibe-background`           | Background color                   |
+| `--vibe-foreground`           | Text color                         |
+| `--vibe-primary`              | Primary color                      |
+| `--vibe-primary-foreground`   | Text color on primary background   |
+| `--vibe-secondary`            | Secondary color                    |
 | `--vibe-secondary-foreground` | Text color on secondary background |
-| `--vibe-accent` | Accent color |
-| `--vibe-accent-foreground` | Text color on accent background |
-| `--vibe-muted` | Muted background color |
-| `--vibe-muted-foreground` | Text color on muted background |
-| `--vibe-card` | Card background color |
-| `--vibe-card-foreground` | Text color on card background |
-| `--vibe-border` | Border color |
-| `--vibe-input` | Input field background color |
-| `--vibe-ring` | Focus ring color |
-| `--vibe-radius` | Border radius |
-| `--vibe-font` | Font family |
+| `--vibe-accent`               | Accent color                       |
+| `--vibe-accent-foreground`    | Text color on accent background    |
+| `--vibe-muted`                | Muted background color             |
+| `--vibe-muted-foreground`     | Text color on muted background     |
+| `--vibe-card`                 | Card background color              |
+| `--vibe-card-foreground`      | Text color on card background      |
+| `--vibe-border`               | Border color                       |
+| `--vibe-input`                | Input field background color       |
+| `--vibe-ring`                 | Focus ring color                   |
+| `--vibe-radius`               | Border radius                      |
+| `--vibe-font`                 | Font family                        |
 
 ## Available Components
 
@@ -576,26 +582,23 @@ public class ButtonTests : TestContext
 }
 ```
 
-## Demo Application
-
-Explore all components interactively:
-
-```bash
-cd samples/Vibe.UI.Demo
-dotnet run
-```
-
-Navigate to `https://localhost:5001` to see all components in action.
-
 ## Contributing
 
-We welcome contributions! Please see our contributing guidelines for more information.
+We welcome contributions! Please see our [Contributing Guide](.github/CONTRIBUTING.md) for details on:
+
+- Setting up your development environment
+- Coding standards and best practices
+- Submitting pull requests
+- Creating new components
+- Writing tests
+
+Please read our [Code of Conduct](.github/CODE_OF_CONDUCT.md) before contributing.
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/Vibe.UI/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/Vibe.UI/discussions)
-- **Documentation**: [Full Documentation](https://github.com/yourusername/Vibe.UI/wiki)
+- **Issues**: [GitHub Issues](https://github.com/Dieshen/Vibe.UI/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Dieshen/Vibe.UI/discussions)
+- **Documentation**: [Full Documentation](https://github.com/Dieshen/Vibe.UI)
 
 ## Project Structure
 
@@ -607,7 +610,7 @@ Vibe.UI/
 ├── tests/
 │   └── Vibe.UI.Tests/        # Unit and integration tests
 ├── samples/
-│   └── Vibe.UI.Demo/         # Demo application
+│   └── Vibe.UI.Docs/         # Documentation site
 ├── extensions/
 │   ├── vscode/               # VS Code extension
 │   └── vs2022/               # Visual Studio 2022 extension
@@ -618,6 +621,17 @@ Vibe.UI/
 
 Vibe.UI is inspired by [shadcn/ui](https://ui.shadcn.com/) and built for the Blazor community.
 
+## Security
+
+Found a security vulnerability? Please review our [Security Policy](.github/SECURITY.md) for responsible disclosure guidelines.
+
+## Sponsorship
+
+Love Vibe.UI? Consider supporting its development:
+
+- ☕ [Buy Me a Coffee](https://buymeacoffee.com/dieshen)
+- 💖 [GitHub Sponsors](https://github.com/sponsors/Dieshen)
+
 ## License
 
-MIT License
+MIT License - see [LICENSE](LICENSE) for details

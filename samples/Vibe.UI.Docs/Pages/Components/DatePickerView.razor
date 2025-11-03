@@ -9,7 +9,7 @@
 
     <PreviewContent>
         <div class="preview-demo" style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 400px; margin: 0 auto;">
-            <FormField Label="Select a date">
+            <FormField TValue="DateTime?" Label="Select a date">
                 <DatePicker @bind-Date="@selectedDate"
                            MinDate="@DateTime.Today"
                            MaxDate="@DateTime.Today.AddMonths(6)"
@@ -18,7 +18,7 @@
 
             @if (selectedDate.HasValue)
             {
-                <Alert Variant="AlertVariant.Success">
+                <Alert Variant="Alert.AlertVariant.Success">
                     <strong>Date selected:</strong> @selectedDate.Value.ToString("dddd, MMMM dd, yyyy")
                 </Alert>
             }
