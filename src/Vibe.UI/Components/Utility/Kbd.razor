@@ -1,0 +1,35 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<kbd @attributes="AdditionalAttributes" class="@CombinedCssClass">
+    @ChildContent
+</kbd>
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public KbdSize Size { get; set; } = KbdSize.Default;
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-kbd",
+        $"kbd-{Size.ToString().ToLower()}",
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    public enum KbdSize
+    {
+        Small,
+        Default,
+        Large
+    }
+}

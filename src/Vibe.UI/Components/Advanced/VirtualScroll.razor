@@ -1,0 +1,140 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+@typeparam TItem
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass" style="@ContainerStyle" @ref="_containerRef">
+    <div class="virtual-scroll-spacer" style="@SpacerStyle">
+        @if (Items != null && Items.Any())
+        {
+            @foreach (var item in GetVisibleItems())
+            {
+                <div class="virtual-scroll-item" @key="GetItemKey(item)">
+                    @if (ItemTemplate != null)
+                    {
+                        @ItemTemplate(item)
+                    }
+                    else
+                    {
+                        @item?.ToString()
+                    }
+                </div>
+            }
+        }
+        else if (EmptyContent != null)
+        {
+            <div class="virtual-scroll-empty">
+                @EmptyContent
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private ElementReference _containerRef;
+    private int _startIndex = 0;
+    private int _endIndex = 0;
+    private int _containerHeight = 0;
+
+    [Parameter]
+    public List<TItem>? Items { get; set; }
+
+    [Parameter]
+    public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
+
+    [Parameter]
+    public int ItemHeight { get; set; } = 50;
+
+    [Parameter]
+    public int BufferSize { get; set; } = 5;
+
+    [Parameter]
+    public int Height { get; set; } = 400;
+
+    [Parameter]
+    public Func<TItem, string>? KeySelector { get; set; }
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-virtual-scroll",
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    private string ContainerStyle => $"height: {Height}px; overflow-y: auto;";
+
+    private string SpacerStyle
+    {
+        get
+        {
+            var totalHeight = (Items?.Count ?? 0) * ItemHeight;
+            var offsetTop = _startIndex * ItemHeight;
+            return $"height: {totalHeight}px; padding-top: {offsetTop}px;";
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        CalculateVisibleRange();
+    }
+
+    private void CalculateVisibleRange()
+    {
+        if (Items == null || !Items.Any())
+        {
+            _startIndex = 0;
+            _endIndex = 0;
+            return;
+        }
+
+        var visibleCount = (int)Math.Ceiling((double)Height / ItemHeight);
+        _startIndex = Math.Max(0, _startIndex - BufferSize);
+        _endIndex = Math.Min(Items.Count, _startIndex + visibleCount + BufferSize * 2);
+    }
+
+    private IEnumerable<TItem> GetVisibleItems()
+    {
+        if (Items == null || !Items.Any())
+            return Enumerable.Empty<TItem>();
+
+        return Items.Skip(_startIndex).Take(_endIndex - _startIndex);
+    }
+
+    private string GetItemKey(TItem item)
+    {
+        if (KeySelector != null && item != null)
+            return KeySelector(item);
+
+        return item?.GetHashCode().ToString() ?? Guid.NewGuid().ToString();
+    }
+
+    // Method to handle scroll event - would need JS interop for full implementation
+    public void HandleScroll(int scrollTop)
+    {
+        var newStartIndex = (int)Math.Floor((double)scrollTop / ItemHeight);
+
+        if (newStartIndex != _startIndex)
+        {
+            _startIndex = newStartIndex;
+            CalculateVisibleRange();
+            StateHasChanged();
+        }
+    }
+
+    public void ScrollToIndex(int index)
+    {
+        if (Items == null || index < 0 || index >= Items.Count)
+            return;
+
+        _startIndex = index;
+        CalculateVisibleRange();
+        StateHasChanged();
+
+        // Would need JS interop: _containerRef.scrollTop = index * ItemHeight
+    }
+}

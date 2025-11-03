@@ -1,0 +1,263 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+@typeparam TItem
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+    <div class="transfer-panel">
+        <div class="transfer-panel-header">
+            <h4 class="panel-title">@SourceTitle</h4>
+            <span class="panel-count">@SourceItems.Count</span>
+        </div>
+        @if (ShowSearch)
+        {
+            <div class="transfer-search">
+                <input type="text"
+                       class="search-input"
+                       placeholder="@SearchPlaceholder"
+                       @bind="_sourceSearch"
+                       @bind:event="oninput" />
+            </div>
+        }
+        <div class="transfer-list">
+            @foreach (var item in GetFilteredSourceItems())
+            {
+                var isSelected = _selectedSource.Contains(item);
+                <div class="transfer-item @(isSelected ? "selected" : "")"
+                     @key="GetItemKey(item)"
+                     @onclick="() => ToggleSourceSelection(item)">
+                    @if (ShowCheckboxes)
+                    {
+                        <input type="checkbox" checked="@isSelected" class="item-checkbox" />
+                    }
+                    <div class="item-content">
+                        @if (ItemTemplate != null)
+                        {
+                            @ItemTemplate(item)
+                        }
+                        else
+                        {
+                            <span>@GetItemText(item)</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="transfer-controls">
+        <button type="button"
+                class="transfer-btn"
+                @onclick="MoveAllToTarget"
+                disabled="@(!SourceItems.Any())"
+                title="Move all to target">
+            ≫
+        </button>
+        <button type="button"
+                class="transfer-btn"
+                @onclick="MoveToTarget"
+                disabled="@(!_selectedSource.Any())"
+                title="Move selected to target">
+            &gt;
+        </button>
+        <button type="button"
+                class="transfer-btn"
+                @onclick="MoveToSource"
+                disabled="@(!_selectedTarget.Any())"
+                title="Move selected to source">
+            &lt;
+        </button>
+        <button type="button"
+                class="transfer-btn"
+                @onclick="MoveAllToSource"
+                disabled="@(!TargetItems.Any())"
+                title="Move all to source">
+            ≪
+        </button>
+    </div>
+
+    <div class="transfer-panel">
+        <div class="transfer-panel-header">
+            <h4 class="panel-title">@TargetTitle</h4>
+            <span class="panel-count">@TargetItems.Count</span>
+        </div>
+        @if (ShowSearch)
+        {
+            <div class="transfer-search">
+                <input type="text"
+                       class="search-input"
+                       placeholder="@SearchPlaceholder"
+                       @bind="_targetSearch"
+                       @bind:event="oninput" />
+            </div>
+        }
+        <div class="transfer-list">
+            @foreach (var item in GetFilteredTargetItems())
+            {
+                var isSelected = _selectedTarget.Contains(item);
+                <div class="transfer-item @(isSelected ? "selected" : "")"
+                     @key="GetItemKey(item)"
+                     @onclick="() => ToggleTargetSelection(item)">
+                    @if (ShowCheckboxes)
+                    {
+                        <input type="checkbox" checked="@isSelected" class="item-checkbox" />
+                    }
+                    <div class="item-content">
+                        @if (ItemTemplate != null)
+                        {
+                            @ItemTemplate(item)
+                        }
+                        else
+                        {
+                            <span>@GetItemText(item)</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private HashSet<TItem> _selectedSource = new();
+    private HashSet<TItem> _selectedTarget = new();
+    private string _sourceSearch = string.Empty;
+    private string _targetSearch = string.Empty;
+
+    [Parameter]
+    public List<TItem> SourceItems { get; set; } = new();
+
+    [Parameter]
+    public List<TItem> TargetItems { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<List<TItem>> SourceItemsChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<List<TItem>> TargetItemsChanged { get; set; }
+
+    [Parameter]
+    public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    [Parameter]
+    public Func<TItem, string>? TextSelector { get; set; }
+
+    [Parameter]
+    public Func<TItem, string>? KeySelector { get; set; }
+
+    [Parameter]
+    public string SourceTitle { get; set; } = "Available";
+
+    [Parameter]
+    public string TargetTitle { get; set; } = "Selected";
+
+    [Parameter]
+    public bool ShowSearch { get; set; } = true;
+
+    [Parameter]
+    public bool ShowCheckboxes { get; set; } = true;
+
+    [Parameter]
+    public string SearchPlaceholder { get; set; } = "Search...";
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-transfer",
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    private string GetItemKey(TItem item)
+    {
+        if (KeySelector != null && item != null)
+            return KeySelector(item);
+        return item?.GetHashCode().ToString() ?? Guid.NewGuid().ToString();
+    }
+
+    private string GetItemText(TItem item)
+    {
+        if (TextSelector != null && item != null)
+            return TextSelector(item);
+        return item?.ToString() ?? string.Empty;
+    }
+
+    private IEnumerable<TItem> GetFilteredSourceItems()
+    {
+        if (string.IsNullOrWhiteSpace(_sourceSearch))
+            return SourceItems;
+
+        return SourceItems.Where(item =>
+            GetItemText(item).Contains(_sourceSearch, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private IEnumerable<TItem> GetFilteredTargetItems()
+    {
+        if (string.IsNullOrWhiteSpace(_targetSearch))
+            return TargetItems;
+
+        return TargetItems.Where(item =>
+            GetItemText(item).Contains(_targetSearch, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void ToggleSourceSelection(TItem item)
+    {
+        if (_selectedSource.Contains(item))
+            _selectedSource.Remove(item);
+        else
+            _selectedSource.Add(item);
+    }
+
+    private void ToggleTargetSelection(TItem item)
+    {
+        if (_selectedTarget.Contains(item))
+            _selectedTarget.Remove(item);
+        else
+            _selectedTarget.Add(item);
+    }
+
+    private async Task MoveToTarget()
+    {
+        foreach (var item in _selectedSource.ToList())
+        {
+            SourceItems.Remove(item);
+            TargetItems.Add(item);
+        }
+
+        _selectedSource.Clear();
+        await SourceItemsChanged.InvokeAsync(SourceItems);
+        await TargetItemsChanged.InvokeAsync(TargetItems);
+    }
+
+    private async Task MoveToSource()
+    {
+        foreach (var item in _selectedTarget.ToList())
+        {
+            TargetItems.Remove(item);
+            SourceItems.Add(item);
+        }
+
+        _selectedTarget.Clear();
+        await SourceItemsChanged.InvokeAsync(SourceItems);
+        await TargetItemsChanged.InvokeAsync(TargetItems);
+    }
+
+    private async Task MoveAllToTarget()
+    {
+        TargetItems.AddRange(SourceItems);
+        SourceItems.Clear();
+        _selectedSource.Clear();
+        await SourceItemsChanged.InvokeAsync(SourceItems);
+        await TargetItemsChanged.InvokeAsync(TargetItems);
+    }
+
+    private async Task MoveAllToSource()
+    {
+        SourceItems.AddRange(TargetItems);
+        TargetItems.Clear();
+        _selectedTarget.Clear();
+        await SourceItemsChanged.InvokeAsync(SourceItems);
+        await TargetItemsChanged.InvokeAsync(TargetItems);
+    }
+}

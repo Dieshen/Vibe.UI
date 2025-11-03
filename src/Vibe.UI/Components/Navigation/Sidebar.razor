@@ -1,0 +1,142 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<aside @attributes="AdditionalAttributes"
+       class="@CombinedCssClass"
+       style="@SidebarStyle"
+       data-state="@(IsOpen ? "open" : "closed")">
+
+    @if (ShowHeader)
+    {
+        <div class="sidebar-header">
+            @if (Header != null)
+            {
+                @Header
+            }
+            else if (!string.IsNullOrEmpty(Title))
+            {
+                <h2 class="sidebar-title">@Title</h2>
+            }
+
+            @if (Collapsible)
+            {
+                <button class="sidebar-toggle" @onclick="Toggle" aria-label="Toggle sidebar">
+                    <span class="sidebar-toggle-icon">@(IsOpen ? "◀" : "▶")</span>
+                </button>
+            }
+        </div>
+    }
+
+    <div class="sidebar-content">
+        @ChildContent
+    </div>
+
+    @if (Footer != null)
+    {
+        <div class="sidebar-footer">
+            @Footer
+        </div>
+    }
+
+    @if (Resizable)
+    {
+        <div class="sidebar-resize-handle" @onmousedown="StartResize"></div>
+    }
+</aside>
+
+@code {
+    private bool _isOpen = true;
+    private int _width = 280;
+    private bool _isResizing;
+
+    [Parameter]
+    public bool IsOpen
+    {
+        get => _isOpen;
+        set
+        {
+            if (_isOpen != value)
+            {
+                _isOpen = value;
+                IsOpenChanged.InvokeAsync(value);
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<bool> IsOpenChanged { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? Header { get; set; }
+
+    [Parameter]
+    public RenderFragment? Footer { get; set; }
+
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public bool ShowHeader { get; set; } = true;
+
+    [Parameter]
+    public bool Collapsible { get; set; } = true;
+
+    [Parameter]
+    public bool Resizable { get; set; } = false;
+
+    [Parameter]
+    public SidebarPosition Position { get; set; } = SidebarPosition.Left;
+
+    [Parameter]
+    public int Width
+    {
+        get => _width;
+        set => _width = Math.Clamp(value, 200, 600);
+    }
+
+    [Parameter]
+    public int CollapsedWidth { get; set; } = 60;
+
+    [Parameter]
+    public bool PersistState { get; set; } = true;
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-sidebar",
+        $"sidebar-{Position.ToString().ToLower()}",
+        IsOpen ? "sidebar-open" : "sidebar-closed",
+        Resizable ? "sidebar-resizable" : null,
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    private string SidebarStyle => IsOpen
+        ? $"width: {Width}px;"
+        : $"width: {CollapsedWidth}px;";
+
+    public void Toggle()
+    {
+        IsOpen = !IsOpen;
+    }
+
+    public void Open() => IsOpen = true;
+    public void Close() => IsOpen = false;
+
+    private void StartResize(MouseEventArgs e)
+    {
+        _isResizing = true;
+        // Would need JS interop for actual drag handling
+    }
+
+    public enum SidebarPosition
+    {
+        Left,
+        Right
+    }
+}

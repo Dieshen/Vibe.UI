@@ -1,0 +1,47 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<label @attributes="AdditionalAttributes" class="@CombinedCssClass" for="@For">
+    @ChildContent
+</label>
+
+@code {
+    /// <summary>
+    /// The ID of the form control this label is associated with.
+    /// </summary>
+    [Parameter]
+    public string? For { get; set; }
+
+    /// <summary>
+    /// The content to display in the label.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes to apply to the label.
+    /// </summary>
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    /// <summary>
+    /// Whether the label is for a required field.
+    /// </summary>
+    [Parameter]
+    public bool Required { get; set; }
+
+    /// <summary>
+    /// Whether the label is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-label",
+        Required ? "vibe-label-required" : null,
+        Disabled ? "vibe-label-disabled" : null,
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+}

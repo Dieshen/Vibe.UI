@@ -1,0 +1,42 @@
+.vibe-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+    text-align: center;
+}
+
+.empty-state-icon {
+    margin-bottom: 1rem;
+    color: var(--vibe-muted-foreground);
+    font-size: 3rem;
+}
+
+.empty-state-content {
+    max-width: 32rem;
+}
+
+.empty-state-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--vibe-foreground);
+}
+
+.empty-state-description {
+    margin: 0 0 1.5rem 0;
+    font-size: 0.875rem;
+    color: var(--vibe-muted-foreground);
+    line-height: 1.5;
+}
+
+.empty-state-body {
+    margin-bottom: 1.5rem;
+}
+
+.empty-state-action {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}

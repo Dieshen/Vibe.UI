@@ -1,0 +1,257 @@
+@page "/components/dialog"
+@using Vibe.UI
+@using Vibe.UI.Components
+
+<PageTitle>Dialog - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Dialog"
+               Category="Overlay"
+               Description="A modal dialog that interrupts the user with important content and expects a response."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+            <Button OnClick="@(() => showBasicDialog = true)">Open Dialog</Button>
+            <Button OnClick="@(() => showConfirmDialog = true)">Confirmation Dialog</Button>
+            <Button OnClick="@(() => showFormDialog = true)">Form Dialog</Button>
+
+            <Dialog @bind-IsOpen="@showBasicDialog"
+                    CloseOnOutsideClick="true"
+                    CloseOnEscape="true">
+                <Header>
+                    <h2>Dialog Title</h2>
+                </Header>
+                <ChildContent>
+                    <p>This is a basic dialog with header and content. Click outside or press Escape to close.</p>
+                </ChildContent>
+                <Footer>
+                    <Button OnClick="@(() => showBasicDialog = false)">Close</Button>
+                </Footer>
+            </Dialog>
+
+            <Dialog @bind-IsOpen="@showConfirmDialog">
+                <Header>
+                    <h2>Confirm Action</h2>
+                </Header>
+                <ChildContent>
+                    <p>Are you sure you want to proceed with this action? This action cannot be undone.</p>
+                </ChildContent>
+                <Footer>
+                    <Button Variant="Button.ButtonVariant.Secondary" OnClick="@(() => showConfirmDialog = false)">Cancel</Button>
+                    <Button Variant="Button.ButtonVariant.Destructive" OnClick="@(() => showConfirmDialog = false)">Confirm</Button>
+                </Footer>
+            </Dialog>
+
+            <Dialog @bind-IsOpen="@showFormDialog">
+                <Header>
+                    <h2>Enter Information</h2>
+                </Header>
+                <ChildContent>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <label>Name:</label>
+                            <Input @bind-Value="@formName" Placeholder="Enter your name" />
+                        </div>
+                        <div>
+                            <label>Email:</label>
+                            <Input @bind-Value="@formEmail" Type="email" Placeholder="your@email.com" />
+                        </div>
+                    </div>
+                </ChildContent>
+                <Footer>
+                    <Button Variant="Button.ButtonVariant.Secondary" OnClick="@(() => showFormDialog = false)">Cancel</Button>
+                    <Button Variant="Button.ButtonVariant.Primary" OnClick="@HandleFormSubmit">Submit</Button>
+                </Footer>
+            </Dialog>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Actions</h3>
+            <CodeBlock Code="@ActionsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Confirmation Dialog</h3>
+            <CodeBlock Code="@ConfirmCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Scrollable Content</h3>
+            <CodeBlock Code="@ScrollableCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Custom Size</h3>
+            <CodeBlock Code="@SizeCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Open</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the dialog is open</td>
+                </tr>
+                <tr>
+                    <td><code>Title</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Dialog title</td>
+                </tr>
+                <tr>
+                    <td><code>Size</code></td>
+                    <td>DialogSize</td>
+                    <td>Medium</td>
+                    <td>Dialog size (Small, Medium, Large, Full)</td>
+                </tr>
+                <tr>
+                    <td><code>CloseOnOverlayClick</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Close when clicking overlay</td>
+                </tr>
+                <tr>
+                    <td><code>CloseOnEscape</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Close when pressing Escape</td>
+                </tr>
+                <tr>
+                    <td><code>ChildContent</code></td>
+                    <td>RenderFragment</td>
+                    <td>-</td>
+                    <td>Dialog content</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OpenChanged</code></td>
+                    <td>EventCallback&lt;bool&gt;</td>
+                    <td>Callback when open state changes</td>
+                </tr>
+                <tr>
+                    <td><code>OnClose</code></td>
+                    <td>EventCallback</td>
+                    <td>Callback when dialog closes</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>ARIA role="dialog" with proper labels</li>
+            <li>Focus trapped within dialog</li>
+            <li>Escape key to close</li>
+            <li>Focus returns to trigger on close</li>
+            <li>Screen reader announcements</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private bool showBasicDialog = false;
+    private bool showConfirmDialog = false;
+    private bool showFormDialog = false;
+    private string formName = "";
+    private string formEmail = "";
+
+    private List<string> relatedComponents = new() { "Modal", "Drawer", "Popover" };
+
+    private void HandleFormSubmit()
+    {
+        showFormDialog = false;
+        formName = "";
+        formEmail = "";
+    }
+
+    private string BasicCode => @"<Button OnClick=""@(() => isOpen = true)"">Open Dialog</Button>
+
+<Dialog @bind-Open=""@isOpen"" Title=""Dialog Title"">
+    <p>This is the dialog content.</p>
+</Dialog>
+
+@code {
+    private bool isOpen = false;
+}";
+
+    private string ActionsCode => @"<Dialog @bind-Open=""@isOpen"" Title=""Confirm Action"">
+    <DialogContent>
+        <p>Are you sure you want to proceed with this action?</p>
+    </DialogContent>
+    <DialogActions>
+        <Button Variant=""ButtonVariant.Secondary"" OnClick=""@(() => isOpen = false)"">
+            Cancel
+        </Button>
+        <Button Variant=""ButtonVariant.Primary"" OnClick=""@HandleConfirm"">
+            Confirm
+        </Button>
+    </DialogActions>
+</Dialog>";
+
+    private string ConfirmCode => @"<Button OnClick=""@ShowConfirmDialog"">Delete Item</Button>
+
+<Dialog @bind-Open=""@showConfirm"" Title=""Confirm Deletion"">
+    <DialogContent>
+        <Alert Variant=""AlertVariant.Warning"">
+            This action cannot be undone.
+        </Alert>
+        <p>Are you sure you want to delete this item?</p>
+    </DialogContent>
+    <DialogActions>
+        <Button OnClick=""@(() => showConfirm = false)"">Cancel</Button>
+        <Button Variant=""ButtonVariant.Danger"" OnClick=""@HandleDelete"">Delete</Button>
+    </DialogActions>
+</Dialog>";
+
+    private string ScrollableCode => @"<Dialog @bind-Open=""@isOpen"" Title=""Long Content"">
+    <DialogContent>
+        <p>Content line 1</p>
+        <p>Content line 2</p>
+        <!-- Many more lines... -->
+        <p>Content line 100</p>
+    </DialogContent>
+</Dialog>";
+
+    private string SizeCode => @"<Dialog @bind-Open=""@isOpen"" Title=""Small Dialog"" Size=""DialogSize.Small"">
+    <p>Small dialog content</p>
+</Dialog>
+
+<Dialog @bind-Open=""@isOpen"" Title=""Large Dialog"" Size=""DialogSize.Large"">
+    <p>Large dialog content</p>
+</Dialog>
+
+<Dialog @bind-Open=""@isOpen"" Title=""Full Screen"" Size=""DialogSize.Full"">
+    <p>Full screen dialog content</p>
+</Dialog>";
+}

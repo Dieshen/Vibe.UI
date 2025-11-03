@@ -1,0 +1,136 @@
+@page "/components/avatar"
+@using Vibe.UI.Components
+
+<PageTitle>Avatar - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Avatar"
+               Category="DataDisplay"
+               Description="An image element with fallback for displaying user profile pictures or identifiers."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+            <Avatar ImageUrl="https://i.pravatar.cc/150?img=1" Size="32" />
+            <Avatar ImageUrl="https://i.pravatar.cc/150?img=2" Size="40" />
+            <Avatar ImageUrl="https://i.pravatar.cc/150?img=3" Size="48" />
+            <Avatar ImageUrl="https://i.pravatar.cc/150?img=4" Size="64" />
+            <Avatar Initials="JD" Size="48" />
+            <Avatar Initials="AS" Size="48" />
+            <Avatar FallbackIcon="👤" Size="48" />
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Sizes</h3>
+            <CodeBlock Code="@SizesCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Initials Fallback</h3>
+            <CodeBlock Code="@InitialsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Icon Fallback</h3>
+            <CodeBlock Code="@IconCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Avatar Group</h3>
+            <CodeBlock Code="@GroupCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Src</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Image source URL</td>
+                </tr>
+                <tr>
+                    <td><code>Alt</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Alt text for the image</td>
+                </tr>
+                <tr>
+                    <td><code>Size</code></td>
+                    <td>AvatarSize</td>
+                    <td>Medium</td>
+                    <td>Size of the avatar</td>
+                </tr>
+                <tr>
+                    <td><code>Initials</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Initials to display if image fails to load</td>
+                </tr>
+                <tr>
+                    <td><code>Shape</code></td>
+                    <td>AvatarShape</td>
+                    <td>Circle</td>
+                    <td>Shape of the avatar (Circle, Square, Rounded)</td>
+                </tr>
+                <tr>
+                    <td><code>StatusIndicator</code></td>
+                    <td>AvatarStatus</td>
+                    <td>None</td>
+                    <td>Status indicator (None, Online, Offline, Away, Busy)</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses semantic <code>&lt;img&gt;</code> with proper alt text</li>
+            <li>Fallback content is screen reader accessible</li>
+            <li>Status indicators have appropriate ARIA labels</li>
+            <li>Proper contrast for text fallbacks</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Badge", "Card", "UserProfile" };
+
+    private string BasicCode => @"<Avatar Src=""https://i.pravatar.cc/150?img=1"" Alt=""User Avatar"" />";
+
+    private string SizesCode => @"<Avatar Size=""AvatarSize.Small"" Src=""https://i.pravatar.cc/150?img=2"" />
+<Avatar Size=""AvatarSize.Medium"" Src=""https://i.pravatar.cc/150?img=3"" />
+<Avatar Size=""AvatarSize.Large"" Src=""https://i.pravatar.cc/150?img=4"" />
+<Avatar Size=""AvatarSize.XLarge"" Src=""https://i.pravatar.cc/150?img=5"" />";
+
+    private string InitialsCode => @"<Avatar Initials=""JD"" />
+<Avatar Initials=""AS"" />
+<Avatar Initials=""MK"" />";
+
+    private string IconCode => @"<Avatar>
+    <span class=""icon"">👤</span>
+</Avatar>";
+
+    private string GroupCode => @"<AvatarGroup Max=""3"">
+    <Avatar Src=""https://i.pravatar.cc/150?img=1"" />
+    <Avatar Src=""https://i.pravatar.cc/150?img=2"" />
+    <Avatar Src=""https://i.pravatar.cc/150?img=3"" />
+    <Avatar Src=""https://i.pravatar.cc/150?img=4"" />
+    <Avatar Src=""https://i.pravatar.cc/150?img=5"" />
+</AvatarGroup>";
+}

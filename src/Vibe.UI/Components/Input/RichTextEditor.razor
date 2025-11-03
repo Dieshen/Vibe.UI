@@ -1,0 +1,187 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+    @if (ShowToolbar)
+    {
+        <div class="richtext-toolbar">
+            <div class="toolbar-group">
+                <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("bold"))" title="Bold">
+                    <strong>B</strong>
+                </button>
+                <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("italic"))" title="Italic">
+                    <em>I</em>
+                </button>
+                <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("underline"))" title="Underline">
+                    <u>U</u>
+                </button>
+                <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("strikeThrough"))" title="Strikethrough">
+                    <s>S</s>
+                </button>
+            </div>
+
+            <div class="toolbar-separator"></div>
+
+            <div class="toolbar-group">
+                <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("formatBlock", "h1"))" title="Heading 1">
+                    H1
+                </button>
+                <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("formatBlock", "h2"))" title="Heading 2">
+                    H2
+                </button>
+                <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("formatBlock", "p"))" title="Paragraph">
+                    P
+                </button>
+            </div>
+
+            <div class="toolbar-separator"></div>
+
+            <div class="toolbar-group">
+                <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("insertUnorderedList"))" title="Bullet List">
+                    •
+                </button>
+                <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("insertOrderedList"))" title="Numbered List">
+                    1.
+                </button>
+            </div>
+
+            <div class="toolbar-separator"></div>
+
+            <div class="toolbar-group">
+                <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("justifyLeft"))" title="Align Left">
+                    ≡
+                </button>
+                <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("justifyCenter"))" title="Align Center">
+                    ≡
+                </button>
+                <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("justifyRight"))" title="Align Right">
+                    ≡
+                </button>
+            </div>
+
+            @if (AllowLinks)
+            {
+                <div class="toolbar-separator"></div>
+                <div class="toolbar-group">
+                    <button type="button" class="toolbar-button" @onclick="InsertLink" title="Insert Link">
+                        🔗
+                    </button>
+                </div>
+            }
+
+            @if (AllowImages)
+            {
+                <div class="toolbar-separator"></div>
+                <div class="toolbar-group">
+                    <button type="button" class="toolbar-button" @onclick="InsertImage" title="Insert Image">
+                        🖼️
+                    </button>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="richtext-editor"
+         contenteditable="@((!ReadOnly).ToString().ToLower())"
+         @ref="_editorRef"
+         @oninput="HandleInput"
+         placeholder="@Placeholder"
+         role="textbox"
+         aria-label="@AriaLabel">
+        @((MarkupString)Content)
+    </div>
+
+    @if (ShowCharCount)
+    {
+        <div class="richtext-footer">
+            <span class="char-count">@GetCharCount() characters</span>
+        </div>
+    }
+</div>
+
+@code {
+    private ElementReference _editorRef;
+    private string _content = string.Empty;
+
+    [Parameter]
+    public string Content
+    {
+        get => _content;
+        set
+        {
+            if (_content != value)
+            {
+                _content = value ?? string.Empty;
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<string> ContentChanged { get; set; }
+
+    [Parameter]
+    public bool ShowToolbar { get; set; } = true;
+
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    [Parameter]
+    public bool AllowLinks { get; set; } = true;
+
+    [Parameter]
+    public bool AllowImages { get; set; } = true;
+
+    [Parameter]
+    public bool ShowCharCount { get; set; }
+
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    [Parameter]
+    public int MinHeight { get; set; } = 200;
+
+    [Parameter]
+    public int MaxHeight { get; set; } = 500;
+
+    [Parameter]
+    public string? AriaLabel { get; set; } = "Rich text editor";
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-richtext",
+        ReadOnly ? "richtext-readonly" : null,
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    private async Task HandleInput(ChangeEventArgs e)
+    {
+        _content = e.Value?.ToString() ?? string.Empty;
+        await ContentChanged.InvokeAsync(_content);
+    }
+
+    private void ExecuteCommand(string command, string? value = null)
+    {
+        // Would need JS interop: document.execCommand(command, false, value)
+    }
+
+    private void InsertLink()
+    {
+        // Would need JS interop to prompt for URL and insert link
+    }
+
+    private void InsertImage()
+    {
+        // Would need JS interop to prompt for image URL and insert
+    }
+
+    private int GetCharCount()
+    {
+        // Strip HTML tags for char count
+        var plainText = System.Text.RegularExpressions.Regex.Replace(_content, "<.*?>", string.Empty);
+        return plainText.Length;
+    }
+}

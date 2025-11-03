@@ -1,0 +1,94 @@
+.vibe-validated-input {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.validated-input-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--vibe-foreground);
+}
+
+.required-indicator {
+    color: var(--vibe-destructive);
+    margin-left: 0.125rem;
+}
+
+.validated-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.validated-input-field {
+    flex: 1;
+    display: flex;
+    height: 2.5rem;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    color: var(--vibe-foreground);
+    background-color: var(--vibe-input);
+    border: 1px solid var(--vibe-border);
+    border-radius: var(--vibe-radius, 0.375rem);
+    font-size: 0.875rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.validated-input-field:focus {
+    border-color: var(--vibe-ring);
+    box-shadow: 0 0 0 3px rgba(var(--vibe-ring-rgb, 0, 102, 204), 0.1);
+}
+
+.validated-input-field:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.validated-input-field:read-only {
+    background-color: var(--vibe-muted);
+}
+
+.validated-input-field.is-valid {
+    border-color: #10b981;
+    padding-right: 2.5rem;
+}
+
+.validated-input-field.is-invalid {
+    border-color: var(--vibe-destructive);
+    padding-right: 2.5rem;
+}
+
+.validation-icon {
+    position: absolute;
+    right: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.vibe-validated-input.valid .validation-icon {
+    color: #10b981;
+}
+
+.vibe-validated-input.invalid .validation-icon {
+    color: var(--vibe-destructive);
+}
+
+.validated-input-helper {
+    font-size: 0.75rem;
+    color: var(--vibe-muted-foreground);
+}
+
+.validated-input-error {
+    font-size: 0.75rem;
+    color: var(--vibe-destructive);
+    font-weight: 500;
+}
+
+.vibe-validated-input.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}

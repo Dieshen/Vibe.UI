@@ -1,0 +1,198 @@
+.vibe-color-picker {
+    position: relative;
+    display: inline-block;
+}
+
+.vibe-color-picker-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid var(--vibe-border);
+    border-radius: var(--vibe-radius, 0.375rem);
+    background-color: var(--vibe-background);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.vibe-color-picker-preview:hover {
+    border-color: var(--vibe-ring);
+}
+
+.vibe-color-picker-swatch {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--vibe-border);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.vibe-color-picker-value {
+    font-size: 0.875rem;
+    font-family: monospace;
+    color: var(--vibe-foreground);
+}
+
+.vibe-color-picker-popover {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    z-index: 50;
+    width: 18rem;
+    padding: 1rem;
+    background-color: var(--vibe-popover);
+    border: 1px solid var(--vibe-border);
+    border-radius: var(--vibe-radius, 0.375rem);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.vibe-color-picker-saturation {
+    position: relative;
+    width: 100%;
+    height: 10rem;
+    background: linear-gradient(to top, #000, transparent),
+                linear-gradient(to right, #fff, transparent);
+    border-radius: 0.25rem;
+    cursor: crosshair;
+    margin-bottom: 1rem;
+}
+
+.vibe-color-picker-saturation-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, #fff, rgba(255,255,255,0)),
+                linear-gradient(to top, #000, rgba(0,0,0,0));
+    border-radius: 0.25rem;
+}
+
+.vibe-color-picker-saturation-pointer {
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.vibe-color-picker-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.vibe-color-picker-hue-slider,
+.vibe-color-picker-alpha-slider {
+    height: 1rem;
+    border-radius: 0.25rem;
+    position: relative;
+}
+
+.vibe-color-picker-hue-slider {
+    background: linear-gradient(to right,
+        #ff0000 0%,
+        #ffff00 17%,
+        #00ff00 33%,
+        #00ffff 50%,
+        #0000ff 67%,
+        #ff00ff 83%,
+        #ff0000 100%
+    );
+}
+
+.vibe-color-picker-alpha-slider {
+    background: linear-gradient(to right, transparent, currentColor),
+                repeating-conic-gradient(#ccc 0% 25%, white 0% 50%) 50% / 8px 8px;
+}
+
+.vibe-color-picker-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 0.25rem;
+}
+
+.vibe-color-picker-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    background: white;
+    border: 2px solid #666;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.vibe-color-picker-slider::-moz-range-thumb {
+    width: 1rem;
+    height: 1rem;
+    background: white;
+    border: 2px solid #666;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.vibe-color-picker-inputs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.vibe-color-picker-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.vibe-color-picker-input-group label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--vibe-muted-foreground);
+}
+
+.vibe-color-picker-input {
+    padding: 0.375rem;
+    font-size: 0.75rem;
+    font-family: monospace;
+    border: 1px solid var(--vibe-border);
+    border-radius: 0.25rem;
+    background-color: var(--vibe-background);
+    color: var(--vibe-foreground);
+}
+
+.vibe-color-picker-input:focus {
+    outline: 2px solid var(--vibe-ring);
+    outline-offset: 1px;
+}
+
+.vibe-color-picker-presets {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.375rem;
+}
+
+.vibe-color-picker-preset {
+    width: 100%;
+    aspect-ratio: 1;
+    border: 1px solid var(--vibe-border);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.vibe-color-picker-preset:hover {
+    transform: scale(1.1);
+}
+
+.vibe-color-picker-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}

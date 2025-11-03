@@ -1,0 +1,344 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+    @if (!string.IsNullOrEmpty(Title))
+    {
+        <div class="vibe-chart-header">
+            <h3 class="vibe-chart-title">@Title</h3>
+            @if (!string.IsNullOrEmpty(Description))
+            {
+                <p class="vibe-chart-description">@Description</p>
+            }
+        </div>
+    }
+
+    <div class="vibe-chart-container" style="height: @(Height)px;">
+        <canvas @ref="_canvasRef" id="@_canvasId" class="vibe-chart-canvas"></canvas>
+    </div>
+
+    @if (ShowLegend && Data?.Datasets?.Any() == true && !UseBuiltInLegend)
+    {
+        <div class="vibe-chart-legend">
+            @foreach (var dataset in Data.Datasets)
+            {
+                <div class="vibe-chart-legend-item">
+                    <span class="vibe-chart-legend-color" style="background-color: @(dataset.BackgroundColor ?? dataset.Color);"></span>
+                    <span class="vibe-chart-legend-label">@dataset.Label</span>
+                </div>
+            }
+        </div>
+    }
+
+    @if (FooterContent != null)
+    {
+        <div class="vibe-chart-footer">
+            @FooterContent
+        </div>
+    }
+</div>
+
+@code {
+    private ElementReference _canvasRef;
+    private string _canvasId = $"chart-{Guid.NewGuid():N}";
+    private bool _chartCreated = false;
+
+    /// <summary>
+    /// The chart data to display.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public ChartData? Data { get; set; }
+
+    /// <summary>
+    /// The type of chart to render.
+    /// </summary>
+    [Parameter]
+    public ChartType Type { get; set; } = ChartType.Line;
+
+    /// <summary>
+    /// The title of the chart.
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>
+    /// The description of the chart.
+    /// </summary>
+    [Parameter]
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Whether to show the legend.
+    /// </summary>
+    [Parameter]
+    public bool ShowLegend { get; set; } = true;
+
+    /// <summary>
+    /// Use Chart.js built-in legend instead of custom HTML legend.
+    /// </summary>
+    [Parameter]
+    public bool UseBuiltInLegend { get; set; } = false;
+
+    /// <summary>
+    /// Whether to show grid lines.
+    /// </summary>
+    [Parameter]
+    public bool ShowGrid { get; set; } = true;
+
+    /// <summary>
+    /// The height of the chart in pixels.
+    /// </summary>
+    [Parameter]
+    public int Height { get; set; } = 300;
+
+    /// <summary>
+    /// Chart configuration options.
+    /// </summary>
+    [Parameter]
+    public ChartOptions? Options { get; set; }
+
+    /// <summary>
+    /// Footer content for the chart.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? FooterContent { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes to apply.
+    /// </summary>
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-chart",
+        $"vibe-chart-{Type.ToString().ToLower()}",
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && Data != null)
+        {
+            await RenderChart();
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_chartCreated && Data != null)
+        {
+            await UpdateChart();
+        }
+    }
+
+    private async Task RenderChart()
+    {
+        try
+        {
+            var config = BuildChartConfig();
+            await JSRuntime.InvokeVoidAsync("vibeChart.createChart", _canvasId, config);
+            _chartCreated = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error rendering chart: {ex.Message}");
+        }
+    }
+
+    private async Task UpdateChart()
+    {
+        try
+        {
+            var config = BuildChartConfig();
+            await JSRuntime.InvokeVoidAsync("vibeChart.updateChart", _canvasId, config);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating chart: {ex.Message}");
+        }
+    }
+
+    private object BuildChartConfig()
+    {
+        var options = Options ?? new ChartOptions();
+
+        var chartOptions = new
+        {
+            responsive = options.Responsive,
+            maintainAspectRatio = options.MaintainAspectRatio,
+            plugins = new
+            {
+                legend = new
+                {
+                    display = ShowLegend && UseBuiltInLegend,
+                    position = "top"
+                },
+                tooltip = new
+                {
+                    enabled = options.Tooltip?.Enabled ?? true,
+                    mode = options.Tooltip?.Mode ?? "index",
+                    intersect = options.Tooltip?.Intersect ?? false
+                }
+            },
+            scales = BuildScales(),
+            animation = new
+            {
+                duration = options.Animation?.Duration ?? 400,
+                easing = options.Animation?.Easing ?? "easeInOutQuart"
+            }
+        };
+
+        return new
+        {
+            type = Type.ToString().ToLower(),
+            data = new
+            {
+                labels = Data?.Labels ?? new List<string>(),
+                datasets = Data?.Datasets.Select(ds => new
+                {
+                    label = ds.Label,
+                    data = ds.Data,
+                    backgroundColor = ds.BackgroundColor ?? (Type == ChartType.Line ? "transparent" : ds.Color),
+                    borderColor = ds.BorderColor ?? ds.Color,
+                    borderWidth = ds.BorderWidth,
+                    fill = ds.Fill,
+                    tension = Type == ChartType.Line || Type == ChartType.Area ? 0.4 : 0,
+                    pointRadius = Type == ChartType.Line || Type == ChartType.Area ? 3 : 0,
+                    pointHoverRadius = Type == ChartType.Line || Type == ChartType.Area ? 5 : 0
+                }).ToArray() ?? Array.Empty<object>()
+            },
+            options = chartOptions
+        };
+    }
+
+    private object? BuildScales()
+    {
+        // Don't show scales for pie, doughnut, radar, or polarArea charts
+        if (Type == ChartType.Pie || Type == ChartType.Doughnut ||
+            Type == ChartType.Radar || Type == ChartType.PolarArea)
+        {
+            return null;
+        }
+
+        return new
+        {
+            y = new
+            {
+                beginAtZero = true,
+                grid = new
+                {
+                    display = ShowGrid
+                }
+            },
+            x = new
+            {
+                grid = new
+                {
+                    display = ShowGrid
+                }
+            }
+        };
+    }
+
+    /// <summary>
+    /// Manually refresh the chart.
+    /// </summary>
+    public async Task RefreshAsync()
+    {
+        if (_chartCreated)
+        {
+            await UpdateChart();
+        }
+        else
+        {
+            await RenderChart();
+        }
+    }
+
+    /// <summary>
+    /// Export chart as base64 image.
+    /// </summary>
+    public async Task<string?> ExportAsImageAsync()
+    {
+        try
+        {
+            return await JSRuntime.InvokeAsync<string>("vibeChart.toBase64Image", _canvasId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error exporting chart: {ex.Message}");
+            return null;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_chartCreated)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("vibeChart.destroyChart", _canvasId);
+            }
+            catch
+            {
+                // Ignore errors during disposal
+            }
+        }
+    }
+
+    public class ChartData
+    {
+        public List<string> Labels { get; set; } = new();
+        public List<ChartDataset> Datasets { get; set; } = new();
+    }
+
+    public class ChartDataset
+    {
+        public string Label { get; set; } = string.Empty;
+        public List<double> Data { get; set; } = new();
+        public string Color { get; set; } = "#3b82f6";
+        public string? BackgroundColor { get; set; }
+        public string? BorderColor { get; set; }
+        public int BorderWidth { get; set; } = 2;
+        public bool Fill { get; set; }
+    }
+
+    public class ChartOptions
+    {
+        public bool Responsive { get; set; } = true;
+        public bool MaintainAspectRatio { get; set; } = false;
+        public ChartAnimation? Animation { get; set; }
+        public ChartTooltip? Tooltip { get; set; }
+    }
+
+    public class ChartAnimation
+    {
+        public int Duration { get; set; } = 400;
+        public string Easing { get; set; } = "easeInOutQuart";
+    }
+
+    public class ChartTooltip
+    {
+        public bool Enabled { get; set; } = true;
+        public string Mode { get; set; } = "index";
+        public bool Intersect { get; set; } = false;
+    }
+
+    public enum ChartType
+    {
+        Line,
+        Bar,
+        Pie,
+        Doughnut,
+        Radar,
+        PolarArea,
+        Area
+    }
+}

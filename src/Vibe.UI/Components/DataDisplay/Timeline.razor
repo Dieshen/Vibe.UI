@@ -1,0 +1,110 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+    @if (Items != null)
+    {
+        @foreach (var item in Items)
+        {
+            var index = Items.IndexOf(item);
+            var isLast = index == Items.Count - 1;
+
+            <div class="timeline-item" @key="item.Id">
+                <div class="timeline-marker-container">
+                    <div class="timeline-marker @($"marker-{item.Status.ToString().ToLower()}")">
+                        @if (item.Icon != null)
+                        {
+                            @item.Icon
+                        }
+                    </div>
+                    @if (!isLast)
+                    {
+                        <div class="timeline-connector"></div>
+                    }
+                </div>
+
+                <div class="timeline-content">
+                    @if (!string.IsNullOrEmpty(item.Title))
+                    {
+                        <h4 class="timeline-title">@item.Title</h4>
+                    }
+
+                    @if (!string.IsNullOrEmpty(item.Description))
+                    {
+                        <p class="timeline-description">@item.Description</p>
+                    }
+
+                    @if (item.Content != null)
+                    {
+                        <div class="timeline-body">@item.Content</div>
+                    }
+
+                    @if (item.Timestamp.HasValue)
+                    {
+                        <time class="timeline-time" datetime="@item.Timestamp.Value.ToString("o")">
+                            @FormatTimestamp(item.Timestamp.Value)
+                        </time>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<TimelineItem>? Items { get; set; }
+
+    [Parameter]
+    public TimelinePosition Position { get; set; } = TimelinePosition.Left;
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-timeline",
+        $"timeline-{Position.ToString().ToLower()}",
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    private string FormatTimestamp(DateTime timestamp)
+    {
+        var diff = DateTime.Now - timestamp;
+
+        if (diff.TotalMinutes < 1) return "Just now";
+        if (diff.TotalHours < 1) return $"{(int)diff.TotalMinutes}m ago";
+        if (diff.TotalDays < 1) return $"{(int)diff.TotalHours}h ago";
+        if (diff.TotalDays < 7) return $"{(int)diff.TotalDays}d ago";
+
+        return timestamp.ToString("MMM d, yyyy");
+    }
+
+    public class TimelineItem
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+        public RenderFragment? Content { get; set; }
+        public RenderFragment? Icon { get; set; }
+        public DateTime? Timestamp { get; set; }
+        public TimelineStatus Status { get; set; } = TimelineStatus.Default;
+    }
+
+    public enum TimelineStatus
+    {
+        Default,
+        Success,
+        Error,
+        Warning,
+        Info
+    }
+
+    public enum TimelinePosition
+    {
+        Left,
+        Right,
+        Alternate
+    }
+}

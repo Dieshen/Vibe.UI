@@ -1,0 +1,133 @@
+name: Publish NuGet Packages
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 1.0.0)'
+        required: true
+        type: string
+
+env:
+  DOTNET_VERSION: '9.0.x'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Determine version
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" == "release" ]; then
+          VERSION="${{ github.event.release.tag_name }}"
+          # Remove 'v' prefix if present
+          VERSION="${VERSION#v}"
+        else
+          VERSION="${{ inputs.version }}"
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Publishing version: $VERSION"
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build solution
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build --verbosity normal
+
+    - name: Pack Vibe.UI
+      run: |
+        dotnet pack src/Vibe.UI/Vibe.UI.csproj \
+          --configuration Release \
+          --no-build \
+          --output ./packages \
+          /p:Version=${{ steps.version.outputs.version }} \
+          /p:PackageVersion=${{ steps.version.outputs.version }}
+
+    - name: Pack Vibe.UI.CLI
+      run: |
+        dotnet pack src/Vibe.UI.CLI/Vibe.UI.CLI.csproj \
+          --configuration Release \
+          --no-build \
+          --output ./packages \
+          /p:Version=${{ steps.version.outputs.version }} \
+          /p:PackageVersion=${{ steps.version.outputs.version }}
+
+    - name: List packages
+      run: ls -lh ./packages/
+
+    - name: Verify package contents
+      run: |
+        echo "=== Vibe.UI Package Contents ==="
+        unzip -l ./packages/Vibe.UI.${{ steps.version.outputs.version }}.nupkg | grep -E "icon|README"
+        echo ""
+        echo "=== Vibe.UI.CLI Package Contents ==="
+        unzip -l ./packages/Vibe.UI.CLI.${{ steps.version.outputs.version }}.nupkg | grep -E "icon|README"
+
+    - name: Push to NuGet.org
+      run: |
+        dotnet nuget push ./packages/Vibe.UI.${{ steps.version.outputs.version }}.nupkg \
+          --api-key ${{ secrets.NUGET_API_KEY }} \
+          --source https://api.nuget.org/v3/index.json \
+          --skip-duplicate
+
+        dotnet nuget push ./packages/Vibe.UI.CLI.${{ steps.version.outputs.version }}.nupkg \
+          --api-key ${{ secrets.NUGET_API_KEY }} \
+          --source https://api.nuget.org/v3/index.json \
+          --skip-duplicate
+
+    - name: Upload packages as artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-packages
+        path: ./packages/*.nupkg
+        retention-days: 90
+
+    - name: Create release comment
+      if: github.event_name == 'release'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const version = '${{ steps.version.outputs.version }}';
+          const body = `## 📦 NuGet Packages Published
+
+          The following packages have been published to NuGet.org:
+
+          - \`Vibe.UI\` v${version} - [View on NuGet](https://www.nuget.org/packages/Vibe.UI/${version})
+          - \`Vibe.UI.CLI\` v${version} - [View on NuGet](https://www.nuget.org/packages/Vibe.UI.CLI/${version})
+
+          ### Installation
+
+          **Package Reference:**
+          \`\`\`bash
+          dotnet add package Vibe.UI --version ${version}
+          \`\`\`
+
+          **CLI Tool:**
+          \`\`\`bash
+          dotnet tool install -g Vibe.UI.CLI --version ${version}
+          \`\`\`
+
+          It may take a few minutes for the packages to appear in search results.`;
+
+          github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.payload.release.id,
+            body: body
+          });

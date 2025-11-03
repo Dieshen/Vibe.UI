@@ -1,0 +1,194 @@
+@page "/components/slider"
+@using Vibe.UI.Components
+
+<PageTitle>Slider - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Slider"
+               Category="Input"
+               Description="An input where the user selects a value from within a given range."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; flex-direction: column; gap: 2rem; max-width: 500px;">
+            <div>
+                <h4 style="margin-bottom: 0.75rem;">Default (0-100)</h4>
+                <Slider Value="@volume" ValueChanged="@((double val) => volume = val)" ShowValue="true" />
+                <p style="margin-top: 0.5rem; color: var(--brand-teal);">Volume: @volume%</p>
+            </div>
+
+            <div>
+                <h4 style="margin-bottom: 0.75rem;">Custom Range (0-200)</h4>
+                <Slider Min="0" Max="200" Value="@temperature" ValueChanged="@((double val) => temperature = val)" ShowValue="true" />
+                <p style="margin-top: 0.5rem;">Temperature: @temperature°F</p>
+            </div>
+
+            <div>
+                <h4 style="margin-bottom: 0.75rem;">With Step (increments of 10)</h4>
+                <Slider Min="0" Max="100" Step="10" Value="@brightness" ValueChanged="@((double val) => brightness = val)" ShowValue="true" />
+                <p style="margin-top: 0.5rem;">Brightness: @brightness%</p>
+            </div>
+
+            <div>
+                <h4 style="margin-bottom: 0.75rem;">Decimal Step (0.0-1.0, step 0.1)</h4>
+                <Slider Min="0" Max="1" Step="0.1" Value="@opacity" ValueChanged="@((double val) => opacity = val)" ShowValue="true" />
+                <p style="margin-top: 0.5rem;">Opacity: @opacity.ToString("F1")</p>
+            </div>
+
+            <div style="opacity: 0.5;">
+                <h4 style="margin-bottom: 0.75rem;">Disabled</h4>
+                <Slider Value="50" Disabled="true" ShowValue="true" />
+            </div>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Custom Range</h3>
+            <CodeBlock Code="@RangeCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Step</h3>
+            <CodeBlock Code="@StepCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Range Slider</h3>
+            <CodeBlock Code="@RangeSliderCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Disabled State</h3>
+            <CodeBlock Code="@DisabledCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Value Display</h3>
+            <CodeBlock Code="@ValueDisplayCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Value</code></td>
+                    <td>double</td>
+                    <td>0</td>
+                    <td>Current value of the slider</td>
+                </tr>
+                <tr>
+                    <td><code>Min</code></td>
+                    <td>double</td>
+                    <td>0</td>
+                    <td>Minimum value</td>
+                </tr>
+                <tr>
+                    <td><code>Max</code></td>
+                    <td>double</td>
+                    <td>100</td>
+                    <td>Maximum value</td>
+                </tr>
+                <tr>
+                    <td><code>Step</code></td>
+                    <td>double</td>
+                    <td>1</td>
+                    <td>Step increment</td>
+                </tr>
+                <tr>
+                    <td><code>Disabled</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the slider is disabled</td>
+                </tr>
+                <tr>
+                    <td><code>ShowValue</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether to display the current value</td>
+                </tr>
+                <tr>
+                    <td><code>Orientation</code></td>
+                    <td>Orientation</td>
+                    <td>Horizontal</td>
+                    <td>Slider orientation (Horizontal, Vertical)</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>ValueChanged</code></td>
+                    <td>EventCallback&lt;double&gt;</td>
+                    <td>Callback when value changes</td>
+                </tr>
+                <tr>
+                    <td><code>OnChangeCommitted</code></td>
+                    <td>EventCallback&lt;double&gt;</td>
+                    <td>Callback when user finishes adjusting</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses semantic <code>&lt;input type="range"&gt;</code> element</li>
+            <li>Keyboard accessible (Arrow keys to adjust value)</li>
+            <li>ARIA attributes for current value and range</li>
+            <li>Focus visible styles</li>
+            <li>Screen reader announces value changes</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private double volume = 75;
+    private double temperature = 98;
+    private double brightness = 60;
+    private double opacity = 0.8;
+    private List<string> relatedComponents = new() { "Input", "NumberInput", "Progress" };
+
+    private string BasicCode => @"<Slider Value=""50"" />";
+
+    private string RangeCode => @"<Slider Min=""0"" Max=""200"" Value=""100"" />
+<Slider Min=""-50"" Max=""50"" Value=""0"" />";
+
+    private string StepCode => @"<Slider Step=""5"" Value=""25"" />
+<Slider Step=""0.1"" Min=""0"" Max=""1"" Value=""0.5"" />";
+
+    private string RangeSliderCode => @"<RangeSlider MinValue=""20"" MaxValue=""80"" />
+<RangeSlider MinValue=""10"" MaxValue=""90"" Min=""0"" Max=""100"" />";
+
+    private string DisabledCode => @"<Slider Value=""50"" Disabled=""true"" />";
+
+    private string ValueDisplayCode => @"<Slider @bind-Value=""@volume"" ShowValue=""true"" />
+<p>Volume: @volume%</p>
+
+@code {
+    private double volume = 75;
+}";
+}

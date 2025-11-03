@@ -1,0 +1,234 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+@implements IDisposable
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+    @foreach (var toast in _toasts)
+    {
+        <div class="@GetToastClass(toast)"
+             style="@GetToastStyle(toast)"
+             @key="toast.Id">
+            @if (toast.Icon != null)
+            {
+                <div class="sonner-icon">@toast.Icon</div>
+            }
+            <div class="sonner-content">
+                @if (!string.IsNullOrEmpty(toast.Title))
+                {
+                    <div class="sonner-title">@toast.Title</div>
+                }
+                @if (toast.Description != null)
+                {
+                    <div class="sonner-description">@toast.Description</div>
+                }
+                @if (toast.Action != null)
+                {
+                    <button class="sonner-action" @onclick="() => toast.Action.OnClick?.Invoke()">
+                        @toast.Action.Label
+                    </button>
+                }
+            </div>
+            @if (toast.Dismissible)
+            {
+                <button class="sonner-close" @onclick="() => RemoveToast(toast.Id)">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<SonnerToast> _toasts = new();
+    private Timer? _timer;
+
+    [Parameter]
+    public SonnerPosition Position { get; set; } = SonnerPosition.BottomRight;
+
+    [Parameter]
+    public int MaxToasts { get; set; } = 5;
+
+    [Parameter]
+    public int DefaultDuration { get; set; } = 4000;
+
+    [Parameter]
+    public bool RichColors { get; set; } = true;
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "sonner-container",
+        $"sonner-{Position.ToString().ToLower()}",
+        RichColors ? "sonner-rich" : null,
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    protected override void OnInitialized()
+    {
+        _timer = new Timer(CheckExpiredToasts, null, 100, 100);
+    }
+
+    public void Toast(string message, SonnerType type = SonnerType.Default)
+    {
+        ShowToast(new SonnerToast
+        {
+            Description = builder => builder.AddContent(0, message),
+            Type = type
+        });
+    }
+
+    public void Success(string message) => Toast(message, SonnerType.Success);
+    public void Error(string message) => Toast(message, SonnerType.Error);
+    public void Warning(string message) => Toast(message, SonnerType.Warning);
+    public void Info(string message) => Toast(message, SonnerType.Info);
+    public void Loading(string message) => Toast(message, SonnerType.Loading);
+
+    public void Promise<T>(Task<T> promise, string loading, string success, string error)
+    {
+        var toastId = ShowToast(new SonnerToast
+        {
+            Description = builder => builder.AddContent(0, loading),
+            Type = SonnerType.Loading,
+            Duration = int.MaxValue
+        });
+
+        _ = HandlePromise(promise, toastId, success, error);
+    }
+
+    private async Task HandlePromise<T>(Task<T> promise, string toastId, string success, string error)
+    {
+        try
+        {
+            await promise;
+            UpdateToast(toastId, new SonnerToast
+            {
+                Description = builder => builder.AddContent(0, success),
+                Type = SonnerType.Success
+            });
+        }
+        catch
+        {
+            UpdateToast(toastId, new SonnerToast
+            {
+                Description = builder => builder.AddContent(0, error),
+                Type = SonnerType.Error
+            });
+        }
+    }
+
+    public string ShowToast(SonnerToast toast)
+    {
+        toast.Id = Guid.NewGuid().ToString();
+        toast.CreatedAt = DateTime.Now;
+        toast.Duration ??= DefaultDuration;
+
+        _toasts.Insert(0, toast);
+
+        if (_toasts.Count > MaxToasts)
+        {
+            _toasts.RemoveAt(_toasts.Count - 1);
+        }
+
+        InvokeAsync(StateHasChanged);
+        return toast.Id;
+    }
+
+    public void UpdateToast(string id, SonnerToast updates)
+    {
+        var toast = _toasts.FirstOrDefault(t => t.Id == id);
+        if (toast != null)
+        {
+            toast.Title = updates.Title ?? toast.Title;
+            toast.Description = updates.Description ?? toast.Description;
+            toast.Type = updates.Type;
+            toast.CreatedAt = DateTime.Now;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void RemoveToast(string id)
+    {
+        _toasts.RemoveAll(t => t.Id == id);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void CheckExpiredToasts(object? state)
+    {
+        var now = DateTime.Now;
+        var expired = _toasts.Where(t =>
+            t.Duration.HasValue &&
+            (now - t.CreatedAt).TotalMilliseconds > t.Duration.Value
+        ).ToList();
+
+        if (expired.Any())
+        {
+            foreach (var toast in expired)
+            {
+                _toasts.Remove(toast);
+            }
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private string GetToastClass(SonnerToast toast)
+    {
+        return CombineClasses(
+            "sonner-toast",
+            $"sonner-{toast.Type.ToString().ToLower()}",
+            toast.Dismissible ? "sonner-dismissible" : null
+        );
+    }
+
+    private string GetToastStyle(SonnerToast toast)
+    {
+        var index = _toasts.IndexOf(toast);
+        return $"--index: {index};";
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+    }
+
+    public class SonnerToast
+    {
+        public string Id { get; set; } = string.Empty;
+        public string? Title { get; set; }
+        public RenderFragment? Description { get; set; }
+        public RenderFragment? Icon { get; set; }
+        public SonnerType Type { get; set; } = SonnerType.Default;
+        public int? Duration { get; set; }
+        public bool Dismissible { get; set; } = true;
+        public DateTime CreatedAt { get; set; }
+        public SonnerAction? Action { get; set; }
+    }
+
+    public class SonnerAction
+    {
+        public string Label { get; set; } = string.Empty;
+        public Action? OnClick { get; set; }
+    }
+
+    public enum SonnerType
+    {
+        Default,
+        Success,
+        Error,
+        Warning,
+        Info,
+        Loading
+    }
+
+    public enum SonnerPosition
+    {
+        TopLeft,
+        TopCenter,
+        TopRight,
+        BottomLeft,
+        BottomCenter,
+        BottomRight
+    }
+}

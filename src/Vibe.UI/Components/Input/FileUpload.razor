@@ -1,0 +1,144 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<div @attributes="AdditionalAttributes"
+     class="@CombinedCssClass"
+     @ondrop="HandleDrop"
+     @ondragover:preventDefault
+     @ondragenter="() => _isDragging = true"
+     @ondragleave="() => _isDragging = false">
+
+    <input type="file"
+           @ref="_fileInput"
+           style="display: none;"
+           multiple="@Multiple"
+           accept="@Accept"
+           @onchange="HandleFileSelect" />
+
+    @if (Files.Count == 0)
+    {
+        <div class="file-upload-empty" @onclick="OpenFilePicker">
+            <div class="file-upload-icon">📁</div>
+            <div class="file-upload-text">
+                <p class="file-upload-title">@DropText</p>
+                <p class="file-upload-hint">@HintText</p>
+            </div>
+            <button type="button" class="file-upload-button">Browse Files</button>
+        </div>
+    }
+    else
+    {
+        <div class="file-upload-list">
+            @foreach (var file in Files)
+            {
+                <div class="file-upload-item" @key="file.Name">
+                    <div class="file-item-icon">📄</div>
+                    <div class="file-item-info">
+                        <div class="file-item-name">@file.Name</div>
+                        <div class="file-item-size">@FormatFileSize(file.Size)</div>
+                    </div>
+                    <button type="button"
+                            class="file-item-remove"
+                            @onclick="() => RemoveFile(file)">×</button>
+                </div>
+            }
+            <button type="button" class="file-upload-add" @onclick="OpenFilePicker">
+                + Add More Files
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private ElementReference _fileInput;
+    private bool _isDragging;
+
+    [Parameter]
+    public List<UploadedFile> Files { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<List<UploadedFile>> FilesChanged { get; set; }
+
+    [Parameter]
+    public bool Multiple { get; set; } = true;
+
+    [Parameter]
+    public string? Accept { get; set; }
+
+    [Parameter]
+    public long MaxFileSize { get; set; } = 10 * 1024 * 1024; // 10MB
+
+    [Parameter]
+    public int MaxFiles { get; set; } = 10;
+
+    [Parameter]
+    public string DropText { get; set; } = "Drop files here or click to browse";
+
+    [Parameter]
+    public string HintText { get; set; } = "Supports: Images, PDFs, Documents";
+
+    [Parameter]
+    public EventCallback<UploadedFile> OnFileAdded { get; set; }
+
+    [Parameter]
+    public EventCallback<UploadedFile> OnFileRemoved { get; set; }
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-file-upload",
+        _isDragging ? "file-upload-dragging" : null,
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    private async Task OpenFilePicker()
+    {
+        // Would need JS interop to trigger file input click
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleFileSelect(ChangeEventArgs e)
+    {
+        // File handling would need actual implementation
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleDrop(DragEventArgs e)
+    {
+        _isDragging = false;
+        // Would need JS interop for actual file drop handling
+        await Task.CompletedTask;
+    }
+
+    private async Task RemoveFile(UploadedFile file)
+    {
+        Files.Remove(file);
+        await FilesChanged.InvokeAsync(Files);
+        await OnFileRemoved.InvokeAsync(file);
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len /= 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+
+    public class UploadedFile
+    {
+        public string Name { get; set; } = string.Empty;
+        public long Size { get; set; }
+        public string ContentType { get; set; } = string.Empty;
+        public DateTime UploadedAt { get; set; } = DateTime.Now;
+        public byte[]? Data { get; set; }
+    }
+}

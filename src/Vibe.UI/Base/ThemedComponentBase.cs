@@ -69,7 +69,7 @@ namespace Vibe.UI.Base
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The event arguments.</param>
-        protected virtual void OnThemeChanged(object sender, Themes.Models.ThemeChangedEventArgs e)
+        protected virtual void OnThemeChanged(object sender, Themes.Services.ThemeChangedEventArgs e)
         {
             InvokeAsync(StateHasChanged);
         }
@@ -87,6 +87,16 @@ namespace Vibe.UI.Base
             }
 
             return string.Join(" ", classList.Where(c => !string.IsNullOrWhiteSpace(c)));
+        }
+
+        /// <summary>
+        /// Combines multiple CSS classes into a single string, filtering out null or whitespace values.
+        /// </summary>
+        /// <param name="classes">The CSS classes to combine.</param>
+        /// <returns>A space-separated string of non-null, non-whitespace CSS classes.</returns>
+        protected static string CombineClasses(params string?[] classes)
+        {
+            return string.Join(" ", classes.Where(c => !string.IsNullOrWhiteSpace(c)));
         }
 
         /// <inheritdoc/>

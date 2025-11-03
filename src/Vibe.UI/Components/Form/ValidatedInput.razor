@@ -1,0 +1,193 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+@typeparam TValue
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="validated-input-label" for="@_inputId">
+            @Label
+            @if (Required)
+            {
+                <span class="required-indicator">*</span>
+            }
+        </label>
+    }
+
+    <div class="validated-input-wrapper">
+        <input id="@_inputId"
+               type="@InputType"
+               class="validated-input-field @GetValidationClass()"
+               placeholder="@Placeholder"
+               value="@Value"
+               disabled="@Disabled"
+               readonly="@ReadOnly"
+               @oninput="HandleInput"
+               @onblur="HandleBlur" />
+
+        @if (ShowValidationIcon && IsValid.HasValue)
+        {
+            <span class="validation-icon">
+                @if (IsValid.Value)
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><path d="m9 11 3 3L22 4"></path></svg>
+                }
+                else
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>
+                }
+            </span>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(HelperText) && string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="validated-input-helper">@HelperText</div>
+    }
+
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="validated-input-error">@ErrorMessage</div>
+    }
+</div>
+
+@code {
+    private string _inputId = $"input-{Guid.NewGuid():N}";
+    private bool _touched = false;
+
+    [Parameter]
+    public TValue? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<TValue?> ValueChanged { get; set; }
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    [Parameter]
+    public string? HelperText { get; set; }
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    [Parameter]
+    public string InputType { get; set; } = "text";
+
+    [Parameter]
+    public bool Required { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    [Parameter]
+    public bool ShowValidationIcon { get; set; } = true;
+
+    [Parameter]
+    public Func<TValue?, string?>? Validator { get; set; }
+
+    [Parameter]
+    public bool ValidateOnInput { get; set; } = false;
+
+    [Parameter]
+    public bool ValidateOnBlur { get; set; } = true;
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-validated-input",
+        IsValid.HasValue ? (IsValid.Value ? "valid" : "invalid") : null,
+        _touched ? "touched" : null,
+        Disabled ? "disabled" : null,
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    private bool? IsValid
+    {
+        get
+        {
+            if (!_touched && !ValidateOnInput) return null;
+            return string.IsNullOrEmpty(ErrorMessage);
+        }
+    }
+
+    private async Task HandleInput(ChangeEventArgs e)
+    {
+        var stringValue = e.Value?.ToString();
+
+        try
+        {
+            TValue? newValue = default;
+
+            if (!string.IsNullOrEmpty(stringValue))
+            {
+                newValue = (TValue?)Convert.ChangeType(stringValue, typeof(TValue));
+            }
+
+            Value = newValue;
+            await ValueChanged.InvokeAsync(newValue);
+
+            if (ValidateOnInput)
+            {
+                _touched = true;
+                Validate();
+            }
+        }
+        catch
+        {
+            // Conversion failed
+        }
+    }
+
+    private void HandleBlur()
+    {
+        if (ValidateOnBlur)
+        {
+            _touched = true;
+            Validate();
+        }
+    }
+
+    private void Validate()
+    {
+        ErrorMessage = null;
+
+        if (Required && (Value == null || string.IsNullOrWhiteSpace(Value.ToString())))
+        {
+            ErrorMessage = $"{Label ?? "This field"} is required";
+            return;
+        }
+
+        if (Validator != null)
+        {
+            ErrorMessage = Validator(Value);
+        }
+    }
+
+    public void ForceValidation()
+    {
+        _touched = true;
+        Validate();
+        StateHasChanged();
+    }
+
+    public bool IsValidField()
+    {
+        Validate();
+        return string.IsNullOrEmpty(ErrorMessage);
+    }
+
+    private string GetValidationClass()
+    {
+        if (!_touched) return string.Empty;
+        return IsValid.HasValue ? (IsValid.Value ? "is-valid" : "is-invalid") : string.Empty;
+    }
+}

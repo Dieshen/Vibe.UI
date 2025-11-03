@@ -1,0 +1,117 @@
+@inject NavigationManager Navigation
+
+<div class="nav-sidebar">
+    <!-- Documentation Sections -->
+    <div class="nav-section">
+        <h3 class="nav-section-title">Getting Started</h3>
+        <ul class="nav-links">
+            <li>
+                <a href="@GetUrl("getting-started")" class="@GetActiveClass("getting-started")">
+                    Introduction
+                </a>
+            </li>
+            <li>
+                <a href="@GetUrl("installation")" class="@GetActiveClass("installation")">
+                    Installation
+                </a>
+            </li>
+            <li>
+                <a href="@GetUrl("cli")" class="@GetActiveClass("cli")">
+                    CLI Tool
+                </a>
+            </li>
+            <li>
+                <a href="@GetUrl("theming")" class="@GetActiveClass("theming")">
+                    Theming
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Component Categories -->
+    @foreach (var categoryPair in categories)
+    {
+        <div class="nav-section">
+            <button class="nav-section-title" @onclick="() => ToggleCategory(categoryPair.Key)">
+                <span>@categoryPair.Key</span>
+                <span class="toggle-icon">@(expandedCategories.Contains(categoryPair.Key) ? "▼" : "▶")</span>
+            </button>
+            @if (expandedCategories.Contains(categoryPair.Key))
+            {
+                <ul class="nav-links">
+                    @foreach (var component in GetComponentsForCategory(categoryPair.Key))
+                    {
+                        <li>
+                            <a href="@GetUrl($"components/{component.ToLower()}")"
+                               class="@GetActiveClass($"components/{component.ToLower()}")">
+                                @component
+                            </a>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private HashSet<string> expandedCategories = new();
+
+    private Dictionary<string, List<string>> categories = new()
+    {
+        ["Input"] = new() { "Button", "Checkbox", "ColorPicker", "Input", "RadioGroup", "Select", "Slider", "Switch", "Textarea" },
+        ["Form"] = new() { "Form", "FormField", "ValidatedInput" },
+        ["DataDisplay"] = new() { "Avatar", "Badge", "Chart", "DataGrid", "Table", "Tag" },
+        ["Layout"] = new() { "Card", "AspectRatio", "Container", "Divider", "Grid", "Separator", "Stack" },
+        ["Navigation"] = new() { "Breadcrumb", "Link", "Menu", "Pagination", "Stepper", "Tabs" },
+        ["Overlay"] = new() { "Dialog", "Drawer", "Dropdown", "Modal", "Popover", "Tooltip" },
+        ["Feedback"] = new() { "Alert", "Badge", "Notification", "Progress", "Skeleton", "Spinner", "Toast" },
+        ["Advanced"] = new() { "DragDrop", "FileUpload", "KanbanBoard", "RichTextEditor", "TreeView", "VirtualScroll" },
+        ["Disclosure"] = new() { "Accordion", "Carousel", "Collapsible", "Tabs" },
+        ["DateTime"] = new() { "Calendar", "DatePicker", "DateRangePicker", "TimePicker" },
+        ["Theme"] = new() { "ThemeToggle", "ThemeProvider" }
+    };
+
+    protected override void OnInitialized()
+    {
+        // Expand the category of the current page
+        var currentPath = new Uri(Navigation.Uri).AbsolutePath;
+        foreach (var category in categories.Keys)
+        {
+            if (categories[category].Any(c => currentPath.Contains(c.ToLower())))
+            {
+                expandedCategories.Add(category);
+            }
+        }
+    }
+
+    private void ToggleCategory(string category)
+    {
+        if (expandedCategories.Contains(category))
+        {
+            expandedCategories.Remove(category);
+        }
+        else
+        {
+            expandedCategories.Add(category);
+        }
+    }
+
+    private List<string> GetComponentsForCategory(string category)
+    {
+        return categories.TryGetValue(category, out var components) ? components : new List<string>();
+    }
+
+    private string GetUrl(string path)
+    {
+        return $"{Navigation.BaseUri}{path}";
+    }
+
+    private string GetActiveClass(string path)
+    {
+        var currentPath = new Uri(Navigation.Uri).AbsolutePath.TrimEnd('/');
+        var targetPath = $"{new Uri(Navigation.BaseUri).AbsolutePath}{path}".TrimEnd('/');
+
+        return currentPath.Equals(targetPath, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+    }
+}

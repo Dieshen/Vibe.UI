@@ -1,0 +1,276 @@
+@page "/components/accordion"
+@using Vibe.UI.Components
+
+<PageTitle>Accordion - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Accordion"
+               Category="Disclosure"
+               Description="A vertically stacked set of expandable/collapsible sections that allows users to show and hide content."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="max-width: 600px; margin: 0 auto;">
+            <Accordion>
+                <AccordionItem>
+                    <Header>What is Blazor?</Header>
+                    <Content>Blazor is a free and open-source web framework that enables developers to create web apps using C# and HTML.</Content>
+                </AccordionItem>
+                <AccordionItem>
+                    <Header>How does it work?</Header>
+                    <Content>Blazor can run your client-side C# code directly in the browser using WebAssembly.</Content>
+                </AccordionItem>
+                <AccordionItem>
+                    <Header>Why use Blazor?</Header>
+                    <Content>Write your entire web app in C#, share code between client and server.</Content>
+                </AccordionItem>
+            </Accordion>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Accordion</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Single Expand Mode</h3>
+            <CodeBlock Code="@SingleExpandCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Default Expanded Items</h3>
+            <CodeBlock Code="@DefaultExpandedCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Disabled Items</h3>
+            <CodeBlock Code="@DisabledCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Custom Styling</h3>
+            <CodeBlock Code="@CustomCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>AllowMultiple</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Allow multiple items to be expanded simultaneously</td>
+                </tr>
+                <tr>
+                    <td><code>DefaultExpandedItems</code></td>
+                    <td>IEnumerable&lt;string&gt;</td>
+                    <td>null</td>
+                    <td>Item IDs that are expanded by default</td>
+                </tr>
+                <tr>
+                    <td><code>Bordered</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Show borders around items</td>
+                </tr>
+                <tr>
+                    <td><code>Flush</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Remove borders and rounded corners</td>
+                </tr>
+                <tr>
+                    <td><code>ChildContent</code></td>
+                    <td>RenderFragment</td>
+                    <td>-</td>
+                    <td>AccordionItem components</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnItemExpanded</code></td>
+                    <td>EventCallback&lt;string&gt;</td>
+                    <td>Callback when an item is expanded</td>
+                </tr>
+                <tr>
+                    <td><code>OnItemCollapsed</code></td>
+                    <td>EventCallback&lt;string&gt;</td>
+                    <td>Callback when an item is collapsed</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses <code>role="region"</code> for accordion items</li>
+            <li>Headers are focusable with keyboard navigation</li>
+            <li>Uses <code>aria-expanded</code> to indicate state</li>
+            <li>Content panels have <code>aria-labelledby</code></li>
+            <li>Keyboard support (Enter/Space to toggle, Arrow keys to navigate)</li>
+            <li>Proper heading hierarchy (h2-h6 based on context)</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Collapsible", "Tabs", "Drawer" };
+
+    private string BasicCode => @"<Accordion>
+    <AccordionItem Title=""What is Blazor?"">
+        <Content>
+            Blazor is a free and open-source web framework that enables developers
+            to create web apps using C# and HTML.
+        </Content>
+    </AccordionItem>
+
+    <AccordionItem Title=""How does it work?"">
+        <Content>
+            Blazor can run your client-side C# code directly in the browser,
+            using WebAssembly, or on the server.
+        </Content>
+    </AccordionItem>
+
+    <AccordionItem Title=""Why use Blazor?"">
+        <Content>
+            Write your entire web app in C#, share code between client and server,
+            and benefit from .NET's performance and tooling.
+        </Content>
+    </AccordionItem>
+</Accordion>";
+
+    private string SingleExpandCode => @"<Accordion AllowMultiple=""false"">
+    <AccordionItem Title=""Section 1"">
+        <Content>
+            Only one section can be open at a time.
+            Opening this will close any other open section.
+        </Content>
+    </AccordionItem>
+
+    <AccordionItem Title=""Section 2"">
+        <Content>
+            This is the second section. Try opening it to see
+            the first section automatically close.
+        </Content>
+    </AccordionItem>
+
+    <AccordionItem Title=""Section 3"">
+        <Content>
+            Third section content goes here.
+        </Content>
+    </AccordionItem>
+</Accordion>";
+
+    private string DefaultExpandedCode => @"<Accordion DefaultExpandedItems=""@defaultExpanded"">
+    <AccordionItem Id=""item1"" Title=""Overview"">
+        <Content>
+            This section is expanded by default.
+            You can specify which items start open.
+        </Content>
+    </AccordionItem>
+
+    <AccordionItem Id=""item2"" Title=""Features"">
+        <Content>
+            List of amazing features...
+        </Content>
+    </AccordionItem>
+
+    <AccordionItem Id=""item3"" Title=""Documentation"">
+        <Content>
+            This section is also expanded by default.
+        </Content>
+    </AccordionItem>
+</Accordion>
+
+@code {
+    private List<string> defaultExpanded = new() { ""item1"", ""item3"" };
+}";
+
+    private string DisabledCode => @"<Accordion>
+    <AccordionItem Title=""Available Section"">
+        <Content>
+            This section can be expanded normally.
+        </Content>
+    </AccordionItem>
+
+    <AccordionItem Title=""Disabled Section"" Disabled=""true"">
+        <Content>
+            This content cannot be accessed because the item is disabled.
+        </Content>
+    </AccordionItem>
+
+    <AccordionItem Title=""Another Available Section"">
+        <Content>
+            This section is also available.
+        </Content>
+    </AccordionItem>
+</Accordion>";
+
+    private string CustomCode => @"<Accordion Flush=""true""
+           OnItemExpanded=""@HandleExpanded""
+           OnItemCollapsed=""@HandleCollapsed"">
+    <AccordionItem Title=""Custom Header"">
+        <Header>
+            <div class=""custom-header"">
+                <span class=""icon"">📄</span>
+                <strong>Documents</strong>
+                <Badge>5</Badge>
+            </div>
+        </Header>
+        <Content>
+            <ul>
+                <li>Document 1.pdf</li>
+                <li>Document 2.docx</li>
+                <li>Document 3.xlsx</li>
+            </ul>
+        </Content>
+    </AccordionItem>
+
+    <AccordionItem Title=""Settings"">
+        <Header>
+            <div class=""custom-header"">
+                <span class=""icon"">⚙️</span>
+                <strong>Settings</strong>
+            </div>
+        </Header>
+        <Content>
+            <p>Configure your preferences here.</p>
+            <Button>Save Settings</Button>
+        </Content>
+    </AccordionItem>
+</Accordion>
+
+@code {
+    private void HandleExpanded(string itemId)
+    {
+        Console.WriteLine($""Item {itemId} expanded"");
+    }
+
+    private void HandleCollapsed(string itemId)
+    {
+        Console.WriteLine($""Item {itemId} collapsed"");
+    }
+}";
+}

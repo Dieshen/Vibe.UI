@@ -1,0 +1,40 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="status" aria-label="@Label">
+    @if (ShowLabel && !string.IsNullOrEmpty(Label))
+    {
+        <span class="spinner-label">@Label</span>
+    }
+    <span class="sr-only">@(Label ?? "Loading...")</span>
+</div>
+
+@code {
+    [Parameter]
+    public SpinnerSize Size { get; set; } = SpinnerSize.Default;
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public bool ShowLabel { get; set; } = false;
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-spinner",
+        $"spinner-{Size.ToString().ToLower()}",
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    public enum SpinnerSize
+    {
+        Small,
+        Default,
+        Medium,
+        Large
+    }
+}

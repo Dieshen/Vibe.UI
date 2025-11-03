@@ -1,0 +1,38 @@
+.vibe-masonry {
+    display: flex;
+    width: 100%;
+}
+
+.masonry-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: inherit;
+}
+
+.masonry-item {
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+.masonry-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: var(--vibe-muted-foreground);
+    text-align: center;
+}
+
+/* Responsive columns */
+@media (max-width: 1024px) {
+    .vibe-masonry {
+        gap: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .vibe-masonry {
+        gap: 8px;
+    }
+}

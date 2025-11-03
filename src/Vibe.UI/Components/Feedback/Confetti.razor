@@ -1,0 +1,176 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+    @if (_isActive)
+    {
+        <div class="confetti-container">
+            @for (int i = 0; i < ParticleCount; i++)
+            {
+                var particle = _particles[i];
+                <div class="confetti-particle"
+                     style="@particle.Style"
+                     @key="i">
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private bool _isActive = false;
+    private List<ConfettiParticle> _particles = new();
+    private Random _random = new();
+
+    [Parameter]
+    public bool Active { get; set; }
+
+    [Parameter]
+    public int ParticleCount { get; set; } = 50;
+
+    [Parameter]
+    public int Duration { get; set; } = 3000;
+
+    [Parameter]
+    public List<string> Colors { get; set; } = new()
+    {
+        "#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A",
+        "#98D8C8", "#F7DC6F", "#BB8FCE", "#85C1E2"
+    };
+
+    [Parameter]
+    public ConfettiOrigin Origin { get; set; } = ConfettiOrigin.Center;
+
+    [Parameter]
+    public ConfettiPattern Pattern { get; set; } = ConfettiPattern.Explosion;
+
+    [Parameter]
+    public EventCallback OnComplete { get; set; }
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-confetti",
+        _isActive ? "active" : null,
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    protected override void OnParametersSet()
+    {
+        if (Active && !_isActive)
+        {
+            Trigger();
+        }
+        else if (!Active && _isActive)
+        {
+            _isActive = false;
+        }
+    }
+
+    public async Task Trigger()
+    {
+        _isActive = true;
+        GenerateParticles();
+        StateHasChanged();
+
+        await Task.Delay(Duration);
+        _isActive = false;
+        await OnComplete.InvokeAsync();
+        StateHasChanged();
+    }
+
+    private void GenerateParticles()
+    {
+        _particles.Clear();
+
+        for (int i = 0; i < ParticleCount; i++)
+        {
+            var color = Colors[_random.Next(Colors.Count)];
+            var particle = new ConfettiParticle
+            {
+                Color = color,
+                Size = _random.Next(8, 15),
+                Rotation = _random.Next(0, 360),
+                Style = GenerateParticleStyle(i)
+            };
+
+            _particles.Add(particle);
+        }
+    }
+
+    private string GenerateParticleStyle(int index)
+    {
+        var color = Colors[_random.Next(Colors.Count)];
+        var size = _random.Next(8, 15);
+        var rotation = _random.Next(0, 360);
+
+        var (startX, startY) = GetStartPosition();
+        var endX = _random.Next(-200, 200);
+        var endY = _random.Next(100, 300);
+
+        var delay = _random.Next(0, 200);
+        var duration = Duration;
+
+        var style = $@"
+            --confetti-color: {color};
+            --confetti-size: {size}px;
+            --confetti-rotation: {rotation}deg;
+            --start-x: {startX}%;
+            --start-y: {startY}%;
+            --end-x: {endX}%;
+            --end-y: {endY}%;
+            --duration: {duration}ms;
+            --delay: {delay}ms;
+        ";
+
+        return style;
+    }
+
+    private (int x, int y) GetStartPosition()
+    {
+        return Origin switch
+        {
+            ConfettiOrigin.Top => (50, 0),
+            ConfettiOrigin.Bottom => (50, 100),
+            ConfettiOrigin.Left => (0, 50),
+            ConfettiOrigin.Right => (100, 50),
+            ConfettiOrigin.TopLeft => (0, 0),
+            ConfettiOrigin.TopRight => (100, 0),
+            ConfettiOrigin.BottomLeft => (0, 100),
+            ConfettiOrigin.BottomRight => (100, 100),
+            _ => (50, 50) // Center
+        };
+    }
+
+    private class ConfettiParticle
+    {
+        public string Color { get; set; } = string.Empty;
+        public int Size { get; set; }
+        public int Rotation { get; set; }
+        public string Style { get; set; } = string.Empty;
+    }
+
+    public enum ConfettiOrigin
+    {
+        Center,
+        Top,
+        Bottom,
+        Left,
+        Right,
+        TopLeft,
+        TopRight,
+        BottomLeft,
+        BottomRight
+    }
+
+    public enum ConfettiPattern
+    {
+        Explosion,
+        Fountain,
+        Rain,
+        Fireworks
+    }
+}

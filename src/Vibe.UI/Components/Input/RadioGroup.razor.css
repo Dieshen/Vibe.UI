@@ -1,0 +1,19 @@
+.vibe-radio-group {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.vibe-radio-group-vertical {
+    flex-direction: column;
+}
+
+.vibe-radio-group-horizontal {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.vibe-radio-group-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}

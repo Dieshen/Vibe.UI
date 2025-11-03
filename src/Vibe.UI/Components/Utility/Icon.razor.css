@@ -1,0 +1,67 @@
+.vibe-icon {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Size variants */
+.vibe-icon.icon-xs {
+    width: 12px;
+    height: 12px;
+}
+
+.vibe-icon.icon-sm {
+    width: 16px;
+    height: 16px;
+}
+
+.vibe-icon.icon-md {
+    width: 20px;
+    height: 20px;
+}
+
+.vibe-icon.icon-lg {
+    width: 24px;
+    height: 24px;
+}
+
+.vibe-icon.icon-xl {
+    width: 32px;
+    height: 32px;
+}
+
+.vibe-icon.icon-2xl {
+    width: 48px;
+    height: 48px;
+}
+
+/* Animation variants */
+.vibe-icon.icon-spin {
+    animation: icon-spin 1s linear infinite;
+}
+
+.vibe-icon.icon-pulse {
+    animation: icon-pulse 2s ease-in-out infinite;
+}
+
+@keyframes icon-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes icon-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}

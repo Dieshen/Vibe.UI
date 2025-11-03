@@ -1,0 +1,63 @@
+@inject IJSRuntime JS
+
+<div class="code-block">
+    <div class="code-header">
+        <span class="language-label">@Language</span>
+        <button class="copy-btn" @onclick="CopyToClipboard" title="Copy to clipboard">
+            <span class="icon">@(copied ? "✓" : "📋")</span>
+            <span class="text">@(copied ? "Copied!" : "Copy")</span>
+        </button>
+    </div>
+    <div class="code-content">
+        <pre><code class="language-@Language.ToLower()">@Code</code></pre>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Code { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Language { get; set; } = "razor";
+
+    [Parameter]
+    public bool ShowLineNumbers { get; set; } = false;
+
+    private bool copied = false;
+
+    private async Task CopyToClipboard()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", Code);
+            copied = true;
+            StateHasChanged();
+
+            // Reset after 2 seconds
+            await Task.Delay(2000);
+            copied = false;
+            StateHasChanged();
+        }
+        catch (Exception)
+        {
+            // Fallback for browsers that don't support clipboard API
+            // Could implement a textarea fallback here
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Initialize Prism.js syntax highlighting if available
+            try
+            {
+                await JS.InvokeVoidAsync("Prism.highlightAll");
+            }
+            catch
+            {
+                // Prism not available yet, that's okay
+            }
+        }
+    }
+}

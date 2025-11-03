@@ -1,0 +1,184 @@
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@implements IDisposable
+
+<div class="search-bar">
+    <div class="search-input-container">
+        <span class="search-icon">🔍</span>
+        <input @ref="searchInput"
+               type="text"
+               class="search-input"
+               placeholder="Search components..."
+               @bind="searchQuery"
+               @bind:event="oninput"
+               @onkeydown="HandleKeyDown"
+               autofocus />
+        <button class="close-btn" @onclick="CloseSearch">
+            <span class="icon">✕</span>
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(searchQuery))
+    {
+        <div class="search-results">
+            @if (filteredComponents.Any())
+            {
+                @foreach (var (component, index) in filteredComponents.Select((c, i) => (c, i)))
+                {
+                    <div class="search-result-item @(selectedIndex == index ? "selected" : "")"
+                         @onclick="() => NavigateToComponent(component)">
+                        <div class="result-name">@component.Name</div>
+                        <div class="result-category">@component.Category</div>
+                        <div class="result-description">@component.Description</div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="no-results">
+                    <p>No components found matching "@searchQuery"</p>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private ElementReference searchInput;
+    private List<ComponentInfo> filteredComponents = new();
+    private int selectedIndex = 0;
+    private string _searchQuery = string.Empty;
+
+    // Sample component data - this will be loaded from components.json later
+    private List<ComponentInfo> allComponents = new()
+    {
+        new() { Name = "Button", Category = "Input", Description = "Displays a button or a component that looks like a button" },
+        new() { Name = "Input", Category = "Input", Description = "Text input field with validation support" },
+        new() { Name = "Card", Category = "Layout", Description = "Container for grouping and displaying content" },
+        new() { Name = "Alert", Category = "Feedback", Description = "Display important messages to users" },
+        new() { Name = "Modal", Category = "Overlay", Description = "Dialog window that appears on top of page content" },
+        // More components will be added from components.json
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await searchInput.FocusAsync();
+            }
+            catch { }
+        }
+    }
+
+    private void OnSearchQueryChanged()
+    {
+        selectedIndex = 0;
+
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            filteredComponents.Clear();
+            return;
+        }
+
+        var query = searchQuery.ToLower();
+        filteredComponents = allComponents
+            .Where(c =>
+                c.Name.ToLower().Contains(query) ||
+                c.Category.ToLower().Contains(query) ||
+                c.Description.ToLower().Contains(query))
+            .OrderByDescending(c => CalculateRelevance(c, query))
+            .Take(10)
+            .ToList();
+    }
+
+    private int CalculateRelevance(ComponentInfo component, string query)
+    {
+        int score = 0;
+
+        if (component.Name.Equals(query, StringComparison.OrdinalIgnoreCase))
+            score += 100;
+
+        if (component.Name.ToLower().StartsWith(query))
+            score += 50;
+
+        if (component.Name.ToLower().Contains(query))
+            score += 25;
+
+        if (component.Category.ToLower().Contains(query))
+            score += 15;
+
+        if (component.Description.ToLower().Contains(query))
+            score += 10;
+
+        return score;
+    }
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case "Escape":
+                CloseSearch();
+                break;
+            case "ArrowDown":
+                if (filteredComponents.Any())
+                {
+                    selectedIndex = Math.Min(selectedIndex + 1, filteredComponents.Count - 1);
+                }
+                break;
+            case "ArrowUp":
+                selectedIndex = Math.Max(selectedIndex - 1, 0);
+                break;
+            case "Enter":
+                if (filteredComponents.Any() && selectedIndex < filteredComponents.Count)
+                {
+                    NavigateToComponent(filteredComponents[selectedIndex]);
+                }
+                break;
+        }
+    }
+
+    private void NavigateToComponent(ComponentInfo component)
+    {
+        Navigation.NavigateTo($"{Navigation.BaseUri}components/{component.Name.ToLower()}");
+        CloseSearch();
+    }
+
+    private async Task CloseSearch()
+    {
+        if (OnClose.HasDelegate)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+
+    public void Dispose()
+    {
+        // Cleanup if needed
+    }
+
+    private string searchQuery
+    {
+        get => _searchQuery;
+        set
+        {
+            if (_searchQuery != value)
+            {
+                _searchQuery = value;
+                OnSearchQueryChanged();
+            }
+        }
+    }
+
+    public class ComponentInfo
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+    }
+}

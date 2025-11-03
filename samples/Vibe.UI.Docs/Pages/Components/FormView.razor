@@ -1,0 +1,232 @@
+@page "/components/form"
+@using Vibe.UI.Components
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<PageTitle>Form - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Form"
+               Category="Form"
+               Description="A container for form elements with built-in validation and submission handling."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; flex-direction: column; gap: 2rem; max-width: 600px;">
+            <div>
+                <h4 style="margin-bottom: 0.75rem;">Basic Form with Validation</h4>
+                <Form Model="@userModel" OnSubmit="@HandleValidSubmit" FormName="user-form">
+                    <FormField Label="Name">
+                        <Input @bind-Value="@userModel.Name" Placeholder="Enter your name" />
+                    </FormField>
+
+                    <FormField Label="Email">
+                        <Input Type="email" @bind-Value="@userModel.Email" Placeholder="you@example.com" />
+                    </FormField>
+
+                    <FormField Label="Message">
+                        <Textarea @bind-Value="@userModel.Message" Placeholder="Your message..." Rows="4" />
+                    </FormField>
+
+                    <div style="margin-top: 1rem;">
+                        <Button Type="submit" style="background-color: var(--brand-teal); color: white; padding: 0.5rem 1.5rem; border: none; border-radius: 6px; cursor: pointer;">Submit</Button>
+                    </div>
+                </Form>
+
+                @if (!string.IsNullOrEmpty(submitMessage))
+                {
+                    <div style="margin-top: 1rem; padding: 1rem; background-color: #d1fae5; border-left: 4px solid var(--brand-teal); border-radius: 4px;">
+                        <p style="margin: 0; color: #065f46;">@submitMessage</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Validation</h3>
+            <CodeBlock Code="@ValidationCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Form Layout</h3>
+            <CodeBlock Code="@LayoutCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Submit Handler</h3>
+            <CodeBlock Code="@SubmitHandlerCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Disabled Form</h3>
+            <CodeBlock Code="@DisabledCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Model</code></td>
+                    <td>object</td>
+                    <td>null</td>
+                    <td>The form model for data binding</td>
+                </tr>
+                <tr>
+                    <td><code>EditContext</code></td>
+                    <td>EditContext</td>
+                    <td>null</td>
+                    <td>The edit context for validation</td>
+                </tr>
+                <tr>
+                    <td><code>Layout</code></td>
+                    <td>FormLayout</td>
+                    <td>Vertical</td>
+                    <td>Form layout (Vertical, Horizontal, Inline)</td>
+                </tr>
+                <tr>
+                    <td><code>Disabled</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the entire form is disabled</td>
+                </tr>
+                <tr>
+                    <td><code>ChildContent</code></td>
+                    <td>RenderFragment</td>
+                    <td>-</td>
+                    <td>Form content</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnValidSubmit</code></td>
+                    <td>EventCallback&lt;EditContext&gt;</td>
+                    <td>Callback when form is submitted and valid</td>
+                </tr>
+                <tr>
+                    <td><code>OnInvalidSubmit</code></td>
+                    <td>EventCallback&lt;EditContext&gt;</td>
+                    <td>Callback when form is submitted but invalid</td>
+                </tr>
+                <tr>
+                    <td><code>OnSubmit</code></td>
+                    <td>EventCallback&lt;EditContext&gt;</td>
+                    <td>Callback when form is submitted (regardless of validity)</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses semantic <code>&lt;form&gt;</code> element</li>
+            <li>Proper form labeling and grouping</li>
+            <li>Error messages associated with form fields</li>
+            <li>Submit button properly identified</li>
+            <li>Focus management for validation errors</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private UserFormModel userModel = new();
+    private string submitMessage = "";
+    private List<string> relatedComponents = new() { "FormField", "ValidatedInput", "Button" };
+
+    private void HandleValidSubmit(EditContext context)
+    {
+        submitMessage = $"Form submitted! Name: {userModel.Name}, Email: {userModel.Email}";
+    }
+
+    public class UserFormModel
+    {
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Message { get; set; } = "";
+    }
+
+    private string BasicCode => @"<Form Model=""@model"">
+    <FormField Label=""Name"">
+        <Input @bind-Value=""@model.Name"" />
+    </FormField>
+    <FormField Label=""Email"">
+        <Input Type=""email"" @bind-Value=""@model.Email"" />
+    </FormField>
+    <Button Type=""submit"">Submit</Button>
+</Form>
+
+@code {
+    private UserModel model = new();
+}";
+
+    private string ValidationCode => @"<Form Model=""@model"" OnValidSubmit=""@HandleValidSubmit"">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <FormField Label=""Name"">
+        <InputText @bind-Value=""@model.Name"" />
+        <ValidationMessage For=""@(() => model.Name)"" />
+    </FormField>
+
+    <Button Type=""submit"">Submit</Button>
+</Form>";
+
+    private string LayoutCode => @"<Form Layout=""FormLayout.Horizontal"">
+    <FormField Label=""Name"">
+        <Input @bind-Value=""@name"" />
+    </FormField>
+    <FormField Label=""Email"">
+        <Input Type=""email"" @bind-Value=""@email"" />
+    </FormField>
+</Form>";
+
+    private string SubmitHandlerCode => @"<Form Model=""@model"" OnValidSubmit=""@HandleSubmit"">
+    <FormField Label=""Username"">
+        <Input @bind-Value=""@model.Username"" />
+    </FormField>
+    <Button Type=""submit"">Submit</Button>
+</Form>
+
+@code {
+    private FormModel model = new();
+
+    private async Task HandleSubmit()
+    {
+        // Handle form submission
+        await Task.CompletedTask;
+    }
+}";
+
+    private string DisabledCode => @"<Form Disabled=""true"">
+    <FormField Label=""Name"">
+        <Input Value=""John Doe"" />
+    </FormField>
+    <Button Type=""submit"">Submit</Button>
+</Form>";
+}

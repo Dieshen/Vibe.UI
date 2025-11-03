@@ -1,4 +1,6 @@
+@namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.ThemedComponentBase
+@inject IJSRuntime JS
 
 @if (IsOpen)
 {
@@ -77,11 +79,11 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        
+
         // Add event listener for Escape key when dialog is opened
         if (IsOpen && CloseOnEscape)
         {
-            await JSRuntime.InvokeVoidAsync("window.addEventListener", "keydown", new Action<KeyboardEventArgs>(HandleKeyDown));
+            await JS.InvokeVoidAsync("window.addEventListener", "keydown", new Action<KeyboardEventArgs>(HandleKeyDown));
         }
     }
 
@@ -92,16 +94,16 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
-        
+
         // When dialog opens, add event listener for Escape key
         if (IsOpen && CloseOnEscape)
         {
-            await JSRuntime.InvokeVoidAsync("window.addEventListener", "keydown", new Action<KeyboardEventArgs>(HandleKeyDown));
+            await JS.InvokeVoidAsync("window.addEventListener", "keydown", new Action<KeyboardEventArgs>(HandleKeyDown));
         }
         else
         {
             // When dialog closes, remove event listener
-            await JSRuntime.InvokeVoidAsync("window.removeEventListener", "keydown", new Action<KeyboardEventArgs>(HandleKeyDown));
+            await JS.InvokeVoidAsync("window.removeEventListener", "keydown", new Action<KeyboardEventArgs>(HandleKeyDown));
         }
     }
 

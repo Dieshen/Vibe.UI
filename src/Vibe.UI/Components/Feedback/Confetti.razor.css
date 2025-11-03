@@ -1,0 +1,158 @@
+.vibe-confetti {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.confetti-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.confetti-particle {
+    position: absolute;
+    left: var(--start-x);
+    top: var(--start-y);
+    width: var(--confetti-size);
+    height: var(--confetti-size);
+    background-color: var(--confetti-color);
+    opacity: 1;
+    animation: confetti-fall var(--duration) ease-out var(--delay) forwards;
+    transform-origin: center center;
+}
+
+.confetti-particle:nth-child(odd) {
+    border-radius: 50%;
+}
+
+.confetti-particle:nth-child(even) {
+    border-radius: 2px;
+}
+
+.confetti-particle:nth-child(3n) {
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.confetti-particle:nth-child(4n) {
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+@keyframes confetti-fall {
+    0% {
+        transform: translate(0, 0) rotate(var(--confetti-rotation)) scale(1);
+        opacity: 1;
+    }
+
+    25% {
+        transform: translate(
+            calc(var(--end-x) * 0.3),
+            calc(var(--end-y) * 0.25)
+        ) rotate(calc(var(--confetti-rotation) + 90deg)) scale(0.9);
+        opacity: 1;
+    }
+
+    50% {
+        transform: translate(
+            calc(var(--end-x) * 0.6),
+            calc(var(--end-y) * 0.5)
+        ) rotate(calc(var(--confetti-rotation) + 180deg)) scale(0.8);
+        opacity: 0.8;
+    }
+
+    75% {
+        transform: translate(
+            calc(var(--end-x) * 0.85),
+            calc(var(--end-y) * 0.75)
+        ) rotate(calc(var(--confetti-rotation) + 270deg)) scale(0.6);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: translate(
+            var(--end-x),
+            var(--end-y)
+        ) rotate(calc(var(--confetti-rotation) + 360deg)) scale(0.3);
+        opacity: 0;
+    }
+}
+
+/* Alternative animation for specific patterns */
+.vibe-confetti.pattern-fountain .confetti-particle {
+    animation: confetti-fountain var(--duration) ease-out var(--delay) forwards;
+}
+
+@keyframes confetti-fountain {
+    0% {
+        transform: translate(0, 0) rotate(0deg) scale(1);
+        opacity: 1;
+    }
+
+    30% {
+        transform: translate(
+            calc(var(--end-x) * 0.5),
+            calc(var(--end-y) * -0.3)
+        ) rotate(180deg) scale(0.9);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(
+            var(--end-x),
+            var(--end-y)
+        ) rotate(720deg) scale(0.3);
+        opacity: 0;
+    }
+}
+
+.vibe-confetti.pattern-rain .confetti-particle {
+    animation: confetti-rain var(--duration) linear var(--delay) forwards;
+}
+
+@keyframes confetti-rain {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+.vibe-confetti.pattern-fireworks .confetti-particle {
+    animation: confetti-fireworks var(--duration) ease-out var(--delay) forwards;
+}
+
+@keyframes confetti-fireworks {
+    0% {
+        transform: translate(0, 0) scale(0);
+        opacity: 0;
+    }
+
+    20% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(
+            var(--end-x),
+            var(--end-y)
+        ) scale(0.2);
+        opacity: 0;
+    }
+}
+
+/* Performance optimizations */
+.confetti-particle {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}

@@ -1,0 +1,44 @@
+.vibe-virtual-scroll {
+    position: relative;
+    overflow-y: auto;
+    background-color: var(--vibe-background);
+    border: 1px solid var(--vibe-border);
+    border-radius: var(--vibe-radius, 0.5rem);
+}
+
+.virtual-scroll-spacer {
+    position: relative;
+    width: 100%;
+}
+
+.virtual-scroll-item {
+    width: 100%;
+}
+
+.virtual-scroll-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: var(--vibe-muted-foreground);
+    text-align: center;
+}
+
+/* Scrollbar styling */
+.vibe-virtual-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.vibe-virtual-scroll::-webkit-scrollbar-track {
+    background: var(--vibe-muted);
+    border-radius: var(--vibe-radius, 0.5rem);
+}
+
+.vibe-virtual-scroll::-webkit-scrollbar-thumb {
+    background: var(--vibe-border);
+    border-radius: var(--vibe-radius, 0.5rem);
+}
+
+.vibe-virtual-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--vibe-muted-foreground);
+}

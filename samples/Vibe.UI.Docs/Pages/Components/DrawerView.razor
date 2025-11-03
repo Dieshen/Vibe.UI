@@ -1,0 +1,210 @@
+@page "/components/drawer"
+@using Vibe.UI
+@using Vibe.UI.Components
+
+<PageTitle>Drawer - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Drawer"
+               Category="Overlay"
+               Description="A panel that slides in from the edge of the screen, typically used for navigation or forms."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+            <Button OnClick="@(() => leftDrawer = true)">Open Left</Button>
+            <Button OnClick="@(() => rightDrawer = true)">Open Right</Button>
+            <Button OnClick="@(() => topDrawer = true)">Open Top</Button>
+            <Button OnClick="@(() => bottomDrawer = true)">Open Bottom</Button>
+
+            <Drawer @bind-IsOpen="@leftDrawer" Side="left">
+                <div style="padding: 1rem;">
+                    <h3>Left Drawer</h3>
+                    <p>This drawer slides in from the left. Click outside or press the close button to dismiss.</p>
+                </div>
+            </Drawer>
+
+            <Drawer @bind-IsOpen="@rightDrawer" Side="right">
+                <div style="padding: 1rem;">
+                    <h3>Right Drawer</h3>
+                    <p>This drawer slides in from the right side of the screen.</p>
+                </div>
+            </Drawer>
+
+            <Drawer @bind-IsOpen="@topDrawer" Side="top">
+                <div style="padding: 1rem;">
+                    <h3>Top Drawer</h3>
+                    <p>This drawer slides down from the top.</p>
+                </div>
+            </Drawer>
+
+            <Drawer @bind-IsOpen="@bottomDrawer" Side="bottom">
+                <div style="padding: 1rem;">
+                    <h3>Bottom Drawer</h3>
+                    <p>This drawer slides up from the bottom.</p>
+                </div>
+            </Drawer>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Placement Options</h3>
+            <CodeBlock Code="@PlacementCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Header and Footer</h3>
+            <CodeBlock Code="@HeaderFooterCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Custom Width</h3>
+            <CodeBlock Code="@WidthCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Open</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the drawer is open</td>
+                </tr>
+                <tr>
+                    <td><code>Placement</code></td>
+                    <td>DrawerPlacement</td>
+                    <td>Right</td>
+                    <td>Drawer placement (Left, Right, Top, Bottom)</td>
+                </tr>
+                <tr>
+                    <td><code>Width</code></td>
+                    <td>string</td>
+                    <td>"320px"</td>
+                    <td>Drawer width (for left/right placement)</td>
+                </tr>
+                <tr>
+                    <td><code>Height</code></td>
+                    <td>string</td>
+                    <td>"400px"</td>
+                    <td>Drawer height (for top/bottom placement)</td>
+                </tr>
+                <tr>
+                    <td><code>CloseOnOverlayClick</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Close when clicking overlay</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OpenChanged</code></td>
+                    <td>EventCallback&lt;bool&gt;</td>
+                    <td>Callback when open state changes</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>ARIA role="dialog" with proper labels</li>
+            <li>Focus trapped within drawer when open</li>
+            <li>Escape key to close</li>
+            <li>Screen reader announcements</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private bool leftDrawer = false;
+    private bool rightDrawer = false;
+    private bool topDrawer = false;
+    private bool bottomDrawer = false;
+
+    private List<string> relatedComponents = new() { "Dialog", "Modal", "Sheet" };
+
+    private string BasicCode => @"<Button OnClick=""@(() => isOpen = true)"">Open Drawer</Button>
+
+<Drawer @bind-Open=""@isOpen"">
+    <DrawerHeader>
+        <h2>Drawer Title</h2>
+    </DrawerHeader>
+    <DrawerBody>
+        <p>Drawer content goes here.</p>
+    </DrawerBody>
+</Drawer>
+
+@code {
+    private bool isOpen = false;
+}";
+
+    private string PlacementCode => @"<Drawer @bind-Open=""@leftOpen"" Placement=""DrawerPlacement.Left"">
+    <p>Left drawer</p>
+</Drawer>
+
+<Drawer @bind-Open=""@rightOpen"" Placement=""DrawerPlacement.Right"">
+    <p>Right drawer</p>
+</Drawer>
+
+<Drawer @bind-Open=""@topOpen"" Placement=""DrawerPlacement.Top"">
+    <p>Top drawer</p>
+</Drawer>
+
+<Drawer @bind-Open=""@bottomOpen"" Placement=""DrawerPlacement.Bottom"">
+    <p>Bottom drawer</p>
+</Drawer>";
+
+    private string HeaderFooterCode => @"<Drawer @bind-Open=""@isOpen"">
+    <DrawerHeader>
+        <h2>Form Title</h2>
+        <Button Variant=""ButtonVariant.Ghost"" OnClick=""@(() => isOpen = false)"">✕</Button>
+    </DrawerHeader>
+    <DrawerBody>
+        <FormField Label=""Name"">
+            <Input />
+        </FormField>
+        <FormField Label=""Email"">
+            <Input Type=""email"" />
+        </FormField>
+    </DrawerBody>
+    <DrawerFooter>
+        <Button OnClick=""@(() => isOpen = false)"">Cancel</Button>
+        <Button Variant=""ButtonVariant.Primary"">Save</Button>
+    </DrawerFooter>
+</Drawer>";
+
+    private string WidthCode => @"<Drawer @bind-Open=""@isOpen"" Width=""400px"">
+    <p>Wide drawer (400px)</p>
+</Drawer>
+
+<Drawer @bind-Open=""@isOpen"" Width=""50%"">
+    <p>Half-width drawer</p>
+</Drawer>";
+}

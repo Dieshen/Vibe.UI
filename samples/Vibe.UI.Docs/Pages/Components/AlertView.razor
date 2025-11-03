@@ -1,0 +1,165 @@
+@page "/components/alert"
+
+<PageTitle>Alert - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Alert"
+               Category="Feedback"
+               Description="Displays an important message to get user's attention without interrupting their task."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <p>Component preview will be shown here when installed.</p>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Variants</h3>
+            <CodeBlock Code="@VariantsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Title</h3>
+            <CodeBlock Code="@TitleCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Dismissible</h3>
+            <CodeBlock Code="@DismissibleCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Icon</h3>
+            <CodeBlock Code="@IconCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Actions</h3>
+            <CodeBlock Code="@ActionsCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Variant</code></td>
+                    <td>AlertVariant</td>
+                    <td>Info</td>
+                    <td>Visual style (Info, Success, Warning, Error)</td>
+                </tr>
+                <tr>
+                    <td><code>Title</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Alert title</td>
+                </tr>
+                <tr>
+                    <td><code>Dismissible</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether alert can be dismissed</td>
+                </tr>
+                <tr>
+                    <td><code>Icon</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Custom icon to display</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnDismiss</code></td>
+                    <td>EventCallback</td>
+                    <td>Callback when alert is dismissed</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses ARIA role="alert" for important messages</li>
+            <li>Screen reader announces content</li>
+            <li>Dismissible alerts are keyboard accessible</li>
+            <li>Color not sole indicator (icons included)</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Toast", "Notification", "Banner" };
+
+    private string VariantsCode => @"<Alert Variant=""AlertVariant.Info"">
+    This is an informational alert.
+</Alert>
+
+<Alert Variant=""AlertVariant.Success"">
+    Operation completed successfully!
+</Alert>
+
+<Alert Variant=""AlertVariant.Warning"">
+    Please review before proceeding.
+</Alert>
+
+<Alert Variant=""AlertVariant.Error"">
+    An error occurred. Please try again.
+</Alert>";
+
+    private string TitleCode => @"<Alert Title=""Information"" Variant=""AlertVariant.Info"">
+    Here is some important information you should know.
+</Alert>
+
+<Alert Title=""Success!"" Variant=""AlertVariant.Success"">
+    Your changes have been saved.
+</Alert>";
+
+    private string DismissibleCode => @"<Alert Dismissible=""true"" OnDismiss=""@HandleDismiss"">
+    This alert can be dismissed.
+</Alert>
+
+@code {
+    private void HandleDismiss()
+    {
+        Console.WriteLine(""Alert dismissed"");
+    }
+}";
+
+    private string IconCode => @"<Alert Icon=""ℹ️"" Variant=""AlertVariant.Info"">
+    Alert with custom icon.
+</Alert>
+
+<Alert Icon=""✅"" Variant=""AlertVariant.Success"">
+    Success with check icon.
+</Alert>";
+
+    private string ActionsCode => @"<Alert Variant=""AlertVariant.Warning"">
+    <AlertContent>
+        <p>Your session is about to expire.</p>
+    </AlertContent>
+    <AlertActions>
+        <Button Size=""ButtonSize.Small"">Extend Session</Button>
+    </AlertActions>
+</Alert>";
+}

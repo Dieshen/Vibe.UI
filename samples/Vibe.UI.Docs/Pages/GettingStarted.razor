@@ -1,0 +1,185 @@
+@page "/getting-started"
+
+<PageTitle>Getting Started - Vibe.UI</PageTitle>
+
+<div class="docs-page">
+    <header class="page-header">
+        <h1>Getting Started</h1>
+        <p class="lead">Learn how to get started with Vibe.UI in your Blazor project</p>
+    </header>
+
+    <section class="content-section">
+        <h2>Prerequisites</h2>
+        <ul>
+            <li>.NET 9.0 SDK or later</li>
+            <li>Basic knowledge of Blazor and C#</li>
+            <li>A Blazor WebAssembly or Blazor Server project</li>
+        </ul>
+    </section>
+
+    <section class="content-section">
+        <h2>Installation Methods</h2>
+        <p>Vibe.UI offers two installation approaches to fit your workflow:</p>
+
+        <div class="method-comparison">
+            <div class="method-card">
+                <h3>🛠️ CLI Approach (Recommended)</h3>
+                <p>Copy component source code directly to your project for full control and customization.</p>
+                <div class="pros-cons">
+                    <div class="pros">
+                        <strong>Pros:</strong>
+                        <ul>
+                            <li>Full source code ownership</li>
+                            <li>Customize any component</li>
+                            <li>No package dependencies</li>
+                            <li>shadcn/ui style workflow</li>
+                        </ul>
+                    </div>
+                </div>
+                <p><strong>Best for:</strong> Projects that need component customization or want to avoid package dependencies</p>
+                <a href="@GetUrl("installation")" class="btn btn-primary">View CLI Installation →</a>
+            </div>
+
+            <div class="method-card">
+                <h3>📦 NuGet Package</h3>
+                <p>Traditional package reference for quick setup and automatic updates.</p>
+                <div class="pros-cons">
+                    <div class="pros">
+                        <strong>Pros:</strong>
+                        <ul>
+                            <li>Quick installation</li>
+                            <li>Automatic updates</li>
+                            <li>Smaller project files</li>
+                            <li>Standard .NET workflow</li>
+                        </ul>
+                    </div>
+                </div>
+                <p><strong>Best for:</strong> Projects that prefer package management or need rapid prototyping</p>
+                <a href="@GetUrl("installation")" class="btn btn-secondary">View Package Installation →</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="content-section">
+        <h2>Quick Start (CLI)</h2>
+        <p>Get started in 3 simple steps:</p>
+
+        <div class="step-list">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Install the CLI Tool</h3>
+                    <CodeBlock Code="@InstallCliCode" Language="bash" />
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Initialize in Your Project</h3>
+                    <CodeBlock Code="@InitProjectCode" Language="bash" />
+                    <p>This copies the required infrastructure files to your project.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Add Components</h3>
+                    <CodeBlock Code="@AddComponentsCode" Language="bash" />
+                    <p>Components are copied to <code>Components/vibe/</code> directory.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content-section">
+        <h2>Project Structure</h2>
+        <p>After running <code>vibe init</code> and adding components, your project will look like:</p>
+        <CodeBlock Code="@ProjectStructureCode" Language="plaintext" />
+    </section>
+
+    <section class="content-section">
+        <h2>Your First Component</h2>
+        <p>Once you've added a component, use it in your Razor pages:</p>
+        <CodeBlock Code="@FirstComponentCode" Language="razor" />
+    </section>
+
+    <section class="content-section">
+        <h2>Theming</h2>
+        <p>Vibe.UI includes a built-in theming system with dark mode support. Components automatically adapt to the active theme.</p>
+        <p>Learn more about customizing themes in the <a href="@GetUrl("theming")">Theming documentation</a>.</p>
+    </section>
+
+    <section class="content-section">
+        <h2>Next Steps</h2>
+        <div class="next-steps-grid">
+            <a href="@GetUrl("installation")" class="next-step-card">
+                <h3>📦 Installation Guide</h3>
+                <p>Detailed installation instructions for both CLI and Package approaches</p>
+            </a>
+            <a href="@GetUrl("cli")" class="next-step-card">
+                <h3>🛠️ CLI Reference</h3>
+                <p>Complete CLI command reference and usage examples</p>
+            </a>
+            <a href="@GetUrl("components/button")" class="next-step-card">
+                <h3>🎨 Browse Components</h3>
+                <p>Explore all 93+ available components with live examples</p>
+            </a>
+            <a href="@GetUrl("theming")" class="next-step-card">
+                <h3>🎭 Theming</h3>
+                <p>Customize colors, fonts, and create custom themes</p>
+            </a>
+        </div>
+    </section>
+</div>
+
+@code {
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
+    private string InstallCliCode => "dotnet tool install -g Vibe.UI.CLI";
+
+    private string InitProjectCode => @"cd MyBlazorApp
+vibe init";
+
+    private string AddComponentsCode => @"vibe add button
+vibe add card
+vibe add input";
+
+    private string ProjectStructureCode => @"MyProject/
+├── Vibe/                    ← Infrastructure
+│   ├── Base/
+│   ├── Services/
+│   └── Themes/
+├── Components/
+│   └── vibe/                ← Components
+│       ├── Button.razor
+│       ├── Card.razor
+│       └── Input.razor
+├── wwwroot/
+│   └── js/
+│       └── themeInterop.js
+└── Program.cs";
+
+    private string FirstComponentCode => @"@page ""/demo""
+@using MyProject.Components.vibe
+
+<h1>My First Vibe.UI Component</h1>
+
+<Button Variant=""ButtonVariant.Primary"" OnClick=""HandleClick"">
+    Click Me!
+</Button>
+
+@code {
+    private void HandleClick()
+    {
+        Console.WriteLine(""Button clicked!"");
+    }
+}";
+
+    private string GetUrl(string path)
+    {
+        return $"{Navigation.BaseUri}{path}";
+    }
+}

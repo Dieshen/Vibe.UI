@@ -1,0 +1,131 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+    <div class="splitter-pane splitter-pane-first" style="@FirstPaneStyle">
+        @FirstPane
+    </div>
+
+    <div class="splitter-divider"
+         @onmousedown="HandleMouseDown"
+         @ontouchstart="HandleTouchStart">
+        <div class="divider-handle">
+            @if (Orientation == SplitterOrientation.Horizontal)
+            {
+                <span class="handle-icon">⋮</span>
+            }
+            else
+            {
+                <span class="handle-icon">⋯</span>
+            }
+        </div>
+    </div>
+
+    <div class="splitter-pane splitter-pane-second" style="@SecondPaneStyle">
+        @SecondPane
+    </div>
+</div>
+
+@code {
+    private bool _isDragging = false;
+    private double _currentSize = 50;
+
+    [Parameter]
+    public RenderFragment? FirstPane { get; set; }
+
+    [Parameter]
+    public RenderFragment? SecondPane { get; set; }
+
+    [Parameter]
+    public SplitterOrientation Orientation { get; set; } = SplitterOrientation.Horizontal;
+
+    [Parameter]
+    public double InitialSize { get; set; } = 50;
+
+    [Parameter]
+    public double MinSize { get; set; } = 10;
+
+    [Parameter]
+    public double MaxSize { get; set; } = 90;
+
+    [Parameter]
+    public int DividerSize { get; set; } = 4;
+
+    [Parameter]
+    public EventCallback<double> OnSizeChanged { get; set; }
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-splitter",
+        $"splitter-{Orientation.ToString().ToLower()}",
+        _isDragging ? "dragging" : null,
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    private string FirstPaneStyle
+    {
+        get
+        {
+            if (Orientation == SplitterOrientation.Horizontal)
+                return $"width: {_currentSize}%;";
+            else
+                return $"height: {_currentSize}%;";
+        }
+    }
+
+    private string SecondPaneStyle
+    {
+        get
+        {
+            var remainingSize = 100 - _currentSize;
+            if (Orientation == SplitterOrientation.Horizontal)
+                return $"width: {remainingSize}%;";
+            else
+                return $"height: {remainingSize}%;";
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        _currentSize = Math.Clamp(InitialSize, MinSize, MaxSize);
+    }
+
+    private void HandleMouseDown(MouseEventArgs e)
+    {
+        _isDragging = true;
+        // Would need JS interop to track mouse movement and update size
+    }
+
+    private void HandleTouchStart(TouchEventArgs e)
+    {
+        _isDragging = true;
+        // Would need JS interop to track touch movement and update size
+    }
+
+    public async Task SetSize(double size)
+    {
+        var newSize = Math.Clamp(size, MinSize, MaxSize);
+        if (newSize != _currentSize)
+        {
+            _currentSize = newSize;
+            await OnSizeChanged.InvokeAsync(_currentSize);
+            StateHasChanged();
+        }
+    }
+
+    public void ResetSize()
+    {
+        _currentSize = InitialSize;
+        StateHasChanged();
+    }
+
+    public enum SplitterOrientation
+    {
+        Horizontal,
+        Vertical
+    }
+}

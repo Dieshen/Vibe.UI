@@ -1,0 +1,257 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+    @if (!string.IsNullOrEmpty(ImageSource))
+    {
+        <div class="cropper-container">
+            <div class="cropper-canvas" @ref="_canvasRef">
+                <img src="@ImageSource"
+                     alt="Image to crop"
+                     class="cropper-image"
+                     style="@ImageStyle" />
+
+                <div class="crop-overlay"></div>
+
+                <div class="crop-box" style="@CropBoxStyle">
+                    <div class="crop-box-border"></div>
+                    <div class="crop-grid">
+                        <div class="grid-line grid-line-h"></div>
+                        <div class="grid-line grid-line-h"></div>
+                        <div class="grid-line grid-line-v"></div>
+                        <div class="grid-line grid-line-v"></div>
+                    </div>
+                    <div class="crop-handle crop-handle-nw"></div>
+                    <div class="crop-handle crop-handle-ne"></div>
+                    <div class="crop-handle crop-handle-sw"></div>
+                    <div class="crop-handle crop-handle-se"></div>
+                    <div class="crop-handle crop-handle-n"></div>
+                    <div class="crop-handle crop-handle-s"></div>
+                    <div class="crop-handle crop-handle-w"></div>
+                    <div class="crop-handle crop-handle-e"></div>
+                </div>
+            </div>
+
+            @if (ShowControls)
+            {
+                <div class="cropper-controls">
+                    <div class="control-group">
+                        <button type="button"
+                                class="control-btn"
+                                @onclick="() => Rotate(-90)"
+                                title="Rotate left">
+                            ↶
+                        </button>
+                        <button type="button"
+                                class="control-btn"
+                                @onclick="() => Rotate(90)"
+                                title="Rotate right">
+                            ↷
+                        </button>
+                        <button type="button"
+                                class="control-btn"
+                                @onclick="FlipHorizontal"
+                                title="Flip horizontal">
+                            ⇄
+                        </button>
+                        <button type="button"
+                                class="control-btn"
+                                @onclick="FlipVertical"
+                                title="Flip vertical">
+                            ⇅
+                        </button>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label">Zoom:</label>
+                        <button type="button"
+                                class="control-btn"
+                                @onclick="() => Zoom(-0.1)"
+                                title="Zoom out">
+                            −
+                        </button>
+                        <input type="range"
+                               class="zoom-slider"
+                               min="0.1"
+                               max="3"
+                               step="0.1"
+                               @bind="_zoom"
+                               @bind:event="oninput" />
+                        <button type="button"
+                                class="control-btn"
+                                @onclick="() => Zoom(0.1)"
+                                title="Zoom in">
+                            +
+                        </button>
+                    </div>
+
+                    @if (AspectRatioOptions.Any())
+                    {
+                        <div class="control-group">
+                            <label class="control-label">Aspect:</label>
+                            @foreach (var option in AspectRatioOptions)
+                            {
+                                <button type="button"
+                                        class="control-btn @(AspectRatio == option.Ratio ? "active" : "")"
+                                        @onclick="() => SetAspectRatio(option.Ratio)">
+                                    @option.Label
+                                </button>
+                            }
+                        </div>
+                    }
+
+                    <div class="control-group">
+                        <button type="button"
+                                class="control-btn"
+                                @onclick="Reset"
+                                title="Reset">
+                            Reset
+                        </button>
+                        <button type="button"
+                                class="control-btn control-btn-primary"
+                                @onclick="Crop"
+                                title="Crop">
+                            Crop
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else if (EmptyContent != null)
+    {
+        <div class="cropper-empty">
+            @EmptyContent
+        </div>
+    }
+</div>
+
+@code {
+    private ElementReference _canvasRef;
+    private double _zoom = 1;
+    private int _rotation = 0;
+    private bool _flipH = false;
+    private bool _flipV = false;
+    private CropArea _cropArea = new() { X = 10, Y = 10, Width = 80, Height = 80 };
+
+    [Parameter]
+    public string ImageSource { get; set; } = string.Empty;
+
+    [Parameter]
+    public double AspectRatio { get; set; } = 0; // 0 = free
+
+    [Parameter]
+    public List<AspectRatioOption> AspectRatioOptions { get; set; } = new()
+    {
+        new() { Label = "Free", Ratio = 0 },
+        new() { Label = "1:1", Ratio = 1 },
+        new() { Label = "16:9", Ratio = 16.0 / 9.0 },
+        new() { Label = "4:3", Ratio = 4.0 / 3.0 }
+    };
+
+    [Parameter]
+    public bool ShowControls { get; set; } = true;
+
+    [Parameter]
+    public EventCallback<CroppedImageData> OnCropped { get; set; }
+
+    [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-image-cropper",
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    private string ImageStyle => $"transform: scale({_zoom}) rotate({_rotation}deg) scaleX({(_flipH ? -1 : 1)}) scaleY({(_flipV ? -1 : 1)});";
+
+    private string CropBoxStyle => $"left: {_cropArea.X}%; top: {_cropArea.Y}%; width: {_cropArea.Width}%; height: {_cropArea.Height}%;";
+
+    private void Zoom(double delta)
+    {
+        _zoom = Math.Clamp(_zoom + delta, 0.1, 3);
+    }
+
+    private void Rotate(int degrees)
+    {
+        _rotation = (_rotation + degrees) % 360;
+    }
+
+    private void FlipHorizontal()
+    {
+        _flipH = !_flipH;
+    }
+
+    private void FlipVertical()
+    {
+        _flipV = !_flipV;
+    }
+
+    private void SetAspectRatio(double ratio)
+    {
+        AspectRatio = ratio;
+        if (ratio > 0)
+        {
+            _cropArea.Height = _cropArea.Width / ratio;
+        }
+    }
+
+    private void Reset()
+    {
+        _zoom = 1;
+        _rotation = 0;
+        _flipH = false;
+        _flipV = false;
+        _cropArea = new CropArea { X = 10, Y = 10, Width = 80, Height = 80 };
+    }
+
+    private async Task Crop()
+    {
+        // In a real implementation, this would use JS interop to:
+        // 1. Get the canvas context
+        // 2. Draw the cropped portion
+        // 3. Convert to base64 or blob
+        // 4. Return the cropped image data
+
+        var croppedData = new CroppedImageData
+        {
+            CropArea = _cropArea,
+            Zoom = _zoom,
+            Rotation = _rotation,
+            FlipHorizontal = _flipH,
+            FlipVertical = _flipV
+            // ImageData would contain the actual cropped image
+        };
+
+        await OnCropped.InvokeAsync(croppedData);
+    }
+
+    public class AspectRatioOption
+    {
+        public string Label { get; set; } = string.Empty;
+        public double Ratio { get; set; }
+    }
+
+    public class CropArea
+    {
+        public double X { get; set; }
+        public double Y { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
+    }
+
+    public class CroppedImageData
+    {
+        public CropArea CropArea { get; set; } = new();
+        public double Zoom { get; set; }
+        public int Rotation { get; set; }
+        public bool FlipHorizontal { get; set; }
+        public bool FlipVertical { get; set; }
+        public string? ImageData { get; set; }
+    }
+}

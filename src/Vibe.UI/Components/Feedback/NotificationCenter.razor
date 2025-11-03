@@ -1,0 +1,287 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+    <button type="button"
+            class="notification-trigger"
+            @onclick="TogglePanel"
+            aria-label="Notifications">
+        <svg class="bell-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        @if (UnreadCount > 0)
+        {
+            <span class="notification-badge">@(UnreadCount > 99 ? "99+" : UnreadCount.ToString())</span>
+        }
+    </button>
+
+    @if (_isOpen)
+    {
+        <div class="notification-panel">
+            <div class="panel-header">
+                <h3 class="panel-title">Notifications</h3>
+                @if (UnreadCount > 0)
+                {
+                    <button type="button"
+                            class="panel-action"
+                            @onclick="MarkAllAsRead">
+                        Mark all read
+                    </button>
+                }
+            </div>
+
+            @if (ShowFilters && Filters.Any())
+            {
+                <div class="panel-filters">
+                    @foreach (var filter in Filters)
+                    {
+                        <button type="button"
+                                class="filter-btn @(_activeFilter == filter ? "active" : "")"
+                                @onclick="() => SetFilter(filter)">
+                            @filter
+                        </button>
+                    }
+                </div>
+            }
+
+            <div class="notification-list">
+                @if (FilteredNotifications.Any())
+                {
+                    @foreach (var notification in FilteredNotifications.Take(MaxDisplayCount))
+                    {
+                        <div class="notification-item @(notification.IsRead ? "read" : "unread") @($"type-{notification.Type.ToString().ToLower()}")"
+                             @key="notification.Id"
+                             @onclick="() => HandleNotificationClick(notification)">
+                            <div class="notification-icon">
+                                @if (notification.Icon != null)
+                                {
+                                    @notification.Icon
+                                }
+                                else
+                                {
+                                    @GetDefaultIcon(notification.Type)
+                                }
+                            </div>
+
+                            <div class="notification-content">
+                                @if (!string.IsNullOrEmpty(notification.Title))
+                                {
+                                    <h4 class="notification-title">@notification.Title</h4>
+                                }
+                                @if (!string.IsNullOrEmpty(notification.Message))
+                                {
+                                    <p class="notification-message">@notification.Message</p>
+                                }
+                                @if (notification.Timestamp.HasValue)
+                                {
+                                    <time class="notification-time">@FormatTimestamp(notification.Timestamp.Value)</time>
+                                }
+                            </div>
+
+                            <div class="notification-actions">
+                                @if (!notification.IsRead)
+                                {
+                                    <span class="unread-indicator"></span>
+                                }
+                                <button type="button"
+                                        class="action-btn"
+                                        @onclick:stopPropagation
+                                        @onclick="() => RemoveNotification(notification.Id)"
+                                        title="Remove">
+                                    ×
+                                </button>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="notification-empty">
+                        @if (EmptyContent != null)
+                        {
+                            @EmptyContent
+                        }
+                        else
+                        {
+                            <p>No notifications</p>
+                        }
+                    </div>
+                }
+            </div>
+
+            @if (Notifications.Count > MaxDisplayCount)
+            {
+                <div class="panel-footer">
+                    <button type="button"
+                            class="view-all-btn"
+                            @onclick="@(() => OnViewAll.InvokeAsync())">
+                        View all (@Notifications.Count)
+                    </button>
+                </div>
+            }
+
+            @if (AllowClearAll && Notifications.Any())
+            {
+                <div class="panel-footer">
+                    <button type="button"
+                            class="clear-all-btn"
+                            @onclick="ClearAll">
+                        Clear all
+                    </button>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private bool _isOpen = false;
+    private string _activeFilter = "All";
+
+    [Parameter]
+    public List<NotificationItem> Notifications { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<List<NotificationItem>> NotificationsChanged { get; set; }
+
+    [Parameter]
+    public bool ShowFilters { get; set; } = true;
+
+    [Parameter]
+    public List<string> Filters { get; set; } = new() { "All", "Unread", "Info", "Success", "Warning", "Error" };
+
+    [Parameter]
+    public int MaxDisplayCount { get; set; } = 5;
+
+    [Parameter]
+    public bool AllowClearAll { get; set; } = true;
+
+    [Parameter]
+    public EventCallback<NotificationItem> OnNotificationClicked { get; set; }
+
+    [Parameter]
+    public EventCallback OnViewAll { get; set; }
+
+    [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-notification-center",
+        _isOpen ? "open" : null,
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    private int UnreadCount => Notifications.Count(n => !n.IsRead);
+
+    private IEnumerable<NotificationItem> FilteredNotifications
+    {
+        get
+        {
+            var filtered = _activeFilter switch
+            {
+                "Unread" => Notifications.Where(n => !n.IsRead),
+                "All" => Notifications,
+                _ => Notifications.Where(n => n.Type.ToString() == _activeFilter)
+            };
+            return filtered.OrderByDescending(n => n.Timestamp);
+        }
+    }
+
+    private void TogglePanel()
+    {
+        _isOpen = !_isOpen;
+    }
+
+    private void SetFilter(string filter)
+    {
+        _activeFilter = filter;
+    }
+
+    private async Task HandleNotificationClick(NotificationItem notification)
+    {
+        if (!notification.IsRead)
+        {
+            notification.IsRead = true;
+            await NotificationsChanged.InvokeAsync(Notifications);
+        }
+        await OnNotificationClicked.InvokeAsync(notification);
+    }
+
+    private async Task MarkAllAsRead()
+    {
+        foreach (var notification in Notifications.Where(n => !n.IsRead))
+        {
+            notification.IsRead = true;
+        }
+        await NotificationsChanged.InvokeAsync(Notifications);
+    }
+
+    private async Task RemoveNotification(string id)
+    {
+        var notification = Notifications.FirstOrDefault(n => n.Id == id);
+        if (notification != null)
+        {
+            Notifications.Remove(notification);
+            await NotificationsChanged.InvokeAsync(Notifications);
+        }
+    }
+
+    private async Task ClearAll()
+    {
+        Notifications.Clear();
+        await NotificationsChanged.InvokeAsync(Notifications);
+        _isOpen = false;
+    }
+
+    private string FormatTimestamp(DateTime timestamp)
+    {
+        var diff = DateTime.Now - timestamp;
+
+        if (diff.TotalMinutes < 1) return "Just now";
+        if (diff.TotalHours < 1) return $"{(int)diff.TotalMinutes}m ago";
+        if (diff.TotalDays < 1) return $"{(int)diff.TotalHours}h ago";
+        if (diff.TotalDays < 7) return $"{(int)diff.TotalDays}d ago";
+
+        return timestamp.ToString("MMM d");
+    }
+
+    private RenderFragment GetDefaultIcon(NotificationType type) => builder =>
+    {
+        builder.OpenElement(0, "span");
+        builder.AddContent(1, type switch
+        {
+            NotificationType.Info => "ℹ️",
+            NotificationType.Success => "✓",
+            NotificationType.Warning => "⚠",
+            NotificationType.Error => "✕",
+            _ => "•"
+        });
+        builder.CloseElement();
+    };
+
+    public class NotificationItem
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string? Title { get; set; }
+        public string? Message { get; set; }
+        public NotificationType Type { get; set; } = NotificationType.Info;
+        public RenderFragment? Icon { get; set; }
+        public DateTime? Timestamp { get; set; } = DateTime.Now;
+        public bool IsRead { get; set; } = false;
+        public object? Data { get; set; }
+    }
+
+    public enum NotificationType
+    {
+        Info,
+        Success,
+        Warning,
+        Error
+    }
+}

@@ -60,6 +60,8 @@
         await ValueChanged.InvokeAsync(Value);
     }
 
+    protected override string ComponentClass => GetContainerClass();
+
     private string GetContainerClass()
     {
         var classes = new List<string> { "vibe-input-container" };

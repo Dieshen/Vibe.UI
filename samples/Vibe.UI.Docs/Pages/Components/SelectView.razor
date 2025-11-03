@@ -1,0 +1,200 @@
+@page "/components/select"
+@using Vibe.UI.Components
+
+<PageTitle>Select - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Select"
+               Category="Input"
+               Description="A dropdown menu for selecting values from a list of options."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 500px;">
+            <Select Label="Country" Placeholder="Select a country...">
+                <option value="us">United States</option>
+                <option value="uk">United Kingdom</option>
+                <option value="ca">Canada</option>
+                <option value="au">Australia</option>
+            </Select>
+
+            <Select Label="Size" Placeholder="Choose size..." HelperText="Select your preferred size">
+                <option value="sm">Small</option>
+                <option value="md">Medium</option>
+                <option value="lg">Large</option>
+                <option value="xl">Extra Large</option>
+            </Select>
+
+            <Select Label="Category" OnChange="@HandleCategoryChange">
+                <option value="">-- Select Category --</option>
+                <option value="tech">Technology</option>
+                <option value="health">Health</option>
+                <option value="finance">Finance</option>
+            </Select>
+            @if (!string.IsNullOrEmpty(selectedCategory))
+            {
+                <p style="margin-top: -0.5rem; color: var(--brand-teal);">✓ Selected: @selectedCategory</p>
+            }
+
+            <Select Label="Disabled" Disabled="true" Placeholder="Cannot select">
+                <option value="opt1">Option 1</option>
+                <option value="opt2">Option 2</option>
+            </Select>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Placeholder</h3>
+            <CodeBlock Code="@PlaceholderCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Multiple Selection</h3>
+            <CodeBlock Code="@MultipleCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Searchable</h3>
+            <CodeBlock Code="@SearchableCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Disabled State</h3>
+            <CodeBlock Code="@DisabledCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Change Handler</h3>
+            <CodeBlock Code="@ChangeHandlerCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Value</code></td>
+                    <td>TValue</td>
+                    <td>default</td>
+                    <td>Currently selected value</td>
+                </tr>
+                <tr>
+                    <td><code>Multiple</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether multiple selections are allowed</td>
+                </tr>
+                <tr>
+                    <td><code>Searchable</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the select is searchable</td>
+                </tr>
+                <tr>
+                    <td><code>Placeholder</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Placeholder text when no selection</td>
+                </tr>
+                <tr>
+                    <td><code>Disabled</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the select is disabled</td>
+                </tr>
+                <tr>
+                    <td><code>Size</code></td>
+                    <td>SelectSize</td>
+                    <td>Medium</td>
+                    <td>Size of the select</td>
+                </tr>
+                <tr>
+                    <td><code>Items</code></td>
+                    <td>IEnumerable&lt;TItem&gt;</td>
+                    <td>null</td>
+                    <td>List of items to display</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>ValueChanged</code></td>
+                    <td>EventCallback&lt;TValue&gt;</td>
+                    <td>Callback when selected value changes</td>
+                </tr>
+                <tr>
+                    <td><code>OnSearch</code></td>
+                    <td>EventCallback&lt;string&gt;</td>
+                    <td>Callback when search input changes</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>ARIA role="combobox" or role="listbox" as appropriate</li>
+            <li>Keyboard navigation (Arrow keys, Home, End, Enter, Escape)</li>
+            <li>Type-ahead search for quick selection</li>
+            <li>Focus management for opened dropdown</li>
+            <li>Screen reader announcements for selection changes</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private string selectedCategory = "";
+    private List<string> relatedComponents = new() { "RadioGroup", "Dropdown", "Combobox" };
+
+    private void HandleCategoryChange(ChangeEventArgs e)
+    {
+        selectedCategory = e.Value?.ToString() ?? "";
+    }
+
+    private string BasicCode => @"<Select Items=""@options"" Placeholder=""Select an option"" />
+
+@code {
+    private List<string> options = new() { ""Option 1"", ""Option 2"", ""Option 3"" };
+}";
+
+    private string PlaceholderCode => @"<Select Items=""@countries"" Placeholder=""Select a country..."" />";
+
+    private string MultipleCode => @"<Select Items=""@tags"" Multiple=""true"" Placeholder=""Select tags..."" />";
+
+    private string SearchableCode => @"<Select Items=""@cities"" Searchable=""true"" Placeholder=""Search cities..."" />";
+
+    private string DisabledCode => @"<Select Items=""@options"" Disabled=""true"" Placeholder=""Disabled select"" />
+<Select Items=""@options"" Value=""options[0]"" Disabled=""true"" />";
+
+    private string ChangeHandlerCode => @"<Select Items=""@fruits"" @bind-Value=""@selectedFruit"" />
+<p>Selected: @selectedFruit</p>
+
+@code {
+    private List<string> fruits = new() { ""Apple"", ""Banana"", ""Orange"", ""Grape"" };
+    private string selectedFruit = """";
+}";
+}

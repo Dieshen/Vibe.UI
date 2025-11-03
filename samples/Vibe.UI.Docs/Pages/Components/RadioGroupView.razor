@@ -1,0 +1,208 @@
+@page "/components/radiogroup"
+@using Vibe.UI.Components
+
+<PageTitle>RadioGroup - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="RadioGroup"
+               Category="Input"
+               Description="A set of checkable buttons where only one can be selected at a time."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; flex-direction: column; gap: 2rem; max-width: 500px;">
+            <div>
+                <h4 style="margin-bottom: 0.75rem;">Vertical (Default)</h4>
+                <RadioGroup Value="@selectedSize" ValueChanged="@OnSizeChanged">
+                    <RadioGroupItem Value="small">Small</RadioGroupItem>
+                    <RadioGroupItem Value="medium">Medium</RadioGroupItem>
+                    <RadioGroupItem Value="large">Large</RadioGroupItem>
+                </RadioGroup>
+                @if (!string.IsNullOrEmpty(selectedSize))
+                {
+                    <p style="margin-top: 0.5rem; color: var(--brand-teal);">✓ Selected: @selectedSize</p>
+                }
+            </div>
+
+            <div>
+                <h4 style="margin-bottom: 0.75rem;">Horizontal Layout</h4>
+                <RadioGroup Orientation="RadioGroup.RadioGroupOrientation.Horizontal" Value="plan">
+                    <RadioGroupItem Value="free">Free</RadioGroupItem>
+                    <RadioGroupItem Value="pro">Pro</RadioGroupItem>
+                    <RadioGroupItem Value="enterprise">Enterprise</RadioGroupItem>
+                </RadioGroup>
+            </div>
+
+            <div>
+                <h4 style="margin-bottom: 0.75rem;">With Disabled Option</h4>
+                <RadioGroup Value="@selectedColor" ValueChanged="@((string val) => selectedColor = val)">
+                    <RadioGroupItem Value="red">Red</RadioGroupItem>
+                    <RadioGroupItem Value="green" Disabled="true">Green (Unavailable)</RadioGroupItem>
+                    <RadioGroupItem Value="blue">Blue</RadioGroupItem>
+                </RadioGroup>
+            </div>
+
+            <div style="opacity: 0.5;">
+                <h4 style="margin-bottom: 0.75rem;">Disabled Group</h4>
+                <RadioGroup Disabled="true" Value="option2">
+                    <RadioGroupItem Value="option1">Option 1</RadioGroupItem>
+                    <RadioGroupItem Value="option2">Option 2</RadioGroupItem>
+                    <RadioGroupItem Value="option3">Option 3</RadioGroupItem>
+                </RadioGroup>
+            </div>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Default Selection</h3>
+            <CodeBlock Code="@DefaultCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Horizontal Layout</h3>
+            <CodeBlock Code="@HorizontalCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Disabled Options</h3>
+            <CodeBlock Code="@DisabledCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Change Handler</h3>
+            <CodeBlock Code="@ChangeHandlerCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Value</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Currently selected value</td>
+                </tr>
+                <tr>
+                    <td><code>Name</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Name attribute for the radio group</td>
+                </tr>
+                <tr>
+                    <td><code>Orientation</code></td>
+                    <td>Orientation</td>
+                    <td>Vertical</td>
+                    <td>Layout orientation (Vertical, Horizontal)</td>
+                </tr>
+                <tr>
+                    <td><code>Disabled</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the entire group is disabled</td>
+                </tr>
+                <tr>
+                    <td><code>Required</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether selection is required</td>
+                </tr>
+                <tr>
+                    <td><code>ChildContent</code></td>
+                    <td>RenderFragment</td>
+                    <td>-</td>
+                    <td>Radio options content</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>ValueChanged</code></td>
+                    <td>EventCallback&lt;string&gt;</td>
+                    <td>Callback when selected value changes</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses semantic radio button inputs with proper grouping</li>
+            <li>Keyboard navigation (Arrow keys to move between options)</li>
+            <li>ARIA role="radiogroup" for proper semantics</li>
+            <li>Labels associated with radio inputs</li>
+            <li>Focus visible styles for keyboard users</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private string selectedSize = "medium";
+    private string selectedColor = "blue";
+    private string plan = "pro";
+    private List<string> relatedComponents = new() { "Checkbox", "Select", "Switch" };
+
+    private void OnSizeChanged(string value)
+    {
+        selectedSize = value;
+    }
+
+    private string BasicCode => @"<RadioGroup>
+    <RadioOption Value=""option1"">Option 1</RadioOption>
+    <RadioOption Value=""option2"">Option 2</RadioOption>
+    <RadioOption Value=""option3"">Option 3</RadioOption>
+</RadioGroup>";
+
+    private string DefaultCode => @"<RadioGroup Value=""option2"">
+    <RadioOption Value=""option1"">Option 1</RadioOption>
+    <RadioOption Value=""option2"">Option 2</RadioOption>
+    <RadioOption Value=""option3"">Option 3</RadioOption>
+</RadioGroup>";
+
+    private string HorizontalCode => @"<RadioGroup Orientation=""Orientation.Horizontal"">
+    <RadioOption Value=""small"">Small</RadioOption>
+    <RadioOption Value=""medium"">Medium</RadioOption>
+    <RadioOption Value=""large"">Large</RadioOption>
+</RadioGroup>";
+
+    private string DisabledCode => @"<RadioGroup>
+    <RadioOption Value=""option1"">Option 1</RadioOption>
+    <RadioOption Value=""option2"" Disabled=""true"">Disabled Option</RadioOption>
+    <RadioOption Value=""option3"">Option 3</RadioOption>
+</RadioGroup>";
+
+    private string ChangeHandlerCode => @"<RadioGroup @bind-Value=""@selected"">
+    <RadioOption Value=""blue"">Blue</RadioOption>
+    <RadioOption Value=""green"">Green</RadioOption>
+    <RadioOption Value=""red"">Red</RadioOption>
+</RadioGroup>
+<p>Selected: @selected</p>
+
+@code {
+    private string selected = ""blue"";
+}";
+}

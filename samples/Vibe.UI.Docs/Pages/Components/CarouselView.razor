@@ -1,0 +1,303 @@
+@page "/components/carousel"
+@using Vibe.UI.Components
+
+<PageTitle>Carousel - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Carousel"
+               Category="Disclosure"
+               Description="A slideshow component for cycling through images or content with navigation controls and indicators."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="max-width: 600px; margin: 0 auto;">
+            <Carousel ShowNavigation="true" ShowIndicators="true">
+                <CarouselItem>
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4rem 2rem; text-align: center; border-radius: 0.5rem;">
+                        <h2 style="margin: 0 0 1rem 0;">First Slide</h2>
+                        <p style="margin: 0;">Beautiful carousel component</p>
+                    </div>
+                </CarouselItem>
+                <CarouselItem>
+                    <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 4rem 2rem; text-align: center; border-radius: 0.5rem;">
+                        <h2 style="margin: 0 0 1rem 0;">Second Slide</h2>
+                        <p style="margin: 0;">With smooth transitions</p>
+                    </div>
+                </CarouselItem>
+                <CarouselItem>
+                    <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 4rem 2rem; text-align: center; border-radius: 0.5rem;">
+                        <h2 style="margin: 0 0 1rem 0;">Third Slide</h2>
+                        <p style="margin: 0;">Easy to customize</p>
+                    </div>
+                </CarouselItem>
+            </Carousel>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Carousel</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Auto-play</h3>
+            <CodeBlock Code="@AutoPlayCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Captions</h3>
+            <CodeBlock Code="@CaptionsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Thumbnails</h3>
+            <CodeBlock Code="@ThumbnailsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Custom Content</h3>
+            <CodeBlock Code="@CustomContentCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Items</code></td>
+                    <td>IEnumerable&lt;TItem&gt;</td>
+                    <td>-</td>
+                    <td>Collection of items to display</td>
+                </tr>
+                <tr>
+                    <td><code>ItemTemplate</code></td>
+                    <td>RenderFragment&lt;TItem&gt;</td>
+                    <td>-</td>
+                    <td>Template for rendering each item</td>
+                </tr>
+                <tr>
+                    <td><code>AutoPlay</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Automatically cycle through items</td>
+                </tr>
+                <tr>
+                    <td><code>Interval</code></td>
+                    <td>int</td>
+                    <td>5000</td>
+                    <td>Auto-play interval in milliseconds</td>
+                </tr>
+                <tr>
+                    <td><code>ShowIndicators</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Show position indicator dots</td>
+                </tr>
+                <tr>
+                    <td><code>ShowControls</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Show previous/next navigation buttons</td>
+                </tr>
+                <tr>
+                    <td><code>Loop</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Loop back to first item after last</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnSlideChanged</code></td>
+                    <td>EventCallback&lt;CarouselSlideEventArgs&gt;</td>
+                    <td>Callback when active slide changes</td>
+                </tr>
+                <tr>
+                    <td><code>OnPrevious</code></td>
+                    <td>EventCallback</td>
+                    <td>Callback when previous button is clicked</td>
+                </tr>
+                <tr>
+                    <td><code>OnNext</code></td>
+                    <td>EventCallback</td>
+                    <td>Callback when next button is clicked</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses <code>role="region"</code> and <code>aria-label</code></li>
+            <li>Navigation buttons have descriptive labels</li>
+            <li>Keyboard navigation (Arrow keys, Tab)</li>
+            <li>Indicators are keyboard accessible</li>
+            <li>Auto-play pauses on hover and focus</li>
+            <li>Screen reader announces slide changes</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Image", "Card", "Modal" };
+
+    private string BasicCode => @"<Carousel Items=""@images"">
+    <ItemTemplate Context=""image"">
+        <img src=""@image.Url"" alt=""@image.Alt"" />
+    </ItemTemplate>
+</Carousel>
+
+@code {
+    private List<ImageItem> images = new()
+    {
+        new ImageItem { Url = ""/images/slide1.jpg"", Alt = ""First slide"" },
+        new ImageItem { Url = ""/images/slide2.jpg"", Alt = ""Second slide"" },
+        new ImageItem { Url = ""/images/slide3.jpg"", Alt = ""Third slide"" }
+    };
+}";
+
+    private string AutoPlayCode => @"<Carousel Items=""@slides""
+          AutoPlay=""true""
+          Interval=""3000""
+          Loop=""true"">
+    <ItemTemplate Context=""slide"">
+        <img src=""@slide.ImageUrl"" alt=""@slide.Title"" />
+    </ItemTemplate>
+</Carousel>
+
+@code {
+    private List<Slide> slides = GetSlides();
+}";
+
+    private string CaptionsCode => @"<Carousel Items=""@slides"" ShowIndicators=""true"">
+    <ItemTemplate Context=""slide"">
+        <div class=""carousel-slide"">
+            <img src=""@slide.ImageUrl"" alt=""@slide.Title"" />
+            <div class=""carousel-caption"">
+                <h3>@slide.Title</h3>
+                <p>@slide.Description</p>
+            </div>
+        </div>
+    </ItemTemplate>
+</Carousel>
+
+@code {
+    private List<Slide> slides = new()
+    {
+        new Slide
+        {
+            ImageUrl = ""/images/nature.jpg"",
+            Title = ""Beautiful Nature"",
+            Description = ""Explore the beauty of natural landscapes""
+        },
+        new Slide
+        {
+            ImageUrl = ""/images/city.jpg"",
+            Title = ""Urban Life"",
+            Description = ""Experience the energy of city living""
+        }
+    };
+}";
+
+    private string ThumbnailsCode => @"<Carousel Items=""@gallery""
+          ShowIndicators=""false""
+          OnSlideChanged=""@HandleSlideChanged"">
+    <ItemTemplate Context=""item"">
+        <img src=""@item.FullUrl"" alt=""@item.Title"" />
+    </ItemTemplate>
+</Carousel>
+
+<div class=""thumbnail-strip"">
+    @foreach (var (item, index) in gallery.Select((item, i) => (item, i)))
+    {
+        <div class=""thumbnail @(index == currentIndex ? ""active"" : """")""
+             @onclick=""@(() => GoToSlide(index))"">
+            <img src=""@item.ThumbnailUrl"" alt=""@item.Title"" />
+        </div>
+    }
+</div>
+
+@code {
+    private List<GalleryItem> gallery = GetGalleryItems();
+    private int currentIndex = 0;
+
+    private void HandleSlideChanged(CarouselSlideEventArgs args)
+    {
+        currentIndex = args.NewIndex;
+    }
+
+    private void GoToSlide(int index)
+    {
+        currentIndex = index;
+        StateHasChanged();
+    }
+}";
+
+    private string CustomContentCode => @"<Carousel Items=""@testimonials""
+          AutoPlay=""true""
+          Interval=""6000""
+          ShowIndicators=""true""
+          ShowControls=""false"">
+    <ItemTemplate Context=""testimonial"">
+        <div class=""testimonial-slide"">
+            <Avatar Src=""@testimonial.AvatarUrl""
+                    Size=""AvatarSize.Large"" />
+            <blockquote>
+                <p>""@testimonial.Quote""</p>
+            </blockquote>
+            <div class=""testimonial-author"">
+                <strong>@testimonial.Name</strong>
+                <span>@testimonial.Role</span>
+            </div>
+            <div class=""rating"">
+                @for (int i = 0; i < testimonial.Rating; i++)
+                {
+                    <span>⭐</span>
+                }
+            </div>
+        </div>
+    </ItemTemplate>
+</Carousel>
+
+@code {
+    private List<Testimonial> testimonials = new()
+    {
+        new Testimonial
+        {
+            Name = ""John Doe"",
+            Role = ""CEO at TechCorp"",
+            Quote = ""This product has transformed our workflow!"",
+            Rating = 5,
+            AvatarUrl = ""/avatars/john.jpg""
+        },
+        new Testimonial
+        {
+            Name = ""Jane Smith"",
+            Role = ""Designer at CreativeStudio"",
+            Quote = ""Intuitive and powerful. Highly recommended!"",
+            Rating = 5,
+            AvatarUrl = ""/avatars/jane.jpg""
+        }
+    };
+}";
+}

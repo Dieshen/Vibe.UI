@@ -1,0 +1,150 @@
+@page "/components/modal"
+
+<PageTitle>Modal - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Modal"
+               Category="Overlay"
+               Description="An overlay that requires user interaction before returning to the main content."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <p>Component preview will be shown here when installed.</p>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Centered Modal</h3>
+            <CodeBlock Code="@CenteredCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Sizes</h3>
+            <CodeBlock Code="@SizesCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Without Overlay</h3>
+            <CodeBlock Code="@NoOverlayCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Open</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the modal is open</td>
+                </tr>
+                <tr>
+                    <td><code>Size</code></td>
+                    <td>ModalSize</td>
+                    <td>Medium</td>
+                    <td>Modal size</td>
+                </tr>
+                <tr>
+                    <td><code>Centered</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Center modal vertically</td>
+                </tr>
+                <tr>
+                    <td><code>CloseOnOverlayClick</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Close when clicking overlay</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OpenChanged</code></td>
+                    <td>EventCallback&lt;bool&gt;</td>
+                    <td>Callback when open state changes</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Focus trapped within modal</li>
+            <li>ARIA role="dialog"</li>
+            <li>Escape key support</li>
+            <li>Focus restoration on close</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Dialog", "Drawer", "Popover" };
+
+    private string BasicCode => @"<Button OnClick=""@(() => isOpen = true)"">Open Modal</Button>
+
+<Modal @bind-Open=""@isOpen"">
+    <ModalHeader>
+        <h2>Modal Title</h2>
+    </ModalHeader>
+    <ModalBody>
+        <p>Modal content goes here.</p>
+    </ModalBody>
+    <ModalFooter>
+        <Button OnClick=""@(() => isOpen = false)"">Close</Button>
+    </ModalFooter>
+</Modal>
+
+@code {
+    private bool isOpen = false;
+}";
+
+    private string CenteredCode => @"<Modal @bind-Open=""@isOpen"" Centered=""true"">
+    <ModalBody>
+        <p>This modal is centered vertically.</p>
+    </ModalBody>
+</Modal>";
+
+    private string SizesCode => @"<Modal @bind-Open=""@smallOpen"" Size=""ModalSize.Small"">
+    <ModalBody>Small modal</ModalBody>
+</Modal>
+
+<Modal @bind-Open=""@largeOpen"" Size=""ModalSize.Large"">
+    <ModalBody>Large modal</ModalBody>
+</Modal>
+
+<Modal @bind-Open=""@fullOpen"" Size=""ModalSize.Full"">
+    <ModalBody>Full screen modal</ModalBody>
+</Modal>";
+
+    private string NoOverlayCode => @"<Modal @bind-Open=""@isOpen"" ShowOverlay=""false"">
+    <ModalBody>
+        <p>Modal without overlay backdrop.</p>
+    </ModalBody>
+</Modal>";
+}

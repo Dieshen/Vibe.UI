@@ -1,0 +1,179 @@
+@page "/components/button"
+@using Vibe.UI
+@using Vibe.UI.Components
+@using static Vibe.UI.Components.Button
+
+<PageTitle>Button - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Button"
+               Category="Input"
+               Description="Displays a button or a component that looks like a button."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+            <Button Variant="ButtonVariant.Primary">Primary</Button>
+            <Button Variant="ButtonVariant.Secondary">Secondary</Button>
+            <Button Variant="ButtonVariant.Destructive">Destructive</Button>
+            <Button Variant="ButtonVariant.Outline">Outline</Button>
+            <Button Variant="ButtonVariant.Ghost">Ghost</Button>
+            <Button Variant="ButtonVariant.Link">Link</Button>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Variants</h3>
+            <CodeBlock Code="@VariantsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Sizes</h3>
+            <CodeBlock Code="@SizesCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Icons</h3>
+            <CodeBlock Code="@IconsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Disabled State</h3>
+            <CodeBlock Code="@DisabledCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Loading State</h3>
+            <CodeBlock Code="@LoadingCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Click Handler</h3>
+            <CodeBlock Code="@ClickHandlerCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Variant</code></td>
+                    <td>ButtonVariant</td>
+                    <td>Primary</td>
+                    <td>The visual style variant of the button</td>
+                </tr>
+                <tr>
+                    <td><code>Size</code></td>
+                    <td>ButtonSize</td>
+                    <td>Medium</td>
+                    <td>The size of the button</td>
+                </tr>
+                <tr>
+                    <td><code>Disabled</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the button is disabled</td>
+                </tr>
+                <tr>
+                    <td><code>Loading</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Show loading spinner and disable button</td>
+                </tr>
+                <tr>
+                    <td><code>Type</code></td>
+                    <td>string</td>
+                    <td>"button"</td>
+                    <td>HTML button type (button, submit, reset)</td>
+                </tr>
+                <tr>
+                    <td><code>ChildContent</code></td>
+                    <td>RenderFragment</td>
+                    <td>-</td>
+                    <td>Content to display inside the button</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnClick</code></td>
+                    <td>EventCallback&lt;MouseEventArgs&gt;</td>
+                    <td>Callback when button is clicked</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses semantic <code>&lt;button&gt;</code> element</li>
+            <li>Supports keyboard navigation (Enter/Space)</li>
+            <li>Proper ARIA attributes when disabled or loading</li>
+            <li>Focus visible styles for keyboard users</li>
+            <li>Loading state announced to screen readers</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private string clickMessage = "";
+    private List<string> relatedComponents = new() { "Link", "IconButton", "ButtonGroup" };
+
+    private void HandleClick()
+    {
+        clickMessage = $"Button clicked at {DateTime.Now:HH:mm:ss}";
+    }
+
+    private string VariantsCode => @"<Button Variant=""ButtonVariant.Primary"">Primary</Button>
+<Button Variant=""ButtonVariant.Secondary"">Secondary</Button>
+<Button Variant=""ButtonVariant.Outline"">Outline</Button>
+<Button Variant=""ButtonVariant.Ghost"">Ghost</Button>
+<Button Variant=""ButtonVariant.Link"">Link</Button>";
+
+    private string SizesCode => @"<Button Size=""ButtonSize.Small"">Small</Button>
+<Button Size=""ButtonSize.Medium"">Medium</Button>
+<Button Size=""ButtonSize.Large"">Large</Button>";
+
+    private string IconsCode => @"<Button>
+    <span class=""icon"">🚀</span>
+    Launch
+</Button>
+<Button>
+    Save
+    <span class=""icon"">💾</span>
+</Button>";
+
+    private string DisabledCode => @"<Button Disabled=""true"">Disabled Button</Button>
+<Button Variant=""ButtonVariant.Primary"" Disabled=""true"">Disabled Primary</Button>";
+
+    private string LoadingCode => @"<Button Loading=""true"">Loading...</Button>
+<Button Variant=""ButtonVariant.Primary"" Loading=""true"">Please Wait</Button>";
+
+    private string ClickHandlerCode => @"<Button OnClick=""@HandleClick"">Click Me</Button>
+
+@code {
+    private void HandleClick()
+    {
+        Console.WriteLine(""Button clicked!"");
+    }
+}";
+}

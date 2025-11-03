@@ -1,0 +1,96 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<div @attributes="AdditionalAttributes"
+     class="@CombinedCssClass"
+     role="radiogroup"
+     aria-label="@AriaLabel"
+     aria-required="@Required">
+    <CascadingValue Value="this">
+        @ChildContent
+    </CascadingValue>
+</div>
+
+@code {
+    /// <summary>
+    /// The content of the radio group (RadioGroupItem components).
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// The currently selected value.
+    /// </summary>
+    [Parameter]
+    public string? Value { get; set; }
+
+    /// <summary>
+    /// Event callback when the selected value changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string?> ValueChanged { get; set; }
+
+    /// <summary>
+    /// The name for the radio group (shared by all radio buttons).
+    /// </summary>
+    [Parameter]
+    public string Name { get; set; } = Guid.NewGuid().ToString();
+
+    /// <summary>
+    /// Whether the radio group is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Whether the radio group is required.
+    /// </summary>
+    [Parameter]
+    public bool Required { get; set; }
+
+    /// <summary>
+    /// The orientation of the radio group.
+    /// </summary>
+    [Parameter]
+    public RadioGroupOrientation Orientation { get; set; } = RadioGroupOrientation.Vertical;
+
+    /// <summary>
+    /// Accessible label for the radio group.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes to apply.
+    /// </summary>
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-radio-group",
+        $"vibe-radio-group-{Orientation.ToString().ToLower()}",
+        Disabled ? "vibe-radio-group-disabled" : null,
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    internal async Task HandleValueChange(string itemValue)
+    {
+        if (Disabled) return;
+
+        Value = itemValue;
+        await ValueChanged.InvokeAsync(itemValue);
+    }
+
+    internal bool IsSelected(string itemValue)
+    {
+        return Value == itemValue;
+    }
+
+    public enum RadioGroupOrientation
+    {
+        Horizontal,
+        Vertical
+    }
+}

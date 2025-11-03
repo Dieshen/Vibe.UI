@@ -1,0 +1,202 @@
+@page "/components/toast"
+
+<PageTitle>Toast - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Toast"
+               Category="Feedback"
+               Description="A temporary notification that appears on screen to provide feedback about an action or event."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <p>Component preview will be shown here when installed.</p>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Toast</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Toast Variants</h3>
+            <CodeBlock Code="@VariantsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Positions</h3>
+            <CodeBlock Code="@PositionsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Action</h3>
+            <CodeBlock Code="@ActionCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Using Toast Service</h3>
+            <CodeBlock Code="@ServiceCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Variant</code></td>
+                    <td>ToastVariant</td>
+                    <td>Info</td>
+                    <td>Visual style (Info, Success, Warning, Error)</td>
+                </tr>
+                <tr>
+                    <td><code>Title</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Toast title text</td>
+                </tr>
+                <tr>
+                    <td><code>Message</code></td>
+                    <td>string</td>
+                    <td>-</td>
+                    <td>Toast message content</td>
+                </tr>
+                <tr>
+                    <td><code>Duration</code></td>
+                    <td>int</td>
+                    <td>5000</td>
+                    <td>Auto-dismiss duration in milliseconds</td>
+                </tr>
+                <tr>
+                    <td><code>Position</code></td>
+                    <td>ToastPosition</td>
+                    <td>TopRight</td>
+                    <td>Screen position for toast</td>
+                </tr>
+                <tr>
+                    <td><code>Closable</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Show close button</td>
+                </tr>
+                <tr>
+                    <td><code>ShowProgress</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Show progress bar countdown</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnClose</code></td>
+                    <td>EventCallback</td>
+                    <td>Callback when toast is closed</td>
+                </tr>
+                <tr>
+                    <td><code>OnActionClick</code></td>
+                    <td>EventCallback</td>
+                    <td>Callback when action button is clicked</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses <code>role="alert"</code> for important messages</li>
+            <li>Uses <code>role="status"</code> for informational messages</li>
+            <li>Includes <code>aria-live</code> for dynamic announcements</li>
+            <li>Close button has accessible label</li>
+            <li>Keyboard dismissible with Escape key</li>
+            <li>Proper focus management when closed</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Alert", "Notification", "Snackbar" };
+
+    private string BasicCode => @"<Toast Message=""Operation completed successfully!"" />";
+
+    private string VariantsCode => @"<Toast Variant=""ToastVariant.Info""
+       Title=""Information""
+       Message=""This is an informational message"" />
+
+<Toast Variant=""ToastVariant.Success""
+       Title=""Success""
+       Message=""Your changes have been saved"" />
+
+<Toast Variant=""ToastVariant.Warning""
+       Title=""Warning""
+       Message=""Please review your input"" />
+
+<Toast Variant=""ToastVariant.Error""
+       Title=""Error""
+       Message=""Failed to save changes"" />";
+
+    private string PositionsCode => @"<Toast Position=""ToastPosition.TopLeft"" Message=""Top Left"" />
+<Toast Position=""ToastPosition.TopCenter"" Message=""Top Center"" />
+<Toast Position=""ToastPosition.TopRight"" Message=""Top Right"" />
+<Toast Position=""ToastPosition.BottomLeft"" Message=""Bottom Left"" />
+<Toast Position=""ToastPosition.BottomCenter"" Message=""Bottom Center"" />
+<Toast Position=""ToastPosition.BottomRight"" Message=""Bottom Right"" />";
+
+    private string ActionCode => @"<Toast Variant=""ToastVariant.Info""
+       Title=""Update Available""
+       Message=""A new version is available""
+       OnActionClick=""@HandleUpdate"">
+    <ActionContent>
+        <Button Size=""ButtonSize.Small"">Update Now</Button>
+    </ActionContent>
+</Toast>
+
+@code {
+    private void HandleUpdate()
+    {
+        // Handle update action
+    }
+}";
+
+    private string ServiceCode => @"@inject IToastService ToastService
+
+<Button OnClick=""@ShowSuccess"">Show Success</Button>
+<Button OnClick=""@ShowError"">Show Error</Button>
+<Button OnClick=""@ShowWarning"">Show Warning</Button>
+
+@code {
+    private void ShowSuccess()
+    {
+        ToastService.Success(""Operation completed!"");
+    }
+
+    private void ShowError()
+    {
+        ToastService.Error(""Something went wrong!"");
+    }
+
+    private void ShowWarning()
+    {
+        ToastService.Warning(""Please be careful!"", duration: 8000);
+    }
+}";
+}

@@ -1,0 +1,159 @@
+@page "/components/grid"
+
+<PageTitle>Grid - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Grid"
+               Category="Layout"
+               Description="A responsive grid layout system based on CSS Grid for arranging content in rows and columns."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <div style="padding: 1.5rem; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; margin-bottom: 1rem;">
+                <h4 style="margin: 0 0 0.5rem 0; color: #856404;">Component Not Yet Implemented</h4>
+                <p style="margin: 0; color: #856404;">
+                    The Grid component has not been implemented yet. The API documentation below represents the planned interface.
+                </p>
+            </div>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Grid</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Column Spans</h3>
+            <CodeBlock Code="@SpansCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Responsive Grid</h3>
+            <CodeBlock Code="@ResponsiveCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Gap Control</h3>
+            <CodeBlock Code="@GapCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Auto-fit Columns</h3>
+            <CodeBlock Code="@AutoFitCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Columns</code></td>
+                    <td>int</td>
+                    <td>12</td>
+                    <td>Number of columns</td>
+                </tr>
+                <tr>
+                    <td><code>Gap</code></td>
+                    <td>string</td>
+                    <td>"1rem"</td>
+                    <td>Gap between grid items</td>
+                </tr>
+                <tr>
+                    <td><code>RowGap</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Gap between rows (overrides Gap)</td>
+                </tr>
+                <tr>
+                    <td><code>ColumnGap</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Gap between columns (overrides Gap)</td>
+                </tr>
+                <tr>
+                    <td><code>AutoFit</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Use auto-fit for responsive columns</td>
+                </tr>
+                <tr>
+                    <td><code>MinColumnWidth</code></td>
+                    <td>string</td>
+                    <td>"250px"</td>
+                    <td>Minimum column width for auto-fit</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Maintains semantic order for screen readers</li>
+            <li>Visual layout doesn't affect navigation order</li>
+            <li>Responsive design supports various screen sizes</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Stack", "Container", "Flex" };
+
+    private string BasicCode => @"<Grid Columns=""3"">
+    <GridItem>Item 1</GridItem>
+    <GridItem>Item 2</GridItem>
+    <GridItem>Item 3</GridItem>
+    <GridItem>Item 4</GridItem>
+    <GridItem>Item 5</GridItem>
+    <GridItem>Item 6</GridItem>
+</Grid>";
+
+    private string SpansCode => @"<Grid Columns=""12"">
+    <GridItem ColSpan=""12"">Full width header</GridItem>
+    <GridItem ColSpan=""8"">Main content (8 columns)</GridItem>
+    <GridItem ColSpan=""4"">Sidebar (4 columns)</GridItem>
+    <GridItem ColSpan=""6"">Half width</GridItem>
+    <GridItem ColSpan=""6"">Half width</GridItem>
+</Grid>";
+
+    private string ResponsiveCode => @"<Grid Columns=""12"">
+    <GridItem ColSpan=""12"" ColSpanMd=""6"" ColSpanLg=""4"">
+        Responsive item 1
+    </GridItem>
+    <GridItem ColSpan=""12"" ColSpanMd=""6"" ColSpanLg=""4"">
+        Responsive item 2
+    </GridItem>
+    <GridItem ColSpan=""12"" ColSpanMd=""12"" ColSpanLg=""4"">
+        Responsive item 3
+    </GridItem>
+</Grid>";
+
+    private string GapCode => @"<Grid Columns=""3"" Gap=""2rem"">
+    <GridItem>Large gap</GridItem>
+    <GridItem>Large gap</GridItem>
+    <GridItem>Large gap</GridItem>
+</Grid>
+
+<Grid Columns=""3"" RowGap=""1rem"" ColumnGap=""2rem"">
+    <GridItem>Custom gaps</GridItem>
+    <GridItem>Custom gaps</GridItem>
+    <GridItem>Custom gaps</GridItem>
+</Grid>";
+
+    private string AutoFitCode => @"<Grid AutoFit=""true"" MinColumnWidth=""200px"">
+    <GridItem>Auto-sized 1</GridItem>
+    <GridItem>Auto-sized 2</GridItem>
+    <GridItem>Auto-sized 3</GridItem>
+    <GridItem>Auto-sized 4</GridItem>
+    <GridItem>Auto-sized 5</GridItem>
+</Grid>";
+}

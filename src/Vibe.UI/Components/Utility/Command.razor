@@ -1,5 +1,6 @@
 @namespace Vibe.UI.Components
 @inherits Base.ThemedComponentBase
+@inject IJSRuntime JS
 
 <div class="@CombinedClass" @attributes="AdditionalAttributes">
     <div class="command-input-wrapper">
@@ -200,6 +201,6 @@
     /// </summary>
     public async Task FocusAsync()
     {
-        await JSRuntime.InvokeVoidAsync("eval", $"document.querySelector('[_bl_{InputRef.Id}]').focus()");
+        await JS.InvokeVoidAsync("eval", $"document.querySelector('[_bl_{InputRef.Id}]').focus()");
     }
 }

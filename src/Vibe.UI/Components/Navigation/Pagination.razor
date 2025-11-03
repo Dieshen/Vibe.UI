@@ -37,9 +37,9 @@
             else
             {
                 <li class="pagination-item">
-                    <button class="pagination-button pagination-link @(page == CurrentPage ? "active" : "")" 
+                    <button class="pagination-button pagination-link @(page == CurrentPage ? "active" : "")"
                         @onclick="() => OnPageChange(page)">
-                        @page
+                        @(page)
                     </button>
                 </li>
             }

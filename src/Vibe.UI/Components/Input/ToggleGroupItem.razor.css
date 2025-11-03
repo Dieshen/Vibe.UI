@@ -1,0 +1,52 @@
+.vibe-toggle-group-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    color: var(--vibe-muted-foreground);
+    background-color: transparent;
+    border: none;
+    border-radius: calc(var(--vibe-radius, 0.375rem) - 0.25rem);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.vibe-toggle-group-item:hover {
+    background-color: var(--vibe-background);
+    color: var(--vibe-foreground);
+}
+
+.vibe-toggle-group-item:focus-visible {
+    outline: 2px solid var(--vibe-ring);
+    outline-offset: 2px;
+    z-index: 1;
+}
+
+.vibe-toggle-group-item-pressed {
+    background-color: var(--vibe-background);
+    color: var(--vibe-foreground);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.vibe-toggle-group-item-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Size variants (inherited from parent) */
+.vibe-toggle-group-small .vibe-toggle-group-item {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.8125rem;
+}
+
+.vibe-toggle-group-large .vibe-toggle-group-item {
+    padding: 0.625rem 1rem;
+    font-size: 0.9375rem;
+}

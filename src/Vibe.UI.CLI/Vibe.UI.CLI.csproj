@@ -1,0 +1,134 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+      <PropertyGroup>
+            <OutputType>Exe</OutputType>
+            <TargetFramework>net9.0</TargetFramework>
+            <ImplicitUsings>enable</ImplicitUsings>
+            <Nullable>enable</Nullable>
+            <PackAsTool>true</PackAsTool>
+            <ToolCommandName>vibe</ToolCommandName>
+            <PackageId>Vibe.UI.CLI</PackageId>
+            <Version>1.0.0</Version>
+            <Authors>Narcoleptic Fox</Authors>
+            <Description>CLI tool for adding Vibe.UI components to Blazor projects. Copies component
+                  source code into your project (shadcn/ui style) - no package dependencies
+                  required.</Description>
+            <PackageTags>blazor;ui;components;cli;dotnet-tool;shadcn;vibe</PackageTags>
+            <PackageLicenseExpression>MIT</PackageLicenseExpression>
+            <PackageIcon>icon.png</PackageIcon>
+            <RepositoryUrl>https://github.com/Dieshen/Vibe.UI</RepositoryUrl>
+            <RepositoryType>git</RepositoryType>
+            <PackageProjectUrl>https://github.com/Dieshen/Vibe.UI</PackageProjectUrl>
+            <PackageReadmeFile>README.cli.md</PackageReadmeFile>
+      </PropertyGroup>
+
+      <ItemGroup>
+            <PackageReference Include="Spectre.Console" Version="0.49.1" />
+            <PackageReference Include="Spectre.Console.Cli" Version="0.49.1" />
+            <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+            <PackageReference Include="System.Text.Json" Version="9.0.3" />
+      </ItemGroup>
+
+      <ItemGroup>
+            <!-- Components from Vibe.UI (packed into Templates/Components/) -->
+            <None Include="../Vibe.UI/Components/Input/*.razor"
+                  Pack="true"
+                  PackagePath="Templates/Components/Input/" />
+            <None Include="../Vibe.UI/Components/Input/*.razor.css"
+                  Pack="true"
+                  PackagePath="Templates/Components/Input/" />
+            <None Include="../Vibe.UI/Components/Form/*.razor"
+                  Pack="true"
+                  PackagePath="Templates/Components/Form/" />
+            <None Include="../Vibe.UI/Components/Form/*.razor.css"
+                  Pack="true"
+                  PackagePath="Templates/Components/Form/" />
+            <None Include="../Vibe.UI/Components/DataDisplay/*.razor"
+                  Pack="true"
+                  PackagePath="Templates/Components/DataDisplay/" />
+            <None Include="../Vibe.UI/Components/DataDisplay/*.razor.css"
+                  Pack="true"
+                  PackagePath="Templates/Components/DataDisplay/" />
+            <None Include="../Vibe.UI/Components/Layout/*.razor"
+                  Pack="true"
+                  PackagePath="Templates/Components/Layout/" />
+            <None Include="../Vibe.UI/Components/Layout/*.razor.css"
+                  Pack="true"
+                  PackagePath="Templates/Components/Layout/" />
+            <None Include="../Vibe.UI/Components/Navigation/*.razor"
+                  Pack="true"
+                  PackagePath="Templates/Components/Navigation/" />
+            <None Include="../Vibe.UI/Components/Navigation/*.razor.css"
+                  Pack="true"
+                  PackagePath="Templates/Components/Navigation/" />
+            <None Include="../Vibe.UI/Components/Overlay/*.razor"
+                  Pack="true"
+                  PackagePath="Templates/Components/Overlay/" />
+            <None Include="../Vibe.UI/Components/Overlay/*.razor.css"
+                  Pack="true"
+                  PackagePath="Templates/Components/Overlay/" />
+            <None Include="../Vibe.UI/Components/Feedback/*.razor"
+                  Pack="true"
+                  PackagePath="Templates/Components/Feedback/" />
+            <None Include="../Vibe.UI/Components/Feedback/*.razor.css"
+                  Pack="true"
+                  PackagePath="Templates/Components/Feedback/" />
+            <None Include="../Vibe.UI/Components/Advanced/*.razor"
+                  Pack="true"
+                  PackagePath="Templates/Components/Advanced/" />
+            <None Include="../Vibe.UI/Components/Advanced/*.razor.css"
+                  Pack="true"
+                  PackagePath="Templates/Components/Advanced/" />
+            <None Include="../Vibe.UI/Components/Disclosure/*.razor"
+                  Pack="true"
+                  PackagePath="Templates/Components/Disclosure/" />
+            <None Include="../Vibe.UI/Components/Disclosure/*.razor.css"
+                  Pack="true"
+                  PackagePath="Templates/Components/Disclosure/" />
+            <None Include="../Vibe.UI/Components/DateTime/*.razor"
+                  Pack="true"
+                  PackagePath="Templates/Components/DateTime/" />
+            <None Include="../Vibe.UI/Components/DateTime/*.razor.css"
+                  Pack="true"
+                  PackagePath="Templates/Components/DateTime/" />
+            <None Include="../Vibe.UI/Components/Theme/*.razor"
+                  Pack="true"
+                  PackagePath="Templates/Components/Theme/" />
+            <None Include="../Vibe.UI/Components/Theme/*.razor.css"
+                  Pack="true"
+                  PackagePath="Templates/Components/Theme/" />
+
+            <!-- Infrastructure files (packed into Templates/Infrastructure/) -->
+            <None Include="../Vibe.UI/Base/**/*.cs"
+                  Pack="true"
+                  PackagePath="Templates/Infrastructure/Base/%(RecursiveDir)" />
+            <None Include="../Vibe.UI/Services/**/*.cs"
+                  Pack="true"
+                  PackagePath="Templates/Infrastructure/Services/%(RecursiveDir)" />
+            <None Include="../Vibe.UI/Themes/**/*.cs"
+                  Pack="true"
+                  PackagePath="Templates/Infrastructure/Themes/%(RecursiveDir)" />
+            <None Include="../Vibe.UI/ServiceCollectionExtensions.cs"
+                  Pack="true"
+                  PackagePath="Templates/Infrastructure/" />
+            <None Include="../Vibe.UI/_Imports.razor"
+                  Pack="true"
+                  PackagePath="Templates/Infrastructure/" />
+
+            <!-- JavaScript files -->
+            <None Include="../Vibe.UI/wwwroot/themeInterop.js"
+                  Pack="true"
+                  PackagePath="Templates/wwwroot/js/" />
+            <None Include="../Vibe.UI/wwwroot/js/vibe-chart.js"
+                  Pack="true"
+                  PackagePath="Templates/wwwroot/js/" />
+
+            <!-- Package assets -->
+            <None Include="../../icon.png" Pack="true" PackagePath=""
+                  Condition="Exists('../../icon.png')" />
+            <None Include="../../assets/icon.png" Pack="true" PackagePath=""
+                  Condition="!Exists('../../icon.png') And Exists('../../assets/icon.png')" />
+            <None Include="README.cli.md" Pack="true" PackagePath="" />
+      </ItemGroup>
+
+</Project>

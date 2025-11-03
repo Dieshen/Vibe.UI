@@ -1,0 +1,195 @@
+@page "/components/menu"
+
+<PageTitle>Menu - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Menu"
+               Category="Navigation"
+               Description="A list of options or actions that appears when triggered, supporting nested submenus."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <div style="padding: 1.5rem; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; margin-bottom: 1rem;">
+                <h4 style="margin: 0 0 0.5rem 0; color: #856404;">Component Not Yet Implemented</h4>
+                <p style="margin: 0; color: #856404;">
+                    The Menu component has not been implemented yet. However, the Menubar component is available. The API documentation below represents the planned Menu interface.
+                </p>
+            </div>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Icons</h3>
+            <CodeBlock Code="@IconsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Nested Menu</h3>
+            <CodeBlock Code="@NestedCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Separators</h3>
+            <CodeBlock Code="@SeparatorsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Context Menu</h3>
+            <CodeBlock Code="@ContextCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Items</code></td>
+                    <td>List&lt;MenuItem&gt;</td>
+                    <td>null</td>
+                    <td>Menu items to display</td>
+                </tr>
+                <tr>
+                    <td><code>Open</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether menu is open</td>
+                </tr>
+                <tr>
+                    <td><code>Placement</code></td>
+                    <td>MenuPlacement</td>
+                    <td>BottomStart</td>
+                    <td>Menu placement relative to trigger</td>
+                </tr>
+                <tr>
+                    <td><code>CloseOnSelect</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Close menu after item selection</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnItemClick</code></td>
+                    <td>EventCallback&lt;MenuItem&gt;</td>
+                    <td>Callback when menu item is clicked</td>
+                </tr>
+                <tr>
+                    <td><code>OnOpenChanged</code></td>
+                    <td>EventCallback&lt;bool&gt;</td>
+                    <td>Callback when menu open state changes</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>ARIA role="menu" with proper attributes</li>
+            <li>Keyboard navigation (Arrow keys, Enter, Escape)</li>
+            <li>Focus management for menu items</li>
+            <li>Submenu indicators for screen readers</li>
+            <li>Disabled items properly marked</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Dropdown", "ContextMenu", "Popover" };
+
+    private string BasicCode => @"<Menu>
+    <MenuTrigger>
+        <Button>Open Menu</Button>
+    </MenuTrigger>
+    <MenuContent>
+        <MenuItem>New File</MenuItem>
+        <MenuItem>Open File</MenuItem>
+        <MenuItem>Save</MenuItem>
+        <MenuItem>Exit</MenuItem>
+    </MenuContent>
+</Menu>";
+
+    private string IconsCode => @"<Menu>
+    <MenuTrigger>
+        <Button>Actions</Button>
+    </MenuTrigger>
+    <MenuContent>
+        <MenuItem Icon=""📄"">New Document</MenuItem>
+        <MenuItem Icon=""📁"">Open Folder</MenuItem>
+        <MenuItem Icon=""💾"">Save</MenuItem>
+        <MenuItem Icon=""🗑️"" Danger=""true"">Delete</MenuItem>
+    </MenuContent>
+</Menu>";
+
+    private string NestedCode => @"<Menu>
+    <MenuTrigger>
+        <Button>File</Button>
+    </MenuTrigger>
+    <MenuContent>
+        <MenuItem>New</MenuItem>
+        <MenuItem>
+            <span>Open Recent</span>
+            <SubMenu>
+                <MenuItem>Document1.txt</MenuItem>
+                <MenuItem>Document2.txt</MenuItem>
+                <MenuItem>Document3.txt</MenuItem>
+            </SubMenu>
+        </MenuItem>
+        <MenuItem>Save</MenuItem>
+    </MenuContent>
+</Menu>";
+
+    private string SeparatorsCode => @"<Menu>
+    <MenuTrigger>
+        <Button>Edit</Button>
+    </MenuTrigger>
+    <MenuContent>
+        <MenuItem>Cut</MenuItem>
+        <MenuItem>Copy</MenuItem>
+        <MenuItem>Paste</MenuItem>
+        <MenuSeparator />
+        <MenuItem>Select All</MenuItem>
+        <MenuSeparator />
+        <MenuItem>Preferences</MenuItem>
+    </MenuContent>
+</Menu>";
+
+    private string ContextCode => @"<ContextMenu>
+    <ContextMenuTrigger>
+        <div style=""padding: 2rem; border: 1px dashed; text-align: center;"">
+            Right-click here
+        </div>
+    </ContextMenuTrigger>
+    <ContextMenuContent>
+        <MenuItem>Copy</MenuItem>
+        <MenuItem>Paste</MenuItem>
+        <MenuSeparator />
+        <MenuItem>Inspect</MenuItem>
+    </ContextMenuContent>
+</ContextMenu>";
+}

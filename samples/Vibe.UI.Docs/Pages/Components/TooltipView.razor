@@ -1,0 +1,137 @@
+@page "/components/tooltip"
+
+<PageTitle>Tooltip - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Tooltip"
+               Category="Overlay"
+               Description="A brief, informative message that appears when hovering or focusing on an element."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <p>Component preview will be shown here when installed.</p>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Placement Options</h3>
+            <CodeBlock Code="@PlacementCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Delay</h3>
+            <CodeBlock Code="@DelayCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Rich Content</h3>
+            <CodeBlock Code="@RichCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Content</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Tooltip text content</td>
+                </tr>
+                <tr>
+                    <td><code>Placement</code></td>
+                    <td>TooltipPlacement</td>
+                    <td>Top</td>
+                    <td>Tooltip placement</td>
+                </tr>
+                <tr>
+                    <td><code>ShowDelay</code></td>
+                    <td>int</td>
+                    <td>0</td>
+                    <td>Delay before showing (ms)</td>
+                </tr>
+                <tr>
+                    <td><code>HideDelay</code></td>
+                    <td>int</td>
+                    <td>0</td>
+                    <td>Delay before hiding (ms)</td>
+                </tr>
+                <tr>
+                    <td><code>ShowArrow</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Show arrow pointing to element</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses ARIA attributes for screen readers</li>
+            <li>Keyboard accessible (focus triggers tooltip)</li>
+            <li>Escape key dismisses tooltip</li>
+            <li>Role="tooltip" for semantics</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Popover", "Alert", "Badge" };
+
+    private string BasicCode => @"<Tooltip Content=""This is a tooltip"">
+    <Button>Hover me</Button>
+</Tooltip>
+
+<Tooltip Content=""Additional information"">
+    <span>Text with tooltip</span>
+</Tooltip>";
+
+    private string PlacementCode => @"<Tooltip Content=""Top"" Placement=""TooltipPlacement.Top"">
+    <Button>Top</Button>
+</Tooltip>
+
+<Tooltip Content=""Bottom"" Placement=""TooltipPlacement.Bottom"">
+    <Button>Bottom</Button>
+</Tooltip>
+
+<Tooltip Content=""Left"" Placement=""TooltipPlacement.Left"">
+    <Button>Left</Button>
+</Tooltip>
+
+<Tooltip Content=""Right"" Placement=""TooltipPlacement.Right"">
+    <Button>Right</Button>
+</Tooltip>";
+
+    private string DelayCode => @"<Tooltip Content=""Shows after 500ms"" ShowDelay=""500"">
+    <Button>Delayed</Button>
+</Tooltip>
+
+<Tooltip Content=""Quick hide"" HideDelay=""100"">
+    <Button>Quick Hide</Button>
+</Tooltip>";
+
+    private string RichCode => @"<Tooltip>
+    <TooltipTrigger>
+        <Button>Rich Tooltip</Button>
+    </TooltipTrigger>
+    <TooltipContent>
+        <strong>Bold Title</strong>
+        <p>Tooltip with <em>formatted</em> content.</p>
+    </TooltipContent>
+</Tooltip>";
+}

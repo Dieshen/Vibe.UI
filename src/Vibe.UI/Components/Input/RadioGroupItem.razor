@@ -1,0 +1,75 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<label @attributes="AdditionalAttributes" class="@CombinedCssClass">
+    <input type="radio"
+           class="vibe-radio-group-item-input"
+           name="@GroupName"
+           value="@Value"
+           checked="@IsChecked"
+           disabled="@IsDisabled"
+           @onchange="HandleChange" />
+    <span class="vibe-radio-group-item-control"></span>
+    @if (ChildContent != null)
+    {
+        <span class="vibe-radio-group-item-label">
+            @ChildContent
+        </span>
+    }
+</label>
+
+@code {
+    /// <summary>
+    /// The content to display in the radio item label.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// The value of this radio item.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public string Value { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The ID of this radio item (for accessibility).
+    /// </summary>
+    [Parameter]
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// Whether this item is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes to apply.
+    /// </summary>
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    [CascadingParameter]
+    private RadioGroup? Parent { get; set; }
+
+    private string GroupName => Parent?.Name ?? string.Empty;
+    private bool IsChecked => Parent?.IsSelected(Value) ?? false;
+    private bool IsDisabled => Disabled || (Parent?.Disabled ?? false);
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-radio-group-item",
+        IsChecked ? "vibe-radio-group-item-checked" : null,
+        IsDisabled ? "vibe-radio-group-item-disabled" : null,
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    private async Task HandleChange(ChangeEventArgs e)
+    {
+        if (Parent != null && !IsDisabled)
+        {
+            await Parent.HandleValueChange(Value);
+        }
+    }
+}

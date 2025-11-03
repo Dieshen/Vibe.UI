@@ -1,0 +1,4 @@
+# FileUploadView.razor - Add using and update preview
+@page "/components/fileupload"
+@using Vibe.UI.Components
+@using static Vibe.UI.Components.FileUpload

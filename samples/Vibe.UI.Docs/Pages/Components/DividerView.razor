@@ -1,0 +1,123 @@
+@page "/components/divider"
+
+<PageTitle>Divider - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Divider"
+               Category="Layout"
+               Description="A visual separator for content sections, supporting horizontal and vertical orientations."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <div style="padding: 1.5rem; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; margin-bottom: 1rem;">
+                <h4 style="margin: 0 0 0.5rem 0; color: #856404;">Component Not Yet Implemented</h4>
+                <p style="margin: 0; color: #856404;">
+                    The Divider component has not been implemented yet. The API documentation below represents the planned interface.
+                </p>
+            </div>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Horizontal Divider</h3>
+            <CodeBlock Code="@HorizontalCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Label</h3>
+            <CodeBlock Code="@LabelCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Vertical Divider</h3>
+            <CodeBlock Code="@VerticalCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Dashed Style</h3>
+            <CodeBlock Code="@DashedCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Orientation</code></td>
+                    <td>Orientation</td>
+                    <td>Horizontal</td>
+                    <td>Divider orientation</td>
+                </tr>
+                <tr>
+                    <td><code>Label</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Label text to display in divider</td>
+                </tr>
+                <tr>
+                    <td><code>LabelPosition</code></td>
+                    <td>DividerLabelPosition</td>
+                    <td>Center</td>
+                    <td>Label position (Left, Center, Right)</td>
+                </tr>
+                <tr>
+                    <td><code>Style</code></td>
+                    <td>DividerStyle</td>
+                    <td>Solid</td>
+                    <td>Line style (Solid, Dashed, Dotted)</td>
+                </tr>
+                <tr>
+                    <td><code>Thickness</code></td>
+                    <td>int</td>
+                    <td>1</td>
+                    <td>Line thickness in pixels</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses semantic <code>&lt;hr&gt;</code> element or role="separator"</li>
+            <li>Does not interfere with content flow</li>
+            <li>Decorative dividers marked appropriately</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Separator", "Stack", "Grid" };
+
+    private string HorizontalCode => @"<p>Content above</p>
+<Divider />
+<p>Content below</p>";
+
+    private string LabelCode => @"<p>Section 1</p>
+<Divider Label=""OR"" />
+<p>Section 2</p>
+
+<p>Content</p>
+<Divider Label=""Continue Reading"" LabelPosition=""DividerLabelPosition.Left"" />
+<p>More content</p>";
+
+    private string VerticalCode => @"<div style=""display: flex; align-items: center; gap: 1rem;"">
+    <span>Item 1</span>
+    <Divider Orientation=""Orientation.Vertical"" style=""height: 40px;"" />
+    <span>Item 2</span>
+    <Divider Orientation=""Orientation.Vertical"" style=""height: 40px;"" />
+    <span>Item 3</span>
+</div>";
+
+    private string DashedCode => @"<Divider Style=""DividerStyle.Dashed"" />
+<Divider Style=""DividerStyle.Dotted"" />
+<Divider Style=""DividerStyle.Solid"" Thickness=""2"" />";
+}

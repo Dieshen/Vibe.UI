@@ -1,0 +1,212 @@
+@page "/components/textarea"
+@using Vibe.UI.Components
+
+<PageTitle>Textarea - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Textarea"
+               Category="Input"
+               Description="A multi-line text input field for longer text content."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 600px;">
+            <Textarea Placeholder="Enter your text here..." Rows="3" />
+
+            <Textarea Placeholder="Description (6 rows)" Rows="6" />
+
+            <Textarea Value="@feedback"
+                      ValueChanged="@((string val) => feedback = val)"
+                      Placeholder="Share your feedback..."
+                      Rows="4" />
+            @if (!string.IsNullOrEmpty(feedback))
+            {
+                <p style="margin-top: -0.5rem; color: var(--brand-teal);">Character count: @feedback.Length</p>
+            }
+
+            <Textarea Value="This is read-only content that cannot be edited."
+                      ReadOnly="true"
+                      Rows="2" />
+
+            <Textarea Placeholder="Disabled textarea"
+                      Disabled="true"
+                      Rows="3" />
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Placeholder and Label</h3>
+            <CodeBlock Code="@PlaceholderCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Custom Rows</h3>
+            <CodeBlock Code="@RowsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Auto-resize</h3>
+            <CodeBlock Code="@AutoResizeCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Disabled and ReadOnly</h3>
+            <CodeBlock Code="@DisabledCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Character Count</h3>
+            <CodeBlock Code="@CharCountCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Value</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>The textarea value</td>
+                </tr>
+                <tr>
+                    <td><code>Placeholder</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Placeholder text</td>
+                </tr>
+                <tr>
+                    <td><code>Label</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Label text</td>
+                </tr>
+                <tr>
+                    <td><code>Rows</code></td>
+                    <td>int</td>
+                    <td>3</td>
+                    <td>Number of visible text rows</td>
+                </tr>
+                <tr>
+                    <td><code>AutoResize</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether to auto-resize based on content</td>
+                </tr>
+                <tr>
+                    <td><code>MaxLength</code></td>
+                    <td>int?</td>
+                    <td>null</td>
+                    <td>Maximum character length</td>
+                </tr>
+                <tr>
+                    <td><code>ShowCharCount</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether to show character count</td>
+                </tr>
+                <tr>
+                    <td><code>Disabled</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the textarea is disabled</td>
+                </tr>
+                <tr>
+                    <td><code>ReadOnly</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the textarea is read-only</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>ValueChanged</code></td>
+                    <td>EventCallback&lt;string&gt;</td>
+                    <td>Callback when value changes</td>
+                </tr>
+                <tr>
+                    <td><code>OnInput</code></td>
+                    <td>EventCallback&lt;ChangeEventArgs&gt;</td>
+                    <td>Native input event callback</td>
+                </tr>
+                <tr>
+                    <td><code>OnFocus</code></td>
+                    <td>EventCallback&lt;FocusEventArgs&gt;</td>
+                    <td>Callback when textarea receives focus</td>
+                </tr>
+                <tr>
+                    <td><code>OnBlur</code></td>
+                    <td>EventCallback&lt;FocusEventArgs&gt;</td>
+                    <td>Callback when textarea loses focus</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses semantic <code>&lt;textarea&gt;</code> element</li>
+            <li>Label properly associated with textarea</li>
+            <li>ARIA attributes for character count and limits</li>
+            <li>Keyboard accessible</li>
+            <li>Focus visible styles</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private string feedback = "";
+    private List<string> relatedComponents = new() { "Input", "RichTextEditor", "Form" };
+
+    private string BasicCode => @"<Textarea Placeholder=""Enter text..."" />";
+
+    private string PlaceholderCode => @"<Textarea Label=""Description"" Placeholder=""Enter a description..."" />
+<Textarea Label=""Comments"" Placeholder=""Add your comments here..."" />";
+
+    private string RowsCode => @"<Textarea Rows=""3"" Placeholder=""3 rows"" />
+<Textarea Rows=""6"" Placeholder=""6 rows"" />
+<Textarea Rows=""10"" Placeholder=""10 rows"" />";
+
+    private string AutoResizeCode => @"<Textarea AutoResize=""true"" Placeholder=""Type to see auto-resize..."" />";
+
+    private string DisabledCode => @"<Textarea Placeholder=""Disabled textarea"" Disabled=""true"" />
+<Textarea Value=""Read-only content"" ReadOnly=""true"" />";
+
+    private string CharCountCode => @"<Textarea MaxLength=""200"" ShowCharCount=""true""
+          Placeholder=""Max 200 characters..."" />
+
+<Textarea @bind-Value=""@message""
+          MaxLength=""100""
+          ShowCharCount=""true""
+          Label=""Message"" />
+<p>@message.Length / 100</p>
+
+@code {
+    private string message = """";
+}";
+}

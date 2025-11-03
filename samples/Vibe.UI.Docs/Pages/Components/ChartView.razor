@@ -1,0 +1,264 @@
+@page "/components/chart"
+@using Vibe.UI.Components
+@using static Vibe.UI.Components.Chart
+
+<PageTitle>Chart - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Chart"
+               Category="DataDisplay"
+               Description="Visualize data with various chart types including line, bar, pie, and more."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div>
+                <h4 style="margin-bottom: 1rem; font-size: 0.875rem; font-weight: 600;">Line Chart</h4>
+                <Chart Type="ChartType.Line"
+                       Data="@lineChartData"
+                       Height="250"
+                       ShowLegend="true" />
+            </div>
+            <div>
+                <h4 style="margin-bottom: 1rem; font-size: 0.875rem; font-weight: 600;">Bar Chart</h4>
+                <Chart Type="ChartType.Bar"
+                       Data="@barChartData"
+                       Height="250"
+                       ShowLegend="true" />
+            </div>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Line Chart</h3>
+            <CodeBlock Code="@LineChartCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Bar Chart</h3>
+            <CodeBlock Code="@BarChartCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Pie Chart</h3>
+            <CodeBlock Code="@PieChartCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Area Chart</h3>
+            <CodeBlock Code="@AreaChartCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Mixed Chart</h3>
+            <CodeBlock Code="@MixedChartCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Type</code></td>
+                    <td>ChartType</td>
+                    <td>Line</td>
+                    <td>Type of chart to display</td>
+                </tr>
+                <tr>
+                    <td><code>Data</code></td>
+                    <td>ChartData</td>
+                    <td>null</td>
+                    <td>Chart data configuration</td>
+                </tr>
+                <tr>
+                    <td><code>Options</code></td>
+                    <td>ChartOptions</td>
+                    <td>null</td>
+                    <td>Chart display options</td>
+                </tr>
+                <tr>
+                    <td><code>Width</code></td>
+                    <td>string</td>
+                    <td>"100%"</td>
+                    <td>Width of the chart</td>
+                </tr>
+                <tr>
+                    <td><code>Height</code></td>
+                    <td>string</td>
+                    <td>"400px"</td>
+                    <td>Height of the chart</td>
+                </tr>
+                <tr>
+                    <td><code>Responsive</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Whether chart is responsive</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnDataPointClick</code></td>
+                    <td>EventCallback&lt;ChartDataPoint&gt;</td>
+                    <td>Callback when data point is clicked</td>
+                </tr>
+                <tr>
+                    <td><code>OnLegendClick</code></td>
+                    <td>EventCallback&lt;string&gt;</td>
+                    <td>Callback when legend item is clicked</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>SVG charts with descriptive titles and labels</li>
+            <li>Data table alternative for screen readers</li>
+            <li>Keyboard navigation for interactive charts</li>
+            <li>High contrast mode support</li>
+            <li>Proper ARIA labels and descriptions</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "DataGrid", "Table", "Progress" };
+
+    private ChartData lineChartData = new()
+    {
+        Labels = new List<string> { "Jan", "Feb", "Mar", "Apr", "May", "Jun" },
+        Datasets = new List<ChartDataset>
+        {
+            new ChartDataset
+            {
+                Label = "Revenue",
+                Data = new List<double> { 12000, 19000, 15000, 25000, 22000, 30000 },
+                Color = "#3b82f6",
+                BorderWidth = 2
+            },
+            new ChartDataset
+            {
+                Label = "Expenses",
+                Data = new List<double> { 8000, 12000, 10000, 15000, 14000, 18000 },
+                Color = "#ef4444",
+                BorderWidth = 2
+            }
+        }
+    };
+
+    private ChartData barChartData = new()
+    {
+        Labels = new List<string> { "Q1", "Q2", "Q3", "Q4" },
+        Datasets = new List<ChartDataset>
+        {
+            new ChartDataset
+            {
+                Label = "Sales 2024",
+                Data = new List<double> { 45000, 52000, 48000, 61000 },
+                Color = "#10b981",
+                BackgroundColor = "#10b981"
+            },
+            new ChartDataset
+            {
+                Label = "Sales 2023",
+                Data = new List<double> { 38000, 45000, 42000, 55000 },
+                Color = "#6366f1",
+                BackgroundColor = "#6366f1"
+            }
+        }
+    };
+
+    private string LineChartCode => @"<Chart Type=""ChartType.Line"" Data=""@chartData"" />
+
+@code {
+    private ChartData chartData = new()
+    {
+        Labels = new[] { ""Jan"", ""Feb"", ""Mar"", ""Apr"", ""May"", ""Jun"" },
+        Datasets = new[]
+        {
+            new ChartDataset
+            {
+                Label = ""Sales"",
+                Data = new[] { 12, 19, 3, 5, 2, 3 }
+            }
+        }
+    };
+}";
+
+    private string BarChartCode => @"<Chart Type=""ChartType.Bar"" Data=""@barData"" />
+
+@code {
+    private ChartData barData = new()
+    {
+        Labels = new[] { ""Q1"", ""Q2"", ""Q3"", ""Q4"" },
+        Datasets = new[]
+        {
+            new ChartDataset
+            {
+                Label = ""Revenue"",
+                Data = new[] { 45, 52, 48, 61 }
+            }
+        }
+    };
+}";
+
+    private string PieChartCode => @"<Chart Type=""ChartType.Pie"" Data=""@pieData"" />
+
+@code {
+    private ChartData pieData = new()
+    {
+        Labels = new[] { ""Red"", ""Blue"", ""Yellow"" },
+        Datasets = new[]
+        {
+            new ChartDataset
+            {
+                Data = new[] { 300, 50, 100 },
+                BackgroundColor = new[] { ""#ff6384"", ""#36a2eb"", ""#ffce56"" }
+            }
+        }
+    };
+}";
+
+    private string AreaChartCode => @"<Chart Type=""ChartType.Area"" Data=""@areaData"" Options=""@areaOptions"" />
+
+@code {
+    private ChartOptions areaOptions = new()
+    {
+        Fill = true,
+        Tension = 0.4
+    };
+}";
+
+    private string MixedChartCode => @"<Chart Type=""ChartType.Mixed"" Data=""@mixedData"" />
+
+@code {
+    private ChartData mixedData = new()
+    {
+        Datasets = new[]
+        {
+            new ChartDataset { Type = ""line"", Label = ""Revenue"", Data = new[] { 50, 60, 70 } },
+            new ChartDataset { Type = ""bar"", Label = ""Profit"", Data = new[] { 20, 30, 40 } }
+        }
+    };
+}";
+}

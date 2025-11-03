@@ -1,0 +1,244 @@
+@page "/components/collapsible"
+@using Vibe.UI.Components
+
+<PageTitle>Collapsible - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Collapsible"
+               Category="Disclosure"
+               Description="A single expandable/collapsible section that shows and hides content with smooth animations."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="max-width: 600px; margin: 0 auto;">
+            <Collapsible @bind-IsOpen="isOpen">
+                <TriggerContent Context="open">
+                    <div style="padding: 1rem; background: #f3f4f6; border-radius: 0.5rem; cursor: pointer; user-select: none;">
+                        <strong>Click to @(open ? "collapse" : "expand")</strong>
+                        <span style="float: right;">@(open ? "▲" : "▼")</span>
+                    </div>
+                </TriggerContent>
+                <ChildContent>
+                    <div style="padding: 1rem; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 0.5rem 0.5rem;">
+                        This content can be shown or hidden by clicking the trigger above.
+                        It animates smoothly when opening and closing.
+                    </div>
+                </ChildContent>
+            </Collapsible>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Collapsible</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Controlled State</h3>
+            <CodeBlock Code="@ControlledCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Custom Trigger</h3>
+            <CodeBlock Code="@CustomTriggerCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Disabled State</h3>
+            <CodeBlock Code="@DisabledCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Nested Collapsible</h3>
+            <CodeBlock Code="@NestedCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>IsOpen</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Controls the expanded state</td>
+                </tr>
+                <tr>
+                    <td><code>DefaultOpen</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Initial expanded state (uncontrolled)</td>
+                </tr>
+                <tr>
+                    <td><code>Title</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Header title text</td>
+                </tr>
+                <tr>
+                    <td><code>TriggerTemplate</code></td>
+                    <td>RenderFragment&lt;bool&gt;</td>
+                    <td>-</td>
+                    <td>Custom trigger content (receives isOpen state)</td>
+                </tr>
+                <tr>
+                    <td><code>ChildContent</code></td>
+                    <td>RenderFragment</td>
+                    <td>-</td>
+                    <td>Collapsible content</td>
+                </tr>
+                <tr>
+                    <td><code>Disabled</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Disable expand/collapse interaction</td>
+                </tr>
+                <tr>
+                    <td><code>AnimationDuration</code></td>
+                    <td>int</td>
+                    <td>300</td>
+                    <td>Animation duration in milliseconds</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>IsOpenChanged</code></td>
+                    <td>EventCallback&lt;bool&gt;</td>
+                    <td>Callback when expanded state changes</td>
+                </tr>
+                <tr>
+                    <td><code>OnOpen</code></td>
+                    <td>EventCallback</td>
+                    <td>Callback when content is expanded</td>
+                </tr>
+                <tr>
+                    <td><code>OnClose</code></td>
+                    <td>EventCallback</td>
+                    <td>Callback when content is collapsed</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses <code>button</code> element for trigger</li>
+            <li>Includes <code>aria-expanded</code> attribute</li>
+            <li>Content has <code>aria-labelledby</code> referencing trigger</li>
+            <li>Keyboard accessible (Enter/Space to toggle)</li>
+            <li>Focus management during state changes</li>
+            <li>Respects <code>prefers-reduced-motion</code></li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private bool isOpen = true;
+    private List<string> relatedComponents = new() { "Accordion", "Drawer", "Modal" };
+
+    private string BasicCode => @"<Collapsible Title=""Click to expand"">
+    <ChildContent>
+        <p>This content can be shown or hidden by clicking the title.</p>
+        <p>It animates smoothly when opening and closing.</p>
+    </ChildContent>
+</Collapsible>";
+
+    private string ControlledCode => @"<Button OnClick=""@ToggleContent"">
+    @(isOpen ? ""Hide"" : ""Show"") Content
+</Button>
+
+<Collapsible @bind-IsOpen=""@isOpen"">
+    <ChildContent>
+        <p>This collapsible's state is controlled by the parent component.</p>
+        <p>The button above controls whether this content is visible.</p>
+    </ChildContent>
+</Collapsible>
+
+@code {
+    private bool isOpen = false;
+
+    private void ToggleContent()
+    {
+        isOpen = !isOpen;
+    }
+}";
+
+    private string CustomTriggerCode => @"<Collapsible>
+    <TriggerTemplate Context=""isOpen"">
+        <div class=""custom-trigger"">
+            <span class=""icon"">@(isOpen ? ""▼"" : ""▶"")</span>
+            <h3>Advanced Settings</h3>
+            <Badge Variant=""@(isOpen ? BadgeVariant.Primary : BadgeVariant.Secondary)"">
+                @(isOpen ? ""Expanded"" : ""Collapsed"")
+            </Badge>
+        </div>
+    </TriggerTemplate>
+    <ChildContent>
+        <div class=""settings-panel"">
+            <FormField Label=""API Key"">
+                <Input Type=""password"" />
+            </FormField>
+            <FormField Label=""Timeout (seconds)"">
+                <Input Type=""number"" Value=""30"" />
+            </FormField>
+            <Button Variant=""ButtonVariant.Primary"">Save Settings</Button>
+        </div>
+    </ChildContent>
+</Collapsible>";
+
+    private string DisabledCode => @"<Collapsible Title=""Available Section"">
+    <ChildContent>
+        <p>This section can be expanded and collapsed normally.</p>
+    </ChildContent>
+</Collapsible>
+
+<Collapsible Title=""Disabled Section"" Disabled=""true"">
+    <ChildContent>
+        <p>This content is locked and cannot be accessed.</p>
+    </ChildContent>
+</Collapsible>";
+
+    private string NestedCode => @"<Collapsible Title=""Parent Section"" DefaultOpen=""true"">
+    <ChildContent>
+        <p>This is the parent content.</p>
+
+        <Collapsible Title=""Child Section 1"">
+            <ChildContent>
+                <p>First nested content.</p>
+            </ChildContent>
+        </Collapsible>
+
+        <Collapsible Title=""Child Section 2"">
+            <ChildContent>
+                <p>Second nested content.</p>
+
+                <Collapsible Title=""Grandchild Section"">
+                    <ChildContent>
+                        <p>Deeply nested content.</p>
+                    </ChildContent>
+                </Collapsible>
+            </ChildContent>
+        </Collapsible>
+    </ChildContent>
+</Collapsible>";
+}

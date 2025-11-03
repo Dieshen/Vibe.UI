@@ -1,0 +1,162 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+    @if (!string.IsNullOrEmpty(Value))
+    {
+        <div class="qr-container" style="@ContainerStyle">
+            @if (!string.IsNullOrEmpty(_qrCodeDataUrl))
+            {
+                <img src="@_qrCodeDataUrl"
+                     alt="QR Code"
+                     class="qr-image"
+                     style="@ImageStyle" />
+            }
+            else
+            {
+                <div class="qr-placeholder" style="@PlaceholderStyle">
+                    <svg viewBox="0 0 100 100" class="qr-icon">
+                        <rect x="10" y="10" width="35" height="35" fill="currentColor" />
+                        <rect x="55" y="10" width="35" height="35" fill="currentColor" />
+                        <rect x="10" y="55" width="35" height="35" fill="currentColor" />
+                        <rect x="60" y="60" width="10" height="10" fill="currentColor" />
+                        <rect x="75" y="60" width="10" height="10" fill="currentColor" />
+                        <rect x="60" y="75" width="10" height="10" fill="currentColor" />
+                        <rect x="75" y="75" width="10" height="10" fill="currentColor" />
+                    </svg>
+                </div>
+            }
+        </div>
+
+        @if (ShowValue)
+        {
+            <div class="qr-value">@Value</div>
+        }
+
+        @if (AllowDownload && !string.IsNullOrEmpty(_qrCodeDataUrl))
+        {
+            <div class="qr-actions">
+                <a href="@_qrCodeDataUrl"
+                   download="qrcode.png"
+                   class="qr-download-btn">
+                    Download
+                </a>
+            </div>
+        }
+    }
+    else if (EmptyContent != null)
+    {
+        @EmptyContent
+    }
+</div>
+
+@code {
+    private string _qrCodeDataUrl = string.Empty;
+
+    [Parameter]
+    public string Value { get; set; } = string.Empty;
+
+    [Parameter]
+    public int Size { get; set; } = 200;
+
+    [Parameter]
+    public QRCodeLevel Level { get; set; } = QRCodeLevel.M;
+
+    [Parameter]
+    public string ForegroundColor { get; set; } = "#000000";
+
+    [Parameter]
+    public string BackgroundColor { get; set; } = "#FFFFFF";
+
+    [Parameter]
+    public bool ShowValue { get; set; } = false;
+
+    [Parameter]
+    public bool AllowDownload { get; set; } = true;
+
+    [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-qrcode",
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    private string ContainerStyle => $"width: {Size}px; height: {Size}px;";
+    private string ImageStyle => $"width: {Size}px; height: {Size}px;";
+    private string PlaceholderStyle => $"width: {Size}px; height: {Size}px;";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrEmpty(Value))
+        {
+            await GenerateQRCode();
+        }
+    }
+
+    private async Task GenerateQRCode()
+    {
+        // This is a placeholder for QR code generation
+        // In a real implementation, you would:
+        // 1. Use a library like QRCoder (install via NuGet)
+        // 2. Generate the QR code as a bitmap
+        // 3. Convert to base64 data URL
+        //
+        // Example with QRCoder:
+        // using QRCoder;
+        // var qrGenerator = new QRCodeGenerator();
+        // var qrCodeData = qrGenerator.CreateQrCode(Value, (QRCodeGenerator.ECCLevel)(int)Level);
+        // var qrCode = new PngByteQRCode(qrCodeData);
+        // var qrCodeImage = qrCode.GetGraphic(20, ForegroundColor, BackgroundColor);
+        // _qrCodeDataUrl = $"data:image/png;base64,{Convert.ToBase64String(qrCodeImage)}";
+
+        // For now, use a simple SVG-based approach or placeholder
+        _qrCodeDataUrl = GenerateSimpleQRCode(Value);
+        await Task.CompletedTask;
+    }
+
+    private string GenerateSimpleQRCode(string text)
+    {
+        // Simple placeholder implementation
+        // In production, replace with actual QR code library
+        var canvas = CreateSimplePattern(text);
+        return $"data:image/svg+xml;base64,{Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(canvas))}";
+    }
+
+    private string CreateSimplePattern(string text)
+    {
+        // Create a simple visual pattern based on the text hash
+        // This is NOT a real QR code - just a placeholder
+        var hash = text.GetHashCode();
+        var random = new Random(hash);
+        var svg = $@"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+            <rect width='100' height='100' fill='{BackgroundColor}'/>
+            <rect x='5' y='5' width='20' height='20' fill='{ForegroundColor}'/>
+            <rect x='75' y='5' width='20' height='20' fill='{ForegroundColor}'/>
+            <rect x='5' y='75' width='20' height='20' fill='{ForegroundColor}'/>
+            ";
+
+        for (int i = 0; i < 30; i++)
+        {
+            var x = random.Next(30, 70);
+            var y = random.Next(30, 70);
+            svg += $"<rect x='{x}' y='{y}' width='5' height='5' fill='{ForegroundColor}'/>";
+        }
+
+        svg += "</svg>";
+        return svg;
+    }
+
+    public enum QRCodeLevel
+    {
+        L = 0,  // Low - 7% error correction
+        M = 1,  // Medium - 15% error correction
+        Q = 2,  // Quartile - 25% error correction
+        H = 3   // High - 30% error correction
+    }
+}

@@ -1,0 +1,182 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+    @if (Columns != null && Columns.Any())
+    {
+        <div class="kanban-columns">
+            @foreach (var column in Columns)
+            {
+                <div class="kanban-column" @key="column.Id">
+                    <div class="kanban-column-header">
+                        <h3 class="column-title">@column.Title</h3>
+                        @if (column.Badge != null)
+                        {
+                            <span class="column-badge">@column.Badge</span>
+                        }
+                        else
+                        {
+                            <span class="column-count">@column.Cards.Count</span>
+                        }
+                        @if (AllowAddCard)
+                        {
+                            <button type="button"
+                                    class="column-add-btn"
+                                    @onclick="() => OnAddCardRequested.InvokeAsync(column.Id)"
+                                    title="Add card">
+                                +
+                            </button>
+                        }
+                    </div>
+
+                    <div class="kanban-cards">
+                        @foreach (var card in column.Cards)
+                        {
+                            <div class="kanban-card"
+                                 @key="card.Id"
+                                 draggable="@AllowDragDrop"
+                                 @onclick="() => HandleCardClick(card)">
+                                @if (CardTemplate != null)
+                                {
+                                    @CardTemplate(card)
+                                }
+                                else
+                                {
+                                    <div class="card-content">
+                                        @if (!string.IsNullOrEmpty(card.Title))
+                                        {
+                                            <h4 class="card-title">@card.Title</h4>
+                                        }
+                                        @if (!string.IsNullOrEmpty(card.Description))
+                                        {
+                                            <p class="card-description">@card.Description</p>
+                                        }
+                                        @if (card.Tags != null && card.Tags.Any())
+                                        {
+                                            <div class="card-tags">
+                                                @foreach (var tag in card.Tags)
+                                                {
+                                                    <span class="card-tag" @key="tag">@tag</span>
+                                                }
+                                            </div>
+                                        }
+                                        @if (card.Footer != null)
+                                        {
+                                            <div class="card-footer">@card.Footer</div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    @if (column.Footer != null)
+                    {
+                        <div class="kanban-column-footer">
+                            @column.Footer
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+    else if (EmptyContent != null)
+    {
+        <div class="kanban-empty">
+            @EmptyContent
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<KanbanColumn>? Columns { get; set; }
+
+    [Parameter]
+    public RenderFragment<KanbanCard>? CardTemplate { get; set; }
+
+    [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
+
+    [Parameter]
+    public bool AllowDragDrop { get; set; } = true;
+
+    [Parameter]
+    public bool AllowAddCard { get; set; } = true;
+
+    [Parameter]
+    public EventCallback<KanbanCard> OnCardClicked { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnAddCardRequested { get; set; }
+
+    [Parameter]
+    public EventCallback<CardMovedEventArgs> OnCardMoved { get; set; }
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-kanban",
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    private async Task HandleCardClick(KanbanCard card)
+    {
+        await OnCardClicked.InvokeAsync(card);
+    }
+
+    public async Task MoveCard(string cardId, string fromColumnId, string toColumnId)
+    {
+        var fromColumn = Columns?.FirstOrDefault(c => c.Id == fromColumnId);
+        var toColumn = Columns?.FirstOrDefault(c => c.Id == toColumnId);
+
+        if (fromColumn == null || toColumn == null)
+            return;
+
+        var card = fromColumn.Cards.FirstOrDefault(c => c.Id == cardId);
+        if (card == null)
+            return;
+
+        fromColumn.Cards.Remove(card);
+        toColumn.Cards.Add(card);
+
+        await OnCardMoved.InvokeAsync(new CardMovedEventArgs
+        {
+            Card = card,
+            FromColumnId = fromColumnId,
+            ToColumnId = toColumnId
+        });
+
+        StateHasChanged();
+    }
+
+    public class KanbanColumn
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Title { get; set; } = string.Empty;
+        public List<KanbanCard> Cards { get; set; } = new();
+        public RenderFragment? Badge { get; set; }
+        public RenderFragment? Footer { get; set; }
+        public string? Color { get; set; }
+    }
+
+    public class KanbanCard
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+        public List<string>? Tags { get; set; }
+        public RenderFragment? Footer { get; set; }
+        public object? Data { get; set; }
+    }
+
+    public class CardMovedEventArgs
+    {
+        public KanbanCard Card { get; set; } = new();
+        public string FromColumnId { get; set; } = string.Empty;
+        public string ToColumnId { get; set; } = string.Empty;
+    }
+}

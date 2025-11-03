@@ -1,0 +1,208 @@
+@page "/theming"
+
+<PageTitle>Theming - Vibe.UI</PageTitle>
+
+<div class="docs-page">
+    <div class="page-header">
+        <h1>Theming</h1>
+        <p class="lead">Customize the look and feel of your application with Vibe.UI's powerful theming system.</p>
+    </div>
+
+    <section class="section">
+        <h2>Overview</h2>
+        <p>
+            Vibe.UI provides a flexible theming system built on CSS custom properties (variables).
+            You can easily customize colors, spacing, typography, and other design tokens to match your brand.
+        </p>
+    </section>
+
+    <section class="section">
+        <h2>Theme Variables</h2>
+        <p>All Vibe.UI components use the following CSS custom properties:</p>
+
+        <div class="theme-variables">
+            <h3>Colors</h3>
+            <ul>
+                <li><code>--vibe-background</code> - Main background color</li>
+                <li><code>--vibe-foreground</code> - Main text color</li>
+                <li><code>--vibe-primary</code> - Primary brand color</li>
+                <li><code>--vibe-primary-foreground</code> - Text color on primary</li>
+                <li><code>--vibe-secondary</code> - Secondary background color</li>
+                <li><code>--vibe-secondary-foreground</code> - Text color on secondary</li>
+                <li><code>--vibe-accent</code> - Accent color for highlights</li>
+                <li><code>--vibe-accent-foreground</code> - Text color on accent</li>
+                <li><code>--vibe-muted</code> - Muted background color</li>
+                <li><code>--vibe-muted-foreground</code> - Muted text color</li>
+                <li><code>--vibe-border</code> - Border color</li>
+                <li><code>--vibe-card</code> - Card background color</li>
+                <li><code>--vibe-card-foreground</code> - Text color on cards</li>
+            </ul>
+
+            <h3>Other Properties</h3>
+            <ul>
+                <li><code>--vibe-radius</code> - Border radius for components</li>
+                <li><code>--vibe-ring</code> - Focus ring color</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2>Using the ThemeManager</h2>
+        <p>Vibe.UI includes a <code>ThemeManager</code> service for programmatic theme management:</p>
+
+        <CodeBlock Code="@ThemeManagerCode" Language="csharp" />
+    </section>
+
+    <section class="section">
+        <h2>Applying Custom Themes</h2>
+        <p>You can create and register custom themes in your application:</p>
+
+        <CodeBlock Code="@CustomThemeCode" Language="csharp" />
+    </section>
+
+    <section class="section">
+        <h2>CSS Custom Themes</h2>
+        <p>For simple customization, you can override CSS variables directly:</p>
+
+        <CodeBlock Code="@CssVariablesCode" Language="css" />
+    </section>
+
+    <section class="section">
+        <h2>Built-in Themes</h2>
+        <p>Vibe.UI comes with several built-in themes:</p>
+
+        <div class="theme-showcase">
+            <div class="theme-card">
+                <h4>Light</h4>
+                <p>Clean, bright theme perfect for daytime use</p>
+            </div>
+            <div class="theme-card">
+                <h4>Dark</h4>
+                <p>Easy on the eyes for low-light environments</p>
+            </div>
+            <div class="theme-card">
+                <h4>Ocean</h4>
+                <p>Calm blue tones inspired by the sea</p>
+            </div>
+            <div class="theme-card">
+                <h4>Forest</h4>
+                <p>Natural green palette for a refreshing look</p>
+            </div>
+            <div class="theme-card">
+                <h4>Sunset</h4>
+                <p>Warm orange hues reminiscent of golden hour</p>
+            </div>
+            <div class="theme-card">
+                <h4>Purple</h4>
+                <p>Royal purple theme with modern vibes</p>
+            </div>
+            <div class="theme-card">
+                <h4>Midnight</h4>
+                <p>Deep dark theme with subtle purple accents</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2>Theme Persistence</h2>
+        <p>Save user theme preferences using localStorage:</p>
+
+        <CodeBlock Code="@PersistenceCode" Language="csharp" />
+    </section>
+
+    <section class="section">
+        <h2>Dynamic Theme Switching</h2>
+        <p>Switch themes dynamically at runtime using JavaScript interop:</p>
+
+        <CodeBlock Code="@DynamicSwitchingCode" Language="csharp" />
+    </section>
+</div>
+
+@code {
+    private string ThemeManagerCode => @"@inject ThemeManager ThemeManager
+
+protected override async Task OnInitializedAsync()
+{
+    await ThemeManager.InitializeAsync();
+
+    // Get current theme
+    var currentTheme = ThemeManager.CurrentTheme;
+
+    // Apply a theme
+    await ThemeManager.ApplyThemeAsync(""dark"");
+}";
+
+    private string CustomThemeCode => @"var customTheme = new Theme
+{
+    Id = ""corporate"",
+    Name = ""Corporate"",
+    Type = ThemeType.Custom,
+    Variables = new Dictionary<string, string>
+    {
+        [""--vibe-background""] = ""#ffffff"",
+        [""--vibe-foreground""] = ""#1a1a1a"",
+        [""--vibe-primary""] = ""#0066cc"",
+        [""--vibe-primary-foreground""] = ""#ffffff"",
+        [""--vibe-border""] = ""#e0e0e0"",
+        // Add more variables...
+    }
+};
+
+ThemeManager.RegisterTheme(customTheme);
+await ThemeManager.ApplyThemeAsync(""corporate"");";
+
+    private string CssVariablesCode => @":root {
+    --vibe-primary: #your-brand-color;
+    --vibe-background: #your-bg-color;
+    --vibe-foreground: #your-text-color;
+}
+
+/* Or for dark mode specifically */
+[data-theme=""dark""] {
+    --vibe-background: #1a1a1a;
+    --vibe-foreground: #ffffff;
+}";
+
+    private string PersistenceCode => @"@inject IJSRuntime JSRuntime
+@inject ThemeManager ThemeManager
+
+private async Task SaveThemePreference(string themeId)
+{
+    await JSRuntime.InvokeVoidAsync(""localStorage.setItem"", ""theme"", themeId);
+    await ThemeManager.ApplyThemeAsync(themeId);
+}
+
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (firstRender)
+    {
+        var savedTheme = await JSRuntime.InvokeAsync<string>(
+            ""localStorage.getItem"", ""theme"");
+
+        if (!string.IsNullOrEmpty(savedTheme))
+        {
+            await ThemeManager.ApplyThemeAsync(savedTheme);
+        }
+    }
+}";
+
+    private string DynamicSwitchingCode => @"@inject ThemeManager ThemeManager
+
+<select @onchange=""OnThemeChanged"">
+    @foreach (var theme in ThemeManager.AvailableThemes)
+    {
+        <option value=""@theme.Id"">@theme.Name</option>
+    }
+</select>
+
+@code {
+    private async Task OnThemeChanged(ChangeEventArgs e)
+    {
+        var themeId = e.Value?.ToString();
+        if (!string.IsNullOrEmpty(themeId))
+        {
+            await ThemeManager.ApplyThemeAsync(themeId);
+        }
+    }
+}";
+}

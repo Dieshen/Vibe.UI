@@ -1,0 +1,93 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="tree">
+    @if (Items != null)
+    {
+        @foreach (var item in Items)
+        {
+            <TreeViewNode Item="item"
+                          SelectedValue="@SelectedValue"
+                          OnNodeClick="@HandleNodeClick"
+                          OnNodeExpand="@HandleNodeExpand"
+                          ShowCheckboxes="@ShowCheckboxes"
+                          MultiSelect="@MultiSelect"
+                          ExpandedNodes="@_expandedNodes"
+                          SelectedNodes="@_selectedNodes" />
+        }
+    }
+</div>
+
+@code {
+    private HashSet<string> _expandedNodes = new();
+    private HashSet<string> _selectedNodes = new();
+
+    [Parameter]
+    public List<TreeNode>? Items { get; set; }
+
+    [Parameter]
+    public string? SelectedValue { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> SelectedValueChanged { get; set; }
+
+    [Parameter]
+    public bool ShowCheckboxes { get; set; }
+
+    [Parameter]
+    public bool MultiSelect { get; set; }
+
+    [Parameter]
+    public EventCallback<TreeNode> OnNodeClick { get; set; }
+
+    [Parameter]
+    public EventCallback<TreeNode> OnNodeExpand { get; set; }
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-tree-view",
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    private async Task HandleNodeClick(TreeNode node)
+    {
+        if (MultiSelect)
+        {
+            if (_selectedNodes.Contains(node.Id))
+                _selectedNodes.Remove(node.Id);
+            else
+                _selectedNodes.Add(node.Id);
+        }
+        else
+        {
+            SelectedValue = node.Id;
+            await SelectedValueChanged.InvokeAsync(node.Id);
+        }
+
+        await OnNodeClick.InvokeAsync(node);
+    }
+
+    private async Task HandleNodeExpand(TreeNode node)
+    {
+        if (_expandedNodes.Contains(node.Id))
+            _expandedNodes.Remove(node.Id);
+        else
+            _expandedNodes.Add(node.Id);
+
+        await OnNodeExpand.InvokeAsync(node);
+    }
+
+    public class TreeNode
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Label { get; set; } = string.Empty;
+        public RenderFragment? Icon { get; set; }
+        public List<TreeNode>? Children { get; set; }
+        public bool IsDisabled { get; set; }
+        public object? Data { get; set; }
+    }
+}

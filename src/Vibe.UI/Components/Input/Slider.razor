@@ -1,3 +1,5 @@
+@namespace Vibe.UI.Components
+@using System.Globalization
 @inherits Vibe.UI.Base.ThemedComponentBase
 @inject IJSRuntime JSRuntime
 
@@ -103,7 +105,7 @@
     /// <summary>
     /// Gets the ID of the slider element
     /// </summary>
-    private string Id => string.IsNullOrEmpty(this.Id) ? _id : this.Id;
+    private string ElementId => string.IsNullOrEmpty(Id) ? _id : Id;
 
     private async Task OnChangeHandler(ChangeEventArgs args)
     {
@@ -171,7 +173,7 @@
     /// <summary>
     /// Handles the slider input event (during drag)
     /// </summary>
-    private async Task OnInput(ChangeEventArgs e)
+    private async Task HandleInputEvent(ChangeEventArgs e)
     {
         if (e.Value != null && double.TryParse(e.Value.ToString(), out double newValue))
         {
@@ -182,7 +184,7 @@
     /// <summary>
     /// Handles the slider change event (after drag completes)
     /// </summary>
-    private async Task OnChange(ChangeEventArgs e)
+    private async Task HandleChangeEvent(ChangeEventArgs e)
     {
         if (e.Value != null && double.TryParse(e.Value.ToString(), out double newValue))
         {

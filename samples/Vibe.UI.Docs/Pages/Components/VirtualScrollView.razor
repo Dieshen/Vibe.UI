@@ -1,0 +1,294 @@
+@page "/components/virtualscroll"
+@using Vibe.UI.Components
+
+<PageTitle>VirtualScroll - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="VirtualScroll"
+               Category="Advanced"
+               Description="A virtual scrolling component that efficiently renders large lists by only displaying visible items in the viewport."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <VirtualScroll Items="scrollItems" ItemHeight="60" Height="300">
+                <ItemTemplate Context="item">
+                    <div style="padding: 1rem; border-bottom: 1px solid #eee;">
+                        <strong>@item</strong>
+                    </div>
+                </ItemTemplate>
+            </VirtualScroll>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Virtual Scroll</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Variable Item Heights</h3>
+            <CodeBlock Code="@VariableHeightCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Infinite Scroll</h3>
+            <CodeBlock Code="@InfiniteScrollCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Horizontal Scroll</h3>
+            <CodeBlock Code="@HorizontalCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Loading State</h3>
+            <CodeBlock Code="@LoadingCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Items</code></td>
+                    <td>IEnumerable&lt;TItem&gt;</td>
+                    <td>-</td>
+                    <td>Collection of items to display</td>
+                </tr>
+                <tr>
+                    <td><code>ItemTemplate</code></td>
+                    <td>RenderFragment&lt;TItem&gt;</td>
+                    <td>-</td>
+                    <td>Template for rendering each item</td>
+                </tr>
+                <tr>
+                    <td><code>ItemHeight</code></td>
+                    <td>int</td>
+                    <td>50</td>
+                    <td>Fixed height per item in pixels</td>
+                </tr>
+                <tr>
+                    <td><code>Height</code></td>
+                    <td>string</td>
+                    <td>"400px"</td>
+                    <td>Container height (CSS value)</td>
+                </tr>
+                <tr>
+                    <td><code>OverscanCount</code></td>
+                    <td>int</td>
+                    <td>3</td>
+                    <td>Number of items to render outside viewport</td>
+                </tr>
+                <tr>
+                    <td><code>Horizontal</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Enable horizontal scrolling mode</td>
+                </tr>
+                <tr>
+                    <td><code>LoadingTemplate</code></td>
+                    <td>RenderFragment</td>
+                    <td>-</td>
+                    <td>Template shown when loading more items</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnScrollEnd</code></td>
+                    <td>EventCallback</td>
+                    <td>Callback when scrolled to the end</td>
+                </tr>
+                <tr>
+                    <td><code>OnScroll</code></td>
+                    <td>EventCallback&lt;ScrollEventArgs&gt;</td>
+                    <td>Callback on scroll events</td>
+                </tr>
+                <tr>
+                    <td><code>OnItemClick</code></td>
+                    <td>EventCallback&lt;TItem&gt;</td>
+                    <td>Callback when item is clicked</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Maintains focus position during virtual scrolling</li>
+            <li>Keyboard scrolling (Arrow keys, Page Up/Down)</li>
+            <li>Screen readers announce list size and position</li>
+            <li>Uses <code>role="list"</code> and <code>role="listitem"</code></li>
+            <li>Proper <code>aria-setsize</code> and <code>aria-posinset</code> attributes</li>
+            <li>Focus restoration when items are recycled</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> scrollItems = Enumerable.Range(1, 1000).Select(i => $"Item {i}").ToList();
+    private List<string> relatedComponents = new() { "List", "DataGrid", "Table" };
+
+    private string BasicCode => @"<VirtualScroll Items=""@items"" ItemHeight=""60"" Height=""500px"">
+    <ItemTemplate Context=""item"">
+        <div class=""list-item"">
+            <h4>@item.Title</h4>
+            <p>@item.Description</p>
+        </div>
+    </ItemTemplate>
+</VirtualScroll>
+
+@code {
+    private List<DataItem> items = Enumerable.Range(1, 10000)
+        .Select(i => new DataItem
+        {
+            Title = $""Item {i}"",
+            Description = $""Description for item {i}""
+        })
+        .ToList();
+}";
+
+    private string VariableHeightCode => @"<VirtualScroll Items=""@posts"" Height=""600px"">
+    <ItemTemplate Context=""post"">
+        <div class=""post-card"">
+            <div class=""post-header"">
+                <Avatar Src=""@post.AuthorAvatar"" />
+                <span>@post.Author</span>
+            </div>
+            <h3>@post.Title</h3>
+            <p>@post.Content</p>
+            <div class=""post-footer"">
+                <span>@post.Likes likes</span>
+                <span>@post.Comments comments</span>
+            </div>
+        </div>
+    </ItemTemplate>
+</VirtualScroll>
+
+@code {
+    // Items can have different heights
+    // Component will measure and cache heights automatically
+    private List<Post> posts = GetPosts();
+}";
+
+    private string InfiniteScrollCode => @"<VirtualScroll Items=""@items""
+               ItemHeight=""80""
+               Height=""500px""
+               OnScrollEnd=""@LoadMoreAsync"">
+    <ItemTemplate Context=""item"">
+        <div class=""list-item"">@item.Name</div>
+    </ItemTemplate>
+    <LoadingTemplate>
+        <div class=""loading-more"">
+            <Spinner Size=""SpinnerSize.Small"" />
+            <span>Loading more items...</span>
+        </div>
+    </LoadingTemplate>
+</VirtualScroll>
+
+@code {
+    private List<Item> items = new();
+    private int page = 1;
+    private bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMoreAsync();
+    }
+
+    private async Task LoadMoreAsync()
+    {
+        if (isLoading) return;
+
+        isLoading = true;
+        var newItems = await FetchItemsAsync(page++);
+        items.AddRange(newItems);
+        isLoading = false;
+
+        StateHasChanged();
+    }
+
+    private async Task<List<Item>> FetchItemsAsync(int pageNumber)
+    {
+        // Simulate API call
+        await Task.Delay(1000);
+        return Enumerable.Range((pageNumber - 1) * 50 + 1, 50)
+            .Select(i => new Item { Name = $""Item {i}"" })
+            .ToList();
+    }
+}";
+
+    private string HorizontalCode => @"<VirtualScroll Items=""@images""
+               ItemHeight=""200""
+               Height=""300px""
+               Horizontal=""true"">
+    <ItemTemplate Context=""image"">
+        <div class=""image-card"">
+            <img src=""@image.Url"" alt=""@image.Title"" />
+            <p>@image.Title</p>
+        </div>
+    </ItemTemplate>
+</VirtualScroll>
+
+@code {
+    private List<ImageItem> images = GetImages();
+}";
+
+    private string LoadingCode => @"<VirtualScroll Items=""@items""
+               ItemHeight=""70""
+               Height=""500px""
+               OnScrollEnd=""@LoadMoreDataAsync"">
+    <ItemTemplate Context=""item"">
+        <div class=""data-row"">
+            <span>@item.Id</span>
+            <span>@item.Name</span>
+            <span>@item.Status</span>
+        </div>
+    </ItemTemplate>
+    <LoadingTemplate>
+        <div class=""loading-indicator"">
+            <Skeleton Width=""100%"" Height=""70px"" Count=""3"" />
+        </div>
+    </LoadingTemplate>
+</VirtualScroll>
+
+@code {
+    private List<DataRow> items = new();
+    private bool hasMore = true;
+
+    private async Task LoadMoreDataAsync()
+    {
+        if (!hasMore) return;
+
+        var newData = await DataService.GetNextPageAsync();
+        if (newData.Any())
+        {
+            items.AddRange(newData);
+        }
+        else
+        {
+            hasMore = false;
+        }
+    }
+}";
+}

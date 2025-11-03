@@ -1,0 +1,183 @@
+@page "/components/stepper"
+
+<PageTitle>Stepper - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Stepper"
+               Category="Navigation"
+               Description="Displays progress through numbered steps in a multi-step process."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <div style="padding: 1.5rem; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; margin-bottom: 1rem;">
+                <h4 style="margin: 0 0 0.5rem 0; color: #856404;">Component Not Yet Implemented</h4>
+                <p style="margin: 0; color: #856404;">
+                    The Stepper component has not been implemented yet. The API documentation below represents the planned interface.
+                </p>
+            </div>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Vertical Orientation</h3>
+            <CodeBlock Code="@VerticalCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Descriptions</h3>
+            <CodeBlock Code="@DescriptionsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Icons</h3>
+            <CodeBlock Code="@IconsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Error State</h3>
+            <CodeBlock Code="@ErrorCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>CurrentStep</code></td>
+                    <td>int</td>
+                    <td>0</td>
+                    <td>Current active step (0-indexed)</td>
+                </tr>
+                <tr>
+                    <td><code>Steps</code></td>
+                    <td>List&lt;StepItem&gt;</td>
+                    <td>null</td>
+                    <td>List of step configurations</td>
+                </tr>
+                <tr>
+                    <td><code>Orientation</code></td>
+                    <td>Orientation</td>
+                    <td>Horizontal</td>
+                    <td>Stepper orientation</td>
+                </tr>
+                <tr>
+                    <td><code>Clickable</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether steps are clickable</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnStepClick</code></td>
+                    <td>EventCallback&lt;int&gt;</td>
+                    <td>Callback when step is clicked</td>
+                </tr>
+                <tr>
+                    <td><code>CurrentStepChanged</code></td>
+                    <td>EventCallback&lt;int&gt;</td>
+                    <td>Callback when current step changes</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses semantic <code>&lt;nav&gt;</code> with proper labels</li>
+            <li>ARIA attributes for current and completed steps</li>
+            <li>Keyboard navigation between steps</li>
+            <li>Screen reader announces progress</li>
+            <li>Focus management for step navigation</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Tabs", "Wizard", "ProgressBar" };
+
+    private string BasicCode => @"<Stepper CurrentStep=""@currentStep"" Steps=""@steps"" />
+
+<Button OnClick=""@(() => currentStep = Math.Max(0, currentStep - 1))"">
+    Previous
+</Button>
+<Button OnClick=""@(() => currentStep = Math.Min(steps.Count - 1, currentStep + 1))"">
+    Next
+</Button>
+
+@code {
+    private int currentStep = 0;
+    private List<StepItem> steps = new()
+    {
+        new() { Label = ""Select Campaign"" },
+        new() { Label = ""Create Ad"" },
+        new() { Label = ""Review & Launch"" }
+    };
+}";
+
+    private string VerticalCode => @"<Stepper CurrentStep=""@currentStep""
+         Steps=""@steps""
+         Orientation=""Orientation.Vertical"" />";
+
+    private string DescriptionsCode => @"<Stepper CurrentStep=""@currentStep"" Steps=""@stepsWithDesc"" />
+
+@code {
+    private List<StepItem> stepsWithDesc = new()
+    {
+        new() { Label = ""Account Setup"", Description = ""Create your account"" },
+        new() { Label = ""Profile Info"", Description = ""Add your details"" },
+        new() { Label = ""Preferences"", Description = ""Set your preferences"" },
+        new() { Label = ""Complete"", Description = ""Review and finish"" }
+    };
+}";
+
+    private string IconsCode => @"<Stepper CurrentStep=""@currentStep"" Steps=""@stepsWithIcons"" />
+
+@code {
+    private List<StepItem> stepsWithIcons = new()
+    {
+        new() { Label = ""Cart"", Icon = ""🛒"" },
+        new() { Label = ""Shipping"", Icon = ""📦"" },
+        new() { Label = ""Payment"", Icon = ""💳"" },
+        new() { Label = ""Confirmation"", Icon = ""✅"" }
+    };
+}";
+
+    private string ErrorCode => @"<Stepper CurrentStep=""@currentStep"" Steps=""@stepsWithError"" />
+
+@code {
+    private int currentStep = 1;
+    private List<StepItem> stepsWithError = new()
+    {
+        new() { Label = ""Personal Info"", Status = StepStatus.Complete },
+        new() { Label = ""Payment"", Status = StepStatus.Error },
+        new() { Label = ""Confirmation"", Status = StepStatus.Pending }
+    };
+}";
+}

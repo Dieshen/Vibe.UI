@@ -1,0 +1,192 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="group" aria-label="@AriaLabel">
+    @for (int i = 0; i < Length; i++)
+    {
+        var index = i;
+        <input type="@(Pattern == OTPPattern.Numeric ? "tel" : "text")"
+               @ref="@_inputs[i]"
+               class="input-otp-slot"
+               maxlength="1"
+               value="@GetCharAt(index)"
+               @oninput="@(e => HandleInput(index, e))"
+               @onkeydown="@(e => HandleKeyDown(index, e))"
+               @onpaste="@HandlePaste"
+               disabled="@Disabled"
+               inputmode="@(Pattern == OTPPattern.Numeric ? "numeric" : "text")"
+               autocomplete="one-time-code"
+               aria-label="@($"Character {index + 1}")" />
+
+        @if (index < Length - 1 && SeparatorIndices.Contains(index))
+        {
+            <span class="input-otp-separator">@Separator</span>
+        }
+    }
+</div>
+
+@code {
+    private ElementReference[] _inputs = new ElementReference[6]; // Initialize with default length
+    private string _value = string.Empty;
+
+    [Parameter]
+    public string Value
+    {
+        get => _value;
+        set
+        {
+            if (_value != value)
+            {
+                _value = value ?? string.Empty;
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter]
+    public int Length { get; set; } = 6;
+
+    [Parameter]
+    public OTPPattern Pattern { get; set; } = OTPPattern.Numeric;
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public string? AriaLabel { get; set; } = "One-time password input";
+
+    [Parameter]
+    public string Separator { get; set; } = "-";
+
+    [Parameter]
+    public List<int> SeparatorIndices { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<string> OnComplete { get; set; }
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "input-otp",
+        Disabled ? "input-otp-disabled" : null,
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    protected override void OnInitialized()
+    {
+        _inputs = new ElementReference[Length];
+        if (!SeparatorIndices.Any() && Length > 3)
+        {
+            // Default separator in the middle
+            SeparatorIndices.Add((Length / 2) - 1);
+        }
+    }
+
+    private string GetCharAt(int index)
+    {
+        return index < _value.Length ? _value[index].ToString() : string.Empty;
+    }
+
+    private async Task HandleInput(int index, ChangeEventArgs e)
+    {
+        var inputValue = e.Value?.ToString() ?? string.Empty;
+
+        if (string.IsNullOrEmpty(inputValue))
+        {
+            return;
+        }
+
+        // Validate pattern
+        if (!IsValidChar(inputValue[^1]))
+        {
+            return;
+        }
+
+        // Update value
+        var chars = _value.PadRight(Length).ToCharArray();
+        chars[index] = inputValue[^1];
+        _value = new string(chars).TrimEnd();
+
+        await ValueChanged.InvokeAsync(_value);
+
+        // Auto-focus next input
+        if (index < Length - 1 && !string.IsNullOrEmpty(inputValue))
+        {
+            await FocusInput(index + 1);
+        }
+
+        // Check if complete
+        if (_value.Length == Length)
+        {
+            await OnComplete.InvokeAsync(_value);
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task HandleKeyDown(int index, KeyboardEventArgs e)
+    {
+        if (e.Key == "Backspace")
+        {
+            if (string.IsNullOrEmpty(GetCharAt(index)) && index > 0)
+            {
+                // Move to previous input
+                await FocusInput(index - 1);
+            }
+            else
+            {
+                // Clear current
+                var chars = _value.PadRight(Length).ToCharArray();
+                chars[index] = ' ';
+                _value = new string(chars).TrimEnd();
+                await ValueChanged.InvokeAsync(_value);
+                StateHasChanged();
+            }
+        }
+        else if (e.Key == "ArrowLeft" && index > 0)
+        {
+            await FocusInput(index - 1);
+        }
+        else if (e.Key == "ArrowRight" && index < Length - 1)
+        {
+            await FocusInput(index + 1);
+        }
+    }
+
+    private async Task HandlePaste(ClipboardEventArgs e)
+    {
+        // Note: ClipboardEventArgs doesn't provide clipboard data in Blazor
+        // This would need JS interop to fully implement
+        await Task.CompletedTask;
+    }
+
+    private async Task FocusInput(int index)
+    {
+        // Would need JS interop to actually focus
+        await Task.CompletedTask;
+    }
+
+    private bool IsValidChar(char c)
+    {
+        return Pattern switch
+        {
+            OTPPattern.Numeric => char.IsDigit(c),
+            OTPPattern.Alphanumeric => char.IsLetterOrDigit(c),
+            OTPPattern.Alpha => char.IsLetter(c),
+            _ => true
+        };
+    }
+
+    public enum OTPPattern
+    {
+        Numeric,
+        Alphanumeric,
+        Alpha,
+        Any
+    }
+}

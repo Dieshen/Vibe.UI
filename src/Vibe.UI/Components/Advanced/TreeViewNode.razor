@@ -1,0 +1,116 @@
+@namespace Vibe.UI.Components
+
+<div class="tree-view-node" role="treeitem" aria-expanded="@IsExpanded.ToString().ToLower()">
+    <div class="tree-node-content" @onclick="HandleClick">
+        @if (HasChildren)
+        {
+            <button type="button"
+                    class="tree-node-toggle"
+                    @onclick="HandleToggle"
+                    @onclick:stopPropagation="true"
+                    aria-label="@(IsExpanded ? "Collapse" : "Expand")">
+                @if (IsExpanded)
+                {
+                    <span>▼</span>
+                }
+                else
+                {
+                    <span>▶</span>
+                }
+            </button>
+        }
+        else
+        {
+            <span class="tree-node-spacer"></span>
+        }
+
+        @if (ShowCheckboxes)
+        {
+            <input type="checkbox"
+                   checked="@IsSelected"
+                   @onchange="HandleCheckboxChange"
+                   @onclick:stopPropagation="true"
+                   class="tree-node-checkbox" />
+        }
+
+        @if (Item?.Icon != null)
+        {
+            <span class="tree-node-icon">@Item.Icon</span>
+        }
+
+        <span class="tree-node-label @(IsSelected ? "selected" : "") @(Item?.IsDisabled == true ? "disabled" : "")">
+            @Item?.Label
+        </span>
+    </div>
+
+    @if (HasChildren && Item?.Children != null)
+    {
+        <div class="tree-node-children @(IsExpanded ? "expanded" : "collapsed")" role="group" style="@(IsExpanded ? "" : "display: none;")">
+            @foreach (var child in Item.Children)
+            {
+                <TreeViewNode Item="child"
+                              SelectedValue="@SelectedValue"
+                              OnNodeClick="@OnNodeClick"
+                              OnNodeExpand="@OnNodeExpand"
+                              ShowCheckboxes="@ShowCheckboxes"
+                              MultiSelect="@MultiSelect"
+                              ExpandedNodes="@ExpandedNodes"
+                              SelectedNodes="@SelectedNodes" />
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public TreeView.TreeNode? Item { get; set; }
+
+    [Parameter]
+    public string? SelectedValue { get; set; }
+
+    [Parameter]
+    public EventCallback<TreeView.TreeNode> OnNodeClick { get; set; }
+
+    [Parameter]
+    public EventCallback<TreeView.TreeNode> OnNodeExpand { get; set; }
+
+    [Parameter]
+    public bool ShowCheckboxes { get; set; }
+
+    [Parameter]
+    public bool MultiSelect { get; set; }
+
+    [Parameter]
+    public HashSet<string> ExpandedNodes { get; set; } = new();
+
+    [Parameter]
+    public HashSet<string> SelectedNodes { get; set; } = new();
+
+    private bool HasChildren => Item?.Children != null && Item.Children.Any();
+    private bool IsExpanded => Item != null && ExpandedNodes.Contains(Item.Id);
+    private bool IsSelected => Item != null && (SelectedNodes.Contains(Item.Id) || SelectedValue == Item.Id);
+
+    private async Task HandleClick()
+    {
+        if (Item != null && !Item.IsDisabled && OnNodeClick.HasDelegate)
+        {
+            await OnNodeClick.InvokeAsync(Item);
+        }
+    }
+
+    private async Task HandleToggle()
+    {
+        if (Item != null && OnNodeExpand.HasDelegate)
+        {
+            await OnNodeExpand.InvokeAsync(Item);
+        }
+    }
+
+    private async Task HandleCheckboxChange(ChangeEventArgs e)
+    {
+        if (Item != null && OnNodeClick.HasDelegate)
+        {
+            await OnNodeClick.InvokeAsync(Item);
+        }
+    }
+}

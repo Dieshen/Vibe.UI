@@ -1,0 +1,36 @@
+.vibe-label {
+    display: inline-block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    color: var(--vibe-foreground);
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.vibe-label:hover {
+    color: var(--vibe-primary);
+}
+
+.vibe-label-required::after {
+    content: " *";
+    color: var(--vibe-destructive);
+    margin-left: 0.125rem;
+}
+
+.vibe-label-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.vibe-label-disabled:hover {
+    color: var(--vibe-foreground);
+}
+
+/* Peer-disabled support */
+.vibe-label:has(+ :disabled),
+.vibe-label:has(+ [disabled]) {
+    opacity: 0.7;
+    cursor: not-allowed;
+}

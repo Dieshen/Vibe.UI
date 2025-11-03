@@ -1,0 +1,118 @@
+{
+  "Vibe Button": {
+    "prefix": "vibe-button",
+    "body": [
+      "<Button Variant=\"ButtonVariant.${1|Primary,Secondary,Destructive,Outline,Ghost|}\"",
+      "        Size=\"ButtonSize.${2|Default,Small,Large|}\"",
+      "        OnClick=\"${3:HandleClick}\">",
+      "    ${4:Button Text}",
+      "</Button>"
+    ],
+    "description": "Vibe.UI Button component"
+  },
+  "Vibe Input": {
+    "prefix": "vibe-input",
+    "body": [
+      "<Input @bind-Value=\"${1:value}\"",
+      "       Placeholder=\"${2:Enter text...}\"",
+      "       Type=\"InputType.${3|Text,Password,Email,Number|}\" />"
+    ],
+    "description": "Vibe.UI Input component"
+  },
+  "Vibe Card": {
+    "prefix": "vibe-card",
+    "body": [
+      "<Card>",
+      "    <CardHeader>",
+      "        <h3>${1:Card Title}</h3>",
+      "    </CardHeader>",
+      "    <CardContent>",
+      "        ${2:Card content goes here}",
+      "    </CardContent>",
+      "    <CardFooter>",
+      "        ${3:Card footer}",
+      "    </CardFooter>",
+      "</Card>"
+    ],
+    "description": "Vibe.UI Card component"
+  },
+  "Vibe Dialog": {
+    "prefix": "vibe-dialog",
+    "body": [
+      "<Dialog @bind-IsOpen=\"${1:isDialogOpen}\">",
+      "    <DialogHeader>",
+      "        <h3>${2:Dialog Title}</h3>",
+      "    </DialogHeader>",
+      "    <DialogContent>",
+      "        ${3:Dialog content}",
+      "    </DialogContent>",
+      "    <DialogFooter>",
+      "        <Button OnClick=\"() => ${1:isDialogOpen} = false\">Close</Button>",
+      "    </DialogFooter>",
+      "</Dialog>"
+    ],
+    "description": "Vibe.UI Dialog component"
+  },
+  "Vibe Badge": {
+    "prefix": "vibe-badge",
+    "body": [
+      "<Badge>${1:Badge Text}</Badge>"
+    ],
+    "description": "Vibe.UI Badge component"
+  },
+  "Vibe Label": {
+    "prefix": "vibe-label",
+    "body": [
+      "<Label For=\"${1:inputId}\" Required=\"${2|true,false|}\">${3:Label Text}</Label>"
+    ],
+    "description": "Vibe.UI Label component"
+  },
+  "Vibe Toggle Group": {
+    "prefix": "vibe-togglegroup",
+    "body": [
+      "<ToggleGroup @bind-Value=\"${1:selectedValue}\" Type=\"ToggleGroupType.${2|Single,Multiple|}\">",
+      "    <ToggleGroupItem Value=\"${3:option1}\">${4:Option 1}</ToggleGroupItem>",
+      "    <ToggleGroupItem Value=\"${5:option2}\">${6:Option 2}</ToggleGroupItem>",
+      "</ToggleGroup>"
+    ],
+    "description": "Vibe.UI Toggle Group component"
+  },
+  "Vibe Radio Group": {
+    "prefix": "vibe-radiogroup",
+    "body": [
+      "<RadioGroup @bind-Value=\"${1:selectedValue}\" Name=\"${2:groupName}\">",
+      "    <RadioGroupItem Value=\"${3:option1}\">${4:Option 1}</RadioGroupItem>",
+      "    <RadioGroupItem Value=\"${5:option2}\">${6:Option 2}</RadioGroupItem>",
+      "</RadioGroup>"
+    ],
+    "description": "Vibe.UI Radio Group component"
+  },
+  "Vibe Tabs": {
+    "prefix": "vibe-tabs",
+    "body": [
+      "<Tabs @bind-ActiveTab=\"${1:activeTab}\">",
+      "    <TabItem Value=\"${2:tab1}\" Title=\"${3:Tab 1}\">",
+      "        ${4:Tab 1 content}",
+      "    </TabItem>",
+      "    <TabItem Value=\"${5:tab2}\" Title=\"${6:Tab 2}\">",
+      "        ${7:Tab 2 content}",
+      "    </TabItem>",
+      "</Tabs>"
+    ],
+    "description": "Vibe.UI Tabs component"
+  },
+  "Vibe Accordion": {
+    "prefix": "vibe-accordion",
+    "body": [
+      "<Accordion>",
+      "    <AccordionItem Title=\"${1:Section 1}\">",
+      "        ${2:Content for section 1}",
+      "    </AccordionItem>",
+      "    <AccordionItem Title=\"${3:Section 2}\">",
+      "        ${4:Content for section 2}",
+      "    </AccordionItem>",
+      "</Accordion>"
+    ],
+    "description": "Vibe.UI Accordion component"
+  }
+}

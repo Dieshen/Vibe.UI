@@ -11,19 +11,19 @@
             </CascadingValue>
         </div>
 
-        @if (ShowNavigation && Items.Count > 1)
+        @if (ShowNavigation)
         {
             <div class="carousel-navigation">
-                <button class="carousel-button carousel-prev-button" @onclick="PrevSlide" disabled="@(ActiveIndex <= 0)">
+                <button class="carousel-button carousel-prev-button" @onclick="PrevSlide" disabled="@(Items.Count <= 1 || ActiveIndex <= 0)">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="carousel-button-icon"><polyline points="15 18 9 12 15 6"></polyline></svg>
                 </button>
-                <button class="carousel-button carousel-next-button" @onclick="NextSlide" disabled="@(ActiveIndex >= Items.Count - 1)">
+                <button class="carousel-button carousel-next-button" @onclick="NextSlide" disabled="@(Items.Count <= 1 || ActiveIndex >= Items.Count - 1)">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="carousel-button-icon"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </button>
             </div>
         }
 
-        @if (ShowIndicators && Items.Count > 1)
+        @if (ShowIndicators)
         {
             <div class="carousel-indicators">
                 @for (int i = 0; i < Items.Count; i++)
@@ -338,20 +338,20 @@
     {
         _autoPlayTimer?.Dispose();
     }
-}
 
-/// <summary>
-/// Defines the orientation of the carousel.
-/// </summary>
-public enum CarouselOrientation
-{
     /// <summary>
-    /// Slides move horizontally.
+    /// Defines the orientation of the carousel.
     /// </summary>
-    Horizontal,
-    
-    /// <summary>
-    /// Slides move vertically.
-    /// </summary>
-    Vertical
+    public enum CarouselOrientation
+    {
+        /// <summary>
+        /// Slides move horizontally.
+        /// </summary>
+        Horizontal,
+
+        /// <summary>
+        /// Slides move vertically.
+        /// </summary>
+        Vertical
+    }
 }

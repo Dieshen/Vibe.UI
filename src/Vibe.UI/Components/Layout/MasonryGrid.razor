@@ -1,0 +1,80 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass" style="@GridStyle">
+    @for (int col = 0; col < Columns; col++)
+    {
+        var columnIndex = col;
+        <div class="masonry-column">
+            @if (Items != null && Items.Any())
+            {
+                @foreach (var item in GetColumnItems(columnIndex))
+                {
+                    <div class="masonry-item" @key="item.Id">
+                        @if (ItemTemplate != null)
+                        {
+                            @ItemTemplate(item)
+                        }
+                        else
+                        {
+                            @item.Content
+                        }
+                    </div>
+                }
+            }
+        </div>
+    }
+
+    @if ((Items == null || !Items.Any()) && EmptyContent != null)
+    {
+        <div class="masonry-empty">
+            @EmptyContent
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<MasonryItem>? Items { get; set; }
+
+    [Parameter]
+    public RenderFragment<MasonryItem>? ItemTemplate { get; set; }
+
+    [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
+
+    [Parameter]
+    public int Columns { get; set; } = 3;
+
+    [Parameter]
+    public int Gap { get; set; } = 16;
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-masonry",
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    private string GridStyle => $"gap: {Gap}px;";
+
+    private List<MasonryItem> GetColumnItems(int columnIndex)
+    {
+        if (Items == null || !Items.Any())
+            return new List<MasonryItem>();
+
+        return Items
+            .Where((item, index) => index % Columns == columnIndex)
+            .ToList();
+    }
+
+    public class MasonryItem
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public RenderFragment? Content { get; set; }
+        public object? Data { get; set; }
+    }
+}

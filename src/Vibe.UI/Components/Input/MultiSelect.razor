@@ -256,7 +256,7 @@
     private void ClearSearch(MouseEventArgs args)
     {
         SearchText = string.Empty;
-        args.StopPropagation();
+        // Note: Use @onclick:stopPropagation directive in markup instead of calling StopPropagation here
     }
     
     /// <summary>
@@ -318,9 +318,9 @@
     {
         if (Disabled)
             return;
-            
-        e.StopPropagation();
-        
+
+        // Note: Use @onclick:stopPropagation directive in markup instead of calling StopPropagation here
+
         if (CompareItems != null)
         {
             var itemToRemove = SelectedItems.FirstOrDefault(selectedItem => CompareItems(selectedItem, item));

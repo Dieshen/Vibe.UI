@@ -1,0 +1,125 @@
+.vibe-richtext {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--vibe-border);
+    border-radius: var(--vibe-radius, 0.5rem);
+    background-color: var(--vibe-background);
+}
+
+.richtext-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--vibe-border);
+    background-color: var(--vibe-muted);
+}
+
+.toolbar-group {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.toolbar-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    color: var(--vibe-foreground);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.toolbar-button:hover {
+    background-color: var(--vibe-background);
+    border-color: var(--vibe-border);
+}
+
+.toolbar-button:active {
+    background-color: var(--vibe-accent);
+    color: var(--vibe-accent-foreground);
+}
+
+.toolbar-separator {
+    width: 1px;
+    height: 1.5rem;
+    background-color: var(--vibe-border);
+}
+
+.richtext-editor {
+    min-height: 200px;
+    max-height: 500px;
+    padding: 1rem;
+    color: var(--vibe-foreground);
+    overflow-y: auto;
+    outline: none;
+}
+
+.richtext-editor:empty::before {
+    content: attr(placeholder);
+    color: var(--vibe-muted-foreground);
+    pointer-events: none;
+}
+
+.richtext-editor:focus {
+    outline: none;
+}
+
+.richtext-footer {
+    padding: 0.5rem 1rem;
+    border-top: 1px solid var(--vibe-border);
+    background-color: var(--vibe-muted);
+}
+
+.char-count {
+    font-size: 0.75rem;
+    color: var(--vibe-muted-foreground);
+}
+
+.richtext-readonly {
+    opacity: 0.7;
+}
+
+.richtext-readonly .richtext-editor {
+    cursor: default;
+}
+
+/* Content Styling */
+.richtext-editor h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0.5rem 0;
+}
+
+.richtext-editor h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0.5rem 0;
+}
+
+.richtext-editor p {
+    margin: 0.5rem 0;
+}
+
+.richtext-editor ul,
+.richtext-editor ol {
+    margin: 0.5rem 0;
+    padding-left: 2rem;
+}
+
+.richtext-editor a {
+    color: var(--vibe-primary);
+    text-decoration: underline;
+}
+
+.richtext-editor img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.25rem;
+}

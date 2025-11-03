@@ -1,0 +1,125 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+    <div class="tag-input-container">
+        @foreach (var tag in Tags)
+        {
+            <div class="tag-item" @key="tag">
+                <span class="tag-text">@tag</span>
+                @if (!Disabled)
+                {
+                    <button type="button"
+                            class="tag-remove"
+                            @onclick="() => RemoveTag(tag)"
+                            aria-label="@($"Remove {tag}")">×</button>
+                }
+            </div>
+        }
+
+        <input type="text"
+               class="tag-input"
+               placeholder="@(Tags.Count == 0 ? Placeholder : "")"
+               @bind="_inputValue"
+               @bind:event="oninput"
+               @onkeydown="HandleKeyDown"
+               disabled="@Disabled"
+               aria-label="@AriaLabel" />
+    </div>
+
+    @if (Suggestions?.Any() == true && _showSuggestions)
+    {
+        <div class="tag-suggestions">
+            @foreach (var suggestion in Suggestions.Where(s => !Tags.Contains(s)))
+            {
+                <button type="button"
+                        class="tag-suggestion"
+                        @onclick="() => AddTag(suggestion)"
+                        @key="suggestion">
+                    @suggestion
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private string _inputValue = string.Empty;
+    private bool _showSuggestions;
+
+    [Parameter]
+    public List<string> Tags { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<List<string>> TagsChanged { get; set; }
+
+    [Parameter]
+    public List<string>? Suggestions { get; set; }
+
+    [Parameter]
+    public string Placeholder { get; set; } = "Add tags...";
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public int MaxTags { get; set; } = int.MaxValue;
+
+    [Parameter]
+    public string Separator { get; set; } = ",";
+
+    [Parameter]
+    public bool AllowDuplicates { get; set; } = false;
+
+    [Parameter]
+    public EventCallback<string> OnTagAdded { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnTagRemoved { get; set; }
+
+    [Parameter]
+    public string? AriaLabel { get; set; } = "Tag input";
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-tag-input",
+        Disabled ? "tag-input-disabled" : null,
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" || e.Key == Separator)
+        {
+            await AddTag(_inputValue.Trim());
+            _inputValue = string.Empty;
+        }
+        else if (e.Key == "Backspace" && string.IsNullOrEmpty(_inputValue) && Tags.Any())
+        {
+            await RemoveTag(Tags.Last());
+        }
+    }
+
+    private async Task AddTag(string tag)
+    {
+        if (string.IsNullOrWhiteSpace(tag)) return;
+        if (Tags.Count >= MaxTags) return;
+        if (!AllowDuplicates && Tags.Contains(tag)) return;
+
+        Tags.Add(tag);
+        await TagsChanged.InvokeAsync(Tags);
+        await OnTagAdded.InvokeAsync(tag);
+        _showSuggestions = false;
+    }
+
+    private async Task RemoveTag(string tag)
+    {
+        Tags.Remove(tag);
+        await TagsChanged.InvokeAsync(Tags);
+        await OnTagRemoved.InvokeAsync(tag);
+    }
+}

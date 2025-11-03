@@ -1,0 +1,118 @@
+.vibe-splitter {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.splitter-horizontal {
+    flex-direction: row;
+}
+
+.splitter-vertical {
+    flex-direction: column;
+}
+
+.splitter-pane {
+    overflow: auto;
+    position: relative;
+}
+
+.splitter-pane-first {
+    flex-shrink: 0;
+}
+
+.splitter-pane-second {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+}
+
+.splitter-divider {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--vibe-border);
+    transition: background-color 0.2s ease;
+    position: relative;
+    z-index: 10;
+}
+
+.splitter-horizontal .splitter-divider {
+    width: 4px;
+    cursor: col-resize;
+}
+
+.splitter-vertical .splitter-divider {
+    height: 4px;
+    cursor: row-resize;
+}
+
+.splitter-divider:hover {
+    background-color: var(--vibe-primary);
+}
+
+.splitter-divider:hover .divider-handle {
+    opacity: 1;
+}
+
+.divider-handle {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--vibe-primary);
+    color: var(--vibe-primary-foreground);
+    border-radius: var(--vibe-radius, 0.25rem);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.splitter-horizontal .divider-handle {
+    width: 24px;
+    height: 48px;
+}
+
+.splitter-vertical .divider-handle {
+    width: 48px;
+    height: 24px;
+}
+
+.handle-icon {
+    font-size: 1rem;
+    font-weight: bold;
+    user-select: none;
+}
+
+.vibe-splitter.dragging {
+    user-select: none;
+}
+
+.vibe-splitter.dragging .splitter-divider {
+    background-color: var(--vibe-primary);
+}
+
+.vibe-splitter.dragging .divider-handle {
+    opacity: 1;
+}
+
+/* Scrollbar styling for panes */
+.splitter-pane::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.splitter-pane::-webkit-scrollbar-track {
+    background: var(--vibe-muted);
+}
+
+.splitter-pane::-webkit-scrollbar-thumb {
+    background: var(--vibe-border);
+    border-radius: var(--vibe-radius, 0.25rem);
+}
+
+.splitter-pane::-webkit-scrollbar-thumb:hover {
+    background: var(--vibe-muted-foreground);
+}

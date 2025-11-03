@@ -1,0 +1,160 @@
+@page "/components/popover"
+
+<PageTitle>Popover - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Popover"
+               Category="Overlay"
+               Description="Displays rich content in a portal, triggered by a button or other element."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <p>Component preview will be shown here when installed.</p>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Placement Options</h3>
+            <CodeBlock Code="@PlacementCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Arrow</h3>
+            <CodeBlock Code="@ArrowCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Trigger Types</h3>
+            <CodeBlock Code="@TriggerCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Placement</code></td>
+                    <td>PopoverPlacement</td>
+                    <td>Top</td>
+                    <td>Popover placement</td>
+                </tr>
+                <tr>
+                    <td><code>Trigger</code></td>
+                    <td>PopoverTrigger</td>
+                    <td>Click</td>
+                    <td>Trigger type (Click, Hover, Focus)</td>
+                </tr>
+                <tr>
+                    <td><code>ShowArrow</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Show arrow pointing to trigger</td>
+                </tr>
+                <tr>
+                    <td><code>Offset</code></td>
+                    <td>int</td>
+                    <td>8</td>
+                    <td>Distance from trigger in pixels</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnOpenChanged</code></td>
+                    <td>EventCallback&lt;bool&gt;</td>
+                    <td>Callback when open state changes</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>ARIA attributes for relationship</li>
+            <li>Keyboard accessible</li>
+            <li>Escape key to close</li>
+            <li>Focus management</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Tooltip", "Dropdown", "Dialog" };
+
+    private string BasicCode => @"<Popover>
+    <PopoverTrigger>
+        <Button>Click me</Button>
+    </PopoverTrigger>
+    <PopoverContent>
+        <PopoverHeader>Popover Title</PopoverHeader>
+        <PopoverBody>
+            <p>This is the popover content.</p>
+        </PopoverBody>
+    </PopoverContent>
+</Popover>";
+
+    private string PlacementCode => @"<Popover Placement=""PopoverPlacement.Top"">
+    <PopoverTrigger><Button>Top</Button></PopoverTrigger>
+    <PopoverContent><p>Top placement</p></PopoverContent>
+</Popover>
+
+<Popover Placement=""PopoverPlacement.Bottom"">
+    <PopoverTrigger><Button>Bottom</Button></PopoverTrigger>
+    <PopoverContent><p>Bottom placement</p></PopoverContent>
+</Popover>
+
+<Popover Placement=""PopoverPlacement.Left"">
+    <PopoverTrigger><Button>Left</Button></PopoverTrigger>
+    <PopoverContent><p>Left placement</p></PopoverContent>
+</Popover>
+
+<Popover Placement=""PopoverPlacement.Right"">
+    <PopoverTrigger><Button>Right</Button></PopoverTrigger>
+    <PopoverContent><p>Right placement</p></PopoverContent>
+</Popover>";
+
+    private string ArrowCode => @"<Popover ShowArrow=""true"">
+    <PopoverTrigger><Button>With Arrow</Button></PopoverTrigger>
+    <PopoverContent><p>Popover with arrow</p></PopoverContent>
+</Popover>
+
+<Popover ShowArrow=""false"">
+    <PopoverTrigger><Button>No Arrow</Button></PopoverTrigger>
+    <PopoverContent><p>Popover without arrow</p></PopoverContent>
+</Popover>";
+
+    private string TriggerCode => @"<Popover Trigger=""PopoverTrigger.Click"">
+    <PopoverTrigger><Button>Click</Button></PopoverTrigger>
+    <PopoverContent><p>Triggered by click</p></PopoverContent>
+</Popover>
+
+<Popover Trigger=""PopoverTrigger.Hover"">
+    <PopoverTrigger><Button>Hover</Button></PopoverTrigger>
+    <PopoverContent><p>Triggered by hover</p></PopoverContent>
+</Popover>";
+}

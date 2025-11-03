@@ -1,0 +1,324 @@
+@page "/components/timepicker"
+
+<PageTitle>TimePicker - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="TimePicker"
+               Category="DateTime"
+               Description="An input component for selecting time values with a dropdown interface and keyboard support."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 400px; margin: 0 auto;">
+            <Alert Variant="AlertVariant.Warning">
+                <strong>Note:</strong> The TimePicker component is not yet implemented. This is a placeholder for future development.
+            </Alert>
+            <p style="text-align: center; color: var(--text-muted);">
+                Component preview will be available once the TimePicker component is implemented.
+            </p>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic TimePicker</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>12-Hour Format</h3>
+            <CodeBlock Code="@TwelveHourCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Time Range Limits</h3>
+            <CodeBlock Code="@LimitsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Custom Step Intervals</h3>
+            <CodeBlock Code="@StepCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Appointment Scheduler</h3>
+            <CodeBlock Code="@SchedulerCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Value</code></td>
+                    <td>TimeSpan?</td>
+                    <td>null</td>
+                    <td>Selected time value</td>
+                </tr>
+                <tr>
+                    <td><code>Format</code></td>
+                    <td>TimeFormat</td>
+                    <td>TwentyFourHour</td>
+                    <td>Time format (12-hour or 24-hour)</td>
+                </tr>
+                <tr>
+                    <td><code>MinTime</code></td>
+                    <td>TimeSpan?</td>
+                    <td>null</td>
+                    <td>Minimum selectable time</td>
+                </tr>
+                <tr>
+                    <td><code>MaxTime</code></td>
+                    <td>TimeSpan?</td>
+                    <td>null</td>
+                    <td>Maximum selectable time</td>
+                </tr>
+                <tr>
+                    <td><code>StepMinutes</code></td>
+                    <td>int</td>
+                    <td>15</td>
+                    <td>Minute interval for time options</td>
+                </tr>
+                <tr>
+                    <td><code>Placeholder</code></td>
+                    <td>string</td>
+                    <td>"Select time"</td>
+                    <td>Placeholder text when empty</td>
+                </tr>
+                <tr>
+                    <td><code>Disabled</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Disable the input</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>ValueChanged</code></td>
+                    <td>EventCallback&lt;TimeSpan?&gt;</td>
+                    <td>Callback when time is selected</td>
+                </tr>
+                <tr>
+                    <td><code>OnOpen</code></td>
+                    <td>EventCallback</td>
+                    <td>Callback when dropdown opens</td>
+                </tr>
+                <tr>
+                    <td><code>OnClose</code></td>
+                    <td>EventCallback</td>
+                    <td>Callback when dropdown closes</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses <code>role="combobox"</code> pattern</li>
+            <li>Keyboard accessible with Tab and Arrow keys</li>
+            <li>Supports text input with validation</li>
+            <li>Screen reader announces selected time</li>
+            <li>Clear focus indicators</li>
+            <li>Escape key closes dropdown</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "DatePicker", "DateRangePicker", "Input" };
+
+    private string BasicCode => @"<TimePicker @bind-Value=""@selectedTime"" />
+
+@if (selectedTime.HasValue)
+{
+    <p>Selected: @selectedTime.Value.ToString(@""hh\:mm"")</p>
+}
+
+@code {
+    private TimeSpan? selectedTime;
+}";
+
+    private string TwelveHourCode => @"<TimePicker @bind-Value=""@selectedTime""
+            Format=""TimeFormat.TwelveHour""
+            Placeholder=""Select time"" />
+
+@if (selectedTime.HasValue)
+{
+    var hours = selectedTime.Value.Hours;
+    var minutes = selectedTime.Value.Minutes;
+    var period = hours >= 12 ? ""PM"" : ""AM"";
+    var displayHours = hours > 12 ? hours - 12 : (hours == 0 ? 12 : hours);
+
+    <Alert Variant=""AlertVariant.Info"">
+        Selected: @displayHours:@minutes.ToString(""00"") @period
+    </Alert>
+}
+
+@code {
+    private TimeSpan? selectedTime;
+}";
+
+    private string LimitsCode => @"<FormField Label=""Business Hours (9 AM - 5 PM)"">
+    <TimePicker @bind-Value=""@meetingTime""
+                MinTime=""@TimeSpan.FromHours(9)""
+                MaxTime=""@TimeSpan.FromHours(17)""
+                Format=""TimeFormat.TwelveHour"" />
+</FormField>
+
+@if (meetingTime.HasValue)
+{
+    var hours = meetingTime.Value.Hours;
+    if (hours >= 9 && hours < 17)
+    {
+        <Alert Variant=""AlertVariant.Success"">
+            Valid business hours time selected
+        </Alert>
+    }
+    else
+    {
+        <Alert Variant=""AlertVariant.Warning"">
+            Please select a time during business hours
+        </Alert>
+    }
+}
+
+@code {
+    private TimeSpan? meetingTime;
+}";
+
+    private string StepCode => @"<div class=""time-step-examples"">
+    <FormField Label=""5-minute intervals"">
+        <TimePicker @bind-Value=""@time1""
+                    StepMinutes=""5"" />
+    </FormField>
+
+    <FormField Label=""15-minute intervals"">
+        <TimePicker @bind-Value=""@time2""
+                    StepMinutes=""15"" />
+    </FormField>
+
+    <FormField Label=""30-minute intervals"">
+        <TimePicker @bind-Value=""@time3""
+                    StepMinutes=""30"" />
+    </FormField>
+
+    <FormField Label=""60-minute intervals"">
+        <TimePicker @bind-Value=""@time4""
+                    StepMinutes=""60"" />
+    </FormField>
+</div>
+
+@code {
+    private TimeSpan? time1;
+    private TimeSpan? time2;
+    private TimeSpan? time3;
+    private TimeSpan? time4;
+}";
+
+    private string SchedulerCode => @"<EditForm Model=""@appointment"" OnValidSubmit=""@ScheduleAppointment"">
+    <DataAnnotationsValidator />
+
+    <FormField Label=""Patient Name"">
+        <Input @bind-Value=""@appointment.PatientName"" />
+        <ValidationMessage For=""@(() => appointment.PatientName)"" />
+    </FormField>
+
+    <div class=""form-row"">
+        <FormField Label=""Appointment Date"">
+            <DatePicker @bind-Value=""@appointment.Date""
+                        MinDate=""@DateTime.Today"" />
+            <ValidationMessage For=""@(() => appointment.Date)"" />
+        </FormField>
+
+        <FormField Label=""Time"">
+            <TimePicker @bind-Value=""@appointment.Time""
+                        MinTime=""@TimeSpan.FromHours(8)""
+                        MaxTime=""@TimeSpan.FromHours(18)""
+                        StepMinutes=""30""
+                        Format=""TimeFormat.TwelveHour"" />
+            <ValidationMessage For=""@(() => appointment.Time)"" />
+        </FormField>
+    </div>
+
+    <FormField Label=""Duration"">
+        <Select @bind-Value=""@appointment.DurationMinutes"">
+            <option value=""30"">30 minutes</option>
+            <option value=""60"">1 hour</option>
+            <option value=""90"">1.5 hours</option>
+            <option value=""120"">2 hours</option>
+        </Select>
+    </FormField>
+
+    @if (appointment.Date.HasValue && appointment.Time.HasValue)
+    {
+        var appointmentDateTime = appointment.Date.Value.Add(appointment.Time.Value);
+        var endTime = appointmentDateTime.AddMinutes(appointment.DurationMinutes);
+
+        <Alert Variant=""AlertVariant.Info"">
+            <strong>Appointment Summary:</strong><br />
+            Date: @appointment.Date.Value.ToLongDateString()<br />
+            Time: @FormatTime(appointment.Time.Value)<br />
+            Duration: @appointment.DurationMinutes minutes<br />
+            End Time: @endTime.ToString(""h:mm tt"")
+        </Alert>
+    }
+
+    <Button Type=""submit"" Variant=""ButtonVariant.Primary"">
+        Schedule Appointment
+    </Button>
+</EditForm>
+
+@code {
+    private AppointmentModel appointment = new() { DurationMinutes = 60 };
+
+    private async Task ScheduleAppointment()
+    {
+        await AppointmentService.CreateAsync(appointment);
+        // Show success message and reset form
+    }
+
+    private string FormatTime(TimeSpan time)
+    {
+        var hours = time.Hours;
+        var minutes = time.Minutes;
+        var period = hours >= 12 ? ""PM"" : ""AM"";
+        var displayHours = hours > 12 ? hours - 12 : (hours == 0 ? 12 : hours);
+        return $""{displayHours}:{minutes:00} {period}"";
+    }
+
+    public class AppointmentModel
+    {
+        [Required]
+        public string PatientName { get; set; }
+
+        [Required]
+        public DateTime? Date { get; set; }
+
+        [Required]
+        public TimeSpan? Time { get; set; }
+
+        [Required]
+        [Range(30, 240)]
+        public int DurationMinutes { get; set; }
+    }
+}";
+}

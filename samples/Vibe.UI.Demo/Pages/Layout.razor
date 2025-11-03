@@ -1,0 +1,92 @@
+@page "/layout"
+
+<PageTitle>Layout Components - Vibe.UI Demo</PageTitle>
+
+<div class="component-section">
+    <h1>Layout Components</h1>
+    <p>Components for structuring and organizing your UI.</p>
+
+    <h2>Card</h2>
+    <div class="demo-container">
+        <h3>Basic Card</h3>
+        <Card>
+            <h3>Card Title</h3>
+            <p>This is a simple card with some content inside.</p>
+        </Card>
+
+        <h3>Card with Header and Footer</h3>
+        <Card>
+            <div class="card-header">
+                <h3>User Profile</h3>
+            </div>
+            <div class="card-content">
+                <p><strong>Name:</strong> John Doe</p>
+                <p><strong>Email:</strong> john@example.com</p>
+                <p><strong>Role:</strong> Administrator</p>
+            </div>
+            <div class="card-footer">
+                <Button Variant="primary">Edit Profile</Button>
+                <Button Variant="outline">Cancel</Button>
+            </div>
+        </Card>
+
+        <h3>Multiple Cards</h3>
+        <div class="demo-grid">
+            <Card>
+                <h4>📊 Analytics</h4>
+                <p>View your analytics dashboard</p>
+            </Card>
+            <Card>
+                <h4>⚙️ Settings</h4>
+                <p>Manage your preferences</p>
+            </Card>
+            <Card>
+                <h4>👥 Team</h4>
+                <p>Collaborate with teammates</p>
+            </Card>
+        </div>
+    </div>
+
+    <h2>Separator</h2>
+    <div class="demo-container">
+        <h3>Horizontal Separator</h3>
+        <p>Content above</p>
+        <Separator Orientation="horizontal" />
+        <p>Content below</p>
+
+        <h3>Vertical Separator</h3>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <span>Left</span>
+            <Separator Orientation="vertical" Style="height: 2rem;" />
+            <span>Right</span>
+        </div>
+    </div>
+
+    <h2>AspectRatio</h2>
+    <div class="demo-container">
+        <h3>16:9 Aspect Ratio</h3>
+        <AspectRatio Ratio="16.0 / 9.0">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white;">
+                16:9 Container
+            </div>
+        </AspectRatio>
+
+        <h3>4:3 Aspect Ratio</h3>
+        <AspectRatio Ratio="4.0 / 3.0">
+            <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; color: white;">
+                4:3 Container
+            </div>
+        </AspectRatio>
+
+        <h3>Square (1:1)</h3>
+        <AspectRatio Ratio="1.0">
+            <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); display: flex; align-items: center; justify-content: center; color: white;">
+                1:1 Square
+            </div>
+        </AspectRatio>
+    </div>
+
+</div>
+
+@code {
+}

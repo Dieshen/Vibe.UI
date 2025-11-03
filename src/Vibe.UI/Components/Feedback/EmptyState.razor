@@ -1,0 +1,58 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+    @if (Icon != null)
+    {
+        <div class="empty-state-icon">@Icon</div>
+    }
+
+    <div class="empty-state-content">
+        @if (!string.IsNullOrEmpty(Title))
+        {
+            <h3 class="empty-state-title">@Title</h3>
+        }
+
+        @if (!string.IsNullOrEmpty(Description))
+        {
+            <p class="empty-state-description">@Description</p>
+        }
+
+        @if (ChildContent != null)
+        {
+            <div class="empty-state-body">@ChildContent</div>
+        }
+    </div>
+
+    @if (Action != null)
+    {
+        <div class="empty-state-action">@Action</div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? Icon { get; set; }
+
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public string? Description { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? Action { get; set; }
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-empty-state",
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+}

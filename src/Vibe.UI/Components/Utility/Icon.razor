@@ -1,0 +1,143 @@
+@using Vibe.UI.Services
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+@if (!string.IsNullOrEmpty(Name))
+{
+    <svg @attributes="AdditionalAttributes"
+         class="@CombinedCssClass"
+         style="@IconStyle"
+         width="@ActualWidth"
+         height="@ActualHeight"
+         viewBox="0 0 24 24"
+         fill="@Fill"
+         stroke="@Stroke"
+         stroke-width="@StrokeWidth"
+         stroke-linecap="@StrokeLinecap"
+         stroke-linejoin="@StrokeLinejoin">
+        @if (IconContent != null)
+        {
+            @IconContent
+        }
+        else
+        {
+            @GetIconPath()
+        }
+    </svg>
+}
+else if (CustomSvg != null)
+{
+    @CustomSvg
+}
+
+@code {
+    /// <summary>
+    /// The name of the icon (from Lucide icon set).
+    /// </summary>
+    [Parameter]
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// Custom SVG content for the icon.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? IconContent { get; set; }
+
+    /// <summary>
+    /// Custom SVG element.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? CustomSvg { get; set; }
+
+    /// <summary>
+    /// Size of the icon (applies to both width and height).
+    /// </summary>
+    [Parameter]
+    public int Size { get; set; } = 24;
+
+    /// <summary>
+    /// Width of the icon (overrides Size).
+    /// </summary>
+    [Parameter]
+    public int? Width { get; set; }
+
+    /// <summary>
+    /// Height of the icon (overrides Size).
+    /// </summary>
+    [Parameter]
+    public int? Height { get; set; }
+
+    /// <summary>
+    /// Fill color of the icon.
+    /// </summary>
+    [Parameter]
+    public string Fill { get; set; } = "none";
+
+    /// <summary>
+    /// Stroke color of the icon.
+    /// </summary>
+    [Parameter]
+    public string Stroke { get; set; } = "currentColor";
+
+    /// <summary>
+    /// Stroke width of the icon.
+    /// </summary>
+    [Parameter]
+    public int StrokeWidth { get; set; } = 2;
+
+    /// <summary>
+    /// Stroke linecap style.
+    /// </summary>
+    [Parameter]
+    public string StrokeLinecap { get; set; } = "round";
+
+    /// <summary>
+    /// Stroke linejoin style.
+    /// </summary>
+    [Parameter]
+    public string StrokeLinejoin { get; set; } = "round";
+
+    /// <summary>
+    /// Color of the icon (CSS color value).
+    /// </summary>
+    [Parameter]
+    public string? Color { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes to apply.
+    /// </summary>
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-icon",
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    private string IconStyle => Color != null ? $"color: {Color};" : string.Empty;
+
+    private int ActualWidth => Width ?? Size;
+    private int ActualHeight => Height ?? Size;
+
+    private RenderFragment GetIconPath() => builder =>
+    {
+        if (string.IsNullOrEmpty(Name)) return;
+
+        var paths = LucideIcons.GetIcon(Name);
+        if (paths != null)
+        {
+            var index = 0;
+            foreach (var path in paths)
+            {
+                builder.OpenElement(index++, path.Element);
+                foreach ((string attr, string value) in path.Attributes)
+                {
+                    builder.AddAttribute(index++, attr, value);
+                }
+                builder.CloseElement();
+            }
+        }
+    };
+}

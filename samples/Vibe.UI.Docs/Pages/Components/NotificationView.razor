@@ -1,0 +1,133 @@
+@page "/components/notification"
+
+<PageTitle>Notification - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Notification"
+               Category="Feedback"
+               Description="Displays a brief message that slides in and automatically dismisses."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <p>Component preview will be shown here when installed.</p>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Actions</h3>
+            <CodeBlock Code="@ActionsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Positions</h3>
+            <CodeBlock Code="@PositionsCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Title</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Notification title</td>
+                </tr>
+                <tr>
+                    <td><code>Message</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Notification message</td>
+                </tr>
+                <tr>
+                    <td><code>Variant</code></td>
+                    <td>NotificationVariant</td>
+                    <td>Info</td>
+                    <td>Visual style</td>
+                </tr>
+                <tr>
+                    <td><code>Duration</code></td>
+                    <td>int</td>
+                    <td>5000</td>
+                    <td>Auto-dismiss duration (ms)</td>
+                </tr>
+                <tr>
+                    <td><code>Position</code></td>
+                    <td>NotificationPosition</td>
+                    <td>TopRight</td>
+                    <td>Screen position</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnClose</code></td>
+                    <td>EventCallback</td>
+                    <td>Callback when notification closes</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>ARIA live region for announcements</li>
+            <li>Keyboard accessible close button</li>
+            <li>Respects prefers-reduced-motion</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Toast", "Alert", "Snackbar" };
+
+    private string BasicCode => @"<Button OnClick=""@ShowNotification"">Show Notification</Button>
+
+@code {
+    private void ShowNotification()
+    {
+        NotificationService.Show(""Success"", ""Operation completed successfully!"");
+    }
+}";
+
+    private string ActionsCode => @"NotificationService.Show(new NotificationOptions
+{
+    Title = ""New Message"",
+    Message = ""You have a new message from John"",
+    Actions = new[]
+    {
+        new NotificationAction { Label = ""View"", OnClick = () => NavigateToMessage() },
+        new NotificationAction { Label = ""Dismiss"" }
+    }
+});";
+
+    private string PositionsCode => @"NotificationService.Show(""Top Right"", position: NotificationPosition.TopRight);
+NotificationService.Show(""Top Left"", position: NotificationPosition.TopLeft);
+NotificationService.Show(""Bottom Right"", position: NotificationPosition.BottomRight);
+NotificationService.Show(""Bottom Left"", position: NotificationPosition.BottomLeft);";
+}

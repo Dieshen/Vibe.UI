@@ -1,0 +1,194 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+    <div class="mentions-input-container">
+        @foreach (var item in _displayItems)
+        {
+            if (item.IsMention)
+            {
+                <span class="mention-tag" @key="item.Text">
+                    @MentionPrefix@item.Text
+                    <button type="button"
+                            class="mention-remove"
+                            @onclick="() => RemoveMention(item.Text)">×</button>
+                </span>
+            }
+            else
+            {
+                <span>@item.Text</span>
+            }
+        }
+
+        <input type="text"
+               class="mentions-input"
+               @bind="_inputValue"
+               @bind:event="oninput"
+               @onkeydown="HandleKeyDown"
+               placeholder="@Placeholder"
+               disabled="@Disabled"
+               aria-label="@AriaLabel" />
+    </div>
+
+    @if (_showSuggestions && FilteredSuggestions.Any())
+    {
+        <div class="mentions-suggestions">
+            @foreach (var suggestion in FilteredSuggestions.Take(MaxSuggestions))
+            {
+                <button type="button"
+                        class="mention-suggestion"
+                        @onclick="() => SelectSuggestion(suggestion)"
+                        @key="suggestion.Id">
+                    @if (suggestion.Avatar != null)
+                    {
+                        <div class="suggestion-avatar">@suggestion.Avatar</div>
+                    }
+                    <div class="suggestion-info">
+                        <div class="suggestion-name">@suggestion.Name</div>
+                        @if (!string.IsNullOrEmpty(suggestion.Description))
+                        {
+                            <div class="suggestion-description">@suggestion.Description</div>
+                        }
+                    </div>
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private string _inputValue = string.Empty;
+    private bool _showSuggestions;
+    private List<DisplayItem> _displayItems = new();
+    private string _searchQuery = string.Empty;
+
+    [Parameter]
+    public List<MentionItem> Items { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<List<MentionItem>> ItemsChanged { get; set; }
+
+    [Parameter]
+    public List<MentionSuggestion> Suggestions { get; set; } = new();
+
+    [Parameter]
+    public string MentionPrefix { get; set; } = "@";
+
+    [Parameter]
+    public string HashtagPrefix { get; set; } = "#";
+
+    [Parameter]
+    public bool AllowHashtags { get; set; } = true;
+
+    [Parameter]
+    public string Placeholder { get; set; } = "Type @ to mention...";
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public int MaxSuggestions { get; set; } = 5;
+
+    [Parameter]
+    public EventCallback<MentionItem> OnMentionAdded { get; set; }
+
+    [Parameter]
+    public EventCallback<MentionItem> OnMentionRemoved { get; set; }
+
+    [Parameter]
+    public string? AriaLabel { get; set; } = "Mention input";
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-mentions",
+        Disabled ? "mentions-disabled" : null,
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    private List<MentionSuggestion> FilteredSuggestions => string.IsNullOrWhiteSpace(_searchQuery)
+        ? Suggestions
+        : Suggestions.Where(s => s.Name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Backspace" && string.IsNullOrEmpty(_inputValue) && Items.Any())
+        {
+            await RemoveMention(Items.Last().Name);
+        }
+        else if (_inputValue.StartsWith(MentionPrefix) || (AllowHashtags && _inputValue.StartsWith(HashtagPrefix)))
+        {
+            _searchQuery = _inputValue.TrimStart(MentionPrefix[0], HashtagPrefix[0]);
+            _showSuggestions = true;
+        }
+        else
+        {
+            _showSuggestions = false;
+        }
+    }
+
+    private async Task SelectSuggestion(MentionSuggestion suggestion)
+    {
+        var mention = new MentionItem
+        {
+            Id = suggestion.Id,
+            Name = suggestion.Name,
+            Type = _inputValue.StartsWith(MentionPrefix) ? MentionType.User : MentionType.Hashtag
+        };
+
+        Items.Add(mention);
+        await ItemsChanged.InvokeAsync(Items);
+        await OnMentionAdded.InvokeAsync(mention);
+
+        _inputValue = string.Empty;
+        _showSuggestions = false;
+        UpdateDisplayItems();
+    }
+
+    private async Task RemoveMention(string name)
+    {
+        var mention = Items.FirstOrDefault(m => m.Name == name);
+        if (mention != null)
+        {
+            Items.Remove(mention);
+            await ItemsChanged.InvokeAsync(Items);
+            await OnMentionRemoved.InvokeAsync(mention);
+            UpdateDisplayItems();
+        }
+    }
+
+    private void UpdateDisplayItems()
+    {
+        _displayItems = Items.Select(m => new DisplayItem { Text = m.Name, IsMention = true }).ToList();
+    }
+
+    private class DisplayItem
+    {
+        public string Text { get; set; } = string.Empty;
+        public bool IsMention { get; set; }
+    }
+
+    public class MentionItem
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Name { get; set; } = string.Empty;
+        public MentionType Type { get; set; } = MentionType.User;
+    }
+
+    public class MentionSuggestion
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public RenderFragment? Avatar { get; set; }
+    }
+
+    public enum MentionType
+    {
+        User,
+        Hashtag
+    }
+}

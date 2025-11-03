@@ -1,3 +1,4 @@
+@namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.ThemedComponentBase
 
 <div class="@CombinedClass">
@@ -80,7 +81,7 @@
     /// <summary>
     /// Gets the ID of the select element
     /// </summary>
-    private string Id => string.IsNullOrEmpty(this.Id) ? _id : this.Id;
+    private string ElementId => string.IsNullOrEmpty(Id) ? _id : Id;
 
     private async Task OnChangeHandler(ChangeEventArgs args)
     {

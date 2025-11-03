@@ -1,0 +1,290 @@
+@namespace Vibe.UI.Components
+@inherits ThemedComponentBase
+
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+    <div class="vibe-color-picker-preview" @onclick="TogglePicker">
+        <div class="vibe-color-picker-swatch" style="background-color: @Value;"></div>
+        <span class="vibe-color-picker-value">@DisplayValue</span>
+    </div>
+
+    @if (IsOpen)
+    {
+        <div class="vibe-color-picker-popover">
+            <div class="vibe-color-picker-saturation" @onmousedown="HandleSaturationMouseDown">
+                <div class="vibe-color-picker-saturation-overlay"></div>
+                <div class="vibe-color-picker-saturation-pointer"
+                     style="left: @(Saturation)%; top: @(100 - Lightness)%;"></div>
+            </div>
+
+            <div class="vibe-color-picker-controls">
+                <div class="vibe-color-picker-hue-slider">
+                    <input type="range"
+                           min="0"
+                           max="360"
+                           value="@Hue"
+                           @oninput="HandleHueChange"
+                           class="vibe-color-picker-slider" />
+                </div>
+
+                @if (ShowAlpha)
+                {
+                    <div class="vibe-color-picker-alpha-slider">
+                        <input type="range"
+                               min="0"
+                               max="100"
+                               value="@(Alpha * 100)"
+                               @oninput="HandleAlphaChange"
+                               class="vibe-color-picker-slider" />
+                    </div>
+                }
+            </div>
+
+            <div class="vibe-color-picker-inputs">
+                <div class="vibe-color-picker-input-group">
+                    <label>HEX</label>
+                    <input type="text"
+                           value="@HexValue"
+                           @oninput="HandleHexInput"
+                           class="vibe-color-picker-input" />
+                </div>
+
+                @if (ShowRgbInputs)
+                {
+                    <div class="vibe-color-picker-input-group">
+                        <label>R</label>
+                        <input type="number" min="0" max="255" value="@Red" @oninput="HandleRgbInput" class="vibe-color-picker-input" />
+                    </div>
+                    <div class="vibe-color-picker-input-group">
+                        <label>G</label>
+                        <input type="number" min="0" max="255" value="@Green" @oninput="HandleRgbInput" class="vibe-color-picker-input" />
+                    </div>
+                    <div class="vibe-color-picker-input-group">
+                        <label>B</label>
+                        <input type="number" min="0" max="255" value="@Blue" @oninput="HandleRgbInput" class="vibe-color-picker-input" />
+                    </div>
+                }
+            </div>
+
+            @if (ShowPresets && Presets.Any())
+            {
+                <div class="vibe-color-picker-presets">
+                    @foreach (var preset in Presets)
+                    {
+                        <button type="button"
+                                class="vibe-color-picker-preset"
+                                style="background-color: @preset;"
+                                @onclick="() => SelectPreset(preset)">
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Value { get; set; } = "#000000";
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter]
+    public bool ShowAlpha { get; set; } = false;
+
+    [Parameter]
+    public bool ShowRgbInputs { get; set; } = true;
+
+    [Parameter]
+    public bool ShowPresets { get; set; } = true;
+
+    [Parameter]
+    public List<string> Presets { get; set; } = new()
+    {
+        "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF",
+        "#000000", "#FFFFFF", "#808080", "#800000", "#008000", "#000080"
+    };
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private bool IsOpen { get; set; }
+    private double Hue { get; set; }
+    private double Saturation { get; set; } = 100;
+    private double Lightness { get; set; } = 50;
+    private double Alpha { get; set; } = 1;
+    private int Red { get; set; }
+    private int Green { get; set; }
+    private int Blue { get; set; }
+    private string HexValue { get; set; } = "#000000";
+    private string DisplayValue => ShowAlpha && Alpha < 1 ? $"rgba({Red},{Green},{Blue},{Alpha:F2})" : HexValue;
+
+    private string CombinedCssClass => CombineClasses(
+        "vibe-color-picker",
+        IsOpen ? "vibe-color-picker-open" : null,
+        Disabled ? "vibe-color-picker-disabled" : null,
+        CssClass
+    );
+
+    protected override string ComponentClass => CombinedCssClass;
+
+    protected override void OnParametersSet()
+    {
+        ParseColor(Value);
+    }
+
+    private void TogglePicker()
+    {
+        if (!Disabled)
+        {
+            IsOpen = !IsOpen;
+        }
+    }
+
+    private void ParseColor(string color)
+    {
+        // Simple hex parser - could be enhanced for rgb/hsl support
+        if (color.StartsWith("#") && color.Length >= 7)
+        {
+            HexValue = color.Substring(0, 7);
+            Red = Convert.ToInt32(color.Substring(1, 2), 16);
+            Green = Convert.ToInt32(color.Substring(3, 2), 16);
+            Blue = Convert.ToInt32(color.Substring(5, 2), 16);
+
+            if (color.Length == 9)
+            {
+                Alpha = Convert.ToInt32(color.Substring(7, 2), 16) / 255.0;
+            }
+
+            var (h, s, l) = RgbToHsl(Red, Green, Blue);
+            Hue = h;
+            Saturation = s;
+            Lightness = l;
+        }
+    }
+
+    private async Task HandleHueChange(ChangeEventArgs e)
+    {
+        Hue = double.Parse(e.Value?.ToString() ?? "0");
+        await UpdateColorFromHsl();
+    }
+
+    private async Task HandleAlphaChange(ChangeEventArgs e)
+    {
+        Alpha = double.Parse(e.Value?.ToString() ?? "100") / 100;
+        await UpdateValue();
+    }
+
+    private async Task HandleHexInput(ChangeEventArgs e)
+    {
+        var hex = e.Value?.ToString() ?? "#000000";
+        if (hex.StartsWith("#") && (hex.Length == 7 || hex.Length == 9))
+        {
+            ParseColor(hex);
+            await UpdateValue();
+        }
+    }
+
+    private async Task HandleRgbInput(ChangeEventArgs e)
+    {
+        // This would need proper binding to R/G/B properties
+        await UpdateValue();
+    }
+
+    private async Task UpdateColorFromHsl()
+    {
+        var (r, g, b) = HslToRgb(Hue, Saturation, Lightness);
+        Red = r;
+        Green = g;
+        Blue = b;
+        HexValue = $"#{Red:X2}{Green:X2}{Blue:X2}";
+        await UpdateValue();
+    }
+
+    private async Task UpdateValue()
+    {
+        var newValue = ShowAlpha && Alpha < 1
+            ? $"{HexValue}{(int)(Alpha * 255):X2}"
+            : HexValue;
+
+        Value = newValue;
+        await ValueChanged.InvokeAsync(newValue);
+    }
+
+    private async Task SelectPreset(string color)
+    {
+        Value = color;
+        ParseColor(color);
+        await ValueChanged.InvokeAsync(color);
+    }
+
+    private void HandleSaturationMouseDown(MouseEventArgs e)
+    {
+        // Would need JS interop for proper drag handling
+    }
+
+    // Color conversion utilities
+    private static (double h, double s, double l) RgbToHsl(int r, int g, int b)
+    {
+        double rd = r / 255.0;
+        double gd = g / 255.0;
+        double bd = b / 255.0;
+
+        double max = Math.Max(rd, Math.Max(gd, bd));
+        double min = Math.Min(rd, Math.Min(gd, bd));
+        double delta = max - min;
+
+        double h = 0, s = 0, l = (max + min) / 2;
+
+        if (delta != 0)
+        {
+            s = l > 0.5 ? delta / (2 - max - min) : delta / (max + min);
+
+            if (max == rd)
+                h = ((gd - bd) / delta + (gd < bd ? 6 : 0)) / 6;
+            else if (max == gd)
+                h = ((bd - rd) / delta + 2) / 6;
+            else
+                h = ((rd - gd) / delta + 4) / 6;
+        }
+
+        return (h * 360, s * 100, l * 100);
+    }
+
+    private static (int r, int g, int b) HslToRgb(double h, double s, double l)
+    {
+        h /= 360;
+        s /= 100;
+        l /= 100;
+
+        double r, g, b;
+
+        if (s == 0)
+        {
+            r = g = b = l;
+        }
+        else
+        {
+            double q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            double p = 2 * l - q;
+            r = HueToRgb(p, q, h + 1.0/3);
+            g = HueToRgb(p, q, h);
+            b = HueToRgb(p, q, h - 1.0/3);
+        }
+
+        return ((int)(r * 255), (int)(g * 255), (int)(b * 255));
+    }
+
+    private static double HueToRgb(double p, double q, double t)
+    {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1.0/6) return p + (q - p) * 6 * t;
+        if (t < 1.0/2) return q;
+        if (t < 2.0/3) return p + (q - p) * (2.0/3 - t) * 6;
+        return p;
+    }
+}

@@ -1,0 +1,90 @@
+{
+  "name": "vibe-ui",
+  "displayName": "Vibe.UI",
+  "description": "Vibe.UI component library support for Visual Studio Code",
+  "version": "1.0.0",
+  "publisher": "vibe-ui",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Snippets",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "blazor",
+    "razor",
+    "ui",
+    "components",
+    "vibe"
+  ],
+  "activationEvents": [
+    "workspaceContains:**/*.razor"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vibe-ui.addComponent",
+        "title": "Vibe.UI: Add Component"
+      },
+      {
+        "command": "vibe-ui.initProject",
+        "title": "Vibe.UI: Initialize Project"
+      },
+      {
+        "command": "vibe-ui.openDocs",
+        "title": "Vibe.UI: Open Documentation"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "razor",
+        "path": "./snippets/components.json"
+      }
+    ],
+    "configuration": {
+      "title": "Vibe.UI",
+      "properties": {
+        "vibeUI.componentsDirectory": {
+          "type": "string",
+          "default": "Components",
+          "description": "Directory where components should be installed"
+        },
+        "vibeUI.theme": {
+          "type": "string",
+          "enum": ["light", "dark", "both"],
+          "default": "light",
+          "description": "Default theme for Vibe.UI"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package",
+    "pretest": "npm run compile && npm run compile-tests",
+    "compile-tests": "tsc -p . --outDir out",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.85.0",
+    "@types/sinon": "^17.0.2",
+    "@vscode/test-electron": "^2.3.8",
+    "@vscode/vsce": "^2.22.0",
+    "glob": "^10.3.10",
+    "mocha": "^10.2.0",
+    "sinon": "^17.0.1",
+    "typescript": "^5.3.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/Vibe.UI"
+  },
+  "license": "MIT"
+}

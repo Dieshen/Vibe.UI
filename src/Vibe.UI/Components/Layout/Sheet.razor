@@ -178,61 +178,61 @@
         IsClosing = false;
         await IsOpenChanged.InvokeAsync(false);
     }
-}
 
-/// <summary>
-/// Defines the side from which the sheet appears.
-/// </summary>
-public enum SheetSide
-{
     /// <summary>
-    /// The sheet appears from the top.
+    /// Defines the side from which the sheet appears.
     /// </summary>
-    Top,
-    
-    /// <summary>
-    /// The sheet appears from the right.
-    /// </summary>
-    Right,
-    
-    /// <summary>
-    /// The sheet appears from the bottom.
-    /// </summary>
-    Bottom,
-    
-    /// <summary>
-    /// The sheet appears from the left.
-    /// </summary>
-    Left
-}
+    public enum SheetSide
+    {
+        /// <summary>
+        /// The sheet appears from the top.
+        /// </summary>
+        Top,
 
-/// <summary>
-/// Defines the size of the sheet.
-/// </summary>
-public enum SheetSize
-{
+        /// <summary>
+        /// The sheet appears from the right.
+        /// </summary>
+        Right,
+
+        /// <summary>
+        /// The sheet appears from the bottom.
+        /// </summary>
+        Bottom,
+
+        /// <summary>
+        /// The sheet appears from the left.
+        /// </summary>
+        Left
+    }
+
     /// <summary>
-    /// Small size (25%).
+    /// Defines the size of the sheet.
     /// </summary>
-    Small,
-    
-    /// <summary>
-    /// Default size (35%).
-    /// </summary>
-    Default,
-    
-    /// <summary>
-    /// Medium size (50%).
-    /// </summary>
-    Medium,
-    
-    /// <summary>
-    /// Large size (75%).
-    /// </summary>
-    Large,
-    
-    /// <summary>
-    /// Full size (100%).
-    /// </summary>
-    Full
+    public enum SheetSize
+    {
+        /// <summary>
+        /// Small size (25%).
+        /// </summary>
+        Small,
+
+        /// <summary>
+        /// Default size (35%).
+        /// </summary>
+        Default,
+
+        /// <summary>
+        /// Medium size (50%).
+        /// </summary>
+        Medium,
+
+        /// <summary>
+        /// Large size (75%).
+        /// </summary>
+        Large,
+
+        /// <summary>
+        /// Full size (100%).
+        /// </summary>
+        Full
+    }
 }

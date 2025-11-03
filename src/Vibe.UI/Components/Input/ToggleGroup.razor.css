@@ -1,0 +1,30 @@
+.vibe-toggle-group {
+    display: inline-flex;
+    gap: 0;
+    border-radius: var(--vibe-radius, 0.375rem);
+    background-color: var(--vibe-muted);
+    padding: 0.25rem;
+}
+
+.vibe-toggle-group-horizontal {
+    flex-direction: row;
+}
+
+.vibe-toggle-group-vertical {
+    flex-direction: column;
+}
+
+.vibe-toggle-group-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Size variants */
+.vibe-toggle-group-small {
+    padding: 0.125rem;
+}
+
+.vibe-toggle-group-large {
+    padding: 0.375rem;
+}

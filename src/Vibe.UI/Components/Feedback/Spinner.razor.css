@@ -1,0 +1,51 @@
+.vibe-spinner {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.vibe-spinner::before {
+    content: '';
+    display: block;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 2px solid var(--vibe-muted);
+    border-top-color: var(--vibe-primary);
+    border-radius: 50%;
+    animation: spinner-spin 0.6s linear infinite;
+}
+
+.spinner-small::before {
+    width: 1rem;
+    height: 1rem;
+    border-width: 1.5px;
+}
+
+.spinner-large::before {
+    width: 2rem;
+    height: 2rem;
+    border-width: 3px;
+}
+
+.spinner-label {
+    font-size: 0.875rem;
+    color: var(--vibe-muted-foreground);
+}
+
+@keyframes spinner-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
