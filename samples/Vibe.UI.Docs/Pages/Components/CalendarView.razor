@@ -1,0 +1,276 @@
+@page "/components/calendar"
+
+<PageTitle>Calendar - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Calendar"
+               Category="DateTime"
+               Description="A calendar component for displaying and selecting dates with month/year navigation and customizable views."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; flex-direction: column; gap: 1rem; align-items: center;">
+            <Calendar @bind-SelectedDate="@selectedDate"
+                     MinDate="@DateTime.Today.AddMonths(-1)"
+                     MaxDate="@DateTime.Today.AddMonths(2)" />
+
+            @if (selectedDate.HasValue)
+            {
+                <Alert Variant="AlertVariant.Info">
+                    Selected: @selectedDate.Value.ToLongDateString()
+                </Alert>
+            }
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Calendar</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Date Selection</h3>
+            <CodeBlock Code="@SelectionCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Range Selection</h3>
+            <CodeBlock Code="@RangeCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Disabled Dates</h3>
+            <CodeBlock Code="@DisabledDatesCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Events and Highlights</h3>
+            <CodeBlock Code="@EventsCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Value</code></td>
+                    <td>DateTime?</td>
+                    <td>null</td>
+                    <td>Selected date value</td>
+                </tr>
+                <tr>
+                    <td><code>MinDate</code></td>
+                    <td>DateTime?</td>
+                    <td>null</td>
+                    <td>Minimum selectable date</td>
+                </tr>
+                <tr>
+                    <td><code>MaxDate</code></td>
+                    <td>DateTime?</td>
+                    <td>null</td>
+                    <td>Maximum selectable date</td>
+                </tr>
+                <tr>
+                    <td><code>DisabledDates</code></td>
+                    <td>IEnumerable&lt;DateTime&gt;</td>
+                    <td>null</td>
+                    <td>Collection of disabled dates</td>
+                </tr>
+                <tr>
+                    <td><code>HighlightedDates</code></td>
+                    <td>IEnumerable&lt;DateTime&gt;</td>
+                    <td>null</td>
+                    <td>Collection of dates to highlight</td>
+                </tr>
+                <tr>
+                    <td><code>ShowWeekNumbers</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Display week numbers</td>
+                </tr>
+                <tr>
+                    <td><code>FirstDayOfWeek</code></td>
+                    <td>DayOfWeek</td>
+                    <td>Sunday</td>
+                    <td>First day of the week</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>ValueChanged</code></td>
+                    <td>EventCallback&lt;DateTime?&gt;</td>
+                    <td>Callback when date is selected</td>
+                </tr>
+                <tr>
+                    <td><code>OnMonthChanged</code></td>
+                    <td>EventCallback&lt;DateTime&gt;</td>
+                    <td>Callback when displayed month changes</td>
+                </tr>
+                <tr>
+                    <td><code>OnYearChanged</code></td>
+                    <td>EventCallback&lt;int&gt;</td>
+                    <td>Callback when displayed year changes</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses <code>role="grid"</code> for calendar structure</li>
+            <li>Navigation buttons have descriptive labels</li>
+            <li>Keyboard navigation (Arrow keys for dates, Page Up/Down for months)</li>
+            <li>Selected date has <code>aria-selected="true"</code></li>
+            <li>Disabled dates have <code>aria-disabled="true"</code></li>
+            <li>Screen reader announces selected dates and navigation</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "DatePicker", "DateRangePicker", "TimePicker" };
+    private DateTime? selectedDate;
+
+    private string BasicCode => @"<Calendar />
+
+@code {
+    // Displays current month by default
+}";
+
+    private string SelectionCode => @"<Calendar @bind-Value=""@selectedDate"" />
+
+@if (selectedDate.HasValue)
+{
+    <Alert Variant=""AlertVariant.Info"">
+        Selected: @selectedDate.Value.ToShortDateString()
+    </Alert>
+}
+
+@code {
+    private DateTime? selectedDate;
+}";
+
+    private string RangeCode => @"<Calendar @bind-Value=""@startDate""
+          MinDate=""@DateTime.Today""
+          MaxDate=""@DateTime.Today.AddMonths(6)"" />
+
+<Calendar @bind-Value=""@endDate""
+          MinDate=""@startDate""
+          MaxDate=""@DateTime.Today.AddMonths(6)"" />
+
+@if (startDate.HasValue && endDate.HasValue)
+{
+    <div class=""date-range-summary"">
+        <p>From: @startDate.Value.ToShortDateString()</p>
+        <p>To: @endDate.Value.ToShortDateString()</p>
+        <p>Duration: @((endDate.Value - startDate.Value).Days) days</p>
+    </div>
+}
+
+@code {
+    private DateTime? startDate;
+    private DateTime? endDate;
+}";
+
+    private string DisabledDatesCode => @"<Calendar @bind-Value=""@selectedDate""
+          DisabledDates=""@disabledDates""
+          MinDate=""@DateTime.Today"" />
+
+@code {
+    private DateTime? selectedDate;
+    private List<DateTime> disabledDates;
+
+    protected override void OnInitialized()
+    {
+        // Disable weekends
+        disabledDates = Enumerable.Range(0, 90)
+            .Select(i => DateTime.Today.AddDays(i))
+            .Where(date => date.DayOfWeek == DayOfWeek.Saturday ||
+                          date.DayOfWeek == DayOfWeek.Sunday)
+            .ToList();
+    }
+}";
+
+    private string EventsCode => @"<Calendar @bind-Value=""@selectedDate""
+          HighlightedDates=""@eventDates""
+          OnMonthChanged=""@HandleMonthChanged"">
+    <DayTemplate Context=""date"">
+        <div class=""calendar-day"">
+            <span>@date.Day</span>
+            @if (HasEvent(date))
+            {
+                <div class=""event-indicators"">
+                    @foreach (var evt in GetEventsForDate(date))
+                    {
+                        <span class=""event-dot"" style=""background: @evt.Color""></span>
+                    }
+                </div>
+            }
+        </div>
+    </DayTemplate>
+</Calendar>
+
+@if (selectedDate.HasValue)
+{
+    <div class=""events-list"">
+        <h4>Events on @selectedDate.Value.ToShortDateString()</h4>
+        @foreach (var evt in GetEventsForDate(selectedDate.Value))
+        {
+            <div class=""event-item"">
+                <Badge Color=""@evt.Color"">@evt.Category</Badge>
+                <strong>@evt.Title</strong>
+                <p>@evt.Description</p>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private DateTime? selectedDate;
+    private List<DateTime> eventDates;
+    private List<CalendarEvent> events;
+
+    protected override void OnInitialized()
+    {
+        events = GetCalendarEvents();
+        eventDates = events.Select(e => e.Date).ToList();
+    }
+
+    private bool HasEvent(DateTime date)
+    {
+        return events.Any(e => e.Date.Date == date.Date);
+    }
+
+    private List<CalendarEvent> GetEventsForDate(DateTime date)
+    {
+        return events.Where(e => e.Date.Date == date.Date).ToList();
+    }
+
+    private async Task HandleMonthChanged(DateTime month)
+    {
+        // Load events for the new month
+        events = await LoadEventsForMonthAsync(month);
+        eventDates = events.Select(e => e.Date).ToList();
+    }
+}";
+}

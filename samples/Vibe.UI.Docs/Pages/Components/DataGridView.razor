@@ -1,0 +1,242 @@
+@page "/components/datagrid"
+@using Vibe.UI.Components
+
+<PageTitle>DataGrid - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="DataGrid"
+               Category="DataDisplay"
+               Description="A powerful data table with sorting, filtering, pagination, and editing capabilities."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <DataTable TItem="ProductData"
+                      Items="@sampleProducts"
+                      Columns="@productColumns"
+                      ShowSearch="true"
+                      ShowPagination="true"
+                      PageSize="5">
+            </DataTable>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Sorting</h3>
+            <CodeBlock Code="@SortingCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Filtering</h3>
+            <CodeBlock Code="@FilteringCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Pagination</h3>
+            <CodeBlock Code="@PaginationCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Editable Grid</h3>
+            <CodeBlock Code="@EditableCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Items</code></td>
+                    <td>IEnumerable&lt;TItem&gt;</td>
+                    <td>null</td>
+                    <td>Data items to display</td>
+                </tr>
+                <tr>
+                    <td><code>Sortable</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Enable column sorting</td>
+                </tr>
+                <tr>
+                    <td><code>Filterable</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Enable column filtering</td>
+                </tr>
+                <tr>
+                    <td><code>Pageable</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Enable pagination</td>
+                </tr>
+                <tr>
+                    <td><code>PageSize</code></td>
+                    <td>int</td>
+                    <td>10</td>
+                    <td>Number of items per page</td>
+                </tr>
+                <tr>
+                    <td><code>Selectable</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Enable row selection</td>
+                </tr>
+                <tr>
+                    <td><code>Loading</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Show loading state</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnRowClick</code></td>
+                    <td>EventCallback&lt;TItem&gt;</td>
+                    <td>Callback when row is clicked</td>
+                </tr>
+                <tr>
+                    <td><code>OnSelectionChanged</code></td>
+                    <td>EventCallback&lt;IEnumerable&lt;TItem&gt;&gt;</td>
+                    <td>Callback when selection changes</td>
+                </tr>
+                <tr>
+                    <td><code>OnSort</code></td>
+                    <td>EventCallback&lt;SortEventArgs&gt;</td>
+                    <td>Callback when sort changes</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Semantic table structure with proper headers</li>
+            <li>Keyboard navigation (Arrow keys, Page Up/Down)</li>
+            <li>ARIA grid role with proper labels</li>
+            <li>Sort indicators announced to screen readers</li>
+            <li>Row selection with keyboard support</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Table", "Pagination", "VirtualScroll" };
+
+    private class ProductData
+    {
+        public string Name { get; set; }
+        public decimal Price { get; set; }
+        public int Stock { get; set; }
+        public string Category { get; set; }
+    }
+
+    private List<ProductData> sampleProducts = new()
+    {
+        new ProductData { Name = "Laptop Pro", Price = 1299.99m, Stock = 15, Category = "Electronics" },
+        new ProductData { Name = "Wireless Mouse", Price = 29.99m, Stock = 87, Category = "Accessories" },
+        new ProductData { Name = "Mechanical Keyboard", Price = 89.99m, Stock = 42, Category = "Accessories" },
+        new ProductData { Name = "USB-C Hub", Price = 49.99m, Stock = 63, Category = "Accessories" },
+        new ProductData { Name = "Monitor 27\"", Price = 399.99m, Stock = 28, Category = "Electronics" },
+        new ProductData { Name = "Webcam HD", Price = 79.99m, Stock = 54, Category = "Electronics" },
+        new ProductData { Name = "Desk Lamp", Price = 34.99m, Stock = 96, Category = "Office" },
+        new ProductData { Name = "Office Chair", Price = 249.99m, Stock = 12, Category = "Furniture" }
+    };
+
+    private List<DataTable<ProductData>.DataTableColumn<ProductData>> productColumns = new()
+    {
+        new DataTable<ProductData>.DataTableColumn<ProductData>
+        {
+            Title = "Product Name",
+            PropertyName = nameof(ProductData.Name),
+            IsSortable = true
+        },
+        new DataTable<ProductData>.DataTableColumn<ProductData>
+        {
+            Title = "Price",
+            PropertyName = nameof(ProductData.Price),
+            IsSortable = true,
+            Template = (item) => @<text>$@item.Price.ToString("F2")</text>
+        },
+        new DataTable<ProductData>.DataTableColumn<ProductData>
+        {
+            Title = "Stock",
+            PropertyName = nameof(ProductData.Stock),
+            IsSortable = true
+        },
+        new DataTable<ProductData>.DataTableColumn<ProductData>
+        {
+            Title = "Category",
+            PropertyName = nameof(ProductData.Category),
+            IsSortable = true
+        }
+    };
+
+    private string BasicCode => @"<DataGrid Items=""@users"">
+    <DataGridColumn Field=""@nameof(User.Name)"" Title=""Name"" />
+    <DataGridColumn Field=""@nameof(User.Email)"" Title=""Email"" />
+    <DataGridColumn Field=""@nameof(User.Role)"" Title=""Role"" />
+</DataGrid>
+
+@code {
+    private List<User> users = GetUsers();
+}";
+
+    private string SortingCode => @"<DataGrid Items=""@products"" Sortable=""true"">
+    <DataGridColumn Field=""@nameof(Product.Name)"" Title=""Product"" Sortable=""true"" />
+    <DataGridColumn Field=""@nameof(Product.Price)"" Title=""Price"" Sortable=""true"" />
+    <DataGridColumn Field=""@nameof(Product.Stock)"" Title=""Stock"" Sortable=""true"" />
+</DataGrid>";
+
+    private string FilteringCode => @"<DataGrid Items=""@orders"" Filterable=""true"">
+    <DataGridColumn Field=""@nameof(Order.Id)"" Title=""Order ID"" Filterable=""true"" />
+    <DataGridColumn Field=""@nameof(Order.Customer)"" Title=""Customer"" Filterable=""true"" />
+    <DataGridColumn Field=""@nameof(Order.Status)"" Title=""Status"" Filterable=""true"" />
+</DataGrid>";
+
+    private string PaginationCode => @"<DataGrid Items=""@allItems""
+          Pageable=""true""
+          PageSize=""20"">
+    <DataGridColumn Field=""@nameof(Item.Name)"" Title=""Name"" />
+    <DataGridColumn Field=""@nameof(Item.Category)"" Title=""Category"" />
+</DataGrid>";
+
+    private string EditableCode => @"<DataGrid Items=""@employees""
+          Editable=""true""
+          OnRowEdit=""@HandleRowEdit"">
+    <DataGridColumn Field=""@nameof(Employee.Name)"" Title=""Name"" Editable=""true"" />
+    <DataGridColumn Field=""@nameof(Employee.Department)"" Title=""Department"" Editable=""true"" />
+    <DataGridColumn Field=""@nameof(Employee.Salary)"" Title=""Salary"" Editable=""true"" />
+</DataGrid>
+
+@code {
+    private async Task HandleRowEdit(Employee employee)
+    {
+        await SaveEmployee(employee);
+    }
+}";
+}

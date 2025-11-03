@@ -1,0 +1,162 @@
+@page "/components/spinner"
+
+<PageTitle>Spinner - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Spinner"
+               Category="Feedback"
+               Description="A loading indicator that displays a spinning animation to indicate processing or loading states."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <p>Component preview will be shown here when installed.</p>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Spinner</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Sizes</h3>
+            <CodeBlock Code="@SizesCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Colors</h3>
+            <CodeBlock Code="@ColorsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Label</h3>
+            <CodeBlock Code="@LabelCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Page Overlay</h3>
+            <CodeBlock Code="@OverlayCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Size</code></td>
+                    <td>SpinnerSize</td>
+                    <td>Medium</td>
+                    <td>Size of the spinner (Small, Medium, Large)</td>
+                </tr>
+                <tr>
+                    <td><code>Color</code></td>
+                    <td>string</td>
+                    <td>"primary"</td>
+                    <td>Color theme of the spinner</td>
+                </tr>
+                <tr>
+                    <td><code>Label</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Optional text label to display</td>
+                </tr>
+                <tr>
+                    <td><code>Thickness</code></td>
+                    <td>int</td>
+                    <td>4</td>
+                    <td>Border thickness in pixels</td>
+                </tr>
+                <tr>
+                    <td><code>Speed</code></td>
+                    <td>SpinnerSpeed</td>
+                    <td>Normal</td>
+                    <td>Rotation speed (Slow, Normal, Fast)</td>
+                </tr>
+                <tr>
+                    <td><code>ShowOverlay</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Show backdrop overlay</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3">No events available for this component</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses <code>role="status"</code> for screen reader announcements</li>
+            <li>Includes <code>aria-label</code> or <code>aria-labelledby</code></li>
+            <li>Uses <code>aria-live="polite"</code> for dynamic updates</li>
+            <li>Does not receive keyboard focus</li>
+            <li>Respects <code>prefers-reduced-motion</code> for animations</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Skeleton", "ProgressBar", "Button" };
+
+    private string BasicCode => @"<Spinner />";
+
+    private string SizesCode => @"<Spinner Size=""SpinnerSize.Small"" />
+<Spinner Size=""SpinnerSize.Medium"" />
+<Spinner Size=""SpinnerSize.Large"" />";
+
+    private string ColorsCode => @"<Spinner Color=""primary"" />
+<Spinner Color=""secondary"" />
+<Spinner Color=""success"" />
+<Spinner Color=""danger"" />
+<Spinner Color=""warning"" />";
+
+    private string LabelCode => @"<Spinner Label=""Loading..."" />
+<Spinner Label=""Processing"" Size=""SpinnerSize.Large"" />
+<Spinner Label=""Please wait"" Color=""primary"" />";
+
+    private string OverlayCode => @"@if (isLoading)
+{
+    <Spinner ShowOverlay=""true""
+             Label=""Loading data...""
+             Size=""SpinnerSize.Large"" />
+}
+
+@code {
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        await Task.Delay(2000);
+        isLoading = false;
+    }
+}";
+}

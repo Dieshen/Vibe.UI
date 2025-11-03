@@ -1,0 +1,234 @@
+@page "/installation"
+
+<PageTitle>Installation - Vibe.UI</PageTitle>
+
+<div class="docs-page">
+    <header class="page-header">
+        <h1>Installation</h1>
+        <p class="lead">Choose your preferred installation method</p>
+    </header>
+
+    <section class="content-section">
+        <h2>Option 1: CLI Tool (Recommended)</h2>
+        <p>Install components as source code for full customization and control.</p>
+
+        <h3>Step 1: Install the CLI Tool</h3>
+        <CodeBlock Code="@InstallCliCode" Language="bash" />
+
+        <h3>Step 2: Initialize Your Project</h3>
+        <p>Navigate to your Blazor project directory and run:</p>
+        <CodeBlock Code="@InitCode" Language="bash" />
+
+        <p>This command will:</p>
+        <ul>
+            <li>Copy infrastructure files to <code>Vibe/</code> directory</li>
+            <li>Copy required JavaScript files to <code>wwwroot/js/</code></li>
+            <li>Create a <code>vibeconfig.json</code> configuration file</li>
+        </ul>
+
+        <h3>Step 3: Configure Program.cs</h3>
+        <p>Add Vibe.UI services to your <code>Program.cs</code>:</p>
+        <CodeBlock Code="@ProgramCsCode" Language="csharp" />
+
+        <h3>Step 4: Add Components</h3>
+        <p>Add individual components as needed:</p>
+        <CodeBlock Code="@AddComponentCode" Language="bash" />
+
+        <div class="info-box">
+            <strong>💡 Tip:</strong> Use <code>vibe list</code> to see all available components.
+        </div>
+    </section>
+
+    <section class="content-section">
+        <h2>Option 2: NuGet Package</h2>
+        <p>Install Vibe.UI as a traditional NuGet package.</p>
+
+        <h3>Step 1: Add the Package</h3>
+        <CodeBlock Code="@AddPackageCode" Language="bash" />
+
+        <h3>Step 2: Configure Program.cs</h3>
+        <p>Add Vibe.UI services to your <code>Program.cs</code>:</p>
+        <CodeBlock Code="@ProgramCsCode" Language="csharp" />
+
+        <h3>Step 3: Add Imports</h3>
+        <p>Add to your <code>_Imports.razor</code>:</p>
+        <CodeBlock Code="@ImportsCode" Language="razor" />
+
+        <h3>Step 4: Use Components</h3>
+        <p>Components are available immediately after installation:</p>
+        <CodeBlock Code="@UseComponentCode" Language="razor" />
+    </section>
+
+    <section class="content-section">
+        <h2>CLI Options and Flags</h2>
+        <p>The CLI tool supports various options for customization:</p>
+
+        <div class="cli-options">
+            <div class="cli-option">
+                <code>--name &lt;custom-name&gt;</code>
+                <p>Rename component when copying</p>
+                <CodeBlock Code="@CustomNameCode" Language="bash" />
+            </div>
+
+            <div class="cli-option">
+                <code>--output &lt;path&gt;</code>
+                <p>Specify custom output directory</p>
+                <CodeBlock Code="@CustomOutputCode" Language="bash" />
+            </div>
+
+            <div class="cli-option">
+                <code>--overwrite</code>
+                <p>Overwrite existing files without prompting</p>
+                <CodeBlock Code="@OverwriteCode" Language="bash" />
+            </div>
+
+            <div class="cli-option">
+                <code>-y</code>
+                <p>Skip all prompts (use defaults)</p>
+                <CodeBlock Code="@SkipPromptsCode" Language="bash" />
+            </div>
+        </div>
+    </section>
+
+    <section class="content-section">
+        <h2>Comparison: CLI vs Package</h2>
+        <div class="comparison-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>CLI</th>
+                        <th>Package</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Source Code Access</td>
+                        <td class="check">✓ Full</td>
+                        <td class="cross">✗ Limited</td>
+                    </tr>
+                    <tr>
+                        <td>Customization</td>
+                        <td class="check">✓ Unlimited</td>
+                        <td class="cross">✗ Style only</td>
+                    </tr>
+                    <tr>
+                        <td>Setup Time</td>
+                        <td>~2 minutes</td>
+                        <td>~30 seconds</td>
+                    </tr>
+                    <tr>
+                        <td>Updates</td>
+                        <td>Manual (vibe update)</td>
+                        <td>Automatic</td>
+                    </tr>
+                    <tr>
+                        <td>Bundle Size</td>
+                        <td>Smaller (tree-shakeable)</td>
+                        <td>Larger (full library)</td>
+                    </tr>
+                    <tr>
+                        <td>Dependencies</td>
+                        <td class="check">✓ Zero</td>
+                        <td>Package reference</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="content-section">
+        <h2>Troubleshooting</h2>
+
+        <div class="troubleshooting-item">
+            <h3>CLI tool not found after installation</h3>
+            <p>Make sure your PATH includes the .NET tools directory:</p>
+            <CodeBlock Code="@PathCheckCode" Language="bash" />
+        </div>
+
+        <div class="troubleshooting-item">
+            <h3>Build errors after adding components</h3>
+            <p>Ensure you've run <code>vibe init</code> before adding components. The infrastructure files are required.</p>
+        </div>
+
+        <div class="troubleshooting-item">
+            <h3>Components not rendering</h3>
+            <p>Check that Vibe.UI services are registered in Program.cs:</p>
+            <CodeBlock Code="@ServicesCheckCode" Language="csharp" />
+        </div>
+    </section>
+
+    <section class="content-section">
+        <h2>Next Steps</h2>
+        <div class="next-steps-grid">
+            <a href="@GetUrl("cli")" class="next-step-card">
+                <h3>🛠️ CLI Reference</h3>
+                <p>Complete CLI command documentation</p>
+            </a>
+            <a href="@GetUrl("components/button")" class="next-step-card">
+                <h3>🎨 Browse Components</h3>
+                <p>Explore available components</p>
+            </a>
+            <a href="@GetUrl("theming")" class="next-step-card">
+                <h3>🎭 Customize Theme</h3>
+                <p>Learn about theming options</p>
+            </a>
+        </div>
+    </section>
+</div>
+
+@code {
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
+    private string InstallCliCode => "dotnet tool install -g Vibe.UI.CLI";
+
+    private string InitCode => @"cd MyBlazorApp
+vibe init";
+
+    private string ProgramCsCode => @"using Vibe.UI;
+
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+// Add Vibe.UI services
+builder.Services.AddVibeUI();
+
+await builder.Build().RunAsync();";
+
+    private string AddComponentCode => @"vibe add button
+vibe add card
+vibe add input";
+
+    private string AddPackageCode => "dotnet add package Vibe.UI";
+
+    private string ImportsCode => "@using Vibe.UI.Components";
+
+    private string UseComponentCode => @"@page ""/demo""
+@using Vibe.UI.Components
+
+<Button>Click Me</Button>
+<Card>Card Content</Card>";
+
+    private string CustomNameCode => "vibe add button --name PrimaryButton";
+
+    private string CustomOutputCode => "vibe add button --output MyComponents";
+
+    private string OverwriteCode => "vibe add button --overwrite";
+
+    private string SkipPromptsCode => "vibe init -y";
+
+    private string PathCheckCode => @"# Windows
+echo %PATH%
+
+# macOS/Linux
+echo $PATH
+
+# Should include: ~/.dotnet/tools or C:\Users\<username>\.dotnet\tools";
+
+    private string ServicesCheckCode => "builder.Services.AddVibeUI();";
+
+    private string GetUrl(string path)
+    {
+        return $"{Navigation.BaseUri}{path}";
+    }
+}

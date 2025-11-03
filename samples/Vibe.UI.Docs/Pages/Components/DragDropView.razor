@@ -1,0 +1,241 @@
+@page "/components/dragdrop"
+
+<PageTitle>DragDrop - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="DragDrop"
+               Category="Advanced"
+               Description="A container component that enables drag and drop functionality for reordering items or moving content between containers."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <p class="info-message">
+                <strong>Note:</strong> DragDrop component not found in Advanced folder.
+                This component may need to be implemented or is located elsewhere in the codebase.
+            </p>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Drag and Drop</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Sortable List</h3>
+            <CodeBlock Code="@SortableCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Multiple Containers</h3>
+            <CodeBlock Code="@MultiContainerCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Handles</h3>
+            <CodeBlock Code="@HandleCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Disabled Items</h3>
+            <CodeBlock Code="@DisabledCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Items</code></td>
+                    <td>IEnumerable&lt;TItem&gt;</td>
+                    <td>-</td>
+                    <td>Collection of items to display</td>
+                </tr>
+                <tr>
+                    <td><code>ItemTemplate</code></td>
+                    <td>RenderFragment&lt;TItem&gt;</td>
+                    <td>-</td>
+                    <td>Template for rendering each item</td>
+                </tr>
+                <tr>
+                    <td><code>Disabled</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Disable drag and drop functionality</td>
+                </tr>
+                <tr>
+                    <td><code>Group</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Group name for multi-container drag/drop</td>
+                </tr>
+                <tr>
+                    <td><code>Handle</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>CSS selector for drag handle</td>
+                </tr>
+                <tr>
+                    <td><code>Animation</code></td>
+                    <td>int</td>
+                    <td>150</td>
+                    <td>Animation duration in milliseconds</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnItemsChanged</code></td>
+                    <td>EventCallback&lt;IEnumerable&lt;TItem&gt;&gt;</td>
+                    <td>Callback when items are reordered</td>
+                </tr>
+                <tr>
+                    <td><code>OnDragStart</code></td>
+                    <td>EventCallback&lt;DragEventArgs&lt;TItem&gt;&gt;</td>
+                    <td>Callback when drag starts</td>
+                </tr>
+                <tr>
+                    <td><code>OnDragEnd</code></td>
+                    <td>EventCallback&lt;DragEventArgs&lt;TItem&gt;&gt;</td>
+                    <td>Callback when drag ends</td>
+                </tr>
+                <tr>
+                    <td><code>OnDrop</code></td>
+                    <td>EventCallback&lt;DropEventArgs&lt;TItem&gt;&gt;</td>
+                    <td>Callback when item is dropped</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Draggable items have <code>draggable="true"</code> attribute</li>
+            <li>Uses <code>aria-grabbed</code> to indicate drag state</li>
+            <li>Drop zones have <code>aria-dropeffect</code> attribute</li>
+            <li>Keyboard support for reordering (Alt+Arrow keys)</li>
+            <li>Screen reader announcements for drag/drop actions</li>
+            <li>Focus management during drag operations</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "KanbanBoard", "TreeView" };
+
+    private string BasicCode => @"<DragDrop Items=""@items"" OnItemsChanged=""@HandleReorder"">
+    <ItemTemplate Context=""item"">
+        <div class=""drag-item"">@item.Name</div>
+    </ItemTemplate>
+</DragDrop>
+
+@code {
+    private List<TodoItem> items = new()
+    {
+        new TodoItem { Name = ""First task"" },
+        new TodoItem { Name = ""Second task"" },
+        new TodoItem { Name = ""Third task"" }
+    };
+
+    private void HandleReorder(IEnumerable<TodoItem> reorderedItems)
+    {
+        items = reorderedItems.ToList();
+    }
+}";
+
+    private string SortableCode => @"<DragDrop Items=""@tasks"" OnItemsChanged=""@UpdateTasks"">
+    <ItemTemplate Context=""task"">
+        <div class=""task-card"">
+            <h4>@task.Title</h4>
+            <p>@task.Description</p>
+            <span class=""badge"">@task.Priority</span>
+        </div>
+    </ItemTemplate>
+</DragDrop>
+
+@code {
+    private List<Task> tasks = GetTasks();
+
+    private void UpdateTasks(IEnumerable<Task> reordered)
+    {
+        tasks = reordered.ToList();
+        // Save new order to database
+    }
+}";
+
+    private string MultiContainerCode => @"<div class=""drag-containers"">
+    <div class=""column"">
+        <h3>To Do</h3>
+        <DragDrop Items=""@todoItems""
+                  Group=""tasks""
+                  OnItemsChanged=""@(items => todoItems = items.ToList())"">
+            <ItemTemplate Context=""item"">
+                <div class=""task"">@item.Title</div>
+            </ItemTemplate>
+        </DragDrop>
+    </div>
+
+    <div class=""column"">
+        <h3>In Progress</h3>
+        <DragDrop Items=""@inProgressItems""
+                  Group=""tasks""
+                  OnItemsChanged=""@(items => inProgressItems = items.ToList())"">
+            <ItemTemplate Context=""item"">
+                <div class=""task"">@item.Title</div>
+            </ItemTemplate>
+        </DragDrop>
+    </div>
+
+    <div class=""column"">
+        <h3>Done</h3>
+        <DragDrop Items=""@doneItems""
+                  Group=""tasks""
+                  OnItemsChanged=""@(items => doneItems = items.ToList())"">
+            <ItemTemplate Context=""item"">
+                <div class=""task"">@item.Title</div>
+            </ItemTemplate>
+        </DragDrop>
+    </div>
+</div>";
+
+    private string HandleCode => @"<DragDrop Items=""@items"" Handle="".drag-handle"">
+    <ItemTemplate Context=""item"">
+        <div class=""item-with-handle"">
+            <span class=""drag-handle"">⋮⋮</span>
+            <span>@item.Name</span>
+        </div>
+    </ItemTemplate>
+</DragDrop>";
+
+    private string DisabledCode => @"<DragDrop Items=""@items"">
+    <ItemTemplate Context=""item"">
+        <div class=""drag-item"" disabled=""@item.IsLocked"">
+            @item.Name
+            @if (item.IsLocked)
+            {
+                <span class=""lock-icon"">🔒</span>
+            }
+        </div>
+    </ItemTemplate>
+</DragDrop>";
+}

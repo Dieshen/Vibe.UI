@@ -1,0 +1,180 @@
+@page "/components/switch"
+@using Vibe.UI.Components
+
+<PageTitle>Switch - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Switch"
+               Category="Input"
+               Description="A toggle switch control for on/off or true/false values."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 400px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span>Default (off)</span>
+                <Switch />
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span>Default (on)</span>
+                <Switch Checked="true" />
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span>Enable notifications</span>
+                <Switch Checked="@notificationsEnabled" CheckedChanged="@OnNotificationsChanged" />
+            </div>
+            @if (notificationsEnabled)
+            {
+                <p style="margin-left: 1.5rem; color: var(--brand-teal);">✓ Notifications enabled</p>
+            }
+
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span>Dark mode</span>
+                <Switch Checked="@darkModeEnabled" CheckedChanged="@((bool val) => darkModeEnabled = val)" />
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; opacity: 0.5;">
+                <span>Disabled (off)</span>
+                <Switch Disabled="true" />
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; opacity: 0.5;">
+                <span>Disabled (on)</span>
+                <Switch Checked="true" Disabled="true" />
+            </div>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Label</h3>
+            <CodeBlock Code="@LabelCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Sizes</h3>
+            <CodeBlock Code="@SizesCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Disabled State</h3>
+            <CodeBlock Code="@DisabledCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Change Handler</h3>
+            <CodeBlock Code="@ChangeHandlerCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Checked</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the switch is checked</td>
+                </tr>
+                <tr>
+                    <td><code>Disabled</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the switch is disabled</td>
+                </tr>
+                <tr>
+                    <td><code>Label</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Label text for the switch</td>
+                </tr>
+                <tr>
+                    <td><code>Size</code></td>
+                    <td>SwitchSize</td>
+                    <td>Medium</td>
+                    <td>Size of the switch</td>
+                </tr>
+                <tr>
+                    <td><code>Name</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Name attribute of the input</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>CheckedChanged</code></td>
+                    <td>EventCallback&lt;bool&gt;</td>
+                    <td>Callback when checked state changes</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses semantic switch role with proper ARIA attributes</li>
+            <li>Keyboard accessible (Space to toggle)</li>
+            <li>Label associated with switch for clickable area</li>
+            <li>Focus visible styles for keyboard navigation</li>
+            <li>Screen reader announces state changes</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private bool notificationsEnabled = false;
+    private bool darkModeEnabled = false;
+    private List<string> relatedComponents = new() { "Checkbox", "RadioGroup", "Toggle" };
+
+    private void OnNotificationsChanged(bool value)
+    {
+        notificationsEnabled = value;
+    }
+
+    private string BasicCode => @"<Switch />
+<Switch Checked=""true"" />";
+
+    private string LabelCode => @"<Switch Label=""Enable notifications"" />
+<Switch Label=""Dark mode"" Checked=""true"" />";
+
+    private string SizesCode => @"<Switch Size=""SwitchSize.Small"" Label=""Small"" />
+<Switch Size=""SwitchSize.Medium"" Label=""Medium"" />
+<Switch Size=""SwitchSize.Large"" Label=""Large"" />";
+
+    private string DisabledCode => @"<Switch Label=""Disabled off"" Disabled=""true"" />
+<Switch Label=""Disabled on"" Checked=""true"" Disabled=""true"" />";
+
+    private string ChangeHandlerCode => @"<Switch Label=""Notifications"" @bind-Checked=""@notificationsEnabled"" />
+<p>Notifications: @(notificationsEnabled ? ""Enabled"" : ""Disabled"")</p>
+
+@code {
+    private bool notificationsEnabled = false;
+}";
+}

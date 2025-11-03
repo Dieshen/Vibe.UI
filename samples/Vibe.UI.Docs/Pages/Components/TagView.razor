@@ -1,0 +1,157 @@
+@page "/components/tag"
+
+<PageTitle>Tag - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Tag"
+               Category="DataDisplay"
+               Description="A small label for categorizing or tagging content, often removable."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <p>Component preview will be shown here when installed.</p>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Variants</h3>
+            <CodeBlock Code="@VariantsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Removable Tags</h3>
+            <CodeBlock Code="@RemovableCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Sizes</h3>
+            <CodeBlock Code="@SizesCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Tag Input</h3>
+            <CodeBlock Code="@InputCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Label</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Tag label text</td>
+                </tr>
+                <tr>
+                    <td><code>Variant</code></td>
+                    <td>TagVariant</td>
+                    <td>Default</td>
+                    <td>Visual style variant</td>
+                </tr>
+                <tr>
+                    <td><code>Size</code></td>
+                    <td>TagSize</td>
+                    <td>Medium</td>
+                    <td>Size of the tag</td>
+                </tr>
+                <tr>
+                    <td><code>Removable</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether tag can be removed</td>
+                </tr>
+                <tr>
+                    <td><code>Rounded</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Whether tag has rounded corners</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnRemove</code></td>
+                    <td>EventCallback</td>
+                    <td>Callback when tag is removed</td>
+                </tr>
+                <tr>
+                    <td><code>OnClick</code></td>
+                    <td>EventCallback</td>
+                    <td>Callback when tag is clicked</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Semantic HTML with proper ARIA labels</li>
+            <li>Remove button accessible via keyboard</li>
+            <li>Screen reader announces tag removal</li>
+            <li>Focus visible styles</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Badge", "Chip", "Button" };
+
+    private string BasicCode => @"<Tag Label=""React"" />
+<Tag Label=""Blazor"" />
+<Tag Label=""TypeScript"" />";
+
+    private string VariantsCode => @"<Tag Label=""Default"" Variant=""TagVariant.Default"" />
+<Tag Label=""Primary"" Variant=""TagVariant.Primary"" />
+<Tag Label=""Success"" Variant=""TagVariant.Success"" />
+<Tag Label=""Warning"" Variant=""TagVariant.Warning"" />
+<Tag Label=""Danger"" Variant=""TagVariant.Danger"" />
+<Tag Label=""Info"" Variant=""TagVariant.Info"" />";
+
+    private string RemovableCode => @"<Tag Label=""React"" Removable=""true"" OnRemove=""@(() => RemoveTag(""React""))"" />
+<Tag Label=""Vue"" Removable=""true"" OnRemove=""@(() => RemoveTag(""Vue""))"" />
+<Tag Label=""Angular"" Removable=""true"" OnRemove=""@(() => RemoveTag(""Angular""))"" />
+
+@code {
+    private void RemoveTag(string tagName)
+    {
+        Console.WriteLine($""Removed: {tagName}"");
+    }
+}";
+
+    private string SizesCode => @"<Tag Label=""Small"" Size=""TagSize.Small"" />
+<Tag Label=""Medium"" Size=""TagSize.Medium"" />
+<Tag Label=""Large"" Size=""TagSize.Large"" />";
+
+    private string InputCode => @"<TagInput @bind-Tags=""@selectedTags"" Placeholder=""Add tags..."" />
+<p>Selected: @string.Join("", "", selectedTags)</p>
+
+@code {
+    private List<string> selectedTags = new() { ""Tag1"", ""Tag2"" };
+}";
+}

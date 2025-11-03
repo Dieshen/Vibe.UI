@@ -7,16 +7,18 @@
     <PackageId>Vibe.UI</PackageId>
     <Version>1.0.0</Version>
     <Title>Vibe.UI - Modern Blazor Component Library</Title>
-    <Authors>Brock</Authors>
-    <Description>Pre-built Blazor component library with 93+ components (theming, forms, charts, and more).
+    <Authors>Narcoleptic Fox</Authors>
+    <Description>Pre-built Blazor component library with 93+ components (theming, forms, charts, and
+      more).
 
-PREFER CLI APPROACH? Use Vibe.UI.CLI for source code control:
-  dotnet tool install -g Vibe.UI.CLI
-  vibe init
+      PREFER CLI APPROACH? Use Vibe.UI.CLI for source code control:
+      dotnet tool install -g Vibe.UI.CLI
+      vibe init
 
-This package is for users who prefer package references over managing source code.</Description>
+      This package is for users who prefer package references over managing source code.</Description>
     <PackageTags>blazor;components;ui;themes;charts;forms;shadcn</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/Dieshen/Vibe.UI</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/Dieshen/Vibe.UI</PackageProjectUrl>
@@ -30,7 +32,8 @@ This package is for users who prefer package references over managing source cod
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.3" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.3" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"
+      Version="9.0.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,6 +44,7 @@ This package is for users who prefer package references over managing source cod
 
   <ItemGroup>
     <None Include="../../icon.png" Pack="true" PackagePath="" Condition="Exists('../../icon.png')" />
+    <None Include="../../assets/icon.png" Pack="true" PackagePath="" Condition="!Exists('../../icon.png') And Exists('../../assets/icon.png')" />
     <None Include="README.nuget.md" Pack="true" PackagePath="" />
   </ItemGroup>
 

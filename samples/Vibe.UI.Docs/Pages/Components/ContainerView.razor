@@ -1,0 +1,128 @@
+@page "/components/container"
+
+<PageTitle>Container - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Container"
+               Category="Layout"
+               Description="A layout component that centers content and applies consistent horizontal padding."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <div style="padding: 1.5rem; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; margin-bottom: 1rem;">
+                <h4 style="margin: 0 0 0.5rem 0; color: #856404;">Component Not Yet Implemented</h4>
+                <p style="margin: 0; color: #856404;">
+                    The Container component has not been implemented yet. The API documentation below represents the planned interface.
+                </p>
+            </div>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Max Width Sizes</h3>
+            <CodeBlock Code="@SizesCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Fluid Container</h3>
+            <CodeBlock Code="@FluidCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Padding</h3>
+            <CodeBlock Code="@PaddingCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>MaxWidth</code></td>
+                    <td>ContainerSize</td>
+                    <td>Large</td>
+                    <td>Maximum width (Small, Medium, Large, XLarge, Full)</td>
+                </tr>
+                <tr>
+                    <td><code>Fluid</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether to fill full width</td>
+                </tr>
+                <tr>
+                    <td><code>Padding</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Custom padding value</td>
+                </tr>
+                <tr>
+                    <td><code>Centered</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Whether to center the container</td>
+                </tr>
+                <tr>
+                    <td><code>ChildContent</code></td>
+                    <td>RenderFragment</td>
+                    <td>-</td>
+                    <td>Container content</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>No impact on semantic structure</li>
+            <li>Maintains accessibility of child content</li>
+            <li>Responsive design supports readability</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Grid", "Stack", "Box" };
+
+    private string BasicCode => @"<Container>
+    <h1>Page Title</h1>
+    <p>This content is centered and has consistent padding.</p>
+</Container>";
+
+    private string SizesCode => @"<Container MaxWidth=""ContainerSize.Small"">
+    Small container (640px max)
+</Container>
+
+<Container MaxWidth=""ContainerSize.Medium"">
+    Medium container (768px max)
+</Container>
+
+<Container MaxWidth=""ContainerSize.Large"">
+    Large container (1024px max)
+</Container>
+
+<Container MaxWidth=""ContainerSize.XLarge"">
+    Extra large container (1280px max)
+</Container>";
+
+    private string FluidCode => @"<Container Fluid=""true"">
+    <p>This container spans the full width of the viewport.</p>
+</Container>";
+
+    private string PaddingCode => @"<Container Padding=""2rem"">
+    <p>Container with custom padding.</p>
+</Container>";
+}

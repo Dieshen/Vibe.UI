@@ -1,0 +1,151 @@
+@page "/components/dropdown"
+
+<PageTitle>Dropdown - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Dropdown"
+               Category="Overlay"
+               Description="Displays a list of actions or options when triggered."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <p>Component preview will be shown here when installed.</p>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Icons</h3>
+            <CodeBlock Code="@IconsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Placement Options</h3>
+            <CodeBlock Code="@PlacementCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Sections</h3>
+            <CodeBlock Code="@SectionsCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Placement</code></td>
+                    <td>DropdownPlacement</td>
+                    <td>BottomStart</td>
+                    <td>Dropdown placement</td>
+                </tr>
+                <tr>
+                    <td><code>Trigger</code></td>
+                    <td>DropdownTrigger</td>
+                    <td>Click</td>
+                    <td>Trigger type (Click, Hover)</td>
+                </tr>
+                <tr>
+                    <td><code>CloseOnSelect</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Close after item selection</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnItemClick</code></td>
+                    <td>EventCallback&lt;string&gt;</td>
+                    <td>Callback when item is clicked</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Keyboard navigation support</li>
+            <li>ARIA roles and attributes</li>
+            <li>Focus management</li>
+            <li>Escape key to close</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Menu", "Select", "Popover" };
+
+    private string BasicCode => @"<Dropdown>
+    <DropdownTrigger>
+        <Button>Actions</Button>
+    </DropdownTrigger>
+    <DropdownContent>
+        <DropdownItem>Edit</DropdownItem>
+        <DropdownItem>Duplicate</DropdownItem>
+        <DropdownItem>Delete</DropdownItem>
+    </DropdownContent>
+</Dropdown>";
+
+    private string IconsCode => @"<Dropdown>
+    <DropdownTrigger>
+        <Button>Options</Button>
+    </DropdownTrigger>
+    <DropdownContent>
+        <DropdownItem Icon=""✏️"">Edit</DropdownItem>
+        <DropdownItem Icon=""📋"">Copy</DropdownItem>
+        <DropdownItem Icon=""🗑️"" Danger=""true"">Delete</DropdownItem>
+    </DropdownContent>
+</Dropdown>";
+
+    private string PlacementCode => @"<Dropdown Placement=""DropdownPlacement.BottomEnd"">
+    <DropdownTrigger>
+        <Button>Bottom End</Button>
+    </DropdownTrigger>
+    <DropdownContent>
+        <DropdownItem>Item 1</DropdownItem>
+        <DropdownItem>Item 2</DropdownItem>
+    </DropdownContent>
+</Dropdown>";
+
+    private string SectionsCode => @"<Dropdown>
+    <DropdownTrigger>
+        <Button>Menu</Button>
+    </DropdownTrigger>
+    <DropdownContent>
+        <DropdownSection Title=""Actions"">
+            <DropdownItem>New File</DropdownItem>
+            <DropdownItem>Open File</DropdownItem>
+        </DropdownSection>
+        <DropdownSection Title=""Edit"">
+            <DropdownItem>Cut</DropdownItem>
+            <DropdownItem>Copy</DropdownItem>
+            <DropdownItem>Paste</DropdownItem>
+        </DropdownSection>
+    </DropdownContent>
+</Dropdown>";
+}

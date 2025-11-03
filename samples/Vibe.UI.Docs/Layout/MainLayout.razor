@@ -1,0 +1,89 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+
+@* ThemeInitializer removed - using custom theme.js instead *@
+
+<div class="docs-container">
+    <!-- Top Navigation Bar -->
+    <header class="docs-header">
+        <div class="header-content">
+            <button class="mobile-menu-btn" @onclick="ToggleSidebar">
+                <span class="icon">☰</span>
+            </button>
+            <div class="logo">
+                <a href="@GetBaseUrl()">
+                    <img src="icon-192.png" alt="Vibe.UI" class="logo-image" />
+                    <span class="logo-text">Vibe.UI</span>
+                </a>
+            </div>
+            <div class="header-actions">
+                <button class="search-btn" @onclick="OpenSearch" title="Search (Ctrl+K)">
+                    <span class="icon">🔍</span>
+                    <span class="search-hint">Ctrl+K</span>
+                </button>
+                <a href="https://github.com/Dieshen/Vibe.UI" target="_blank" class="github-link" title="View on GitHub">
+                    <span class="icon">⚙</span>
+                </a>
+                <ThemeToggle />
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="docs-main">
+        <!-- Sidebar Navigation -->
+        <aside class="docs-sidebar @(sidebarOpen ? "open" : "")">
+            <nav class="sidebar-nav">
+                <NavSidebar />
+            </nav>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="docs-content">
+            <div class="content-wrapper">
+                @Body
+            </div>
+        </main>
+    </div>
+
+    <!-- Search Modal (shown when search is activated) -->
+    @if (searchOpen)
+    {
+        <div class="search-overlay" @onclick="CloseSearch">
+            <div class="search-modal" @onclick:stopPropagation="true">
+                <SearchBar OnClose="CloseSearch" />
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool sidebarOpen = false;
+    private bool searchOpen = false;
+
+    protected override void OnInitialized()
+    {
+        // Register keyboard shortcut for search (Ctrl+K)
+        // This will be handled by JavaScript interop in SearchBar component
+    }
+
+    private void ToggleSidebar()
+    {
+        sidebarOpen = !sidebarOpen;
+    }
+
+    private void OpenSearch()
+    {
+        searchOpen = true;
+    }
+
+    private void CloseSearch()
+    {
+        searchOpen = false;
+    }
+
+    private string GetBaseUrl()
+    {
+        return Navigation.BaseUri;
+    }
+}

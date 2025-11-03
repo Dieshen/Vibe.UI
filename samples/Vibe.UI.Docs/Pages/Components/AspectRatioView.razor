@@ -1,0 +1,138 @@
+@page "/components/aspectratio"
+@using Vibe.UI.Components
+
+<PageTitle>AspectRatio - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="AspectRatio"
+               Category="Layout"
+               Description="Maintains a desired aspect ratio for its child content, responsive to container width."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="max-width: 600px;">
+            <h4>16:9 Aspect Ratio</h4>
+            <AspectRatio Ratio="16.0/9.0">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; height: 100%;">
+                    16:9 Video Container
+                </div>
+            </AspectRatio>
+
+            <h4 style="margin-top: 1.5rem;">4:3 Aspect Ratio</h4>
+            <AspectRatio Ratio="4.0/3.0">
+                <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; height: 100%;">
+                    4:3 Photo Container
+                </div>
+            </AspectRatio>
+
+            <h4 style="margin-top: 1.5rem;">1:1 Square</h4>
+            <AspectRatio Ratio="1.0">
+                <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; height: 100%;">
+                    Square Container
+                </div>
+            </AspectRatio>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>16:9 Aspect Ratio</h3>
+            <CodeBlock Code="@SixteenNineCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>4:3 Aspect Ratio</h3>
+            <CodeBlock Code="@FourThreeCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Square (1:1)</h3>
+            <CodeBlock Code="@SquareCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Image</h3>
+            <CodeBlock Code="@ImageCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Video</h3>
+            <CodeBlock Code="@VideoCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Ratio</code></td>
+                    <td>double</td>
+                    <td>16/9</td>
+                    <td>Aspect ratio (width / height)</td>
+                </tr>
+                <tr>
+                    <td><code>MaxWidth</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Maximum width constraint</td>
+                </tr>
+                <tr>
+                    <td><code>ChildContent</code></td>
+                    <td>RenderFragment</td>
+                    <td>-</td>
+                    <td>Content to maintain aspect ratio for</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Preserves semantic structure of child content</li>
+            <li>No impact on keyboard navigation</li>
+            <li>Maintains accessibility of nested elements</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Container", "Grid", "Stack" };
+
+    private string SixteenNineCode => @"<AspectRatio Ratio=""16/9"">
+    <div style=""background: #3b82f6; display: flex; align-items: center; justify-content: center;"">
+        16:9 Content
+    </div>
+</AspectRatio>";
+
+    private string FourThreeCode => @"<AspectRatio Ratio=""4/3"">
+    <div style=""background: #10b981; display: flex; align-items: center; justify-content: center;"">
+        4:3 Content
+    </div>
+</AspectRatio>";
+
+    private string SquareCode => @"<AspectRatio Ratio=""1"">
+    <div style=""background: #f59e0b; display: flex; align-items: center; justify-content: center;"">
+        Square Content
+    </div>
+</AspectRatio>";
+
+    private string ImageCode => @"<AspectRatio Ratio=""16/9"">
+    <img src=""https://picsum.photos/800/450"" alt=""Landscape"" style=""object-fit: cover; width: 100%; height: 100%;"" />
+</AspectRatio>";
+
+    private string VideoCode => @"<AspectRatio Ratio=""16/9"">
+    <iframe src=""https://www.youtube.com/embed/dQw4w9WgXcQ""
+            frameborder=""0""
+            allow=""accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture""
+            allowfullscreen
+            style=""width: 100%; height: 100%;"">
+    </iframe>
+</AspectRatio>";
+}

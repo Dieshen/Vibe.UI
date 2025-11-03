@@ -1,0 +1,303 @@
+@page "/cli"
+
+<PageTitle>CLI Reference - Vibe.UI</PageTitle>
+
+<div class="docs-page">
+    <header class="page-header">
+        <h1>CLI Reference</h1>
+        <p class="lead">Complete command reference for the Vibe.UI CLI tool</p>
+    </header>
+
+    <section class="content-section">
+        <h2>Installation</h2>
+        <CodeBlock Code="@InstallCode" Language="bash" />
+
+        <h3>Update to Latest Version</h3>
+        <CodeBlock Code="@UpdateCode" Language="bash" />
+
+        <h3>Uninstall</h3>
+        <CodeBlock Code="@UninstallCode" Language="bash" />
+    </section>
+
+    <section class="content-section">
+        <h2>Commands</h2>
+
+        <div class="command-section">
+            <h3><code>vibe init</code></h3>
+            <p>Initialize Vibe.UI in your project by copying infrastructure files.</p>
+
+            <h4>Usage</h4>
+            <CodeBlock Code="@InitUsageCode" Language="bash" />
+
+            <h4>Options</h4>
+            <ul>
+                <li><code>--minimal</code> - Install minimal infrastructure only</li>
+                <li><code>--no-theme</code> - Skip theme files</li>
+                <li><code>--with-charts</code> - Include chart.js dependencies</li>
+                <li><code>-y, --yes</code> - Skip all prompts (use defaults)</li>
+            </ul>
+
+            <h4>What it does</h4>
+            <ul>
+                <li>Creates <code>Vibe/</code> directory with base classes and services</li>
+                <li>Copies theme management files</li>
+                <li>Adds required JavaScript files to <code>wwwroot/js/</code></li>
+                <li>Creates <code>vibeconfig.json</code> configuration file</li>
+            </ul>
+        </div>
+
+        <div class="command-section">
+            <h3><code>vibe add</code></h3>
+            <p>Add a component to your project.</p>
+
+            <h4>Usage</h4>
+            <CodeBlock Code="@AddUsageCode" Language="bash" />
+
+            <h4>Options</h4>
+            <ul>
+                <li><code>--name &lt;custom-name&gt;</code> - Custom component name</li>
+                <li><code>--output &lt;directory&gt;</code> - Custom output directory</li>
+                <li><code>--overwrite</code> - Overwrite existing files</li>
+                <li><code>-y, --yes</code> - Skip confirmation prompts</li>
+            </ul>
+
+            <h4>Examples</h4>
+            <CodeBlock Code="@AddExamplesCode" Language="bash" />
+        </div>
+
+        <div class="command-section">
+            <h3><code>vibe list</code></h3>
+            <p>List all available components grouped by category.</p>
+
+            <h4>Usage</h4>
+            <CodeBlock Code="@ListUsageCode" Language="bash" />
+
+            <h4>Options</h4>
+            <ul>
+                <li><code>--category &lt;name&gt;</code> - Filter by category</li>
+                <li><code>--installed</code> - Show only installed components</li>
+            </ul>
+
+            <h4>Examples</h4>
+            <CodeBlock Code="@ListExamplesCode" Language="bash" />
+        </div>
+
+        <div class="command-section">
+            <h3><code>vibe update</code></h3>
+            <p>Update components to the latest version.</p>
+
+            <h4>Usage</h4>
+            <CodeBlock Code="@UpdateComponentCode" Language="bash" />
+
+            <h4>Options</h4>
+            <ul>
+                <li><code>--all</code> - Update all installed components</li>
+                <li><code>--force</code> - Force update even if customized</li>
+            </ul>
+
+            <div class="warning-box">
+                <strong>⚠️ Warning:</strong> Updating will overwrite any customizations you've made to the component.
+            </div>
+        </div>
+    </section>
+
+    <section class="content-section">
+        <h2>Configuration</h2>
+        <p>The CLI uses <code>vibeconfig.json</code> to store project settings:</p>
+        <CodeBlock Code="@ConfigCode" Language="json" />
+
+        <h3>Configuration Options</h3>
+        <ul>
+            <li><code>componentsDirectory</code> - Where components are installed (default: <code>Components/vibe</code>)</li>
+            <li><code>infrastructure</code> - Whether infrastructure is installed</li>
+            <li><code>version</code> - Vibe.UI CLI version</li>
+        </ul>
+    </section>
+
+    <section class="content-section">
+        <h2>Workflows</h2>
+
+        <div class="workflow">
+            <h3>Starting a New Project</h3>
+            <CodeBlock Code="@NewProjectWorkflow" Language="bash" />
+        </div>
+
+        <div class="workflow">
+            <h3>Adding Components to Existing Project</h3>
+            <CodeBlock Code="@ExistingProjectWorkflow" Language="bash" />
+        </div>
+
+        <div class="workflow">
+            <h3>Updating Components</h3>
+            <CodeBlock Code="@UpdateWorkflow" Language="bash" />
+        </div>
+    </section>
+
+    <section class="content-section">
+        <h2>Available Components</h2>
+        <p>The CLI provides access to 93+ components across 11 categories:</p>
+
+        <div class="component-categories">
+            @foreach (var category in ComponentCategories)
+            {
+                <div class="category-card">
+                    <h4>@category.Key</h4>
+                    <p class="component-count">@category.Value.Count components</p>
+                    <ul class="component-list">
+                        @foreach (var component in category.Value)
+                        {
+                            <li>@component</li>
+                        }
+                    </ul>
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="content-section">
+        <h2>Tips & Best Practices</h2>
+
+        <div class="tip-box">
+            <h3>💡 Organize Components</h3>
+            <p>Keep all Vibe.UI components in the default <code>Components/vibe/</code> directory for easy identification and updates.</p>
+        </div>
+
+        <div class="tip-box">
+            <h3>💡 Version Control</h3>
+            <p>Commit the <code>vibeconfig.json</code> file to version control to track which components are installed.</p>
+        </div>
+
+        <div class="tip-box">
+            <h3>💡 Customization</h3>
+            <p>Before customizing a component, consider copying it with a new name using <code>--name</code> to preserve the original.</p>
+        </div>
+
+        <div class="tip-box">
+            <h3>💡 Updates</h3>
+            <p>Run <code>vibe list --installed</code> periodically to check which components you have and consider updating them.</p>
+        </div>
+    </section>
+</div>
+
+@code {
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
+    private string InstallCode => "dotnet tool install -g Vibe.UI.CLI";
+    private string UpdateCode => "dotnet tool update -g Vibe.UI.CLI";
+    private string UninstallCode => "dotnet tool uninstall -g Vibe.UI.CLI";
+
+    private string InitUsageCode => @"vibe init [options]
+
+# Examples
+vibe init                    # Interactive mode
+vibe init -y                 # Use defaults
+vibe init --minimal          # Minimal installation
+vibe init --with-charts      # Include chart dependencies";
+
+    private string AddUsageCode => @"vibe add <component> [options]
+
+# Examples
+vibe add button
+vibe add card --name ProductCard
+vibe add input --output Forms/Controls";
+
+    private string AddExamplesCode => @"# Add single component
+vibe add button
+
+# Add with custom name
+vibe add button --name PrimaryButton
+
+# Add to custom directory
+vibe add card --output Features/Products
+
+# Add multiple components
+vibe add button card input
+
+# Overwrite existing component
+vibe add button --overwrite";
+
+    private string ListUsageCode => @"vibe list [options]
+
+# Examples
+vibe list                    # Show all components
+vibe list --category Input   # Show Input components only
+vibe list --installed        # Show installed components";
+
+    private string ListExamplesCode => @"# List all components
+vibe list
+
+# List specific category
+vibe list --category Form
+
+# List installed components
+vibe list --installed";
+
+    private string UpdateComponentCode => @"vibe update <component> [options]
+
+# Examples
+vibe update button           # Update button component
+vibe update --all            # Update all components
+vibe update button --force   # Force update (ignore customizations)";
+
+    private string ConfigCode => @"{
+  ""componentsDirectory"": ""Components/vibe"",
+  ""infrastructure"": true,
+  ""version"": ""1.0.0""
+}";
+
+    private string NewProjectWorkflow => @"# 1. Create new Blazor project
+dotnet new blazorwasm -n MyApp
+cd MyApp
+
+# 2. Install CLI tool
+dotnet tool install -g Vibe.UI.CLI
+
+# 3. Initialize Vibe.UI
+vibe init
+
+# 4. Add components
+vibe add button card input
+
+# 5. Run project
+dotnet run";
+
+    private string ExistingProjectWorkflow => @"# 1. Navigate to project
+cd MyExistingProject
+
+# 2. Initialize if not already done
+vibe init
+
+# 3. Add components as needed
+vibe add datepicker
+vibe add modal";
+
+    private string UpdateWorkflow => @"# Check installed components
+vibe list --installed
+
+# Update specific component
+vibe update button
+
+# Update all components
+vibe update --all";
+
+    private Dictionary<string, List<string>> ComponentCategories => new()
+    {
+        ["Input"] = new() { "Button", "Checkbox", "ColorPicker", "Input", "RadioGroup", "Select", "Slider", "Switch", "Textarea" },
+        ["Form"] = new() { "Form", "FormField", "ValidatedInput" },
+        ["DataDisplay"] = new() { "Avatar", "Badge", "Chart", "DataGrid", "Table", "Tag" },
+        ["Layout"] = new() { "Card", "AspectRatio", "Container", "Divider", "Grid", "Separator", "Stack" },
+        ["Navigation"] = new() { "Breadcrumb", "Link", "Menu", "Pagination", "Stepper", "Tabs" },
+        ["Overlay"] = new() { "Dialog", "Drawer", "Dropdown", "Modal", "Popover", "Tooltip" },
+        ["Feedback"] = new() { "Alert", "Notification", "Progress", "Skeleton", "Spinner", "Toast" },
+        ["Advanced"] = new() { "DragDrop", "FileUpload", "KanbanBoard", "RichTextEditor", "TreeView", "VirtualScroll" },
+        ["Disclosure"] = new() { "Accordion", "Carousel", "Collapsible", "Tabs" },
+        ["DateTime"] = new() { "Calendar", "DatePicker", "DateRangePicker", "TimePicker" },
+        ["Theme"] = new() { "ThemeToggle", "ThemeProvider" }
+    };
+
+    private string GetUrl(string path)
+    {
+        return $"{Navigation.BaseUri}{path}";
+    }
+}

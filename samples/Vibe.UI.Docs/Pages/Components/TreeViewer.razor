@@ -1,0 +1,291 @@
+@page "/components/treeview"
+@using Vibe.UI.Components
+@using static Vibe.UI.Components.TreeView
+
+<PageTitle>TreeView - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="TreeView"
+               Category="Advanced"
+               Description="A hierarchical tree structure component for displaying nested data with expandable/collapsible nodes."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="max-width: 400px; margin: 0 auto;">
+            <TreeView Items="treeNodes" />
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic TreeView</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Icons</h3>
+            <CodeBlock Code="@IconsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Selectable Nodes</h3>
+            <CodeBlock Code="@SelectableCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Checkable Nodes</h3>
+            <CodeBlock Code="@CheckableCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Lazy Loading</h3>
+            <CodeBlock Code="@LazyLoadCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Nodes</code></td>
+                    <td>IEnumerable&lt;TreeNode&gt;</td>
+                    <td>-</td>
+                    <td>Root nodes of the tree</td>
+                </tr>
+                <tr>
+                    <td><code>NodeTemplate</code></td>
+                    <td>RenderFragment&lt;TreeNode&gt;</td>
+                    <td>-</td>
+                    <td>Custom template for rendering nodes</td>
+                </tr>
+                <tr>
+                    <td><code>Selectable</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Allow node selection</td>
+                </tr>
+                <tr>
+                    <td><code>Checkable</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Show checkboxes for nodes</td>
+                </tr>
+                <tr>
+                    <td><code>DefaultExpanded</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Expand all nodes by default</td>
+                </tr>
+                <tr>
+                    <td><code>ShowLines</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Show connecting lines between nodes</td>
+                </tr>
+                <tr>
+                    <td><code>ShowIcons</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Show expand/collapse icons</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnNodeSelected</code></td>
+                    <td>EventCallback&lt;TreeNode&gt;</td>
+                    <td>Callback when node is selected</td>
+                </tr>
+                <tr>
+                    <td><code>OnNodeExpanded</code></td>
+                    <td>EventCallback&lt;TreeNode&gt;</td>
+                    <td>Callback when node is expanded</td>
+                </tr>
+                <tr>
+                    <td><code>OnNodeCollapsed</code></td>
+                    <td>EventCallback&lt;TreeNode&gt;</td>
+                    <td>Callback when node is collapsed</td>
+                </tr>
+                <tr>
+                    <td><code>OnNodeChecked</code></td>
+                    <td>EventCallback&lt;TreeNodeCheckedEventArgs&gt;</td>
+                    <td>Callback when node checkbox state changes</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses <code>role="tree"</code> for the container</li>
+            <li>Nodes have <code>role="treeitem"</code></li>
+            <li>Uses <code>aria-expanded</code> to indicate node state</li>
+            <li>Keyboard navigation (Arrow keys, Enter, Space)</li>
+            <li>Type-ahead search for quick navigation</li>
+            <li>Focus visible indicators for keyboard users</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<TreeNode> treeNodes = new()
+    {
+        new() { Label = "Documents", Children = new() { new() { Label = "Work" }, new() { Label = "Personal" }, new() { Label = "Projects" } } },
+        new() { Label = "Pictures", Children = new() { new() { Label = "Vacation 2024" }, new() { Label = "Family" } } },
+        new() { Label = "Downloads" },
+        new() { Label = "Music" }
+    };
+    private List<string> relatedComponents = new() { "Accordion", "Menu", "Collapsible" };
+
+    private string BasicCode => @"<TreeView Nodes=""@rootNodes"" />
+
+@code {
+    private List<TreeNode> rootNodes = new()
+    {
+        new TreeNode
+        {
+            Label = ""Documents"",
+            Children = new List<TreeNode>
+            {
+                new TreeNode { Label = ""Work"" },
+                new TreeNode { Label = ""Personal"" }
+            }
+        },
+        new TreeNode
+        {
+            Label = ""Pictures"",
+            Children = new List<TreeNode>
+            {
+                new TreeNode { Label = ""Vacation"" },
+                new TreeNode { Label = ""Family"" }
+            }
+        }
+    };
+}";
+
+    private string IconsCode => @"<TreeView Nodes=""@nodes"" ShowIcons=""true"">
+    <NodeTemplate Context=""node"">
+        <span class=""node-icon"">@GetNodeIcon(node)</span>
+        <span>@node.Label</span>
+    </NodeTemplate>
+</TreeView>
+
+@code {
+    private string GetNodeIcon(TreeNode node)
+    {
+        return node.Type switch
+        {
+            ""folder"" => ""📁"",
+            ""file"" => ""📄"",
+            ""image"" => ""🖼️"",
+            _ => ""📋""
+        };
+    }
+}";
+
+    private string SelectableCode => @"<TreeView Nodes=""@nodes""
+          Selectable=""true""
+          OnNodeSelected=""@HandleNodeSelected"" />
+
+@if (selectedNode != null)
+{
+    <Alert>
+        Selected: @selectedNode.Label
+    </Alert>
+}
+
+@code {
+    private TreeNode selectedNode;
+
+    private void HandleNodeSelected(TreeNode node)
+    {
+        selectedNode = node;
+        Console.WriteLine($""Selected: {node.Label}"");
+    }
+}";
+
+    private string CheckableCode => @"<TreeView Nodes=""@nodes""
+          Checkable=""true""
+          OnNodeChecked=""@HandleNodeChecked"" />
+
+<div class=""checked-items"">
+    <h4>Checked Items:</h4>
+    <ul>
+        @foreach (var item in checkedNodes)
+        {
+            <li>@item.Label</li>
+        }
+    </ul>
+</div>
+
+@code {
+    private List<TreeNode> checkedNodes = new();
+
+    private void HandleNodeChecked(TreeNodeCheckedEventArgs args)
+    {
+        if (args.Checked)
+        {
+            checkedNodes.Add(args.Node);
+        }
+        else
+        {
+            checkedNodes.Remove(args.Node);
+        }
+    }
+}";
+
+    private string LazyLoadCode => @"<TreeView Nodes=""@rootNodes""
+          OnNodeExpanded=""@LoadChildrenAsync"">
+    <NodeTemplate Context=""node"">
+        @node.Label
+        @if (node.IsLoading)
+        {
+            <Spinner Size=""SpinnerSize.Small"" />
+        }
+    </NodeTemplate>
+</TreeView>
+
+@code {
+    private List<TreeNode> rootNodes = GetRootNodes();
+
+    private async Task LoadChildrenAsync(TreeNode node)
+    {
+        if (node.Children.Any() || node.IsLeaf)
+            return;
+
+        node.IsLoading = true;
+        StateHasChanged();
+
+        // Simulate API call
+        await Task.Delay(1000);
+        node.Children = await FetchChildNodesAsync(node.Id);
+
+        node.IsLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task<List<TreeNode>> FetchChildNodesAsync(string parentId)
+    {
+        // Load children from API
+        return await ApiService.GetChildNodesAsync(parentId);
+    }
+}";
+}

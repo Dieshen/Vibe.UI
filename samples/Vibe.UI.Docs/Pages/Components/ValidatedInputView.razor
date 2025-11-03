@@ -1,0 +1,322 @@
+@page "/components/validatedinput"
+@using Vibe.UI.Components
+
+<PageTitle>ValidatedInput - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="ValidatedInput"
+               Category="Form"
+               Description="An input component with built-in validation display and error handling."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; flex-direction: column; gap: 2rem; max-width: 600px;">
+            <div>
+                <h4 style="margin-bottom: 0.75rem;">With Custom Validation</h4>
+                <ValidatedInput @bind-Value="@username"
+                                Label="Username"
+                                Placeholder="Enter username (min 3 chars)"
+                                Validator="@ValidateUsername"
+                                HelperText="Only letters, numbers, and underscores allowed"
+                                ValidateOnInput="true" />
+            </div>
+
+            <div>
+                <h4 style="margin-bottom: 0.75rem;">Email Validation</h4>
+                <ValidatedInput @bind-Value="@email"
+                                InputType="email"
+                                Label="Email"
+                                Placeholder="you@example.com"
+                                Validator="@ValidateEmail"
+                                ValidateOnBlur="true" />
+            </div>
+
+            <div>
+                <h4 style="margin-bottom: 0.75rem;">Password Strength</h4>
+                <ValidatedInput @bind-Value="@password"
+                                InputType="password"
+                                Label="Password"
+                                Placeholder="Enter password"
+                                Validator="@ValidatePassword"
+                                HelperText="At least 8 characters required"
+                                ValidateOnInput="true" />
+                @if (!string.IsNullOrEmpty(password))
+                {
+                    <p style="margin-top: 0.5rem; color: var(--brand-teal);">Strength: @passwordStrength</p>
+                }
+            </div>
+
+            <div>
+                <h4 style="margin-bottom: 0.75rem;">Required Field</h4>
+                <ValidatedInput @bind-Value="@fullName"
+                                Label="Full Name"
+                                Placeholder="Enter your full name"
+                                Required="true"
+                                ValidateOnBlur="true" />
+            </div>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Data Annotations</h3>
+            <CodeBlock Code="@DataAnnotationsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Custom Validation</h3>
+            <CodeBlock Code="@CustomValidationCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Real-time Validation</h3>
+            <CodeBlock Code="@RealtimeCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Multiple Validators</h3>
+            <CodeBlock Code="@MultipleValidatorsCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Value</code></td>
+                    <td>TValue</td>
+                    <td>default</td>
+                    <td>The input value</td>
+                </tr>
+                <tr>
+                    <td><code>For</code></td>
+                    <td>Expression&lt;Func&lt;T&gt;&gt;</td>
+                    <td>null</td>
+                    <td>Expression identifying the bound field</td>
+                </tr>
+                <tr>
+                    <td><code>ValidationMode</code></td>
+                    <td>ValidationMode</td>
+                    <td>OnSubmit</td>
+                    <td>When to trigger validation (OnChange, OnBlur, OnSubmit)</td>
+                </tr>
+                <tr>
+                    <td><code>CustomValidator</code></td>
+                    <td>Func&lt;TValue, string&gt;</td>
+                    <td>null</td>
+                    <td>Custom validation function</td>
+                </tr>
+                <tr>
+                    <td><code>ShowValidationIcon</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Whether to show validation status icon</td>
+                </tr>
+                <tr>
+                    <td><code>Label</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Label text</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>ValueChanged</code></td>
+                    <td>EventCallback&lt;TValue&gt;</td>
+                    <td>Callback when value changes</td>
+                </tr>
+                <tr>
+                    <td><code>OnValidationChanged</code></td>
+                    <td>EventCallback&lt;bool&gt;</td>
+                    <td>Callback when validation state changes</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>ARIA attributes for validation states</li>
+            <li>Error messages announced to screen readers</li>
+            <li>aria-invalid set when validation fails</li>
+            <li>aria-describedby links to error messages</li>
+            <li>Focus management for validation errors</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private string username = "";
+    private string email = "";
+    private string password = "";
+    private string fullName = "";
+    private string passwordStrength = "None";
+    private List<string> relatedComponents = new() { "Form", "FormField", "Input" };
+
+    private string ValidateUsername(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "Username is required";
+        if (value.Length < 3)
+            return "Username must be at least 3 characters";
+        if (!System.Text.RegularExpressions.Regex.IsMatch(value, "^[a-zA-Z0-9_]+$"))
+            return "Only letters, numbers, and underscores allowed";
+        return null;
+    }
+
+    private string ValidateEmail(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "Email is required";
+        if (!value.Contains("@") || !value.Contains("."))
+            return "Please enter a valid email address";
+        return null;
+    }
+
+    private string ValidatePassword(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            passwordStrength = "None";
+            return "Password is required";
+        }
+
+        if (value.Length < 8)
+        {
+            passwordStrength = "Weak";
+            return "Password must be at least 8 characters";
+        }
+
+        var hasUpper = System.Text.RegularExpressions.Regex.IsMatch(value, "[A-Z]");
+        var hasLower = System.Text.RegularExpressions.Regex.IsMatch(value, "[a-z]");
+        var hasDigit = System.Text.RegularExpressions.Regex.IsMatch(value, "[0-9]");
+        var hasSpecial = System.Text.RegularExpressions.Regex.IsMatch(value, "[^a-zA-Z0-9]");
+
+        var score = (hasUpper ? 1 : 0) + (hasLower ? 1 : 0) + (hasDigit ? 1 : 0) + (hasSpecial ? 1 : 0);
+        passwordStrength = score switch
+        {
+            1 or 2 => "Weak",
+            3 => "Medium",
+            4 => "Strong",
+            _ => "Weak"
+        };
+
+        return null;
+    }
+
+    private string BasicCode => @"<EditForm Model=""@model"">
+    <DataAnnotationsValidator />
+    <ValidatedInput @bind-Value=""@model.Email""
+                    For=""@(() => model.Email)""
+                    Label=""Email"" />
+</EditForm>";
+
+    private string DataAnnotationsCode => @"<EditForm Model=""@model"" OnValidSubmit=""@HandleSubmit"">
+    <DataAnnotationsValidator />
+
+    <ValidatedInput @bind-Value=""@model.Name""
+                    For=""@(() => model.Name)""
+                    Label=""Name"" />
+
+    <ValidatedInput @bind-Value=""@model.Email""
+                    For=""@(() => model.Email)""
+                    Label=""Email"" />
+
+    <Button Type=""submit"">Submit</Button>
+</EditForm>
+
+@code {
+    public class UserModel
+    {
+        [Required(ErrorMessage = ""Name is required"")]
+        [StringLength(50, MinimumLength = 2)]
+        public string Name { get; set; }
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+    }
+}";
+
+    private string CustomValidationCode => @"<ValidatedInput @bind-Value=""@username""
+                Label=""Username""
+                CustomValidator=""@ValidateUsername"" />
+
+@code {
+    private string username = """";
+
+    private string ValidateUsername(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return ""Username is required"";
+        if (value.Length < 3)
+            return ""Username must be at least 3 characters"";
+        if (!Regex.IsMatch(value, ""^[a-zA-Z0-9_]+$""))
+            return ""Username can only contain letters, numbers, and underscores"";
+        return null; // Valid
+    }
+}";
+
+    private string RealtimeCode => @"<ValidatedInput @bind-Value=""@password""
+                Label=""Password""
+                Type=""password""
+                ValidationMode=""ValidationMode.OnChange""
+                CustomValidator=""@ValidatePassword"" />
+
+<p>Password strength: @passwordStrength</p>
+
+@code {
+    private string password = """";
+    private string passwordStrength = ""Weak"";
+
+    private string ValidatePassword(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            passwordStrength = ""None"";
+            return ""Password is required"";
+        }
+
+        var strength = CalculatePasswordStrength(value);
+        passwordStrength = strength;
+
+        if (value.Length < 8)
+            return ""Password must be at least 8 characters"";
+
+        return null;
+    }
+}";
+
+    private string MultipleValidatorsCode => @"<EditForm Model=""@model"">
+    <DataAnnotationsValidator />
+    <CustomValidator />
+
+    <ValidatedInput @bind-Value=""@model.Username""
+                    For=""@(() => model.Username)""
+                    Label=""Username"" />
+</EditForm>";
+}

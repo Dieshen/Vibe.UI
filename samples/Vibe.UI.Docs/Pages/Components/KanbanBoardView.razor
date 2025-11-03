@@ -1,0 +1,290 @@
+@page "/components/kanbanboard"
+@using Vibe.UI.Components
+@using static Vibe.UI.Components.KanbanBoard
+
+<PageTitle>KanbanBoard - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="KanbanBoard"
+               Category="Advanced"
+               Description="A kanban board component for visualizing and managing workflow with draggable cards across multiple columns."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <KanbanBoard Columns="kanbanColumns" AllowDragDrop="false" AllowAddCard="false" />
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Kanban Board</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Custom Card Template</h3>
+            <CodeBlock Code="@CustomCardCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Card Limits</h3>
+            <CodeBlock Code="@LimitsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Swimlanes</h3>
+            <CodeBlock Code="@SwimlanesCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Full Example</h3>
+            <CodeBlock Code="@FullCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Columns</code></td>
+                    <td>IEnumerable&lt;KanbanColumn&gt;</td>
+                    <td>-</td>
+                    <td>Collection of board columns</td>
+                </tr>
+                <tr>
+                    <td><code>Cards</code></td>
+                    <td>IEnumerable&lt;TCard&gt;</td>
+                    <td>-</td>
+                    <td>Collection of cards to display</td>
+                </tr>
+                <tr>
+                    <td><code>CardTemplate</code></td>
+                    <td>RenderFragment&lt;TCard&gt;</td>
+                    <td>-</td>
+                    <td>Template for rendering cards</td>
+                </tr>
+                <tr>
+                    <td><code>ColumnHeaderTemplate</code></td>
+                    <td>RenderFragment&lt;KanbanColumn&gt;</td>
+                    <td>-</td>
+                    <td>Custom column header template</td>
+                </tr>
+                <tr>
+                    <td><code>AllowReorder</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Allow card reordering within columns</td>
+                </tr>
+                <tr>
+                    <td><code>ShowCardCount</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Show card count in column headers</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnCardMoved</code></td>
+                    <td>EventCallback&lt;CardMovedEventArgs&lt;TCard&gt;&gt;</td>
+                    <td>Callback when card is moved to different column</td>
+                </tr>
+                <tr>
+                    <td><code>OnCardReordered</code></td>
+                    <td>EventCallback&lt;CardReorderedEventArgs&lt;TCard&gt;&gt;</td>
+                    <td>Callback when card is reordered within column</td>
+                </tr>
+                <tr>
+                    <td><code>OnCardClick</code></td>
+                    <td>EventCallback&lt;TCard&gt;</td>
+                    <td>Callback when card is clicked</td>
+                </tr>
+                <tr>
+                    <td><code>OnColumnClick</code></td>
+                    <td>EventCallback&lt;KanbanColumn&gt;</td>
+                    <td>Callback when column header is clicked</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Column headers are semantic headings</li>
+            <li>Cards are keyboard navigable (Tab/Arrow keys)</li>
+            <li>Drag and drop has keyboard alternatives</li>
+            <li>Screen readers announce card movements</li>
+            <li>Focus management when moving cards</li>
+            <li>Proper ARIA labels and roles throughout</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<KanbanColumn> kanbanColumns = new()
+    {
+        new() { Id = "todo", Title = "To Do", Cards = new() { new() { Title = "Design homepage", Description = "Create mockups", Tags = new() { "Design", "High Priority" } }, new() { Title = "Setup database", Description = "Configure PostgreSQL" } } },
+        new() { Id = "progress", Title = "In Progress", Cards = new() { new() { Title = "API development", Description = "Building REST endpoints", Tags = new() { "Backend" } } } },
+        new() { Id = "done", Title = "Done", Cards = new() { new() { Title = "Project setup", Description = "Initialize repository" } } }
+    };
+    private List<string> relatedComponents = new() { "DragDrop", "Card", "Badge" };
+
+    private string BasicCode => @"<KanbanBoard Columns=""@columns""
+             Cards=""@cards""
+             OnCardMoved=""@HandleCardMoved"">
+    <CardTemplate Context=""card"">
+        <div class=""kanban-card"">
+            <h4>@card.Title</h4>
+            <p>@card.Description</p>
+        </div>
+    </CardTemplate>
+</KanbanBoard>
+
+@code {
+    private List<KanbanColumn> columns = new()
+    {
+        new KanbanColumn { Id = ""todo"", Title = ""To Do"" },
+        new KanbanColumn { Id = ""progress"", Title = ""In Progress"" },
+        new KanbanColumn { Id = ""done"", Title = ""Done"" }
+    };
+
+    private List<TaskCard> cards = GetCards();
+
+    private async Task HandleCardMoved(CardMovedEventArgs<TaskCard> args)
+    {
+        // Update card status in database
+        await UpdateCardStatusAsync(args.Card, args.ToColumn);
+    }
+}";
+
+    private string CustomCardCode => @"<KanbanBoard Columns=""@columns"" Cards=""@cards"">
+    <CardTemplate Context=""card"">
+        <div class=""task-card"">
+            <div class=""card-header"">
+                <h4>@card.Title</h4>
+                <Badge Variant=""@GetPriorityVariant(card.Priority)"">
+                    @card.Priority
+                </Badge>
+            </div>
+            <p>@card.Description</p>
+            <div class=""card-footer"">
+                <Avatar Src=""@card.AssigneeAvatar"" Size=""AvatarSize.Small"" />
+                <span class=""due-date"">Due: @card.DueDate.ToShortDateString()</span>
+            </div>
+        </div>
+    </CardTemplate>
+</KanbanBoard>";
+
+    private string LimitsCode => @"<KanbanBoard Columns=""@columns"" Cards=""@cards"">
+    <ColumnHeaderTemplate Context=""column"">
+        <div class=""column-header"">
+            <h3>@column.Title</h3>
+            <span class=""card-count"">
+                @GetColumnCardCount(column.Id) / @column.MaxCards
+            </span>
+            @if (IsColumnFull(column))
+            {
+                <Badge Variant=""BadgeVariant.Warning"">Full</Badge>
+            }
+        </div>
+    </ColumnHeaderTemplate>
+    <CardTemplate Context=""card"">
+        <div class=""kanban-card"">@card.Title</div>
+    </CardTemplate>
+</KanbanBoard>
+
+@code {
+    private bool IsColumnFull(KanbanColumn column)
+    {
+        return GetColumnCardCount(column.Id) >= column.MaxCards;
+    }
+}";
+
+    private string SwimlanesCode => @"<div class=""kanban-swimlanes"">
+    @foreach (var swimlane in swimlanes)
+    {
+        <div class=""swimlane"">
+            <h2>@swimlane.Name</h2>
+            <KanbanBoard Columns=""@columns""
+                         Cards=""@GetCardsForSwimlane(swimlane.Id)""
+                         OnCardMoved=""@HandleCardMoved"">
+                <CardTemplate Context=""card"">
+                    <div class=""kanban-card"">@card.Title</div>
+                </CardTemplate>
+            </KanbanBoard>
+        </div>
+    }
+</div>";
+
+    private string FullCode => @"<KanbanBoard Columns=""@columns""
+             Cards=""@cards""
+             ShowCardCount=""true""
+             OnCardMoved=""@HandleCardMoved""
+             OnCardClick=""@HandleCardClick"">
+    <ColumnHeaderTemplate Context=""column"">
+        <div class=""column-header"">
+            <h3>@column.Title</h3>
+            <Button Size=""ButtonSize.Small""
+                    Variant=""ButtonVariant.Ghost""
+                    OnClick=""@(() => AddCard(column.Id))"">
+                + Add Card
+            </Button>
+        </div>
+    </ColumnHeaderTemplate>
+    <CardTemplate Context=""card"">
+        <div class=""task-card"" @onclick=""@(() => HandleCardClick(card))"">
+            <div class=""card-header"">
+                <h4>@card.Title</h4>
+                <Dropdown>
+                    <DropdownItem OnClick=""@(() => EditCard(card))"">Edit</DropdownItem>
+                    <DropdownItem OnClick=""@(() => DeleteCard(card))"">Delete</DropdownItem>
+                </Dropdown>
+            </div>
+            <p>@card.Description</p>
+            <div class=""card-tags"">
+                @foreach (var tag in card.Tags)
+                {
+                    <Badge>@tag</Badge>
+                }
+            </div>
+            <div class=""card-footer"">
+                <Avatar Src=""@card.AssigneeAvatar"" Size=""AvatarSize.Small"" />
+                <span>@card.DueDate.ToShortDateString()</span>
+            </div>
+        </div>
+    </CardTemplate>
+</KanbanBoard>
+
+@code {
+    private async Task HandleCardMoved(CardMovedEventArgs<TaskCard> args)
+    {
+        await TaskService.UpdateStatusAsync(args.Card.Id, args.ToColumn);
+        await LoadCardsAsync();
+    }
+
+    private void HandleCardClick(TaskCard card)
+    {
+        // Open card detail modal
+        NavigationManager.NavigateTo($""/tasks/{card.Id}"");
+    }
+}";
+}

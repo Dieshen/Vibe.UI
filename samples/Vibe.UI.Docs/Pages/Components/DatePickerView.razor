@@ -1,0 +1,298 @@
+@page "/components/datepicker"
+
+<PageTitle>DatePicker - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="DatePicker"
+               Category="DateTime"
+               Description="An input component with a calendar popup for selecting dates with keyboard and mouse support."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 400px; margin: 0 auto;">
+            <FormField Label="Select a date">
+                <DatePicker @bind-Date="@selectedDate"
+                           MinDate="@DateTime.Today"
+                           MaxDate="@DateTime.Today.AddMonths(6)"
+                           Placeholder="Choose your date" />
+            </FormField>
+
+            @if (selectedDate.HasValue)
+            {
+                <Alert Variant="AlertVariant.Success">
+                    <strong>Date selected:</strong> @selectedDate.Value.ToString("dddd, MMMM dd, yyyy")
+                </Alert>
+            }
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic DatePicker</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Validation</h3>
+            <CodeBlock Code="@ValidationCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Date Range Limits</h3>
+            <CodeBlock Code="@LimitsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Custom Format</h3>
+            <CodeBlock Code="@FormatCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>In a Form</h3>
+            <CodeBlock Code="@FormCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Value</code></td>
+                    <td>DateTime?</td>
+                    <td>null</td>
+                    <td>Selected date value</td>
+                </tr>
+                <tr>
+                    <td><code>Placeholder</code></td>
+                    <td>string</td>
+                    <td>"Select date"</td>
+                    <td>Placeholder text when empty</td>
+                </tr>
+                <tr>
+                    <td><code>Format</code></td>
+                    <td>string</td>
+                    <td>"MM/dd/yyyy"</td>
+                    <td>Date format string</td>
+                </tr>
+                <tr>
+                    <td><code>MinDate</code></td>
+                    <td>DateTime?</td>
+                    <td>null</td>
+                    <td>Minimum selectable date</td>
+                </tr>
+                <tr>
+                    <td><code>MaxDate</code></td>
+                    <td>DateTime?</td>
+                    <td>null</td>
+                    <td>Maximum selectable date</td>
+                </tr>
+                <tr>
+                    <td><code>Disabled</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Disable the input</td>
+                </tr>
+                <tr>
+                    <td><code>ShowClearButton</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Show button to clear selection</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>ValueChanged</code></td>
+                    <td>EventCallback&lt;DateTime?&gt;</td>
+                    <td>Callback when date is selected</td>
+                </tr>
+                <tr>
+                    <td><code>OnOpen</code></td>
+                    <td>EventCallback</td>
+                    <td>Callback when calendar popup opens</td>
+                </tr>
+                <tr>
+                    <td><code>OnClose</code></td>
+                    <td>EventCallback</td>
+                    <td>Callback when calendar popup closes</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Input field is fully keyboard accessible</li>
+            <li>Calendar popup triggered by button with proper label</li>
+            <li>Uses <code>role="combobox"</code> pattern</li>
+            <li>Arrow keys navigate calendar dates</li>
+            <li>Escape key closes popup and returns focus</li>
+            <li>Screen reader announces selected dates</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Calendar", "DateRangePicker", "TimePicker", "Input" };
+    private DateTime? selectedDate;
+
+    private string BasicCode => @"<DatePicker @bind-Value=""@selectedDate"" />
+
+@if (selectedDate.HasValue)
+{
+    <p>Selected: @selectedDate.Value.ToLongDateString()</p>
+}
+
+@code {
+    private DateTime? selectedDate;
+}";
+
+    private string ValidationCode => @"<EditForm Model=""@model"" OnValidSubmit=""@HandleSubmit"">
+    <DataAnnotationsValidator />
+
+    <FormField Label=""Birth Date"">
+        <DatePicker @bind-Value=""@model.BirthDate"" />
+        <ValidationMessage For=""@(() => model.BirthDate)"" />
+    </FormField>
+
+    <Button Type=""submit"">Submit</Button>
+</EditForm>
+
+@code {
+    private PersonModel model = new();
+
+    private void HandleSubmit()
+    {
+        Console.WriteLine($""Birth date: {model.BirthDate}"");
+    }
+
+    public class PersonModel
+    {
+        [Required(ErrorMessage = ""Birth date is required"")]
+        [DataType(DataType.Date)]
+        public DateTime? BirthDate { get; set; }
+    }
+}";
+
+    private string LimitsCode => @"<FormField Label=""Appointment Date"">
+    <DatePicker @bind-Value=""@appointmentDate""
+                MinDate=""@DateTime.Today""
+                MaxDate=""@DateTime.Today.AddMonths(3)""
+                Placeholder=""Select date within 3 months"" />
+</FormField>
+
+@if (appointmentDate.HasValue)
+{
+    <Alert Variant=""AlertVariant.Success"">
+        Appointment scheduled for @appointmentDate.Value.ToLongDateString()
+    </Alert>
+}
+
+@code {
+    private DateTime? appointmentDate;
+}";
+
+    private string FormatCode => @"<div class=""date-format-examples"">
+    <FormField Label=""US Format (MM/dd/yyyy)"">
+        <DatePicker @bind-Value=""@date1""
+                    Format=""MM/dd/yyyy"" />
+    </FormField>
+
+    <FormField Label=""European Format (dd/MM/yyyy)"">
+        <DatePicker @bind-Value=""@date2""
+                    Format=""dd/MM/yyyy"" />
+    </FormField>
+
+    <FormField Label=""ISO Format (yyyy-MM-dd)"">
+        <DatePicker @bind-Value=""@date3""
+                    Format=""yyyy-MM-dd"" />
+    </FormField>
+
+    <FormField Label=""Long Format"">
+        <DatePicker @bind-Value=""@date4""
+                    Format=""dddd, MMMM dd, yyyy"" />
+    </FormField>
+</div>
+
+@code {
+    private DateTime? date1;
+    private DateTime? date2;
+    private DateTime? date3;
+    private DateTime? date4;
+}";
+
+    private string FormCode => @"<EditForm Model=""@reservation"" OnValidSubmit=""@SubmitReservation"">
+    <DataAnnotationsValidator />
+
+    <FormField Label=""Guest Name"">
+        <Input @bind-Value=""@reservation.GuestName"" />
+        <ValidationMessage For=""@(() => reservation.GuestName)"" />
+    </FormField>
+
+    <FormField Label=""Check-in Date"">
+        <DatePicker @bind-Value=""@reservation.CheckInDate""
+                    MinDate=""@DateTime.Today""
+                    Placeholder=""Select check-in date"" />
+        <ValidationMessage For=""@(() => reservation.CheckInDate)"" />
+    </FormField>
+
+    <FormField Label=""Check-out Date"">
+        <DatePicker @bind-Value=""@reservation.CheckOutDate""
+                    MinDate=""@reservation.CheckInDate?.AddDays(1)""
+                    Placeholder=""Select check-out date"" />
+        <ValidationMessage For=""@(() => reservation.CheckOutDate)"" />
+    </FormField>
+
+    @if (reservation.CheckInDate.HasValue && reservation.CheckOutDate.HasValue)
+    {
+        <Alert Variant=""AlertVariant.Info"">
+            Duration: @((reservation.CheckOutDate.Value - reservation.CheckInDate.Value).Days) nights
+        </Alert>
+    }
+
+    <Button Type=""submit"" Variant=""ButtonVariant.Primary"">
+        Make Reservation
+    </Button>
+</EditForm>
+
+@code {
+    private ReservationModel reservation = new();
+
+    private async Task SubmitReservation()
+    {
+        await ReservationService.CreateAsync(reservation);
+        // Show success message
+    }
+
+    public class ReservationModel
+    {
+        [Required]
+        public string GuestName { get; set; }
+
+        [Required(ErrorMessage = ""Check-in date is required"")]
+        public DateTime? CheckInDate { get; set; }
+
+        [Required(ErrorMessage = ""Check-out date is required"")]
+        [DateGreaterThan(nameof(CheckInDate), ErrorMessage = ""Check-out must be after check-in"")]
+        public DateTime? CheckOutDate { get; set; }
+    }
+}";
+}

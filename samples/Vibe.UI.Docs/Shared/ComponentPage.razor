@@ -1,0 +1,139 @@
+<div class="component-page">
+    <!-- Header -->
+    <header class="component-header">
+        <div class="breadcrumb">
+            <a href="@GetUrl("")">Home</a>
+            <span class="separator">/</span>
+            <span>Components</span>
+            <span class="separator">/</span>
+            <span class="current">@ComponentName</span>
+        </div>
+        <h1 class="component-title">@ComponentName</h1>
+        <span class="category-badge">@Category</span>
+        <p class="component-description">@Description</p>
+    </header>
+
+    <!-- Preview Section -->
+    @if (PreviewContent != null)
+    {
+        <section class="component-section">
+            <h2>Preview</h2>
+            <div class="preview-container">
+                @PreviewContent
+            </div>
+        </section>
+    }
+
+    <!-- Examples Section -->
+    @if (Examples != null)
+    {
+        <section class="component-section">
+            <h2>Examples</h2>
+            <div class="examples-container">
+                @Examples
+            </div>
+        </section>
+    }
+
+    <!-- API Documentation -->
+    @if (Props != null || Events != null)
+    {
+        <section class="component-section">
+            <h2>API Reference</h2>
+
+            @if (Props != null)
+            {
+                <h3>Properties</h3>
+                <div class="api-table">
+                    @Props
+                </div>
+            }
+
+            @if (Events != null)
+            {
+                <h3>Events</h3>
+                <div class="api-table">
+                    @Events
+                </div>
+            }
+        </section>
+    }
+
+    <!-- Installation Section -->
+    <section class="component-section">
+        <h2>Installation</h2>
+        <div class="installation-instructions">
+            <p>Install this component using the Vibe.UI CLI:</p>
+            <CodeBlock Code="@GetInstallCommand()" Language="bash" />
+        </div>
+    </section>
+
+    <!-- Accessibility Notes -->
+    @if (AccessibilityNotes != null)
+    {
+        <section class="component-section">
+            <h2>Accessibility</h2>
+            <div class="accessibility-notes">
+                @AccessibilityNotes
+            </div>
+        </section>
+    }
+
+    <!-- Related Components -->
+    @if (RelatedComponents != null && RelatedComponents.Any())
+    {
+        <section class="component-section">
+            <h2>Related Components</h2>
+            <div class="related-components">
+                @foreach (var related in RelatedComponents)
+                {
+                    <a href="@GetUrl($"components/{related.ToLower()}")" class="related-component-link">
+                        @related
+                    </a>
+                }
+            </div>
+        </section>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string ComponentName { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Category { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Description { get; set; } = string.Empty;
+
+    [Parameter]
+    public RenderFragment? PreviewContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? Examples { get; set; }
+
+    [Parameter]
+    public RenderFragment? Props { get; set; }
+
+    [Parameter]
+    public RenderFragment? Events { get; set; }
+
+    [Parameter]
+    public RenderFragment? AccessibilityNotes { get; set; }
+
+    [Parameter]
+    public List<string> RelatedComponents { get; set; } = new();
+
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
+    private string GetUrl(string path)
+    {
+        return $"{Navigation.BaseUri}{path}";
+    }
+
+    private string GetInstallCommand()
+    {
+        return $"vibe add {ComponentName.ToLower()}";
+    }
+}

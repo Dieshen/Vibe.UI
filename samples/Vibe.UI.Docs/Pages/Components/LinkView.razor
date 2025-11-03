@@ -1,0 +1,159 @@
+@page "/components/link"
+
+<PageTitle>Link - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Link"
+               Category="Navigation"
+               Description="A navigational link with support for external URLs and internal routing."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <div style="padding: 1.5rem; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; margin-bottom: 1rem;">
+                <h4 style="margin: 0 0 0.5rem 0; color: #856404;">Component Not Yet Implemented</h4>
+                <p style="margin: 0; color: #856404;">
+                    The Link component has not been implemented yet. The API documentation below represents the planned interface.
+                </p>
+            </div>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>External Links</h3>
+            <CodeBlock Code="@ExternalCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Link Variants</h3>
+            <CodeBlock Code="@VariantsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Icons</h3>
+            <CodeBlock Code="@IconsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Disabled State</h3>
+            <CodeBlock Code="@DisabledCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Href</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>URL to navigate to</td>
+                </tr>
+                <tr>
+                    <td><code>Target</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Target attribute (_blank, _self, etc.)</td>
+                </tr>
+                <tr>
+                    <td><code>Variant</code></td>
+                    <td>LinkVariant</td>
+                    <td>Default</td>
+                    <td>Visual style variant</td>
+                </tr>
+                <tr>
+                    <td><code>Underline</code></td>
+                    <td>LinkUnderline</td>
+                    <td>Hover</td>
+                    <td>Underline behavior (Always, Hover, None)</td>
+                </tr>
+                <tr>
+                    <td><code>Disabled</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the link is disabled</td>
+                </tr>
+                <tr>
+                    <td><code>ChildContent</code></td>
+                    <td>RenderFragment</td>
+                    <td>-</td>
+                    <td>Link content</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnClick</code></td>
+                    <td>EventCallback&lt;MouseEventArgs&gt;</td>
+                    <td>Callback when link is clicked</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses semantic <code>&lt;a&gt;</code> element</li>
+            <li>External links include rel="noopener noreferrer"</li>
+            <li>Disabled links use aria-disabled</li>
+            <li>Focus visible styles for keyboard users</li>
+            <li>Screen reader announces link purpose</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Button", "Breadcrumb", "Menu" };
+
+    private string BasicCode => @"<Link Href=""/home"">Go to Home</Link>
+<Link Href=""/about"">About Us</Link>";
+
+    private string ExternalCode => @"<Link Href=""https://example.com"" Target=""_blank"">
+    External Link
+</Link>
+
+<Link Href=""https://github.com"" Target=""_blank"">
+    GitHub
+    <span class=""icon"">🔗</span>
+</Link>";
+
+    private string VariantsCode => @"<Link Variant=""LinkVariant.Primary"">Primary Link</Link>
+<Link Variant=""LinkVariant.Secondary"">Secondary Link</Link>
+<Link Variant=""LinkVariant.Muted"">Muted Link</Link>";
+
+    private string IconsCode => @"<Link Href=""/home"">
+    <span class=""icon"">🏠</span>
+    Home
+</Link>
+
+<Link Href=""/settings"">
+    Settings
+    <span class=""icon"">⚙️</span>
+</Link>";
+
+    private string DisabledCode => @"<Link Href=""/page"" Disabled=""true"">Disabled Link</Link>";
+}

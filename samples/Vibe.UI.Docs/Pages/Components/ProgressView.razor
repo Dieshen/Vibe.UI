@@ -1,0 +1,127 @@
+@page "/components/progress"
+@using Vibe.UI.Components
+
+<PageTitle>Progress - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Progress"
+               Category="Feedback"
+               Description="Displays the progress of an operation or task."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <div>
+                <div style="margin-bottom: 0.5rem; font-size: 0.875rem; color: #64748b;">25% Complete</div>
+                <Progress Value="25" />
+            </div>
+            <div>
+                <div style="margin-bottom: 0.5rem; font-size: 0.875rem; color: #64748b;">50% Complete</div>
+                <Progress Value="50" Variant="primary" />
+            </div>
+            <div>
+                <div style="margin-bottom: 0.5rem; font-size: 0.875rem; color: #64748b;">75% Complete</div>
+                <Progress Value="75" Variant="success" />
+            </div>
+            <div>
+                <div style="margin-bottom: 0.5rem; font-size: 0.875rem; color: #64748b;">100% Complete</div>
+                <Progress Value="100" Variant="success" />
+            </div>
+            <div>
+                <div style="margin-bottom: 0.5rem; font-size: 0.875rem; color: #64748b;">Loading...</div>
+                <Progress IndeterminateAnimation="true" />
+            </div>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Label</h3>
+            <CodeBlock Code="@LabelCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Indeterminate</h3>
+            <CodeBlock Code="@IndeterminateCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Sizes and Colors</h3>
+            <CodeBlock Code="@StylesCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Value</code></td>
+                    <td>double</td>
+                    <td>0</td>
+                    <td>Progress value (0-100)</td>
+                </tr>
+                <tr>
+                    <td><code>Indeterminate</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Indeterminate loading state</td>
+                </tr>
+                <tr>
+                    <td><code>ShowLabel</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Show percentage label</td>
+                </tr>
+                <tr>
+                    <td><code>Size</code></td>
+                    <td>ProgressSize</td>
+                    <td>Medium</td>
+                    <td>Progress bar size</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses ARIA role="progressbar"</li>
+            <li>aria-valuenow, aria-valuemin, aria-valuemax</li>
+            <li>Screen reader announces progress</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Spinner", "Skeleton", "Loader" };
+
+    private string BasicCode => @"<Progress Value=""50"" />
+<Progress Value=""75"" />";
+
+    private string LabelCode => @"<Progress Value=""@progress"" ShowLabel=""true"" />
+
+@code {
+    private double progress = 65;
+}";
+
+    private string IndeterminateCode => @"<Progress Indeterminate=""true"" />";
+
+    private string StylesCode => @"<Progress Value=""60"" Size=""ProgressSize.Small"" />
+<Progress Value=""60"" Size=""ProgressSize.Medium"" />
+<Progress Value=""60"" Size=""ProgressSize.Large"" />
+
+<Progress Value=""60"" Variant=""ProgressVariant.Success"" />
+<Progress Value=""60"" Variant=""ProgressVariant.Warning"" />
+<Progress Value=""60"" Variant=""ProgressVariant.Danger"" />";
+}

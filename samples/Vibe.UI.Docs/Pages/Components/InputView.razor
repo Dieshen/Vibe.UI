@@ -1,0 +1,205 @@
+@page "/components/input"
+@using Vibe.UI.Components
+
+<PageTitle>Input - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Input"
+               Category="Input"
+               Description="A text input field for user text entry."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 500px;">
+            <Input Label="Username" Placeholder="Enter your username" />
+
+            <Input Label="Email" Type="email" Placeholder="you@example.com" HelperText="We'll never share your email" />
+
+            <Input Label="Password" Type="password" Placeholder="Enter password" LeadingIcon="🔒" />
+
+            <Input Label="Search" Type="search" Placeholder="Search..." LeadingIcon="🔍" Size="small" />
+
+            <Input Label="Error Example" Placeholder="Invalid input" ErrorMessage="This field is required" />
+
+            <Input Label="Disabled" Placeholder="Disabled input" Disabled="true" />
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Input Types</h3>
+            <CodeBlock Code="@TypesCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Sizes</h3>
+            <CodeBlock Code="@SizesCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Placeholder and Label</h3>
+            <CodeBlock Code="@PlaceholderCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Disabled and ReadOnly</h3>
+            <CodeBlock Code="@DisabledCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Icons</h3>
+            <CodeBlock Code="@IconsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Validation States</h3>
+            <CodeBlock Code="@ValidationCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Value</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>The input value</td>
+                </tr>
+                <tr>
+                    <td><code>Type</code></td>
+                    <td>string</td>
+                    <td>"text"</td>
+                    <td>HTML input type (text, email, password, number, etc.)</td>
+                </tr>
+                <tr>
+                    <td><code>Placeholder</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Placeholder text</td>
+                </tr>
+                <tr>
+                    <td><code>Label</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Label text</td>
+                </tr>
+                <tr>
+                    <td><code>Size</code></td>
+                    <td>InputSize</td>
+                    <td>Medium</td>
+                    <td>Size of the input</td>
+                </tr>
+                <tr>
+                    <td><code>Disabled</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the input is disabled</td>
+                </tr>
+                <tr>
+                    <td><code>ReadOnly</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the input is read-only</td>
+                </tr>
+                <tr>
+                    <td><code>Required</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the input is required</td>
+                </tr>
+                <tr>
+                    <td><code>Error</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Error message to display</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>ValueChanged</code></td>
+                    <td>EventCallback&lt;string&gt;</td>
+                    <td>Callback when value changes</td>
+                </tr>
+                <tr>
+                    <td><code>OnInput</code></td>
+                    <td>EventCallback&lt;ChangeEventArgs&gt;</td>
+                    <td>Native input event callback</td>
+                </tr>
+                <tr>
+                    <td><code>OnFocus</code></td>
+                    <td>EventCallback&lt;FocusEventArgs&gt;</td>
+                    <td>Callback when input receives focus</td>
+                </tr>
+                <tr>
+                    <td><code>OnBlur</code></td>
+                    <td>EventCallback&lt;FocusEventArgs&gt;</td>
+                    <td>Callback when input loses focus</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses semantic <code>&lt;input&gt;</code> element</li>
+            <li>Label properly associated with input</li>
+            <li>ARIA attributes for error states</li>
+            <li>Keyboard accessible</li>
+            <li>Focus visible styles</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Textarea", "Select", "Form", "ValidatedInput" };
+
+    private string BasicCode => @"<Input Placeholder=""Enter text..."" />";
+
+    private string TypesCode => @"<Input Type=""text"" Placeholder=""Text input"" />
+<Input Type=""email"" Placeholder=""Email input"" />
+<Input Type=""password"" Placeholder=""Password input"" />
+<Input Type=""number"" Placeholder=""Number input"" />
+<Input Type=""search"" Placeholder=""Search..."" />";
+
+    private string SizesCode => @"<Input Size=""InputSize.Small"" Placeholder=""Small"" />
+<Input Size=""InputSize.Medium"" Placeholder=""Medium"" />
+<Input Size=""InputSize.Large"" Placeholder=""Large"" />";
+
+    private string PlaceholderCode => @"<Input Label=""Username"" Placeholder=""Enter your username"" />
+<Input Label=""Email"" Type=""email"" Placeholder=""you@example.com"" />";
+
+    private string DisabledCode => @"<Input Placeholder=""Disabled input"" Disabled=""true"" />
+<Input Value=""Read-only value"" ReadOnly=""true"" />";
+
+    private string IconsCode => @"<Input Placeholder=""Search..."" LeftIcon=""🔍"" />
+<Input Type=""password"" Placeholder=""Password"" RightIcon=""👁️"" />";
+
+    private string ValidationCode => @"<Input Label=""Email"" Type=""email"" Required=""true"" />
+<Input Label=""Username"" Error=""Username is required"" />
+<Input Label=""Valid Input"" Value=""Success"" Success=""true"" />";
+}

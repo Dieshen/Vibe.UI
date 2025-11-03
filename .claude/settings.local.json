@@ -5,12 +5,20 @@
       "Bash(dotnet new:*)",
       "Bash(dotnet tool install:*)",
       "Bash(dotnet format:*)",
+      "Bash(dotnet tool:*)",
+      "Bash(dotnet sln:*)",
       "Bash(echo:*)",
       "Bash(csc:*)",
       "Bash(git grep:*)",
       "Bash(dotnet pack:*)",
       "Bash(unzip:*)",
-      "Bash(dotnet tool:*)"
+      "mcp__puppeteer__puppeteer_navigate",
+      "mcp__puppeteer__puppeteer_screenshot",
+      "mcp__puppeteer__puppeteer_click",
+      "mcp__puppeteer__puppeteer_evaluate",
+      "Bash(dotnet run:*)",
+      "mcp__puppeteer__puppeteer_select",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

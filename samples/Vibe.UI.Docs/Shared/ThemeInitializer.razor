@@ -1,0 +1,173 @@
+@using Vibe.UI.Themes.Services
+@using Vibe.UI.Themes.Models
+@using Microsoft.JSInterop
+@inject ThemeManager ThemeManager
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Initialize ThemeManager
+        await ThemeManager.InitializeAsync();
+
+        // Register custom themes
+        RegisterCustomThemes();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && ThemeManager.CurrentTheme != null && ThemeManager.CurrentTheme.Variables != null)
+        {
+            // Apply initial theme
+            await JSRuntime.InvokeVoidAsync("vibeDocsTheme.applyTheme", ThemeManager.CurrentTheme.Variables);
+        }
+    }
+
+    private void RegisterCustomThemes()
+    {
+        // Check if themes are already registered
+        if (ThemeManager.AvailableThemes.Any(t => t.Id == "ocean"))
+            return;
+
+        ThemeManager.RegisterTheme(new Theme
+        {
+            Id = "ocean",
+            Name = "Ocean",
+            Type = ThemeType.Custom,
+            CssClass = "vibe-theme-ocean",
+            Variables = new Dictionary<string, string>
+            {
+                ["--vibe-background"] = "#f0f9ff",
+                ["--vibe-foreground"] = "#0c4a6e",
+                ["--vibe-primary"] = "#0284c7",
+                ["--vibe-primary-foreground"] = "#ffffff",
+                ["--vibe-secondary"] = "#e0f2fe",
+                ["--vibe-secondary-foreground"] = "#075985",
+                ["--vibe-accent"] = "#06b6d4",
+                ["--vibe-accent-foreground"] = "#ffffff",
+                ["--vibe-muted"] = "#f0f9ff",
+                ["--vibe-muted-foreground"] = "#64748b",
+                ["--vibe-card"] = "#ffffff",
+                ["--vibe-card-foreground"] = "#0c4a6e",
+                ["--vibe-border"] = "#bae6fd",
+                ["--vibe-input"] = "#ffffff",
+                ["--vibe-ring"] = "#0284c7",
+                ["--vibe-radius"] = "0.5rem"
+            }
+        });
+
+        ThemeManager.RegisterTheme(new Theme
+        {
+            Id = "forest",
+            Name = "Forest",
+            Type = ThemeType.Custom,
+            CssClass = "vibe-theme-forest",
+            Variables = new Dictionary<string, string>
+            {
+                ["--vibe-background"] = "#f0fdf4",
+                ["--vibe-foreground"] = "#14532d",
+                ["--vibe-primary"] = "#16a34a",
+                ["--vibe-primary-foreground"] = "#ffffff",
+                ["--vibe-secondary"] = "#dcfce7",
+                ["--vibe-secondary-foreground"] = "#166534",
+                ["--vibe-accent"] = "#22c55e",
+                ["--vibe-accent-foreground"] = "#ffffff",
+                ["--vibe-muted"] = "#f0fdf4",
+                ["--vibe-muted-foreground"] = "#64748b",
+                ["--vibe-card"] = "#ffffff",
+                ["--vibe-card-foreground"] = "#14532d",
+                ["--vibe-border"] = "#bbf7d0",
+                ["--vibe-input"] = "#ffffff",
+                ["--vibe-ring"] = "#16a34a",
+                ["--vibe-radius"] = "0.5rem"
+            }
+        });
+
+        ThemeManager.RegisterTheme(new Theme
+        {
+            Id = "sunset",
+            Name = "Sunset",
+            Type = ThemeType.Custom,
+            CssClass = "vibe-theme-sunset",
+            Variables = new Dictionary<string, string>
+            {
+                ["--vibe-background"] = "#fff7ed",
+                ["--vibe-foreground"] = "#7c2d12",
+                ["--vibe-primary"] = "#ea580c",
+                ["--vibe-primary-foreground"] = "#ffffff",
+                ["--vibe-secondary"] = "#ffedd5",
+                ["--vibe-secondary-foreground"] = "#9a3412",
+                ["--vibe-accent"] = "#f97316",
+                ["--vibe-accent-foreground"] = "#ffffff",
+                ["--vibe-muted"] = "#fff7ed",
+                ["--vibe-muted-foreground"] = "#64748b",
+                ["--vibe-card"] = "#ffffff",
+                ["--vibe-card-foreground"] = "#7c2d12",
+                ["--vibe-border"] = "#fed7aa",
+                ["--vibe-input"] = "#ffffff",
+                ["--vibe-ring"] = "#ea580c",
+                ["--vibe-radius"] = "0.5rem"
+            }
+        });
+
+        ThemeManager.RegisterTheme(new Theme
+        {
+            Id = "purple",
+            Name = "Purple",
+            Type = ThemeType.Custom,
+            CssClass = "vibe-theme-purple",
+            Variables = new Dictionary<string, string>
+            {
+                ["--vibe-background"] = "#faf5ff",
+                ["--vibe-foreground"] = "#581c87",
+                ["--vibe-primary"] = "#9333ea",
+                ["--vibe-primary-foreground"] = "#ffffff",
+                ["--vibe-secondary"] = "#f3e8ff",
+                ["--vibe-secondary-foreground"] = "#6b21a8",
+                ["--vibe-accent"] = "#a855f7",
+                ["--vibe-accent-foreground"] = "#ffffff",
+                ["--vibe-muted"] = "#faf5ff",
+                ["--vibe-muted-foreground"] = "#64748b",
+                ["--vibe-card"] = "#ffffff",
+                ["--vibe-card-foreground"] = "#581c87",
+                ["--vibe-border"] = "#e9d5ff",
+                ["--vibe-input"] = "#ffffff",
+                ["--vibe-ring"] = "#9333ea",
+                ["--vibe-radius"] = "0.5rem"
+            }
+        });
+
+        ThemeManager.RegisterTheme(new Theme
+        {
+            Id = "midnight",
+            Name = "Midnight",
+            Type = ThemeType.Custom,
+            CssClass = "vibe-theme-midnight",
+            Variables = new Dictionary<string, string>
+            {
+                ["--vibe-background"] = "#0a0e27",
+                ["--vibe-foreground"] = "#e2e8f0",
+                ["--vibe-primary"] = "#4f46e5",
+                ["--vibe-primary-foreground"] = "#ffffff",
+                ["--vibe-secondary"] = "#1e293b",
+                ["--vibe-secondary-foreground"] = "#cbd5e1",
+                ["--vibe-accent"] = "#6366f1",
+                ["--vibe-accent-foreground"] = "#ffffff",
+                ["--vibe-muted"] = "#1e293b",
+                ["--vibe-muted-foreground"] = "#94a3b8",
+                ["--vibe-card"] = "#0f172a",
+                ["--vibe-card-foreground"] = "#e2e8f0",
+                ["--vibe-border"] = "#334155",
+                ["--vibe-input"] = "#1e293b",
+                ["--vibe-ring"] = "#4f46e5",
+                ["--vibe-radius"] = "0.5rem"
+            }
+        });
+    }
+
+    public void Dispose()
+    {
+        // Cleanup if needed
+    }
+}

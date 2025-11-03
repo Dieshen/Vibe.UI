@@ -1,0 +1,228 @@
+@page "/components/card"
+@using Vibe.UI.Components
+@using static Vibe.UI.Components.Button
+
+<PageTitle>Card - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Card"
+               Category="Layout"
+               Description="A versatile container for grouping and displaying content in a structured format."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+            <Card>
+                <h3>Simple Card</h3>
+                <p>A card is a flexible container for grouping related content.</p>
+            </Card>
+
+            <Card>
+                <Header>
+                    <h3 style="margin: 0;">Card with Header</h3>
+                    <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem; opacity: 0.7;">Optional subtitle</p>
+                </Header>
+                <ChildContent>
+                    <p>Main content goes here with header and footer sections.</p>
+                </ChildContent>
+                <Footer>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <Button Size="ButtonSize.Small">Action</Button>
+                        <Button Variant="ButtonVariant.Outline" Size="ButtonSize.Small">Cancel</Button>
+                    </div>
+                </Footer>
+            </Card>
+
+            <Card>
+                <Header>
+                    <h3 style="margin: 0;">Product Example</h3>
+                </Header>
+                <ChildContent>
+                    <p style="font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;">$99.99</p>
+                    <p>High-quality product with amazing features and benefits.</p>
+                </ChildContent>
+                <Footer>
+                    <Button Variant="ButtonVariant.Primary" Size="ButtonSize.Small">Add to Cart</Button>
+                </Footer>
+            </Card>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Card</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Card with Header and Footer</h3>
+            <CodeBlock Code="@StructuredCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Clickable Card</h3>
+            <CodeBlock Code="@ClickableCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Card Variants</h3>
+            <CodeBlock Code="@VariantsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Card with Image</h3>
+            <CodeBlock Code="@ImageCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Product Card Example</h3>
+            <CodeBlock Code="@ProductCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Variant</code></td>
+                    <td>CardVariant</td>
+                    <td>Default</td>
+                    <td>Visual style variant (Default, Outlined, Elevated)</td>
+                </tr>
+                <tr>
+                    <td><code>Clickable</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Makes the entire card clickable</td>
+                </tr>
+                <tr>
+                    <td><code>Padding</code></td>
+                    <td>string</td>
+                    <td>"1rem"</td>
+                    <td>Internal padding of the card</td>
+                </tr>
+                <tr>
+                    <td><code>ChildContent</code></td>
+                    <td>RenderFragment</td>
+                    <td>-</td>
+                    <td>Content to display inside the card</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnClick</code></td>
+                    <td>EventCallback&lt;MouseEventArgs&gt;</td>
+                    <td>Callback when card is clicked (requires Clickable=true)</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses semantic HTML structure</li>
+            <li>Clickable cards have proper cursor styling</li>
+            <li>When clickable, includes keyboard navigation support</li>
+            <li>Proper heading hierarchy for screen readers</li>
+            <li>ARIA labels can be added via standard HTML attributes</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private string cardClickMessage = "";
+    private List<string> relatedComponents = new() { "Container", "Grid", "Stack" };
+
+    private void HandleCardClick()
+    {
+        cardClickMessage = $"Card clicked at {DateTime.Now:HH:mm:ss}";
+    }
+
+    private string BasicCode => @"<Card>
+    <h3>Simple Card</h3>
+    <p>A card is a flexible container for grouping related content.</p>
+</Card>";
+
+    private string StructuredCode => @"<Card>
+    <CardHeader>
+        <h3>Card Header</h3>
+        <p class=""subtitle"">Optional subtitle</p>
+    </CardHeader>
+    <CardBody>
+        <p>Main content goes here.</p>
+    </CardBody>
+    <CardFooter>
+        <Button Size=""ButtonSize.Small"">Action</Button>
+        <Button Variant=""ButtonVariant.Outline"" Size=""ButtonSize.Small"">Cancel</Button>
+    </CardFooter>
+</Card>";
+
+    private string ClickableCode => @"<Card Clickable=""true"" OnClick=""@HandleCardClick"">
+    <h3>Clickable Card</h3>
+    <p>Click anywhere on this card.</p>
+</Card>
+
+@code {
+    private void HandleCardClick()
+    {
+        Console.WriteLine(""Card clicked!"");
+    }
+}";
+
+    private string VariantsCode => @"<Card Variant=""CardVariant.Default"">
+    <h4>Default Card</h4>
+</Card>
+
+<Card Variant=""CardVariant.Outlined"">
+    <h4>Outlined Card</h4>
+</Card>
+
+<Card Variant=""CardVariant.Elevated"">
+    <h4>Elevated Card</h4>
+</Card>";
+
+    private string ImageCode => @"<Card>
+    <CardImage Src=""/images/placeholder.jpg"" Alt=""Card image"" />
+    <CardBody>
+        <h3>Card with Image</h3>
+        <p>Description goes here.</p>
+        <Button Size=""ButtonSize.Small"">Learn More</Button>
+    </CardBody>
+</Card>";
+
+    private string ProductCode => @"<Card Variant=""CardVariant.Elevated"">
+    <CardImage Src=""/images/product.jpg"" Alt=""Product"" />
+    <CardBody>
+        <div class=""product-header"">
+            <h3>Product Name</h3>
+            <Badge>New</Badge>
+        </div>
+        <p class=""price"">$99.99</p>
+        <p>High-quality product description.</p>
+    </CardBody>
+    <CardFooter>
+        <Button Variant=""ButtonVariant.Primary"" Size=""ButtonSize.Small"">
+            Add to Cart
+        </Button>
+    </CardFooter>
+</Card>";
+}

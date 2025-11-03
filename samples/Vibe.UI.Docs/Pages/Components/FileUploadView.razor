@@ -1,0 +1,266 @@
+@page "/components/fileupload"
+@using Vibe.UI.Components
+@using static Vibe.UI.Components.FileUpload
+
+<PageTitle>FileUpload - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="FileUpload"
+               Category="Advanced"
+               Description="A file upload component with drag-and-drop support, file validation, and preview capabilities."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="max-width: 500px; margin: 0 auto;">
+            <FileUpload @bind-Files="uploadedFiles"
+                        Multiple="true"
+                        DropText="Drop files here or click to browse"
+                        HintText="Upload documents, images, or PDFs" />
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Upload</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Image Upload with Preview</h3>
+            <CodeBlock Code="@ImageCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Multiple Files</h3>
+            <CodeBlock Code="@MultipleCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>File Validation</h3>
+            <CodeBlock Code="@ValidationCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Custom Upload Area</h3>
+            <CodeBlock Code="@CustomCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Accept</code></td>
+                    <td>string</td>
+                    <td>"*"</td>
+                    <td>Accepted file types (MIME types or extensions)</td>
+                </tr>
+                <tr>
+                    <td><code>Multiple</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Allow multiple file selection</td>
+                </tr>
+                <tr>
+                    <td><code>MaxSize</code></td>
+                    <td>long</td>
+                    <td>10485760</td>
+                    <td>Maximum file size in bytes (default 10MB)</td>
+                </tr>
+                <tr>
+                    <td><code>MaxFiles</code></td>
+                    <td>int</td>
+                    <td>null</td>
+                    <td>Maximum number of files allowed</td>
+                </tr>
+                <tr>
+                    <td><code>ShowPreview</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Show file preview thumbnails</td>
+                </tr>
+                <tr>
+                    <td><code>Disabled</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Disable file upload</td>
+                </tr>
+                <tr>
+                    <td><code>ChildContent</code></td>
+                    <td>RenderFragment</td>
+                    <td>-</td>
+                    <td>Custom content for upload area</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>OnFilesSelected</code></td>
+                    <td>EventCallback&lt;IEnumerable&lt;IBrowserFile&gt;&gt;</td>
+                    <td>Callback when files are selected</td>
+                </tr>
+                <tr>
+                    <td><code>OnFileRemoved</code></td>
+                    <td>EventCallback&lt;IBrowserFile&gt;</td>
+                    <td>Callback when file is removed</td>
+                </tr>
+                <tr>
+                    <td><code>OnUploadProgress</code></td>
+                    <td>EventCallback&lt;UploadProgressArgs&gt;</td>
+                    <td>Callback for upload progress updates</td>
+                </tr>
+                <tr>
+                    <td><code>OnUploadComplete</code></td>
+                    <td>EventCallback&lt;IEnumerable&lt;UploadResult&gt;&gt;</td>
+                    <td>Callback when upload completes</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Uses native <code>&lt;input type="file"&gt;</code> element</li>
+            <li>Keyboard accessible (Enter/Space to open file dialog)</li>
+            <li>Clear focus indicators for keyboard navigation</li>
+            <li>Screen reader announces file selection and removal</li>
+            <li>Progress updates announced to screen readers</li>
+            <li>Error messages properly associated with input</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<UploadedFile> uploadedFiles = new();
+    private List<string> relatedComponents = new() { "Avatar", "Image", "DragDrop" };
+
+    private string BasicCode => @"<FileUpload OnFilesSelected=""@HandleFileSelected"" />
+
+@code {
+    private async Task HandleFileSelected(IEnumerable<IBrowserFile> files)
+    {
+        var file = files.FirstOrDefault();
+        if (file != null)
+        {
+            // Upload file to server
+            await UploadFileAsync(file);
+        }
+    }
+}";
+
+    private string ImageCode => @"<FileUpload Accept=""image/*""
+            ShowPreview=""true""
+            OnFilesSelected=""@HandleImageSelected"">
+    <ChildContent>
+        <div class=""upload-prompt"">
+            <span class=""icon"">📷</span>
+            <p>Click or drag image to upload</p>
+            <small>PNG, JPG or GIF up to 10MB</small>
+        </div>
+    </ChildContent>
+</FileUpload>
+
+@code {
+    private async Task HandleImageSelected(IEnumerable<IBrowserFile> files)
+    {
+        foreach (var file in files)
+        {
+            var imageData = await file.RequestImageFileAsync(""image/jpeg"", 800, 600);
+            // Process image
+        }
+    }
+}";
+
+    private string MultipleCode => @"<FileUpload Multiple=""true""
+            MaxFiles=""5""
+            OnFilesSelected=""@HandleMultipleFiles"" />
+
+@code {
+    private List<IBrowserFile> selectedFiles = new();
+
+    private void HandleMultipleFiles(IEnumerable<IBrowserFile> files)
+    {
+        selectedFiles.AddRange(files);
+        StateHasChanged();
+    }
+}";
+
+    private string ValidationCode => @"<FileUpload Accept="".pdf,.doc,.docx""
+            MaxSize=""@(5 * 1024 * 1024)""
+            OnFilesSelected=""@HandleFileValidation"" />
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <Alert Variant=""AlertVariant.Error"">@errorMessage</Alert>
+}
+
+@code {
+    private string errorMessage;
+
+    private void HandleFileValidation(IEnumerable<IBrowserFile> files)
+    {
+        errorMessage = null;
+
+        foreach (var file in files)
+        {
+            if (file.Size > 5 * 1024 * 1024)
+            {
+                errorMessage = $""{file.Name} exceeds 5MB limit"";
+                return;
+            }
+
+            var ext = Path.GetExtension(file.Name).ToLower();
+            if (ext != "".pdf"" && ext != "".doc"" && ext != "".docx"")
+            {
+                errorMessage = $""{file.Name} is not a supported file type"";
+                return;
+            }
+        }
+
+        // Process valid files
+    }
+}";
+
+    private string CustomCode => @"<FileUpload OnFilesSelected=""@HandleFiles"">
+    <ChildContent>
+        <div class=""custom-upload-area"">
+            <svg class=""upload-icon"" width=""48"" height=""48"">
+                <use href=""#icon-upload"" />
+            </svg>
+            <h3>Upload Your Files</h3>
+            <p>Drag and drop files here or click to browse</p>
+            <Button Variant=""ButtonVariant.Outline"">
+                Choose Files
+            </Button>
+        </div>
+    </ChildContent>
+</FileUpload>
+
+@code {
+    private async Task HandleFiles(IEnumerable<IBrowserFile> files)
+    {
+        foreach (var file in files)
+        {
+            await ProcessFileAsync(file);
+        }
+    }
+}";
+}

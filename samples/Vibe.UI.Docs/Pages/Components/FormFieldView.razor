@@ -1,0 +1,170 @@
+@page "/components/formfield"
+@using Vibe.UI.Components
+
+<PageTitle>FormField - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="FormField"
+               Category="Form"
+               Description="A wrapper for form inputs that provides consistent labeling, error display, and layout."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 600px;">
+            <FormField Label="Username">
+                <Input Placeholder="Enter username" />
+            </FormField>
+
+            <FormField Label="Email" Description="We'll never share your email">
+                <Input Type="email" Placeholder="you@example.com" />
+            </FormField>
+
+            <FormField Label="Password" Description="Must be at least 8 characters">
+                <Input Type="password" Placeholder="Enter password" />
+            </FormField>
+
+            <FormField Label="Country">
+                <Select Placeholder="Select a country...">
+                    <option value="us">United States</option>
+                    <option value="uk">United Kingdom</option>
+                    <option value="ca">Canada</option>
+                </Select>
+            </FormField>
+
+            <FormField Label="Bio">
+                <Textarea Placeholder="Tell us about yourself..." Rows="4" />
+            </FormField>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Required Indicator</h3>
+            <CodeBlock Code="@RequiredCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Helper Text</h3>
+            <CodeBlock Code="@HelperTextCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Error Message</h3>
+            <CodeBlock Code="@ErrorCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Horizontal Layout</h3>
+            <CodeBlock Code="@HorizontalCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Label</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Label text for the field</td>
+                </tr>
+                <tr>
+                    <td><code>Required</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether to show required indicator</td>
+                </tr>
+                <tr>
+                    <td><code>HelperText</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Helper text to display below the input</td>
+                </tr>
+                <tr>
+                    <td><code>Error</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Error message to display</td>
+                </tr>
+                <tr>
+                    <td><code>Layout</code></td>
+                    <td>FormFieldLayout</td>
+                    <td>Vertical</td>
+                    <td>Layout orientation (Vertical, Horizontal)</td>
+                </tr>
+                <tr>
+                    <td><code>ChildContent</code></td>
+                    <td>RenderFragment</td>
+                    <td>-</td>
+                    <td>Input control content</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Label properly associated with input via for/id</li>
+            <li>Error messages linked with aria-describedby</li>
+            <li>Required fields marked with aria-required</li>
+            <li>Helper text provides additional context</li>
+            <li>Semantic HTML structure for forms</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Form", "ValidatedInput", "Input" };
+
+    private string BasicCode => @"<FormField Label=""Username"">
+    <Input Placeholder=""Enter username"" />
+</FormField>";
+
+    private string RequiredCode => @"<FormField Label=""Email"" Required=""true"">
+    <Input Type=""email"" Placeholder=""you@example.com"" />
+</FormField>
+
+<FormField Label=""Password"" Required=""true"">
+    <Input Type=""password"" Placeholder=""Enter password"" />
+</FormField>";
+
+    private string HelperTextCode => @"<FormField Label=""Password""
+           HelperText=""Must be at least 8 characters long"">
+    <Input Type=""password"" />
+</FormField>
+
+<FormField Label=""Website""
+           HelperText=""Optional: Enter your website URL"">
+    <Input Type=""url"" Placeholder=""https://example.com"" />
+</FormField>";
+
+    private string ErrorCode => @"<FormField Label=""Email""
+           Error=""Please enter a valid email address"">
+    <Input Type=""email"" Value=""invalid-email"" />
+</FormField>
+
+<FormField Label=""Username""
+           Error=""This username is already taken"">
+    <Input Value=""johndoe"" />
+</FormField>";
+
+    private string HorizontalCode => @"<FormField Label=""Name"" Layout=""FormFieldLayout.Horizontal"">
+    <Input Placeholder=""Enter name"" />
+</FormField>
+
+<FormField Label=""Email"" Layout=""FormFieldLayout.Horizontal"">
+    <Input Type=""email"" />
+</FormField>";
+}

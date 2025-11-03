@@ -1,0 +1,192 @@
+@page "/components/colorpicker"
+@using Vibe.UI.Components
+
+<PageTitle>ColorPicker - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="ColorPicker"
+               Category="Input"
+               Description="Allows users to select a color from a palette or enter a custom color value."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; flex-direction: column; gap: 2rem; max-width: 600px;">
+            <div>
+                <h4 style="margin-bottom: 0.75rem;">Basic Color Picker</h4>
+                <ColorPicker Value="@primaryColor" ValueChanged="@((string val) => primaryColor = val)" />
+                <div style="margin-top: 1rem; display: flex; gap: 1rem; align-items: center;">
+                    <div style="width: 80px; height: 80px; border-radius: 8px; background-color: @primaryColor; border: 2px solid var(--brand-silver);"></div>
+                    <p>Selected: <strong>@primaryColor</strong></p>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin-bottom: 0.75rem;">With Alpha Channel</h4>
+                <ColorPicker Value="@accentColor" ValueChanged="@((string val) => accentColor = val)" ShowAlpha="true" />
+                <div style="margin-top: 1rem; display: flex; gap: 1rem; align-items: center;">
+                    <div style="width: 80px; height: 80px; border-radius: 8px; background-color: @accentColor; border: 2px solid var(--brand-silver);"></div>
+                    <p>Selected: <strong>@accentColor</strong></p>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin-bottom: 0.75rem;">Brand Colors</h4>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <div style="text-align: center;">
+                        <div style="width: 60px; height: 60px; border-radius: 8px; background-color: var(--brand-teal); border: 2px solid var(--brand-silver);"></div>
+                        <small>Teal</small>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="width: 60px; height: 60px; border-radius: 8px; background-color: var(--brand-silver); border: 2px solid var(--brand-teal);"></div>
+                        <small>Silver</small>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="width: 60px; height: 60px; border-radius: 8px; background-color: var(--brand-lilac); border: 2px solid var(--brand-silver);"></div>
+                        <small>Lilac</small>
+                    </div>
+                </div>
+            </div>
+
+            <div style="opacity: 0.5;">
+                <h4 style="margin-bottom: 0.75rem;">Disabled</h4>
+                <ColorPicker Value="#9333ea" Disabled="true" />
+            </div>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Default Color</h3>
+            <CodeBlock Code="@DefaultColorCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Preset Colors</h3>
+            <CodeBlock Code="@PresetCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Alpha Channel</h3>
+            <CodeBlock Code="@AlphaCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Color Change Handler</h3>
+            <CodeBlock Code="@ChangeHandlerCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Value</code></td>
+                    <td>string</td>
+                    <td>"#000000"</td>
+                    <td>Current color value in hex format</td>
+                </tr>
+                <tr>
+                    <td><code>ShowAlpha</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether to show alpha channel control</td>
+                </tr>
+                <tr>
+                    <td><code>PresetColors</code></td>
+                    <td>List&lt;string&gt;</td>
+                    <td>null</td>
+                    <td>List of preset color values to display</td>
+                </tr>
+                <tr>
+                    <td><code>Format</code></td>
+                    <td>ColorFormat</td>
+                    <td>Hex</td>
+                    <td>Color format (Hex, RGB, HSL)</td>
+                </tr>
+                <tr>
+                    <td><code>Disabled</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the color picker is disabled</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>ValueChanged</code></td>
+                    <td>EventCallback&lt;string&gt;</td>
+                    <td>Callback when color value changes</td>
+                </tr>
+                <tr>
+                    <td><code>OnColorSelected</code></td>
+                    <td>EventCallback&lt;string&gt;</td>
+                    <td>Callback when user confirms color selection</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Keyboard navigation for color selection</li>
+            <li>ARIA labels for color values and controls</li>
+            <li>Screen reader announcements for color changes</li>
+            <li>Focus management within picker popover</li>
+            <li>High contrast mode support</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private string primaryColor = "#14b8a6";
+    private string accentColor = "#a855f780";
+    private List<string> relatedComponents = new() { "Input", "Slider", "Select" };
+
+    private string BasicCode => @"<ColorPicker />";
+
+    private string DefaultColorCode => @"<ColorPicker Value=""#3b82f6"" />
+<ColorPicker Value=""#ef4444"" />";
+
+    private string PresetCode => @"<ColorPicker PresetColors=""@presetColors"" />
+
+@code {
+    private List<string> presetColors = new()
+    {
+        ""#ef4444"", ""#f97316"", ""#eab308"", ""#22c55e"",
+        ""#3b82f6"", ""#6366f1"", ""#a855f7"", ""#ec4899""
+    };
+}";
+
+    private string AlphaCode => @"<ColorPicker ShowAlpha=""true"" Value=""#3b82f680"" />";
+
+    private string ChangeHandlerCode => @"<ColorPicker @bind-Value=""@selectedColor"" />
+<div style=""width: 100px; height: 100px; background-color: @selectedColor;""></div>
+<p>Selected: @selectedColor</p>
+
+@code {
+    private string selectedColor = ""#3b82f6"";
+}";
+}

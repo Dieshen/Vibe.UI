@@ -1,0 +1,109 @@
+@page "/components/separator"
+@using Vibe.UI.Components
+
+<PageTitle>Separator - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Separator"
+               Category="Layout"
+               Description="Visually or semantically separates content."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <h4>Horizontal Separator</h4>
+            <div style="padding: 1rem; background: var(--surface-1, #f8f9fa); border-radius: 8px;">
+                <p style="margin: 0;">Content above the separator</p>
+                <Separator />
+                <p style="margin: 0;">Content below the separator</p>
+            </div>
+
+            <h4 style="margin-top: 1.5rem;">Vertical Separator</h4>
+            <div style="display: flex; height: 60px; align-items: center; gap: 1rem; padding: 1rem; background: var(--surface-1, #f8f9fa); border-radius: 8px;">
+                <span style="font-weight: 500;">Left Side</span>
+                <Separator Orientation="vertical" />
+                <span style="font-weight: 500;">Middle</span>
+                <Separator Orientation="vertical" />
+                <span style="font-weight: 500;">Right Side</span>
+            </div>
+
+            <h4 style="margin-top: 1.5rem;">Decorative Separator</h4>
+            <div style="padding: 1rem; background: var(--surface-1, #f8f9fa); border-radius: 8px;">
+                <p style="margin: 0;">This separator is decorative only</p>
+                <Separator Decorative="true" />
+                <p style="margin: 0;">Hidden from screen readers</p>
+            </div>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Vertical Separator</h3>
+            <CodeBlock Code="@VerticalCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Decorative vs Semantic</h3>
+            <CodeBlock Code="@DecorativeCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Orientation</code></td>
+                    <td>Orientation</td>
+                    <td>Horizontal</td>
+                    <td>Separator orientation</td>
+                </tr>
+                <tr>
+                    <td><code>Decorative</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether separator is purely decorative</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Semantic separators use <code>&lt;hr&gt;</code> or role="separator"</li>
+            <li>Decorative separators use aria-hidden="true"</li>
+            <li>Proper ARIA orientation attributes</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "Divider", "Stack", "Grid" };
+
+    private string BasicCode => @"<p>Content above</p>
+<Separator />
+<p>Content below</p>";
+
+    private string VerticalCode => @"<div style=""display: flex; height: 40px; align-items: center;"">
+    <span>Left</span>
+    <Separator Orientation=""Orientation.Vertical"" />
+    <span>Right</span>
+</div>";
+
+    private string DecorativeCode => @"<!-- Semantic separator (announced to screen readers) -->
+<Separator Decorative=""false"" />
+
+<!-- Decorative separator (hidden from screen readers) -->
+<Separator Decorative=""true"" />";
+}

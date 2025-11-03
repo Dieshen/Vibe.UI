@@ -1,0 +1,226 @@
+@page "/components/table"
+@using Vibe.UI.Components
+
+<PageTitle>Table - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="Table"
+               Category="DataDisplay"
+               Description="A simple data table for displaying structured content in rows and columns."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo">
+            <Table Striped="true" Hover="true">
+                <HeaderContent>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                    </tr>
+                </HeaderContent>
+                <ChildContent>
+                    <tr>
+                        <td>John Doe</td>
+                        <td>john@example.com</td>
+                        <td>Admin</td>
+                        <td><Badge Variant="success">Active</Badge></td>
+                    </tr>
+                    <tr>
+                        <td>Jane Smith</td>
+                        <td>jane@example.com</td>
+                        <td>User</td>
+                        <td><Badge Variant="success">Active</Badge></td>
+                    </tr>
+                    <tr>
+                        <td>Bob Johnson</td>
+                        <td>bob@example.com</td>
+                        <td>User</td>
+                        <td><Badge Variant="warning">Pending</Badge></td>
+                    </tr>
+                </ChildContent>
+            </Table>
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Usage</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Striped Rows</h3>
+            <CodeBlock Code="@StripedCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Bordered Table</h3>
+            <CodeBlock Code="@BorderedCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Compact Size</h3>
+            <CodeBlock Code="@CompactCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>With Caption</h3>
+            <CodeBlock Code="@CaptionCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Striped</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Alternate row background colors</td>
+                </tr>
+                <tr>
+                    <td><code>Bordered</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Add borders to all cells</td>
+                </tr>
+                <tr>
+                    <td><code>Hoverable</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Highlight row on hover</td>
+                </tr>
+                <tr>
+                    <td><code>Size</code></td>
+                    <td>TableSize</td>
+                    <td>Default</td>
+                    <td>Table size (Compact, Default, Comfortable)</td>
+                </tr>
+                <tr>
+                    <td><code>Caption</code></td>
+                    <td>string</td>
+                    <td>null</td>
+                    <td>Table caption text</td>
+                </tr>
+                <tr>
+                    <td><code>ChildContent</code></td>
+                    <td>RenderFragment</td>
+                    <td>-</td>
+                    <td>Table content (thead, tbody, tfoot)</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Semantic <code>&lt;table&gt;</code> structure</li>
+            <li>Proper use of thead, tbody, and th elements</li>
+            <li>Caption provides table description</li>
+            <li>Scope attributes on headers</li>
+            <li>Keyboard navigation support</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "DataGrid", "List", "Card" };
+
+    private string BasicCode => @"<Table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>John Doe</td>
+            <td>john@example.com</td>
+            <td>Admin</td>
+        </tr>
+        <tr>
+            <td>Jane Smith</td>
+            <td>jane@example.com</td>
+            <td>User</td>
+        </tr>
+    </tbody>
+</Table>";
+
+    private string StripedCode => @"<Table Striped=""true"">
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Stock</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Widget A</td>
+            <td>$19.99</td>
+            <td>50</td>
+        </tr>
+        <tr>
+            <td>Widget B</td>
+            <td>$29.99</td>
+            <td>30</td>
+        </tr>
+    </tbody>
+</Table>";
+
+    private string BorderedCode => @"<Table Bordered=""true"">
+    <thead>
+        <tr>
+            <th>Column 1</th>
+            <th>Column 2</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Data 1</td>
+            <td>Data 2</td>
+        </tr>
+    </tbody>
+</Table>";
+
+    private string CompactCode => @"<Table Size=""TableSize.Compact"">
+    <thead>
+        <tr>
+            <th>Compact</th>
+            <th>Table</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Less</td>
+            <td>Padding</td>
+        </tr>
+    </tbody>
+</Table>";
+
+    private string CaptionCode => @"<Table Caption=""User Information"">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>User 1</td>
+            <td>Active</td>
+        </tr>
+    </tbody>
+</Table>";
+}

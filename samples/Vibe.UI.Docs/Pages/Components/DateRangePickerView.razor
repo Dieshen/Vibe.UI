@@ -1,0 +1,367 @@
+@page "/components/daterangepicker"
+
+<PageTitle>DateRangePicker - Vibe.UI</PageTitle>
+
+<ComponentPage ComponentName="DateRangePicker"
+               Category="DateTime"
+               Description="An input component for selecting a start and end date range with a calendar popup interface."
+               RelatedComponents="@relatedComponents">
+
+    <PreviewContent>
+        <div class="preview-demo" style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 600px; margin: 0 auto;">
+            <DateRangePicker @bind-StartDate="@startDate"
+                            @bind-EndDate="@endDate"
+                            MinDate="@DateTime.Today.AddMonths(-1)"
+                            MaxDate="@DateTime.Today.AddMonths(3)"
+                            StartDatePlaceholder="Start date"
+                            EndDatePlaceholder="End date" />
+
+            @if (startDate.HasValue && endDate.HasValue)
+            {
+                <Alert Variant="AlertVariant.Info">
+                    <strong>Selected Range:</strong><br />
+                    From: @startDate.Value.ToString("MMMM dd, yyyy")<br />
+                    To: @endDate.Value.ToString("MMMM dd, yyyy")<br />
+                    Duration: @((endDate.Value - startDate.Value).Days + 1) days
+                </Alert>
+            }
+        </div>
+    </PreviewContent>
+
+    <Examples>
+        <div class="example-item">
+            <h3>Basic Range Picker</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Preset Ranges</h3>
+            <CodeBlock Code="@PresetsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Min/Max Range Duration</h3>
+            <CodeBlock Code="@DurationCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Two Calendar View</h3>
+            <CodeBlock Code="@TwoCalendarsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>In Analytics Dashboard</h3>
+            <CodeBlock Code="@AnalyticsCode" Language="razor" />
+        </div>
+    </Examples>
+
+    <Props>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>StartDate</code></td>
+                    <td>DateTime?</td>
+                    <td>null</td>
+                    <td>Start date of the range</td>
+                </tr>
+                <tr>
+                    <td><code>EndDate</code></td>
+                    <td>DateTime?</td>
+                    <td>null</td>
+                    <td>End date of the range</td>
+                </tr>
+                <tr>
+                    <td><code>Placeholder</code></td>
+                    <td>string</td>
+                    <td>"Select date range"</td>
+                    <td>Placeholder text when empty</td>
+                </tr>
+                <tr>
+                    <td><code>MinDate</code></td>
+                    <td>DateTime?</td>
+                    <td>null</td>
+                    <td>Minimum selectable date</td>
+                </tr>
+                <tr>
+                    <td><code>MaxDate</code></td>
+                    <td>DateTime?</td>
+                    <td>null</td>
+                    <td>Maximum selectable date</td>
+                </tr>
+                <tr>
+                    <td><code>MinDays</code></td>
+                    <td>int?</td>
+                    <td>null</td>
+                    <td>Minimum number of days in range</td>
+                </tr>
+                <tr>
+                    <td><code>MaxDays</code></td>
+                    <td>int?</td>
+                    <td>null</td>
+                    <td>Maximum number of days in range</td>
+                </tr>
+                <tr>
+                    <td><code>ShowPresets</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Show preset date range options</td>
+                </tr>
+            </tbody>
+        </table>
+    </Props>
+
+    <Events>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>StartDateChanged</code></td>
+                    <td>EventCallback&lt;DateTime?&gt;</td>
+                    <td>Callback when start date changes</td>
+                </tr>
+                <tr>
+                    <td><code>EndDateChanged</code></td>
+                    <td>EventCallback&lt;DateTime?&gt;</td>
+                    <td>Callback when end date changes</td>
+                </tr>
+                <tr>
+                    <td><code>OnRangeSelected</code></td>
+                    <td>EventCallback&lt;DateRange&gt;</td>
+                    <td>Callback when both dates are selected</td>
+                </tr>
+            </tbody>
+        </table>
+    </Events>
+
+    <AccessibilityNotes>
+        <ul>
+            <li>Two input fields for start and end dates</li>
+            <li>Keyboard accessible with Tab navigation</li>
+            <li>Arrow keys navigate calendar dates</li>
+            <li>Screen reader announces selected range</li>
+            <li>Clear visual indication of range selection</li>
+            <li>Escape key closes popup</li>
+        </ul>
+    </AccessibilityNotes>
+</ComponentPage>
+
+@code {
+    private List<string> relatedComponents = new() { "DatePicker", "Calendar", "TimePicker" };
+    private DateTime? startDate;
+    private DateTime? endDate;
+
+    private string BasicCode => @"<DateRangePicker @bind-StartDate=""@startDate""
+                 @bind-EndDate=""@endDate"" />
+
+@if (startDate.HasValue && endDate.HasValue)
+{
+    <Alert Variant=""AlertVariant.Info"">
+        <strong>Selected Range:</strong><br />
+        From: @startDate.Value.ToShortDateString()<br />
+        To: @endDate.Value.ToShortDateString()<br />
+        Duration: @((endDate.Value - startDate.Value).Days + 1) days
+    </Alert>
+}
+
+@code {
+    private DateTime? startDate;
+    private DateTime? endDate;
+}";
+
+    private string PresetsCode => @"<DateRangePicker @bind-StartDate=""@startDate""
+                 @bind-EndDate=""@endDate""
+                 ShowPresets=""true"">
+    <Presets>
+        <DateRangePreset Label=""Today""
+                        OnClick=""@(() => SetRange(DateTime.Today, DateTime.Today))"" />
+
+        <DateRangePreset Label=""Last 7 Days""
+                        OnClick=""@(() => SetRange(DateTime.Today.AddDays(-6), DateTime.Today))"" />
+
+        <DateRangePreset Label=""Last 30 Days""
+                        OnClick=""@(() => SetRange(DateTime.Today.AddDays(-29), DateTime.Today))"" />
+
+        <DateRangePreset Label=""This Month""
+                        OnClick=""@(() => SetRange(
+                            new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1),
+                            DateTime.Today))"" />
+
+        <DateRangePreset Label=""Last Month""
+                        OnClick=""@SetLastMonth"" />
+    </Presets>
+</DateRangePicker>
+
+@code {
+    private DateTime? startDate;
+    private DateTime? endDate;
+
+    private void SetRange(DateTime start, DateTime end)
+    {
+        startDate = start;
+        endDate = end;
+    }
+
+    private void SetLastMonth()
+    {
+        var today = DateTime.Today;
+        var firstDayLastMonth = new DateTime(today.Year, today.Month, 1).AddMonths(-1);
+        var lastDayLastMonth = new DateTime(today.Year, today.Month, 1).AddDays(-1);
+        SetRange(firstDayLastMonth, lastDayLastMonth);
+    }
+}";
+
+    private string DurationCode => @"<FormField Label=""Vacation Dates (3-14 days)"">
+    <DateRangePicker @bind-StartDate=""@startDate""
+                     @bind-EndDate=""@endDate""
+                     MinDate=""@DateTime.Today""
+                     MinDays=""3""
+                     MaxDays=""14"" />
+</FormField>
+
+@if (startDate.HasValue && endDate.HasValue)
+{
+    var days = (endDate.Value - startDate.Value).Days + 1;
+
+    @if (days < 3)
+    {
+        <Alert Variant=""AlertVariant.Warning"">
+            Vacation must be at least 3 days
+        </Alert>
+    }
+    else if (days > 14)
+    {
+        <Alert Variant=""AlertVariant.Warning"">
+            Vacation cannot exceed 14 days
+        </Alert>
+    }
+    else
+    {
+        <Alert Variant=""AlertVariant.Success"">
+            Vacation: @days days
+        </Alert>
+    }
+}
+
+@code {
+    private DateTime? startDate;
+    private DateTime? endDate;
+}";
+
+    private string TwoCalendarsCode => @"<DateRangePicker @bind-StartDate=""@startDate""
+                 @bind-EndDate=""@endDate""
+                 ShowTwoCalendars=""true""
+                 MinDate=""@DateTime.Today"" />
+
+@code {
+    private DateTime? startDate;
+    private DateTime? endDate;
+}";
+
+    private string AnalyticsCode => @"<div class=""analytics-header"">
+    <h2>Analytics Dashboard</h2>
+
+    <DateRangePicker @bind-StartDate=""@dateRange.Start""
+                     @bind-EndDate=""@dateRange.End""
+                     ShowPresets=""true""
+                     OnRangeSelected=""@LoadAnalytics"">
+        <Presets>
+            <DateRangePreset Label=""Last 7 Days""
+                            OnClick=""@(() => SetPreset(7))"" />
+            <DateRangePreset Label=""Last 30 Days""
+                            OnClick=""@(() => SetPreset(30))"" />
+            <DateRangePreset Label=""Last 90 Days""
+                            OnClick=""@(() => SetPreset(90))"" />
+            <DateRangePreset Label=""Year to Date""
+                            OnClick=""@SetYearToDate"" />
+        </Presets>
+    </DateRangePicker>
+</div>
+
+@if (isLoading)
+{
+    <Spinner Label=""Loading analytics..."" />
+}
+else if (analyticsData != null)
+{
+    <div class=""analytics-cards"">
+        <Card>
+            <CardHeader>
+                <h3>Total Revenue</h3>
+            </CardHeader>
+            <CardBody>
+                <h2>@analyticsData.Revenue.ToString(""C"")</h2>
+                <p class=""trend"">+12% from previous period</p>
+            </CardBody>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <h3>Page Views</h3>
+            </CardHeader>
+            <CardBody>
+                <h2>@analyticsData.PageViews.ToString(""N0"")</h2>
+                <p class=""trend"">+8% from previous period</p>
+            </CardBody>
+        </Card>
+
+        <Card>
+            <CardHeader>
+                <h3>Conversions</h3>
+            </CardHeader>
+            <CardBody>
+                <h2>@analyticsData.Conversions</h2>
+                <p class=""trend"">+5% from previous period</p>
+            </CardBody>
+        </Card>
+    </div>
+}
+
+@code {
+    private DateRange dateRange = new()
+    {
+        Start = DateTime.Today.AddDays(-7),
+        End = DateTime.Today
+    };
+
+    private AnalyticsData analyticsData;
+    private bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAnalytics(dateRange);
+    }
+
+    private async Task LoadAnalytics(DateRange range)
+    {
+        isLoading = true;
+        analyticsData = await AnalyticsService.GetDataAsync(range.Start.Value, range.End.Value);
+        isLoading = false;
+    }
+
+    private void SetPreset(int days)
+    {
+        dateRange.Start = DateTime.Today.AddDays(-days + 1);
+        dateRange.End = DateTime.Today;
+    }
+
+    private void SetYearToDate()
+    {
+        dateRange.Start = new DateTime(DateTime.Today.Year, 1, 1);
+        dateRange.End = DateTime.Today;
+    }
+}";
+}
