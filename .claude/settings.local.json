@@ -1,35 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dotnet clean:*)",
-      "Bash(dotnet new:*)",
-      "Bash(dotnet tool install:*)",
-      "Bash(dotnet format:*)",
-      "Bash(dotnet tool:*)",
-      "Bash(dotnet sln:*)",
-      "Bash(echo:*)",
-      "Bash(csc:*)",
-      "Bash(git grep:*)",
-      "Bash(dotnet pack:*)",
-      "Bash(unzip:*)",
-      "mcp__puppeteer__puppeteer_navigate",
-      "mcp__puppeteer__puppeteer_screenshot",
-      "mcp__puppeteer__puppeteer_click",
-      "mcp__puppeteer__puppeteer_evaluate",
-      "Bash(dotnet run:*)",
-      "mcp__puppeteer__puppeteer_select",
-      "Bash(git add:*)",
-      "Bash(gh run list:*)",
-      "Bash(gh run view:*)",
-      "mcp__puppeteer__puppeteer_fill",
-      "Bash(cat:*)",
-      "Bash(UI_PROBLEMS.md)",
-      "Bash(netstat:*)",
-      "Bash(findstr:*)",
-      "mcp__crewai__crewai_get_progress",
-      "Bash(\"D:\\Projects\\VisualStudios\\Vibe.UI\\src\\Vibe.UI\\wwwroot\\css\\vibe-components.css\")",
-      "WebFetch(domain:ui.shadcn.com)",
-      "WebFetch(domain:mudblazor.com)"
+      "Bash(\"D:\\Projects\\VisualStudios\\Vibe.UI\\samples\\Vibe.UI.Docs\\Pages\\Components\\DividerView.razor\")"
     ],
     "deny": [],
     "ask": []

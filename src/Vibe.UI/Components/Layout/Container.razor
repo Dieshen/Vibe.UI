@@ -1,0 +1,92 @@
+@namespace Vibe.UI.Components
+@inherits Vibe.UI.Base.VibeComponent
+
+<div class="@CombinedClass @SizeClass" style="@ContainerStyle" @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// Gets or sets the child content
+    /// </summary>
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum width size
+    /// </summary>
+    [Parameter]
+    public ContainerSize MaxWidth { get; set; } = ContainerSize.Large;
+
+    /// <summary>
+    /// Gets or sets whether the container fills full width
+    /// </summary>
+    [Parameter]
+    public bool Fluid { get; set; }
+
+    /// <summary>
+    /// Gets or sets custom padding value
+    /// </summary>
+    [Parameter]
+    public string? Padding { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to center the container
+    /// </summary>
+    [Parameter]
+    public bool Centered { get; set; } = true;
+
+    /// <inheritdoc/>
+    protected override string ComponentClass => "vibe-container";
+
+    /// <summary>
+    /// Gets the CSS class for the container size
+    /// </summary>
+    private string SizeClass => Fluid ? "vibe-container-full" : MaxWidth switch
+    {
+        ContainerSize.Small => "vibe-container-sm",
+        ContainerSize.Medium => "vibe-container-md",
+        ContainerSize.Large => "vibe-container-lg",
+        ContainerSize.XLarge => "vibe-container-xl",
+        ContainerSize.XXLarge => "vibe-container-2xl",
+        ContainerSize.Full => "vibe-container-full",
+        _ => "vibe-container-lg"
+    };
+
+    /// <summary>
+    /// Generates the inline style for custom padding
+    /// </summary>
+    private string? ContainerStyle
+    {
+        get
+        {
+            var styles = new List<string>();
+
+            if (!string.IsNullOrEmpty(Padding))
+            {
+                styles.Add($"padding: {Padding}");
+            }
+
+            if (!Centered)
+            {
+                styles.Add("margin-left: 0");
+                styles.Add("margin-right: 0");
+            }
+
+            return styles.Count > 0 ? string.Join("; ", styles) : null;
+        }
+    }
+
+    /// <summary>
+    /// Container size options
+    /// </summary>
+    public enum ContainerSize
+    {
+        Small,
+        Medium,
+        Large,
+        XLarge,
+        XXLarge,
+        Full
+    }
+}

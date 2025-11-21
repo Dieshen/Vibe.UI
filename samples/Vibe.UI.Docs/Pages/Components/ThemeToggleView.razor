@@ -4,7 +4,7 @@
 
 <ComponentPage ComponentName="ThemeToggle"
                Category="Theme"
-               Description="A component for switching between light and dark themes with smooth transitions and persistent preferences."
+               Description="A simple, self-contained component for toggling between light and dark themes. No service registration required."
                RelatedComponents="@relatedComponents">
 
     <PreviewContent>
@@ -15,44 +15,92 @@
             </div>
 
             <Alert Variant="Alert.AlertVariant.Info">
-                <strong>Current theme:</strong> @(ThemeManager?.CurrentTheme?.Name ?? "Loading...")
-                <br />
                 Click the toggle button above to switch between light and dark modes.
+                The theme preference is saved to localStorage and persists across sessions.
             </Alert>
 
-            <div style="padding: 1.5rem; border: 1px solid var(--border-color); border-radius: 8px; width: 100%; max-width: 400px;">
+            <div style="padding: 1.5rem; border: 1px solid var(--vibe-border); border-radius: 8px; width: 100%; max-width: 400px; background: var(--vibe-card); color: var(--vibe-card-foreground);">
                 <h4>Themed Card Example</h4>
-                <p>This card automatically adapts to the selected theme, demonstrating how components respond to theme changes.</p>
+                <p>This card automatically adapts to the selected theme using CSS variables.</p>
                 <Button Variant="Button.ButtonVariant.Primary">Primary Button</Button>
             </div>
         </div>
     </PreviewContent>
 
     <Examples>
+        <Alert Variant="Alert.AlertVariant.Info" style="margin-bottom: 1.5rem;">
+            <strong>No Service Registration Required!</strong>
+            <br />
+            Unlike the old ThemeManager system, ThemeToggle works completely standalone. Just add it to your page and it works.
+        </Alert>
+
         <div class="example-item">
-            <h3>Basic Toggle</h3>
+            <h3>Basic Usage</h3>
+            <p>Just drop it in - no setup required!</p>
             <CodeBlock Code="@BasicCode" Language="razor" />
         </div>
 
         <div class="example-item">
-            <h3>With Icons</h3>
-            <CodeBlock Code="@IconsCode" Language="razor" />
-        </div>
-
-        <div class="example-item">
-            <h3>System Preference</h3>
-            <CodeBlock Code="@SystemCode" Language="razor" />
-        </div>
-
-        <div class="example-item">
-            <h3>Custom Themes</h3>
-            <CodeBlock Code="@CustomCode" Language="razor" />
+            <h3>Features</h3>
+            <ul>
+                <li>✅ <strong>Zero Dependencies</strong> - No service registration, no external libraries</li>
+                <li>✅ <strong>System Preference Detection</strong> - Automatically detects user's OS theme preference on first load</li>
+                <li>✅ <strong>localStorage Persistence</strong> - Remembers user choice across sessions</li>
+                <li>✅ <strong>Inline JavaScript</strong> - Uses minimal inline JS for theme detection and persistence</li>
+                <li>✅ <strong>Pure CSS Theming</strong> - Works by toggling .dark class on document element</li>
+                <li>✅ <strong>Self-Contained</strong> - Everything needed is in one component file</li>
+            </ul>
         </div>
 
         <div class="example-item">
             <h3>In Navigation Bar</h3>
+            <p>Commonly placed in the header alongside other actions:</p>
             <CodeBlock Code="@NavBarCode" Language="razor" />
         </div>
+
+        <div class="example-item">
+            <h3>Custom Storage Key</h3>
+            <p>Use a custom localStorage key for theme preference:</p>
+            <CodeBlock Code="@CustomStorageCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>How It Works Internally</h3>
+            <p>The ThemeToggle component uses a simple, elegant approach:</p>
+            <ol>
+                <li>
+                    <strong>On Initialization</strong> - Checks localStorage for saved preference, or falls back to system preference using <code>matchMedia('(prefers-color-scheme: dark)')</code>
+                </li>
+                <li>
+                    <strong>On Toggle</strong> - Adds or removes the <code>.dark</code> class on <code>document.documentElement</code> (the <code>&lt;html&gt;</code> element)
+                </li>
+                <li>
+                    <strong>Persistence</strong> - Saves the current theme to localStorage under the configured key
+                </li>
+                <li>
+                    <strong>CSS Response</strong> - All components use CSS variables defined in <code>:root</code> (light) and <code>.dark</code> (dark) selectors
+                </li>
+            </ol>
+            <CodeBlock Code="@HowItWorksCode" Language="csharp" />
+        </div>
+
+        <div class="example-item">
+            <h3>Implementation Details</h3>
+            <p>Here's how the component works internally:</p>
+            <CodeBlock Code="@ImplementationCode" Language="csharp" />
+        </div>
+
+        <div class="example-item">
+            <h3>Multiple Toggles</h3>
+            <p>You can have multiple ThemeToggle components on the same page - they all stay in sync:</p>
+            <CodeBlock Code="@MultipleCode" Language="razor" />
+        </div>
+
+        <Alert Variant="Alert.AlertVariant.Warning" style="margin-top: 1.5rem;">
+            <strong>Breaking Change from v1.x</strong>
+            <br />
+            The old ThemeToggle that required ThemeManager service has been removed. The new version is simpler and more reliable.
+        </Alert>
     </Examples>
 
     <Props>
@@ -67,249 +115,170 @@
             </thead>
             <tbody>
                 <tr>
-                    <td><code>Theme</code></td>
-                    <td>ThemeMode</td>
-                    <td>Light</td>
-                    <td>Current theme mode (Light, Dark, System)</td>
+                    <td><code>StorageKey</code></td>
+                    <td>string</td>
+                    <td>"vibe-theme"</td>
+                    <td>localStorage key for persisting theme preference</td>
                 </tr>
                 <tr>
-                    <td><code>ShowLabel</code></td>
-                    <td>bool</td>
-                    <td>false</td>
-                    <td>Display theme name label</td>
+                    <td><code>Class</code></td>
+                    <td>string</td>
+                    <td>""</td>
+                    <td>Additional CSS classes (inherited from VibeComponent)</td>
                 </tr>
                 <tr>
-                    <td><code>IconOnly</code></td>
-                    <td>bool</td>
-                    <td>false</td>
-                    <td>Show only icon without text</td>
-                </tr>
-                <tr>
-                    <td><code>Size</code></td>
-                    <td>ButtonSize</td>
-                    <td>Medium</td>
-                    <td>Size of the toggle button</td>
-                </tr>
-                <tr>
-                    <td><code>Variant</code></td>
-                    <td>ButtonVariant</td>
-                    <td>Ghost</td>
-                    <td>Visual style of the button</td>
-                </tr>
-                <tr>
-                    <td><code>PersistPreference</code></td>
-                    <td>bool</td>
-                    <td>true</td>
-                    <td>Save theme preference to localStorage</td>
+                    <td><code>AdditionalAttributes</code></td>
+                    <td>Dictionary&lt;string, object&gt;</td>
+                    <td>null</td>
+                    <td>Additional HTML attributes (inherited from VibeComponent)</td>
                 </tr>
             </tbody>
         </table>
     </Props>
 
-    <Events>
-        <table class="api-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Type</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><code>ThemeChanged</code></td>
-                    <td>EventCallback&lt;ThemeMode&gt;</td>
-                    <td>Callback when theme changes</td>
-                </tr>
-            </tbody>
-        </table>
-    </Events>
-
     <AccessibilityNotes>
         <ul>
-            <li>Uses semantic button element</li>
-            <li>Includes descriptive <code>aria-label</code></li>
-            <li>Keyboard accessible (Enter/Space)</li>
-            <li>Screen reader announces theme changes</li>
-            <li>Clear focus indicators</li>
-            <li>Respects user's system theme preference</li>
+            <li>Uses semantic <code>&lt;button&gt;</code> element</li>
+            <li>Includes descriptive button text with sun/moon icons</li>
+            <li>Fully keyboard accessible (Enter/Space to toggle)</li>
+            <li>Clear focus indicators via CSS</li>
+            <li>Visual feedback on hover and active states</li>
         </ul>
     </AccessibilityNotes>
 </ComponentPage>
 
-@using Vibe.UI.Themes.Services
-@inject ThemeManager ThemeManager
-
 @code {
-    private List<string> relatedComponents = new() { "ThemeProvider", "Button", "Toggle" };
+    private List<string> relatedComponents = new() { "Button" };
 
-    private string BasicCode => @"<ThemeToggle @bind-Theme=""@currentTheme"" />
-
-@code {
-    private ThemeMode currentTheme = ThemeMode.Light;
-}";
-
-    private string IconsCode => @"<div class=""theme-toggle-examples"">
-    <ThemeToggle IconOnly=""true""
-                 Variant=""ButtonVariant.Ghost"" />
-
-    <ThemeToggle ShowLabel=""true""
-                 Variant=""ButtonVariant.Outline"" />
-
-    <ThemeToggle ShowLabel=""true""
-                 Size=""ButtonSize.Large""
-                 Variant=""ButtonVariant.Secondary"" />
-</div>";
-
-    private string SystemCode => @"<ThemeToggle @bind-Theme=""@theme""
-             OnThemeChanged=""@HandleThemeChange"">
-    <Options>
-        <ThemeOption Value=""ThemeMode.Light"" Icon=""☀️"" Label=""Light"" />
-        <ThemeOption Value=""ThemeMode.Dark"" Icon=""🌙"" Label=""Dark"" />
-        <ThemeOption Value=""ThemeMode.System"" Icon=""💻"" Label=""System"" />
-    </Options>
-</ThemeToggle>
-
-@if (theme == ThemeMode.System)
-{
-    <Alert Variant=""AlertVariant.Info"">
-        Following system preference: @GetSystemTheme()
-    </Alert>
-}
-
-@code {
-    private ThemeMode theme = ThemeMode.System;
-
-    private void HandleThemeChange(ThemeMode newTheme)
-    {
-        Console.WriteLine($""Theme changed to: {newTheme}"");
-    }
-
-    private string GetSystemTheme()
-    {
-        // Detect system theme preference
-        return ""Dark""; // Example
-    }
-}";
-
-    private string CustomCode => @"@inject IThemeService ThemeService
-
-<div class=""custom-theme-selector"">
-    <h3>Choose Your Theme</h3>
-
-    <div class=""theme-options"">
-        @foreach (var themeOption in availableThemes)
-        {
-            <div class=""theme-card @(currentTheme == themeOption.Id ? ""active"" : """")""
-                 @onclick=""@(() => ApplyTheme(themeOption))"">
-                <div class=""theme-preview"" style=""background: @themeOption.PreviewColor"">
-                    <span class=""theme-icon"">@themeOption.Icon</span>
-                </div>
-                <h4>@themeOption.Name</h4>
-                <p>@themeOption.Description</p>
-            </div>
-        }
-    </div>
-</div>
-
-@code {
-    private string currentTheme = ""light"";
-
-    private List<ThemeOption> availableThemes = new()
-    {
-        new ThemeOption
-        {
-            Id = ""light"",
-            Name = ""Light"",
-            Icon = ""☀️"",
-            Description = ""Clean and bright"",
-            PreviewColor = ""#ffffff""
-        },
-        new ThemeOption
-        {
-            Id = ""dark"",
-            Name = ""Dark"",
-            Icon = ""🌙"",
-            Description = ""Easy on the eyes"",
-            PreviewColor = ""#1a1a1a""
-        },
-        new ThemeOption
-        {
-            Id = ""blue"",
-            Name = ""Ocean"",
-            Icon = ""🌊"",
-            Description = ""Cool blue tones"",
-            PreviewColor = ""#0077be""
-        },
-        new ThemeOption
-        {
-            Id = ""green"",
-            Name = ""Forest"",
-            Icon = ""🌲"",
-            Description = ""Natural green theme"",
-            PreviewColor = ""#228b22""
-        }
-    };
-
-    private async Task ApplyTheme(ThemeOption theme)
-    {
-        currentTheme = theme.Id;
-        await ThemeService.SetThemeAsync(theme.Id);
-    }
-
-    public class ThemeOption
-    {
-        public string Id { get; set; }
-        public string Name { get; set; }
-        public string Icon { get; set; }
-        public string Description { get; set; }
-        public string PreviewColor { get; set; }
-    }
-}";
+    private string BasicCode => @"<!-- That's it! No service registration, no configuration. -->
+<ThemeToggle />
+";
 
     private string NavBarCode => @"<nav class=""navbar"">
     <div class=""navbar-brand"">
-        <a href=""/"">
-            <img src=""/logo.svg"" alt=""Logo"" />
-            <span>My App</span>
-        </a>
-    </div>
-
-    <div class=""navbar-menu"">
-        <a href=""/dashboard"">Dashboard</a>
-        <a href=""/projects"">Projects</a>
-        <a href=""/settings"">Settings</a>
+        <a href=""/"">My App</a>
     </div>
 
     <div class=""navbar-actions"">
-        <Button Variant=""ButtonVariant.Ghost"" IconOnly=""true"">
-            <span class=""icon"">🔔</span>
-        </Button>
-
-        <ThemeToggle IconOnly=""true""
-                     Variant=""ButtonVariant.Ghost""
-                     Size=""ButtonSize.Medium"" />
-
-        <Dropdown>
-            <DropdownTrigger>
-                <Avatar Src=""@currentUser.AvatarUrl""
-                        Size=""AvatarSize.Small"" />
-            </DropdownTrigger>
-            <DropdownContent>
-                <DropdownItem>Profile</DropdownItem>
-                <DropdownItem>Settings</DropdownItem>
-                <DropdownDivider />
-                <DropdownItem>Sign Out</DropdownItem>
-            </DropdownContent>
-        </Dropdown>
+        <button class=""notifications-btn"">🔔</button>
+        <ThemeToggle />
+        <button class=""profile-btn"">👤</button>
     </div>
 </nav>
+";
+
+    private string CustomStorageCode => @"<!-- Use a custom localStorage key -->
+<ThemeToggle StorageKey=""my-app-theme"" />
+";
+
+    private string HowItWorksCode => @"// On initialization
+protected override async Task OnInitializedAsync()
+{
+    // Check localStorage or system preference
+    _isDark = await JS.InvokeAsync<bool>(""eval"",
+        $@""(function() {{
+            const stored = localStorage.getItem('{StorageKey}');
+            if (stored) return stored === 'dark';
+            return window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }})()"");
+
+    await ApplyTheme(false);
+}
+
+// On toggle
+private async Task ToggleTheme()
+{
+    _isDark = !_isDark;
+    await ApplyTheme(true);
+}
+
+// Apply theme to DOM and localStorage
+private async Task ApplyTheme(bool stateChanged)
+{
+    var theme = _isDark ? ""dark"" : ""light"";
+    await JS.InvokeVoidAsync(""eval"",
+        $@""(function() {{
+            if ('{theme}' === 'dark') {{
+                document.documentElement.classList.add('dark');
+            }} else {{
+                document.documentElement.classList.remove('dark');
+            }}
+            localStorage.setItem('{StorageKey}', '{theme}');
+        }})()"");
+
+    if (stateChanged) StateHasChanged();
+}";
+
+    private string MultipleCode => @"<header>
+    <ThemeToggle />
+</header>
+
+<main>
+    <!-- Content here -->
+</main>
+
+<footer>
+    <ThemeToggle />  <!-- Stays in sync with header toggle -->
+</footer>
+";
+
+    private string ImplementationCode => @"@namespace Vibe.UI.Components
+@inherits Base.VibeComponent
+@inject IJSRuntime JS
+
+<button type=""button"" class=""@CombinedClass"" @onclick=""ToggleTheme"">
+    @if (_isDark)
+    {
+        <!-- Sun icon for ""switch to light"" -->
+        <svg>...</svg>
+    }
+    else
+    {
+        <!-- Moon icon for ""switch to dark"" -->
+        <svg>...</svg>
+    }
+</button>
 
 @code {
-    private User currentUser = new()
+    [Parameter]
+    public string StorageKey { get; set; } = ""vibe-theme"";
+
+    protected override string ComponentClass => ""vibe-theme-toggle"";
+
+    private bool _isDark = false;
+
+    protected override async Task OnInitializedAsync()
     {
-        Name = ""John Doe"",
-        AvatarUrl = ""/avatars/john.jpg""
-    };
+        // Detect saved preference or system preference
+        _isDark = await JS.InvokeAsync<bool>(""eval"",
+            $@""(function() {{
+                const stored = localStorage.getItem('{StorageKey}');
+                if (stored) return stored === 'dark';
+                return window.matchMedia('(prefers-color-scheme: dark)').matches;
+            }})()"");
+        await ApplyTheme(false);
+    }
+
+    private async Task ToggleTheme()
+    {
+        _isDark = !_isDark;
+        await ApplyTheme(true);
+    }
+
+    private async Task ApplyTheme(bool stateChanged)
+    {
+        var theme = _isDark ? ""dark"" : ""light"";
+        await JS.InvokeVoidAsync(""eval"",
+            $@""(function() {{
+                if ('{theme}' === 'dark') {{
+                    document.documentElement.classList.add('dark');
+                }} else {{
+                    document.documentElement.classList.remove('dark');
+                }}
+                localStorage.setItem('{StorageKey}', '{theme}');
+            }})()"");
+
+        if (stateChanged) StateHasChanged();
+    }
 }";
 }

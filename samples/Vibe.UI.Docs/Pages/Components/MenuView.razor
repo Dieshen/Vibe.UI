@@ -1,51 +1,218 @@
 @page "/components/menu"
+@using Vibe.UI.Components
 
 <PageTitle>Menu - Vibe.UI</PageTitle>
 
 <ComponentPage ComponentName="Menu"
                Category="Navigation"
-               Description="A list of options or actions that appears when triggered, supporting nested submenus."
+               Description="A dropdown menu component for displaying a list of actions or options with support for icons, separators, and danger actions."
                RelatedComponents="@relatedComponents">
 
     <PreviewContent>
-        <div class="preview-demo">
-            <div style="padding: 1.5rem; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; margin-bottom: 1rem;">
-                <h4 style="margin: 0 0 0.5rem 0; color: #856404;">Component Not Yet Implemented</h4>
-                <p style="margin: 0; color: #856404;">
-                    The Menu component has not been implemented yet. However, the Menubar component is available. The API documentation below represents the planned Menu interface.
-                </p>
-            </div>
+        <div class="preview-demo" style="max-width: 600px; margin: 0 auto; text-align: center;">
+            <Menu @bind-IsOpen="previewMenuOpen">
+                <Trigger>
+                    <Button>Open Menu</Button>
+                </Trigger>
+                <ChildContent>
+                    <MenuItem Icon="🏠" OnClick="@(() => {})">Home</MenuItem>
+                    <MenuItem Icon="⚙️" OnClick="@(() => {})">Settings</MenuItem>
+                    <MenuSeparator />
+                    <MenuItem Icon="🚪" Danger="true" OnClick="@(() => {})">Logout</MenuItem>
+                </ChildContent>
+            </Menu>
         </div>
     </PreviewContent>
 
     <Examples>
         <div class="example-item">
-            <h3>Basic Usage</h3>
+            <h3>Basic Menu</h3>
+            <p>Simple dropdown menu with items:</p>
             <CodeBlock Code="@BasicCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Menu @bind-IsOpen="basicMenuOpen">
+                    <Trigger>
+                        <Button>Actions</Button>
+                    </Trigger>
+                    <ChildContent>
+                        <MenuItem OnClick="@HandleAction">New File</MenuItem>
+                        <MenuItem OnClick="@HandleAction">Open</MenuItem>
+                        <MenuItem OnClick="@HandleAction">Save</MenuItem>
+                        <MenuItem OnClick="@HandleAction">Save As...</MenuItem>
+                    </ChildContent>
+                </Menu>
+                @if (!string.IsNullOrEmpty(actionMessage))
+                {
+                    <p style="margin-top: 0.5rem; color: var(--vibe-success);">@actionMessage</p>
+                }
+            </div>
         </div>
 
         <div class="example-item">
-            <h3>With Icons</h3>
+            <h3>Menu with Icons</h3>
+            <p>Enhance menu items with icons:</p>
             <CodeBlock Code="@IconsCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Menu @bind-IsOpen="iconsMenuOpen">
+                    <Trigger>
+                        <Button Variant="Button.ButtonVariant.Outline">User Menu</Button>
+                    </Trigger>
+                    <ChildContent>
+                        <MenuItem Icon="👤" OnClick="@HandleAction">Profile</MenuItem>
+                        <MenuItem Icon="⚙️" OnClick="@HandleAction">Settings</MenuItem>
+                        <MenuItem Icon="💳" OnClick="@HandleAction">Billing</MenuItem>
+                        <MenuSeparator />
+                        <MenuItem Icon="📧" OnClick="@HandleAction">Support</MenuItem>
+                        <MenuItem Icon="🚪" Danger="true" OnClick="@HandleAction">Logout</MenuItem>
+                    </ChildContent>
+                </Menu>
+            </div>
         </div>
 
         <div class="example-item">
-            <h3>Nested Menu</h3>
-            <CodeBlock Code="@NestedCode" Language="razor" />
-        </div>
-
-        <div class="example-item">
-            <h3>With Separators</h3>
+            <h3>Menu Separators</h3>
+            <p>Group related menu items with separators:</p>
             <CodeBlock Code="@SeparatorsCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Menu @bind-IsOpen="separatorsMenuOpen">
+                    <Trigger>
+                        <Button>Edit</Button>
+                    </Trigger>
+                    <ChildContent>
+                        <MenuItem Icon="✂️" OnClick="@HandleAction">Cut</MenuItem>
+                        <MenuItem Icon="📋" OnClick="@HandleAction">Copy</MenuItem>
+                        <MenuItem Icon="📄" OnClick="@HandleAction">Paste</MenuItem>
+                        <MenuSeparator />
+                        <MenuItem Icon="↩️" OnClick="@HandleAction">Undo</MenuItem>
+                        <MenuItem Icon="↪️" OnClick="@HandleAction">Redo</MenuItem>
+                        <MenuSeparator />
+                        <MenuItem Icon="🔍" OnClick="@HandleAction">Find</MenuItem>
+                        <MenuItem Icon="🔄" OnClick="@HandleAction">Replace</MenuItem>
+                    </ChildContent>
+                </Menu>
+            </div>
         </div>
 
         <div class="example-item">
-            <h3>Context Menu</h3>
-            <CodeBlock Code="@ContextCode" Language="razor" />
+            <h3>Disabled Items</h3>
+            <p>Disable menu items when actions are unavailable:</p>
+            <CodeBlock Code="@DisabledCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Menu @bind-IsOpen="disabledMenuOpen">
+                    <Trigger>
+                        <Button>Options</Button>
+                    </Trigger>
+                    <ChildContent>
+                        <MenuItem OnClick="@HandleAction">Available Action</MenuItem>
+                        <MenuItem Disabled="true" OnClick="@HandleAction">Disabled Action</MenuItem>
+                        <MenuItem OnClick="@HandleAction">Another Action</MenuItem>
+                    </ChildContent>
+                </Menu>
+            </div>
+        </div>
+
+        <div class="example-item">
+            <h3>Danger Actions</h3>
+            <p>Highlight destructive actions with the danger variant:</p>
+            <CodeBlock Code="@DangerCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Menu @bind-IsOpen="dangerMenuOpen">
+                    <Trigger>
+                        <Button Variant="Button.ButtonVariant.Outline">Project Actions</Button>
+                    </Trigger>
+                    <ChildContent>
+                        <MenuItem Icon="✏️" OnClick="@HandleAction">Edit</MenuItem>
+                        <MenuItem Icon="📤" OnClick="@HandleAction">Export</MenuItem>
+                        <MenuItem Icon="📥" OnClick="@HandleAction">Download</MenuItem>
+                        <MenuSeparator />
+                        <MenuItem Icon="🗑️" Danger="true" OnClick="@HandleDangerAction">Delete Project</MenuItem>
+                    </ChildContent>
+                </Menu>
+            </div>
+        </div>
+
+        <div class="example-item">
+            <h3>Menu Placement</h3>
+            <p>Control where the menu appears relative to the trigger:</p>
+            <CodeBlock Code="@PlacementCode" Language="razor" />
+
+            <div style="margin-top: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                <Menu @bind-IsOpen="bottomStartOpen" Placement="Menu.MenuPlacement.BottomStart">
+                    <Trigger>
+                        <Button Variant="Button.ButtonVariant.Outline" Size="Button.ButtonSize.Small">Bottom Start</Button>
+                    </Trigger>
+                    <ChildContent>
+                        <MenuItem>Item 1</MenuItem>
+                        <MenuItem>Item 2</MenuItem>
+                        <MenuItem>Item 3</MenuItem>
+                    </ChildContent>
+                </Menu>
+
+                <Menu @bind-IsOpen="bottomEndOpen" Placement="Menu.MenuPlacement.BottomEnd">
+                    <Trigger>
+                        <Button Variant="Button.ButtonVariant.Outline" Size="Button.ButtonSize.Small">Bottom End</Button>
+                    </Trigger>
+                    <ChildContent>
+                        <MenuItem>Item 1</MenuItem>
+                        <MenuItem>Item 2</MenuItem>
+                        <MenuItem>Item 3</MenuItem>
+                    </ChildContent>
+                </Menu>
+
+                <Menu @bind-IsOpen="topStartOpen" Placement="Menu.MenuPlacement.TopStart">
+                    <Trigger>
+                        <Button Variant="Button.ButtonVariant.Outline" Size="Button.ButtonSize.Small">Top Start</Button>
+                    </Trigger>
+                    <ChildContent>
+                        <MenuItem>Item 1</MenuItem>
+                        <MenuItem>Item 2</MenuItem>
+                        <MenuItem>Item 3</MenuItem>
+                    </ChildContent>
+                </Menu>
+
+                <Menu @bind-IsOpen="topEndOpen" Placement="Menu.MenuPlacement.TopEnd">
+                    <Trigger>
+                        <Button Variant="Button.ButtonVariant.Outline" Size="Button.ButtonSize.Small">Top End</Button>
+                    </Trigger>
+                    <ChildContent>
+                        <MenuItem>Item 1</MenuItem>
+                        <MenuItem>Item 2</MenuItem>
+                        <MenuItem>Item 3</MenuItem>
+                    </ChildContent>
+                </Menu>
+            </div>
+        </div>
+
+        <div class="example-item">
+            <h3>Custom Trigger</h3>
+            <p>Use any element as a menu trigger:</p>
+            <CodeBlock Code="@CustomTriggerCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Menu @bind-IsOpen="customTriggerOpen">
+                    <Trigger>
+                        <div style="padding: 0.75rem 1rem; background: var(--vibe-muted); border-radius: var(--vibe-radius); cursor: pointer; display: inline-block;">
+                            <span style="font-weight: 600;">Custom Trigger</span>
+                            <span style="margin-left: 0.5rem;">▼</span>
+                        </div>
+                    </Trigger>
+                    <ChildContent>
+                        <MenuItem OnClick="@HandleAction">Option 1</MenuItem>
+                        <MenuItem OnClick="@HandleAction">Option 2</MenuItem>
+                        <MenuItem OnClick="@HandleAction">Option 3</MenuItem>
+                    </ChildContent>
+                </Menu>
+            </div>
         </div>
     </Examples>
 
     <Props>
+        <h4>Menu Props</h4>
         <table class="api-table">
             <thead>
                 <tr>
@@ -57,34 +224,85 @@
             </thead>
             <tbody>
                 <tr>
-                    <td><code>Items</code></td>
-                    <td>List&lt;MenuItem&gt;</td>
-                    <td>null</td>
-                    <td>Menu items to display</td>
-                </tr>
-                <tr>
-                    <td><code>Open</code></td>
+                    <td><code>IsOpen</code></td>
                     <td>bool</td>
                     <td>false</td>
-                    <td>Whether menu is open</td>
+                    <td>@("Controls whether menu is open (use @bind-IsOpen)")"</td>
+                </tr>
+                <tr>
+                    <td><code>Trigger</code></td>
+                    <td>RenderFragment?</td>
+                    <td>null</td>
+                    <td>Custom trigger element (defaults to button)</td>
                 </tr>
                 <tr>
                     <td><code>Placement</code></td>
                     <td>MenuPlacement</td>
                     <td>BottomStart</td>
-                    <td>Menu placement relative to trigger</td>
+                    <td>Menu placement (BottomStart, BottomEnd, TopStart, TopEnd)</td>
                 </tr>
                 <tr>
                     <td><code>CloseOnSelect</code></td>
                     <td>bool</td>
                     <td>true</td>
-                    <td>Close menu after item selection</td>
+                    <td>Whether to close menu after selecting an item</td>
+                </tr>
+                <tr>
+                    <td><code>CloseOnClickOutside</code></td>
+                    <td>bool</td>
+                    <td>true</td>
+                    <td>Whether to close menu when clicking outside</td>
+                </tr>
+                <tr>
+                    <td><code>ChildContent</code></td>
+                    <td>RenderFragment</td>
+                    <td>-</td>
+                    <td>Menu items content</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 style="margin-top: 1.5rem;">MenuItem Props</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Icon</code></td>
+                    <td>string?</td>
+                    <td>null</td>
+                    <td>Icon to display before content</td>
+                </tr>
+                <tr>
+                    <td><code>Danger</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether this is a destructive action</td>
+                </tr>
+                <tr>
+                    <td><code>Disabled</code></td>
+                    <td>bool</td>
+                    <td>false</td>
+                    <td>Whether the item is disabled</td>
+                </tr>
+                <tr>
+                    <td><code>ChildContent</code></td>
+                    <td>RenderFragment</td>
+                    <td>-</td>
+                    <td>Item content</td>
                 </tr>
             </tbody>
         </table>
     </Props>
 
     <Events>
+        <h4>MenuItem Events</h4>
         <table class="api-table">
             <thead>
                 <tr>
@@ -95,14 +313,9 @@
             </thead>
             <tbody>
                 <tr>
-                    <td><code>OnItemClick</code></td>
-                    <td>EventCallback&lt;MenuItem&gt;</td>
-                    <td>Callback when menu item is clicked</td>
-                </tr>
-                <tr>
-                    <td><code>OnOpenChanged</code></td>
-                    <td>EventCallback&lt;bool&gt;</td>
-                    <td>Callback when menu open state changes</td>
+                    <td><code>OnClick</code></td>
+                    <td>EventCallback&lt;MouseEventArgs&gt;</td>
+                    <td>Callback when item is clicked</td>
                 </tr>
             </tbody>
         </table>
@@ -110,86 +323,144 @@
 
     <AccessibilityNotes>
         <ul>
-            <li>ARIA role="menu" with proper attributes</li>
-            <li>Keyboard navigation (Arrow keys, Enter, Escape)</li>
-            <li>Focus management for menu items</li>
-            <li>Submenu indicators for screen readers</li>
-            <li>Disabled items properly marked</li>
+            <li>Uses semantic <code>&lt;button&gt;</code> elements for menu items</li>
+            <li>Keyboard navigation support (planned)</li>
+            <li>Disabled items use <code>disabled</code> attribute</li>
+            <li>Focus management when opening/closing menu</li>
+            <li>Backdrop for click-outside detection</li>
         </ul>
     </AccessibilityNotes>
 </ComponentPage>
 
 @code {
-    private List<string> relatedComponents = new() { "Dropdown", "ContextMenu", "Popover" };
+    private List<string> relatedComponents = new() { "Breadcrumb", "Link", "Dropdown", "Tabs" };
 
-    private string BasicCode => @"<Menu>
-    <MenuTrigger>
-        <Button>Open Menu</Button>
-    </MenuTrigger>
-    <MenuContent>
-        <MenuItem>New File</MenuItem>
-        <MenuItem>Open File</MenuItem>
-        <MenuItem>Save</MenuItem>
-        <MenuItem>Exit</MenuItem>
-    </MenuContent>
-</Menu>";
+    private bool previewMenuOpen;
+    private bool basicMenuOpen;
+    private bool iconsMenuOpen;
+    private bool separatorsMenuOpen;
+    private bool disabledMenuOpen;
+    private bool dangerMenuOpen;
+    private bool bottomStartOpen;
+    private bool bottomEndOpen;
+    private bool topStartOpen;
+    private bool topEndOpen;
+    private bool customTriggerOpen;
 
-    private string IconsCode => @"<Menu>
-    <MenuTrigger>
+    private string actionMessage = "";
+
+    private void HandleAction(MouseEventArgs e)
+    {
+        actionMessage = "Action clicked!";
+        StateHasChanged();
+    }
+
+    private void HandleDangerAction(MouseEventArgs e)
+    {
+        actionMessage = "⚠️ Danger action clicked!";
+        StateHasChanged();
+    }
+
+    private string BasicCode => @"<Menu @bind-IsOpen=""menuOpen"">
+    <Trigger>
         <Button>Actions</Button>
-    </MenuTrigger>
-    <MenuContent>
-        <MenuItem Icon=""📄"">New Document</MenuItem>
-        <MenuItem Icon=""📁"">Open Folder</MenuItem>
-        <MenuItem Icon=""💾"">Save</MenuItem>
-        <MenuItem Icon=""🗑️"" Danger=""true"">Delete</MenuItem>
-    </MenuContent>
+    </Trigger>
+    <ChildContent>
+        <MenuItem OnClick=""@HandleAction"">New File</MenuItem>
+        <MenuItem OnClick=""@HandleAction"">Open</MenuItem>
+        <MenuItem OnClick=""@HandleAction"">Save</MenuItem>
+    </ChildContent>
+</Menu>
+
+@code {
+    private bool menuOpen;
+
+    private void HandleAction(MouseEventArgs e)
+    {
+        // Handle action
+    }
+}";
+
+    private string IconsCode => @"<Menu @bind-IsOpen=""menuOpen"">
+    <Trigger>
+        <Button>User Menu</Button>
+    </Trigger>
+    <ChildContent>
+        <MenuItem Icon=""👤"" OnClick=""@HandleAction"">Profile</MenuItem>
+        <MenuItem Icon=""⚙️"" OnClick=""@HandleAction"">Settings</MenuItem>
+        <MenuItem Icon=""💳"" OnClick=""@HandleAction"">Billing</MenuItem>
+        <MenuSeparator />
+        <MenuItem Icon=""🚪"" Danger=""true"" OnClick=""@HandleAction"">Logout</MenuItem>
+    </ChildContent>
 </Menu>";
 
-    private string NestedCode => @"<Menu>
-    <MenuTrigger>
-        <Button>File</Button>
-    </MenuTrigger>
-    <MenuContent>
-        <MenuItem>New</MenuItem>
-        <MenuItem>
-            <span>Open Recent</span>
-            <SubMenu>
-                <MenuItem>Document1.txt</MenuItem>
-                <MenuItem>Document2.txt</MenuItem>
-                <MenuItem>Document3.txt</MenuItem>
-            </SubMenu>
-        </MenuItem>
-        <MenuItem>Save</MenuItem>
-    </MenuContent>
-</Menu>";
-
-    private string SeparatorsCode => @"<Menu>
-    <MenuTrigger>
+    private string SeparatorsCode => @"<Menu @bind-IsOpen=""menuOpen"">
+    <Trigger>
         <Button>Edit</Button>
-    </MenuTrigger>
-    <MenuContent>
-        <MenuItem>Cut</MenuItem>
-        <MenuItem>Copy</MenuItem>
-        <MenuItem>Paste</MenuItem>
+    </Trigger>
+    <ChildContent>
+        <MenuItem Icon=""✂️"">Cut</MenuItem>
+        <MenuItem Icon=""📋"">Copy</MenuItem>
+        <MenuItem Icon=""📄"">Paste</MenuItem>
         <MenuSeparator />
-        <MenuItem>Select All</MenuItem>
-        <MenuSeparator />
-        <MenuItem>Preferences</MenuItem>
-    </MenuContent>
+        <MenuItem Icon=""↩️"">Undo</MenuItem>
+        <MenuItem Icon=""↪️"">Redo</MenuItem>
+    </ChildContent>
 </Menu>";
 
-    private string ContextCode => @"<ContextMenu>
-    <ContextMenuTrigger>
-        <div style=""padding: 2rem; border: 1px dashed; text-align: center;"">
-            Right-click here
-        </div>
-    </ContextMenuTrigger>
-    <ContextMenuContent>
-        <MenuItem>Copy</MenuItem>
-        <MenuItem>Paste</MenuItem>
+    private string DisabledCode => @"<Menu @bind-IsOpen=""menuOpen"">
+    <Trigger>
+        <Button>Options</Button>
+    </Trigger>
+    <ChildContent>
+        <MenuItem OnClick=""@HandleAction"">Available Action</MenuItem>
+        <MenuItem Disabled=""true"" OnClick=""@HandleAction"">Disabled Action</MenuItem>
+        <MenuItem OnClick=""@HandleAction"">Another Action</MenuItem>
+    </ChildContent>
+</Menu>";
+
+    private string DangerCode => @"<Menu @bind-IsOpen=""menuOpen"">
+    <Trigger>
+        <Button>Project Actions</Button>
+    </Trigger>
+    <ChildContent>
+        <MenuItem Icon=""✏️"" OnClick=""@HandleAction"">Edit</MenuItem>
+        <MenuItem Icon=""📤"" OnClick=""@HandleAction"">Export</MenuItem>
         <MenuSeparator />
-        <MenuItem>Inspect</MenuItem>
-    </ContextMenuContent>
-</ContextMenu>";
+        <MenuItem Icon=""🗑️"" Danger=""true"" OnClick=""@HandleDangerAction"">Delete Project</MenuItem>
+    </ChildContent>
+</Menu>";
+
+    private string PlacementCode => @"<Menu @bind-IsOpen=""menuOpen"" Placement=""Menu.MenuPlacement.BottomStart"">
+    <Trigger>
+        <Button>Bottom Start</Button>
+    </Trigger>
+    <ChildContent>
+        <MenuItem>Item 1</MenuItem>
+        <MenuItem>Item 2</MenuItem>
+    </ChildContent>
+</Menu>
+
+<Menu @bind-IsOpen=""menuOpen"" Placement=""Menu.MenuPlacement.TopEnd"">
+    <Trigger>
+        <Button>Top End</Button>
+    </Trigger>
+    <ChildContent>
+        <MenuItem>Item 1</MenuItem>
+        <MenuItem>Item 2</MenuItem>
+    </ChildContent>
+</Menu>";
+
+    private string CustomTriggerCode => @"<Menu @bind-IsOpen=""menuOpen"">
+    <Trigger>
+        <div style=""padding: 0.75rem 1rem; background: var(--vibe-muted); border-radius: var(--vibe-radius); cursor: pointer;"">
+            <span>Custom Trigger</span>
+            <span>▼</span>
+        </div>
+    </Trigger>
+    <ChildContent>
+        <MenuItem OnClick=""@HandleAction"">Option 1</MenuItem>
+        <MenuItem OnClick=""@HandleAction"">Option 2</MenuItem>
+    </ChildContent>
+</Menu>";
 }

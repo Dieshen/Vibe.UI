@@ -1,0 +1,14 @@
+@namespace Vibe.UI.Components
+@using Vibe.UI.Services.Theme
+@inject IThemeService ThemeService
+
+<style>
+    @((MarkupString)ThemeService.GenerateThemeCss())
+</style>
+
+@code {
+    /// <summary>
+    /// Component that injects dynamically generated theme CSS into the page.
+    /// Place this in your App.razor or MainLayout.razor.
+    /// </summary>
+}

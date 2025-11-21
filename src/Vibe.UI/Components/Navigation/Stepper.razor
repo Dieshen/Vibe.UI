@@ -1,0 +1,177 @@
+@namespace Vibe.UI.Components
+@inherits Vibe.UI.Base.VibeComponent
+
+<nav class="@CombinedClass @OrientationClass" aria-label="Progress" @attributes="AdditionalAttributes">
+    @if (Steps != null && Steps.Any())
+    {
+        @for (int i = 0; i < Steps.Count; i++)
+        {
+            var step = Steps[i];
+            var index = i;
+            var status = GetStepStatus(i);
+            var statusClass = status switch
+            {
+                StepStatus.Completed => "vibe-stepper-item-completed",
+                StepStatus.Active => "vibe-stepper-item-active",
+                StepStatus.Error => "vibe-stepper-item-error",
+                _ => ""
+            };
+
+            <div class="vibe-stepper-item @statusClass">
+                @if (Orientation == StepperOrientation.Horizontal && i > 0)
+                {
+                    <div class="vibe-stepper-connector"></div>
+                }
+
+                <div class="vibe-stepper-indicator-wrapper" style="display: flex; align-items: flex-start; gap: 1rem;">
+                    <button type="button"
+                            class="vibe-stepper-indicator"
+                            disabled="@(!Clickable)"
+                            @onclick="() => HandleStepClick(index)"
+                            style="@(Clickable ? "cursor: pointer;" : "")">
+                        @if (!string.IsNullOrEmpty(step.Icon))
+                        {
+                            <span>@step.Icon</span>
+                        }
+                        else if (status == StepStatus.Completed)
+                        {
+                            <span>✓</span>
+                        }
+                        else if (status == StepStatus.Error)
+                        {
+                            <span>!</span>
+                        }
+                        else
+                        {
+                            <span>@(index + 1)</span>
+                        }
+                    </button>
+
+                    <div class="vibe-stepper-content">
+                        <div class="vibe-stepper-label">@step.Label</div>
+                        @if (!string.IsNullOrEmpty(step.Description))
+                        {
+                            <div class="vibe-stepper-description">@step.Description</div>
+                        }
+                    </div>
+                </div>
+
+                @if (Orientation == StepperOrientation.Vertical && i < Steps.Count - 1)
+                {
+                    <div class="vibe-stepper-connector"></div>
+                }
+            </div>
+        }
+    }
+</nav>
+
+@code {
+    /// <summary>
+    /// Gets or sets the current active step (0-indexed)
+    /// </summary>
+    [Parameter]
+    public int CurrentStep { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback when current step changes
+    /// </summary>
+    [Parameter]
+    public EventCallback<int> CurrentStepChanged { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of steps
+    /// </summary>
+    [Parameter]
+    public List<StepItem>? Steps { get; set; }
+
+    /// <summary>
+    /// Gets or sets the stepper orientation
+    /// </summary>
+    [Parameter]
+    public StepperOrientation Orientation { get; set; } = StepperOrientation.Horizontal;
+
+    /// <summary>
+    /// Gets or sets whether steps are clickable
+    /// </summary>
+    [Parameter]
+    public bool Clickable { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback when a step is clicked
+    /// </summary>
+    [Parameter]
+    public EventCallback<int> OnStepClick { get; set; }
+
+    /// <inheritdoc/>
+    protected override string ComponentClass => "vibe-stepper";
+
+    private string OrientationClass => Orientation switch
+    {
+        StepperOrientation.Vertical => "vibe-stepper-vertical",
+        StepperOrientation.Horizontal => "vibe-stepper-horizontal",
+        _ => "vibe-stepper-horizontal"
+    };
+
+    private StepStatus GetStepStatus(int index)
+    {
+        if (Steps == null || index >= Steps.Count)
+            return StepStatus.Pending;
+
+        var step = Steps[index];
+
+        // If step has explicit status, use it
+        if (step.Status != StepStatus.Auto)
+            return step.Status;
+
+        // Otherwise, determine based on current step
+        if (index < CurrentStep)
+            return StepStatus.Completed;
+        else if (index == CurrentStep)
+            return StepStatus.Active;
+        else
+            return StepStatus.Pending;
+    }
+
+    private async Task HandleStepClick(int stepIndex)
+    {
+        if (!Clickable)
+            return;
+
+        if (OnStepClick.HasDelegate)
+        {
+            await OnStepClick.InvokeAsync(stepIndex);
+        }
+
+        if (CurrentStepChanged.HasDelegate)
+        {
+            await CurrentStepChanged.InvokeAsync(stepIndex);
+        }
+        else
+        {
+            CurrentStep = stepIndex;
+        }
+    }
+
+    public enum StepperOrientation
+    {
+        Horizontal,
+        Vertical
+    }
+
+    public enum StepStatus
+    {
+        Auto,
+        Pending,
+        Active,
+        Completed,
+        Error
+    }
+
+    public class StepItem
+    {
+        public string Label { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string? Icon { get; set; }
+        public StepStatus Status { get; set; } = StepStatus.Auto;
+    }
+}

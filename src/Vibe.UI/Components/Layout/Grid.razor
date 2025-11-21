@@ -1,0 +1,95 @@
+@namespace Vibe.UI.Components
+@inherits Vibe.UI.Base.VibeComponent
+
+<div class="@CombinedClass" style="@GridStyle" @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// Gets or sets the child content
+    /// </summary>
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of columns
+    /// </summary>
+    [Parameter]
+    public int Columns { get; set; } = 12;
+
+    /// <summary>
+    /// Gets or sets the gap between grid items
+    /// </summary>
+    [Parameter]
+    public string Gap { get; set; } = "1rem";
+
+    /// <summary>
+    /// Gets or sets the row gap (overrides Gap)
+    /// </summary>
+    [Parameter]
+    public string? RowGap { get; set; }
+
+    /// <summary>
+    /// Gets or sets the column gap (overrides Gap)
+    /// </summary>
+    [Parameter]
+    public string? ColumnGap { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to use auto-fit for responsive columns
+    /// </summary>
+    [Parameter]
+    public bool AutoFit { get; set; }
+
+    /// <summary>
+    /// Gets or sets the minimum column width for auto-fit
+    /// </summary>
+    [Parameter]
+    public string MinColumnWidth { get; set; } = "250px";
+
+    /// <inheritdoc/>
+    protected override string ComponentClass => "vibe-grid";
+
+    /// <summary>
+    /// Generates the inline style for the grid
+    /// </summary>
+    private string GridStyle
+    {
+        get
+        {
+            var styles = new List<string>();
+
+            if (AutoFit)
+            {
+                styles.Add($"grid-template-columns: repeat(auto-fit, minmax({MinColumnWidth}, 1fr))");
+            }
+            else
+            {
+                styles.Add($"grid-template-columns: repeat({Columns}, 1fr)");
+            }
+
+            if (!string.IsNullOrEmpty(RowGap) && !string.IsNullOrEmpty(ColumnGap))
+            {
+                styles.Add($"row-gap: {RowGap}");
+                styles.Add($"column-gap: {ColumnGap}");
+            }
+            else if (!string.IsNullOrEmpty(RowGap))
+            {
+                styles.Add($"row-gap: {RowGap}");
+                styles.Add($"column-gap: {Gap}");
+            }
+            else if (!string.IsNullOrEmpty(ColumnGap))
+            {
+                styles.Add($"row-gap: {Gap}");
+                styles.Add($"column-gap: {ColumnGap}");
+            }
+            else
+            {
+                styles.Add($"gap: {Gap}");
+            }
+
+            return string.Join("; ", styles);
+        }
+    }
+}

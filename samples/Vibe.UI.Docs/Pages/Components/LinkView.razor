@@ -1,47 +1,165 @@
 @page "/components/link"
+@using Vibe.UI.Components
 
 <PageTitle>Link - Vibe.UI</PageTitle>
 
 <ComponentPage ComponentName="Link"
                Category="Navigation"
-               Description="A navigational link with support for external URLs and internal routing."
+               Description="A navigational link component with support for external URLs, internal routing, styling variants, and proper accessibility."
                RelatedComponents="@relatedComponents">
 
     <PreviewContent>
-        <div class="preview-demo">
-            <div style="padding: 1.5rem; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; margin-bottom: 1rem;">
-                <h4 style="margin: 0 0 0.5rem 0; color: #856404;">Component Not Yet Implemented</h4>
-                <p style="margin: 0; color: #856404;">
-                    The Link component has not been implemented yet. The API documentation below represents the planned interface.
-                </p>
-            </div>
+        <div class="preview-demo" style="max-width: 600px; margin: 0 auto; text-align: center;">
+            <Stack Direction="Stack.StackDirection.Horizontal" Spacing="1rem" Justify="Stack.StackJustify.Center">
+                <Link Href="/getting-started">Internal Link</Link>
+                <Link Href="https://github.com" Target="_blank">External Link</Link>
+                <Link Variant="Link.LinkVariant.Muted">Muted Link</Link>
+            </Stack>
         </div>
     </PreviewContent>
 
     <Examples>
         <div class="example-item">
             <h3>Basic Usage</h3>
+            <p>Simple navigation links:</p>
             <CodeBlock Code="@BasicCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Stack Spacing="1rem">
+                    <Link Href="/getting-started">Go to Getting Started</Link>
+                    <Link Href="/installation">Installation Guide</Link>
+                    <Link Href="/theming">Theming Documentation</Link>
+                </Stack>
+            </div>
         </div>
 
         <div class="example-item">
             <h3>External Links</h3>
+            <p>Links to external websites automatically get proper security attributes:</p>
             <CodeBlock Code="@ExternalCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Stack Spacing="1rem">
+                    <Link Href="https://github.com" Target="_blank">
+                        GitHub (opens in new tab)
+                    </Link>
+                    <Link Href="https://www.npmjs.com" Target="_blank">
+                        npm Registry
+                    </Link>
+                </Stack>
+            </div>
+            <Alert Variant="Alert.AlertVariant.Info" style="margin-top: 1rem;">
+                External links with <code>Target="_blank"</code> automatically include <code>rel="noopener noreferrer"</code> for security.
+            </Alert>
         </div>
 
         <div class="example-item">
             <h3>Link Variants</h3>
+            <p>Different visual styles for different contexts:</p>
             <CodeBlock Code="@VariantsCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Stack Spacing="1rem">
+                    <div>
+                        <Link Variant="Link.LinkVariant.Default">Default Link (Primary color)</Link>
+                    </div>
+                    <div>
+                        <Link Variant="Link.LinkVariant.Primary">Primary Link</Link>
+                    </div>
+                    <div>
+                        <Link Variant="Link.LinkVariant.Secondary">Secondary Link</Link>
+                    </div>
+                    <div>
+                        <Link Variant="Link.LinkVariant.Muted">Muted Link</Link>
+                    </div>
+                </Stack>
+            </div>
         </div>
 
         <div class="example-item">
-            <h3>With Icons</h3>
+            <h3>Underline Styles</h3>
+            <p>Control when the underline appears:</p>
+            <CodeBlock Code="@UnderlineCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Stack Spacing="1rem">
+                    <div>
+                        <Link Underline="Link.LinkUnderline.Always">Always Underlined</Link>
+                    </div>
+                    <div>
+                        <Link Underline="Link.LinkUnderline.Hover">Underline on Hover (default)</Link>
+                    </div>
+                    <div>
+                        <Link Underline="Link.LinkUnderline.None">No Underline</Link>
+                    </div>
+                </Stack>
+            </div>
+        </div>
+
+        <div class="example-item">
+            <h3>Links with Icons</h3>
+            <p>Enhance links with icons or indicators:</p>
             <CodeBlock Code="@IconsCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Stack Spacing="1rem">
+                    <Link Href="/home">
+                        <span>🏠</span>
+                        <span>Home</span>
+                    </Link>
+                    <Link Href="/settings">
+                        <span>Settings</span>
+                        <span>⚙️</span>
+                    </Link>
+                    <Link Href="https://example.com" Target="_blank">
+                        <span>External Site</span>
+                        <span>↗</span>
+                    </Link>
+                </Stack>
+            </div>
         </div>
 
         <div class="example-item">
             <h3>Disabled State</h3>
+            <p>Disable links when actions are unavailable:</p>
             <CodeBlock Code="@DisabledCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Stack Direction="Stack.StackDirection.Horizontal" Spacing="1rem">
+                    <Link Href="/page">Active Link</Link>
+                    <Link Href="/page" Disabled="true">Disabled Link</Link>
+                </Stack>
+            </div>
+        </div>
+
+        <div class="example-item">
+            <h3>Click Events</h3>
+            <p>Handle click events for custom behavior:</p>
+            <CodeBlock Code="@EventsCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Link OnClick="@HandleLinkClick">
+                    Click Me (no href - acts as button)
+                </Link>
+                @if (!string.IsNullOrEmpty(clickMessage))
+                {
+                    <p style="margin-top: 0.5rem; color: var(--vibe-success);">@clickMessage</p>
+                }
+            </div>
+        </div>
+
+        <div class="example-item">
+            <h3>Inline with Text</h3>
+            <p>Links work seamlessly within paragraphs:</p>
+            <CodeBlock Code="@InlineCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <p>
+                    Check out the <Link Href="/getting-started">Getting Started guide</Link> to learn more about
+                    Vibe.UI. You can also explore the <Link Href="/components/button">Button component</Link> or
+                    read our <Link Href="/theming">theming documentation</Link>.
+                </p>
+            </div>
         </div>
     </Examples>
 
@@ -58,13 +176,13 @@
             <tbody>
                 <tr>
                     <td><code>Href</code></td>
-                    <td>string</td>
+                    <td>string?</td>
                     <td>null</td>
-                    <td>URL to navigate to</td>
+                    <td>URL to navigate to. If null, renders as button</td>
                 </tr>
                 <tr>
                     <td><code>Target</code></td>
-                    <td>string</td>
+                    <td>string?</td>
                     <td>null</td>
                     <td>Target attribute (_blank, _self, etc.)</td>
                 </tr>
@@ -117,17 +235,24 @@
 
     <AccessibilityNotes>
         <ul>
-            <li>Uses semantic <code>&lt;a&gt;</code> element</li>
-            <li>External links include rel="noopener noreferrer"</li>
-            <li>Disabled links use aria-disabled</li>
+            <li>Uses semantic <code>&lt;a&gt;</code> element for links</li>
+            <li>External links with <code>Target="_blank"</code> include <code>rel="noopener noreferrer"</code></li>
+            <li>Disabled links use <code>aria-disabled</code> attribute</li>
             <li>Focus visible styles for keyboard users</li>
-            <li>Screen reader announces link purpose</li>
+            <li>Screen readers announce link purpose correctly</li>
+            <li>Links without href render as buttons with proper semantics</li>
         </ul>
     </AccessibilityNotes>
 </ComponentPage>
 
 @code {
     private List<string> relatedComponents = new() { "Button", "Breadcrumb", "Menu" };
+    private string clickMessage = "";
+
+    private void HandleLinkClick(MouseEventArgs e)
+    {
+        clickMessage = "Link clicked!";
+    }
 
     private string BasicCode => @"<Link Href=""/home"">Go to Home</Link>
 <Link Href=""/about"">About Us</Link>";
@@ -137,23 +262,43 @@
 </Link>
 
 <Link Href=""https://github.com"" Target=""_blank"">
-    GitHub
-    <span class=""icon"">🔗</span>
+    GitHub (opens in new tab)
 </Link>";
 
-    private string VariantsCode => @"<Link Variant=""LinkVariant.Primary"">Primary Link</Link>
-<Link Variant=""LinkVariant.Secondary"">Secondary Link</Link>
-<Link Variant=""LinkVariant.Muted"">Muted Link</Link>";
+    private string VariantsCode => @"<Link Variant=""Link.LinkVariant.Default"">Default Link</Link>
+<Link Variant=""Link.LinkVariant.Primary"">Primary Link</Link>
+<Link Variant=""Link.LinkVariant.Secondary"">Secondary Link</Link>
+<Link Variant=""Link.LinkVariant.Muted"">Muted Link</Link>";
+
+    private string UnderlineCode => @"<Link Underline=""Link.LinkUnderline.Always"">Always Underlined</Link>
+<Link Underline=""Link.LinkUnderline.Hover"">Hover to Underline</Link>
+<Link Underline=""Link.LinkUnderline.None"">No Underline</Link>";
 
     private string IconsCode => @"<Link Href=""/home"">
-    <span class=""icon"">🏠</span>
-    Home
+    <span>🏠</span>
+    <span>Home</span>
 </Link>
 
 <Link Href=""/settings"">
-    Settings
-    <span class=""icon"">⚙️</span>
+    <span>Settings</span>
+    <span>⚙️</span>
 </Link>";
 
-    private string DisabledCode => @"<Link Href=""/page"" Disabled=""true"">Disabled Link</Link>";
+    private string DisabledCode => @"<Link Href=""/page"">Active Link</Link>
+<Link Href=""/page"" Disabled=""true"">Disabled Link</Link>";
+
+    private string EventsCode => @"<Link OnClick=""@HandleClick"">
+    Click Me
+</Link>
+
+@code {
+    private void HandleClick(MouseEventArgs e)
+    {
+        Console.WriteLine(""Link clicked!"");
+    }
+}";
+
+    private string InlineCode => @"<p>
+    Check out the <Link Href=""/getting-started"">Getting Started guide</Link> to learn more.
+</p>";
 }

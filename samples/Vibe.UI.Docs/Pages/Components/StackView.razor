@@ -1,47 +1,129 @@
 @page "/components/stack"
+@using Vibe.UI.Components
 
 <PageTitle>Stack - Vibe.UI</PageTitle>
 
 <ComponentPage ComponentName="Stack"
                Category="Layout"
-               Description="A layout component for arranging children in a vertical or horizontal stack with consistent spacing."
+               Description="A flexbox-based layout component for arranging children in a vertical or horizontal stack with consistent spacing and alignment control."
                RelatedComponents="@relatedComponents">
 
     <PreviewContent>
-        <div class="preview-demo">
-            <div style="padding: 1.5rem; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; margin-bottom: 1rem;">
-                <h4 style="margin: 0 0 0.5rem 0; color: #856404;">Component Not Yet Implemented</h4>
-                <p style="margin: 0; color: #856404;">
-                    The Stack component has not been implemented yet. The API documentation below represents the planned interface.
-                </p>
-            </div>
+        <div class="preview-demo" style="max-width: 600px; margin: 0 auto;">
+            <Stack Direction="Stack.StackDirection.Vertical" Spacing="1rem">
+                <Card>
+                    <div style="padding: 1.5rem; text-align: center;">First Item</div>
+                </Card>
+                <Card>
+                    <div style="padding: 1.5rem; text-align: center;">Second Item</div>
+                </Card>
+                <Card>
+                    <div style="padding: 1.5rem; text-align: center;">Third Item</div>
+                </Card>
+            </Stack>
         </div>
     </PreviewContent>
 
     <Examples>
         <div class="example-item">
             <h3>Vertical Stack</h3>
+            <p>Stack items vertically with consistent spacing:</p>
             <CodeBlock Code="@VerticalCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Stack Direction="Stack.StackDirection.Vertical" Spacing="0.75rem">
+                    @for (int i = 1; i <= 4; i++)
+                    {
+                        var index = i;
+                        <div style="padding: 1rem; background: var(--vibe-muted); border-radius: var(--vibe-radius); text-align: center;">
+                            Item @index
+                        </div>
+                    }
+                </Stack>
+            </div>
         </div>
 
         <div class="example-item">
             <h3>Horizontal Stack</h3>
+            <p>Arrange items in a horizontal row:</p>
             <CodeBlock Code="@HorizontalCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Stack Direction="Stack.StackDirection.Horizontal" Spacing="1rem">
+                    <Button>Button 1</Button>
+                    <Button Variant="Button.ButtonVariant.Outline">Button 2</Button>
+                    <Button Variant="Button.ButtonVariant.Ghost">Button 3</Button>
+                </Stack>
+            </div>
+        </div>
+
+        <div class="example-item">
+            <h3>Alignment Control</h3>
+            <p>Control alignment on both axes:</p>
+            <CodeBlock Code="@AlignmentCode" Language="razor" />
+
+            <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 2rem;">
+                <div>
+                    <p style="margin-bottom: 0.5rem; font-weight: 600;">Center Aligned:</p>
+                    <Stack Direction="Stack.StackDirection.Horizontal"
+                           Align="Stack.StackAlign.Center"
+                           Spacing="1rem">
+                        <div style="padding: 2rem 1rem; background: var(--vibe-muted); border-radius: var(--vibe-radius);">Tall</div>
+                        <div style="padding: 1rem; background: var(--vibe-muted); border-radius: var(--vibe-radius);">Short</div>
+                        <div style="padding: 1.5rem 1rem; background: var(--vibe-muted); border-radius: var(--vibe-radius);">Medium</div>
+                    </Stack>
+                </div>
+
+                <div>
+                    <p style="margin-bottom: 0.5rem; font-weight: 600;">Space Between:</p>
+                    <Stack Direction="Stack.StackDirection.Horizontal"
+                           Justify="Stack.StackJustify.SpaceBetween">
+                        <div style="padding: 1rem; background: var(--vibe-primary); color: var(--vibe-primary-foreground); border-radius: var(--vibe-radius);">Start</div>
+                        <div style="padding: 1rem; background: var(--vibe-accent); color: var(--vibe-accent-foreground); border-radius: var(--vibe-radius);">End</div>
+                    </Stack>
+                </div>
+            </div>
+        </div>
+
+        <div class="example-item">
+            <h3>Wrapping Stack</h3>
+            <p>Allow items to wrap to the next line:</p>
+            <CodeBlock Code="@WrapCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Stack Direction="Stack.StackDirection.Horizontal" Wrap="true" Spacing="0.5rem">
+                    @foreach (var color in new[] { "Primary", "Secondary", "Accent", "Success", "Warning", "Destructive" })
+                    {
+                        <Badge>@color</Badge>
+                    }
+                </Stack>
+            </div>
         </div>
 
         <div class="example-item">
             <h3>Custom Spacing</h3>
+            <p>Control the gap between items:</p>
             <CodeBlock Code="@SpacingCode" Language="razor" />
-        </div>
 
-        <div class="example-item">
-            <h3>Alignment</h3>
-            <CodeBlock Code="@AlignmentCode" Language="razor" />
-        </div>
+            <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 2rem;">
+                <div>
+                    <p style="margin-bottom: 0.5rem; font-weight: 600;">Tight Spacing (0.25rem):</p>
+                    <Stack Spacing="0.25rem">
+                        <div style="padding: 0.5rem; background: var(--vibe-muted); border-radius: var(--vibe-radius);">Item 1</div>
+                        <div style="padding: 0.5rem; background: var(--vibe-muted); border-radius: var(--vibe-radius);">Item 2</div>
+                        <div style="padding: 0.5rem; background: var(--vibe-muted); border-radius: var(--vibe-radius);">Item 3</div>
+                    </Stack>
+                </div>
 
-        <div class="example-item">
-            <h3>Wrap Behavior</h3>
-            <CodeBlock Code="@WrapCode" Language="razor" />
+                <div>
+                    <p style="margin-bottom: 0.5rem; font-weight: 600;">Wide Spacing (2rem):</p>
+                    <Stack Spacing="2rem">
+                        <div style="padding: 0.5rem; background: var(--vibe-muted); border-radius: var(--vibe-radius);">Item 1</div>
+                        <div style="padding: 0.5rem; background: var(--vibe-muted); border-radius: var(--vibe-radius);">Item 2</div>
+                        <div style="padding: 0.5rem; background: var(--vibe-muted); border-radius: var(--vibe-radius);">Item 3</div>
+                    </Stack>
+                </div>
+            </div>
         </div>
     </Examples>
 
@@ -60,13 +142,13 @@
                     <td><code>Direction</code></td>
                     <td>StackDirection</td>
                     <td>Vertical</td>
-                    <td>Stack direction (Vertical, Horizontal)</td>
+                    <td>Stack direction (Vertical or Horizontal)</td>
                 </tr>
                 <tr>
                     <td><code>Spacing</code></td>
                     <td>string</td>
                     <td>"1rem"</td>
-                    <td>Space between items</td>
+                    <td>Space between items (CSS value)</td>
                 </tr>
                 <tr>
                     <td><code>Align</code></td>
@@ -84,65 +166,95 @@
                     <td><code>Wrap</code></td>
                     <td>bool</td>
                     <td>false</td>
-                    <td>Whether items can wrap</td>
+                    <td>Whether items can wrap to next line</td>
+                </tr>
+                <tr>
+                    <td><code>ChildContent</code></td>
+                    <td>RenderFragment</td>
+                    <td>-</td>
+                    <td>Stack items</td>
                 </tr>
             </tbody>
         </table>
+
+        <h4 style="margin-top: 1.5rem;">StackAlign Values</h4>
+        <ul style="list-style: none; padding: 0;">
+            <li><code>Start</code> - Align items to the start of cross-axis</li>
+            <li><code>Center</code> - Center items on cross-axis</li>
+            <li><code>End</code> - Align items to the end of cross-axis</li>
+            <li><code>Stretch</code> - Stretch items to fill cross-axis (default)</li>
+        </ul>
+
+        <h4 style="margin-top: 1.5rem;">StackJustify Values</h4>
+        <ul style="list-style: none; padding: 0;">
+            <li><code>Start</code> - Items at start of main-axis (default)</li>
+            <li><code>Center</code> - Items centered on main-axis</li>
+            <li><code>End</code> - Items at end of main-axis</li>
+            <li><code>SpaceBetween</code> - Even spacing between items</li>
+            <li><code>SpaceAround</code> - Even spacing around items</li>
+            <li><code>SpaceEvenly</code> - Equal spacing everywhere</li>
+        </ul>
     </Props>
 
     <AccessibilityNotes>
         <ul>
-            <li>Maintains semantic order of content</li>
+            <li>Maintains semantic order of content for screen readers</li>
             <li>No impact on keyboard navigation</li>
-            <li>Flexbox-based for responsive layouts</li>
+            <li>Flexbox-based for responsive and flexible layouts</li>
+            <li>Visual order matches DOM order</li>
         </ul>
     </AccessibilityNotes>
 </ComponentPage>
 
 @code {
-    private List<string> relatedComponents = new() { "Grid", "Container", "Flex" };
+    private List<string> relatedComponents = new() { "Grid", "Container", "Divider" };
 
-    private string VerticalCode => @"<Stack Direction=""StackDirection.Vertical"">
+    private string VerticalCode => @"<Stack Direction=""Stack.StackDirection.Vertical"" Spacing=""1rem"">
     <Card>Item 1</Card>
     <Card>Item 2</Card>
     <Card>Item 3</Card>
 </Stack>";
 
-    private string HorizontalCode => @"<Stack Direction=""StackDirection.Horizontal"">
+    private string HorizontalCode => @"<Stack Direction=""Stack.StackDirection.Horizontal"" Spacing=""1rem"">
     <Button>Button 1</Button>
     <Button>Button 2</Button>
     <Button>Button 3</Button>
 </Stack>";
 
-    private string SpacingCode => @"<Stack Spacing=""0.5rem"">
-    <div>Tight spacing</div>
-    <div>Tight spacing</div>
+    private string AlignmentCode => @"<!-- Center aligned cross-axis -->
+<Stack Direction=""Stack.StackDirection.Horizontal""
+       Align=""Stack.StackAlign.Center""
+       Spacing=""1rem"">
+    <div>Tall item</div>
+    <div>Short</div>
+    <div>Medium</div>
 </Stack>
 
-<Stack Spacing=""2rem"">
-    <div>Wide spacing</div>
-    <div>Wide spacing</div>
-</Stack>";
-
-    private string AlignmentCode => @"<Stack Direction=""StackDirection.Horizontal""
-       Align=""StackAlign.Center""
-       Justify=""StackJustify.SpaceBetween"">
+<!-- Space between on main-axis -->
+<Stack Direction=""Stack.StackDirection.Horizontal""
+       Justify=""Stack.StackJustify.SpaceBetween"">
     <span>Left</span>
-    <span>Center</span>
     <span>Right</span>
-</Stack>
-
-<Stack Align=""StackAlign.End"">
-    <div style=""width: 200px;"">Right-aligned</div>
-    <div style=""width: 150px;"">Right-aligned</div>
 </Stack>";
 
-    private string WrapCode => @"<Stack Direction=""StackDirection.Horizontal"" Wrap=""true"">
-    <Button>Item 1</Button>
-    <Button>Item 2</Button>
-    <Button>Item 3</Button>
-    <Button>Item 4</Button>
-    <Button>Item 5</Button>
-    <Button>Item 6</Button>
+    private string WrapCode => @"<Stack Direction=""Stack.StackDirection.Horizontal"" Wrap=""true"" Spacing=""0.5rem"">
+    <Badge>Tag 1</Badge>
+    <Badge>Tag 2</Badge>
+    <Badge>Tag 3</Badge>
+    <Badge>Tag 4</Badge>
+    <Badge>Tag 5</Badge>
+    <Badge>Tag 6</Badge>
+</Stack>";
+
+    private string SpacingCode => @"<!-- Tight spacing -->
+<Stack Spacing=""0.25rem"">
+    <div>Tight 1</div>
+    <div>Tight 2</div>
+</Stack>
+
+<!-- Wide spacing -->
+<Stack Spacing=""2rem"">
+    <div>Wide 1</div>
+    <div>Wide 2</div>
 </Stack>";
 }

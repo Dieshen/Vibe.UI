@@ -1,0 +1,9 @@
+@namespace Vibe.UI.Components
+@inherits Vibe.UI.Base.VibeComponent
+
+<div class="@CombinedClass" @attributes="AdditionalAttributes"></div>
+
+@code {
+    /// <inheritdoc/>
+    protected override string ComponentClass => "vibe-menu-separator";
+}

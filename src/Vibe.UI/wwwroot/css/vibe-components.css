@@ -484,6 +484,141 @@
 }
 
 /* ========================================
+   GRID COMPONENT
+   ======================================== */
+
+.vibe-grid {
+    display: grid;
+    width: 100%;
+}
+
+.vibe-grid-item {
+    min-width: 0;
+}
+
+/* ========================================
+   CONTAINER COMPONENT
+   ======================================== */
+
+.vibe-container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--vibe-spacing-4);
+    padding-right: var(--vibe-spacing-4);
+}
+
+.vibe-container-sm {
+    max-width: 640px;
+}
+
+.vibe-container-md {
+    max-width: 768px;
+}
+
+.vibe-container-lg {
+    max-width: 1024px;
+}
+
+.vibe-container-xl {
+    max-width: 1280px;
+}
+
+.vibe-container-2xl {
+    max-width: 1536px;
+}
+
+.vibe-container-full {
+    max-width: none;
+}
+
+/* ========================================
+   STACK COMPONENT
+   ======================================== */
+
+.vibe-stack {
+    display: flex;
+}
+
+.vibe-stack-vertical {
+    flex-direction: column;
+}
+
+.vibe-stack-horizontal {
+    flex-direction: row;
+}
+
+.vibe-stack-wrap {
+    flex-wrap: wrap;
+}
+
+/* ========================================
+   DIVIDER COMPONENT
+   ======================================== */
+
+.vibe-divider {
+    flex-shrink: 0;
+    border-width: 0;
+    border-style: solid;
+    border-color: var(--vibe-border);
+}
+
+.vibe-divider-horizontal {
+    height: 0;
+    width: 100%;
+    border-top-width: 1px;
+    margin: var(--vibe-spacing-4) 0;
+}
+
+.vibe-divider-vertical {
+    width: 0;
+    height: auto;
+    border-left-width: 1px;
+    margin: 0 var(--vibe-spacing-4);
+}
+
+.vibe-divider-dashed {
+    border-style: dashed;
+}
+
+.vibe-divider-dotted {
+    border-style: dotted;
+}
+
+.vibe-divider-label {
+    display: flex;
+    align-items: center;
+    gap: var(--vibe-spacing-3);
+    font-size: 0.875rem;
+    color: var(--vibe-muted-foreground);
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.vibe-divider-label::before,
+.vibe-divider-label::after {
+    content: '';
+    flex: 1;
+    border-top: 1px solid var(--vibe-border);
+}
+
+.vibe-divider-label-left::after {
+    flex: 10;
+}
+
+.vibe-divider-label-left::before {
+    flex: 1;
+}
+
+.vibe-divider-label-right::before {
+    flex: 10;
+}
+
+.vibe-divider-label-right::after {
+    flex: 1;
+}
+
+/* ========================================
    INPUT COMPONENT - Material Design Variants
    ======================================== */
 
@@ -2832,6 +2967,11 @@
 
 .vibe-collapsible {
     width: 100%;
+}
+
+.vibe-collapsible .collapsible-trigger-wrapper {
+    cursor: pointer;
+    user-select: none;
 }
 
 .vibe-collapsible .collapsible-content {
@@ -7253,6 +7393,304 @@
 }
 
 /* ========================================
+   LINK COMPONENT
+   ======================================== */
+
+.vibe-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--vibe-primary);
+    font-weight: 500;
+    text-decoration: none;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+}
+
+.vibe-link:hover {
+    color: var(--vibe-accent);
+}
+
+.vibe-link:focus-visible {
+    outline: 2px solid var(--vibe-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+.vibe-link-primary {
+    color: var(--vibe-primary);
+}
+
+.vibe-link-primary:hover {
+    color: var(--vibe-accent);
+}
+
+.vibe-link-secondary {
+    color: var(--vibe-foreground);
+}
+
+.vibe-link-secondary:hover {
+    color: var(--vibe-primary);
+}
+
+.vibe-link-muted {
+    color: var(--vibe-muted-foreground);
+}
+
+.vibe-link-muted:hover {
+    color: var(--vibe-foreground);
+}
+
+.vibe-link-underline-always {
+    text-decoration: underline;
+}
+
+.vibe-link-underline-hover {
+    text-decoration: none;
+}
+
+.vibe-link-underline-hover:hover {
+    text-decoration: underline;
+}
+
+.vibe-link-underline-none {
+    text-decoration: none;
+}
+
+.vibe-link-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.vibe-link-button {
+    cursor: pointer;
+}
+
+/* ========================================
+   MENU COMPONENT
+   ======================================== */
+
+.vibe-menu {
+    position: relative;
+    display: inline-block;
+}
+
+.vibe-menu-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.vibe-menu-content {
+    position: absolute;
+    z-index: 50;
+    min-width: 12rem;
+    overflow: hidden;
+    border-radius: var(--vibe-radius);
+    border: 1px solid var(--vibe-border);
+    background-color: var(--vibe-popover-bg, var(--vibe-background));
+    color: var(--vibe-foreground);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    animation: menu-in 0.15s ease-out;
+    padding: 0.25rem;
+}
+
+.vibe-menu-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: calc(var(--vibe-radius) - 2px);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    outline: none;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    color: var(--vibe-foreground);
+}
+
+.vibe-menu-item:hover {
+    background-color: var(--vibe-muted);
+}
+
+.vibe-menu-item:focus {
+    background-color: var(--vibe-muted);
+}
+
+.vibe-menu-item-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.vibe-menu-item-danger {
+    color: var(--vibe-destructive);
+}
+
+.vibe-menu-item-danger:hover {
+    background-color: var(--vibe-destructive);
+    color: var(--vibe-destructive-foreground);
+}
+
+.vibe-menu-separator {
+    height: 1px;
+    margin: 0.25rem 0;
+    background-color: var(--vibe-border);
+}
+
+.vibe-menu-label {
+    padding: 0.5rem 0.75rem 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--vibe-muted-foreground);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+@keyframes menu-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ========================================
+   STEPPER COMPONENT
+   ======================================== */
+
+.vibe-stepper {
+    display: flex;
+    gap: 0;
+}
+
+.vibe-stepper-vertical {
+    flex-direction: column;
+}
+
+.vibe-stepper-horizontal {
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+.vibe-stepper-item {
+    display: flex;
+    position: relative;
+    flex: 1;
+}
+
+.vibe-stepper-vertical .vibe-stepper-item {
+    flex-direction: column;
+}
+
+.vibe-stepper-horizontal .vibe-stepper-item {
+    flex-direction: column;
+    align-items: center;
+}
+
+.vibe-stepper-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 2px solid var(--vibe-border);
+    background-color: var(--vibe-background);
+    color: var(--vibe-muted-foreground);
+    font-weight: 600;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    z-index: 1;
+}
+
+.vibe-stepper-item-active .vibe-stepper-indicator {
+    border-color: var(--vibe-primary);
+    background-color: var(--vibe-primary);
+    color: var(--vibe-primary-foreground);
+}
+
+.vibe-stepper-item-completed .vibe-stepper-indicator {
+    border-color: var(--vibe-primary);
+    background-color: var(--vibe-primary);
+    color: var(--vibe-primary-foreground);
+}
+
+.vibe-stepper-item-error .vibe-stepper-indicator {
+    border-color: var(--vibe-destructive);
+    background-color: var(--vibe-destructive);
+    color: var(--vibe-destructive-foreground);
+}
+
+.vibe-stepper-content {
+    flex: 1;
+    padding-left: 1rem;
+}
+
+.vibe-stepper-vertical .vibe-stepper-content {
+    padding-top: 0.25rem;
+    padding-bottom: 1.5rem;
+}
+
+.vibe-stepper-horizontal .vibe-stepper-content {
+    padding-top: 0.75rem;
+    text-align: center;
+}
+
+.vibe-stepper-label {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--vibe-foreground);
+}
+
+.vibe-stepper-description {
+    font-size: 0.75rem;
+    color: var(--vibe-muted-foreground);
+    margin-top: 0.25rem;
+}
+
+.vibe-stepper-connector {
+    position: absolute;
+    background-color: var(--vibe-border);
+}
+
+.vibe-stepper-horizontal .vibe-stepper-connector {
+    top: 1rem;
+    left: calc(50% + 1rem);
+    right: calc(-50% + 1rem);
+    height: 2px;
+}
+
+.vibe-stepper-vertical .vibe-stepper-connector {
+    left: 1rem;
+    top: 2rem;
+    bottom: 0;
+    width: 2px;
+}
+
+.vibe-stepper-item-completed .vibe-stepper-connector {
+    background-color: var(--vibe-primary);
+}
+
+.vibe-stepper-item:last-child .vibe-stepper-connector {
+    display: none;
+}
+
+/* ========================================
    MENUBAR COMPONENT
    ======================================== */
 
@@ -9591,119 +10029,124 @@
    DARK MODE OVERRIDES
    ######################################## */
 
-/* Dark theme class applied to html/root element */
-.vibe-theme-dark {
-    /* Ensure proper contrast in dark mode */
-}
+/* Dark Mode Overrides - Using .dark class on html element (shadcn approach) */
 
 /* Button Outline - Increase visibility in dark mode */
-.vibe-theme-dark .vibe-button-outline,
-.vibe-theme-dark .vibe-btn-outline {
+.dark .vibe-button-outline,
+.dark .vibe-btn-outline {
     border-width: 2px;
     border-color: var(--vibe-border);
     color: var(--vibe-foreground);
 }
 
-.vibe-theme-dark .vibe-button-outline:hover:not(:disabled),
-.vibe-theme-dark .vibe-btn-outline:hover:not(:disabled) {
+.dark .vibe-button-outline:hover:not(:disabled),
+.dark .vibe-btn-outline:hover:not(:disabled) {
     background-color: rgba(255, 255, 255, 0.1) !important;
     border-color: var(--vibe-border);
     color: var(--vibe-foreground) !important;
 }
 
 /* Button Ghost - Fix white-on-white hover in dark mode */
-.vibe-theme-dark .vibe-button-ghost,
-.vibe-theme-dark .vibe-btn-ghost {
+.dark .vibe-button-ghost,
+.dark .vibe-btn-ghost {
     color: var(--vibe-foreground);
 }
 
-.vibe-theme-dark .vibe-button-ghost:hover:not(:disabled),
-.vibe-theme-dark .vibe-btn-ghost:hover:not(:disabled) {
+.dark .vibe-button-ghost:hover:not(:disabled),
+.dark .vibe-btn-ghost:hover:not(:disabled) {
     background-color: rgba(255, 255, 255, 0.1) !important;
     color: var(--vibe-foreground) !important;
 }
 
 /* Table Headers - Ensure proper dark mode styling */
-.vibe-theme-dark .vibe-table .table-header {
+.dark .vibe-table .table-header {
     background-color: var(--vibe-muted);
     color: var(--vibe-foreground);
 }
 
-.vibe-theme-dark .vibe-table .table-header th {
+.dark .vibe-table .table-header th {
     color: var(--vibe-foreground);
 }
 
 /* DataTable - Ensure proper dark mode styling for all areas */
-.vibe-theme-dark .vibe-datatable thead {
+.dark .vibe-datatable thead {
     background-color: var(--vibe-muted) !important;
 }
 
-.vibe-theme-dark .vibe-datatable th {
+.dark .vibe-datatable th {
     color: var(--vibe-foreground) !important;
 }
 
-.vibe-theme-dark .vibe-datatable .datatable-toolbar {
+.dark .vibe-datatable .datatable-toolbar {
     background-color: var(--vibe-muted) !important;
 }
 
-.vibe-theme-dark .vibe-datatable .datatable-pagination {
+.dark .vibe-datatable .datatable-pagination {
     background-color: var(--vibe-muted) !important;
 }
 
-.vibe-theme-dark .vibe-datatable .pagination-info {
+.dark .vibe-datatable .pagination-info {
     color: var(--vibe-foreground);
 }
 
-.vibe-theme-dark .vibe-datatable tbody tr:hover {
+.dark .vibe-datatable tbody tr:hover {
     background-color: color-mix(in srgb, var(--vibe-primary) 15%, transparent) !important;
 }
 
 /* Alert - Ensure proper contrast in dark mode */
-.vibe-theme-dark .vibe-alert-default {
+.dark .vibe-alert-default {
     background-color: var(--vibe-muted);
     color: var(--vibe-foreground);
 }
 
-.vibe-theme-dark .vibe-alert-title {
+.dark .vibe-alert-title {
     color: var(--vibe-foreground);
 }
 
-/* Select - Ensure proper dark mode styling */
-.vibe-theme-dark .vibe-select-input {
-    background-color: var(--vibe-input);
+/* Select - Ensure proper dark mode styling for native select */
+.dark .vibe-select-input {
+    background-color: var(--vibe-background);
     color: var(--vibe-foreground);
     border-color: var(--vibe-border);
 }
 
-.vibe-theme-dark .vibe-select-input option {
-    background-color: var(--vibe-input);
+/* Native select options - critical for dark mode readability */
+.dark .vibe-select-input option {
+    background-color: var(--vibe-background);
     color: var(--vibe-foreground);
 }
 
+/* Dropdown content - ensure proper background and text colors */
+.dark .vibe-dropdown .dropdown-content {
+    background-color: var(--vibe-popover, var(--vibe-background));
+    color: var(--vibe-foreground);
+    border-color: var(--vibe-border);
+}
+
 /* Card - Ensure proper dark mode text color */
-.vibe-theme-dark .vibe-card-content,
-.vibe-theme-dark .vibe-card-body {
+.dark .vibe-card-content,
+.dark .vibe-card-body {
     color: var(--vibe-card-foreground) !important;
 }
 
-.vibe-theme-dark .vibe-card-content *,
-.vibe-theme-dark .vibe-card-body * {
+.dark .vibe-card-content *,
+.dark .vibe-card-body * {
     color: inherit !important;
 }
 
-.vibe-theme-dark .vibe-alert-description {
+.dark.vibe-alert-description {
     color: var(--vibe-foreground);
 }
 
 /* Ensure all text elements have proper foreground color in dark mode */
-.vibe-theme-dark .vibe-alert-destructive .vibe-alert-title,
-.vibe-theme-dark .vibe-alert-destructive .vibe-alert-description,
-.vibe-theme-dark .vibe-alert-success .vibe-alert-title,
-.vibe-theme-dark .vibe-alert-success .vibe-alert-description,
-.vibe-theme-dark .vibe-alert-info .vibe-alert-title,
-.vibe-theme-dark .vibe-alert-info .vibe-alert-description,
-.vibe-theme-dark .vibe-alert-warning .vibe-alert-title,
-.vibe-theme-dark .vibe-alert-warning .vibe-alert-description {
+.dark.vibe-alert-destructive .vibe-alert-title,
+.dark.vibe-alert-destructive .vibe-alert-description,
+.dark.vibe-alert-success .vibe-alert-title,
+.dark.vibe-alert-success .vibe-alert-description,
+.dark.vibe-alert-info .vibe-alert-title,
+.dark.vibe-alert-info .vibe-alert-description,
+.dark.vibe-alert-warning .vibe-alert-title,
+.dark.vibe-alert-warning .vibe-alert-description {
     color: var(--vibe-foreground);
 }
 
@@ -9712,113 +10155,113 @@
    ######################################## */
 
 /* Kanban Board - Fix white backgrounds in dark mode */
-.vibe-theme-dark .vibe-kanban {
+.dark.vibe-kanban {
     background-color: var(--vibe-background) !important;
 }
 
-.vibe-theme-dark .kanban-column {
+.dark.kanban-column {
     background-color: var(--vibe-card) !important;
 }
 
-.vibe-theme-dark .kanban-column-header {
+.dark.kanban-column-header {
     background-color: var(--vibe-card) !important;
     border-bottom-color: var(--vibe-border) !important;
 }
 
-.vibe-theme-dark .column-title {
+.dark.column-title {
     color: var(--vibe-card-foreground) !important;
 }
 
-.vibe-theme-dark .kanban-cards {
+.dark.kanban-cards {
     background-color: transparent !important;
 }
 
-.vibe-theme-dark .kanban-card {
+.dark.kanban-card {
     background-color: var(--vibe-muted) !important;
     border-color: var(--vibe-border) !important;
     color: var(--vibe-foreground) !important;
 }
 
-.vibe-theme-dark .kanban-card:hover {
+.dark.kanban-card:hover {
     background-color: color-mix(in srgb, var(--vibe-primary) 15%, var(--vibe-muted)) !important;
 }
 
-.vibe-theme-dark .card-title,
-.vibe-theme-dark .card-description {
+.dark.card-title,
+.dark.card-description {
     color: var(--vibe-foreground) !important;
 }
 
 /* RichTextEditor - Fix white toolbar background in dark mode */
-.vibe-theme-dark .vibe-richtext {
+.dark.vibe-richtext {
     background-color: var(--vibe-background) !important;
     border-color: var(--vibe-border) !important;
 }
 
-.vibe-theme-dark .richtext-toolbar {
+.dark.richtext-toolbar {
     background-color: var(--vibe-muted) !important;
     border-bottom-color: var(--vibe-border) !important;
 }
 
-.vibe-theme-dark .toolbar-button {
+.dark.toolbar-button {
     color: var(--vibe-foreground) !important;
     background-color: transparent !important;
 }
 
-.vibe-theme-dark .toolbar-button:hover {
+.dark.toolbar-button:hover {
     background-color: var(--vibe-background) !important;
     border-color: var(--vibe-border) !important;
 }
 
-.vibe-theme-dark .toolbar-button:active,
-.vibe-theme-dark .toolbar-button.active {
+.dark.toolbar-button:active,
+.dark.toolbar-button.active {
     background-color: var(--vibe-primary) !important;
     color: var(--vibe-primary-foreground) !important;
 }
 
-.vibe-theme-dark .toolbar-separator {
+.dark.toolbar-separator {
     background-color: var(--vibe-border) !important;
 }
 
-.vibe-theme-dark .richtext-editor {
+.dark.richtext-editor {
     color: var(--vibe-foreground) !important;
     background-color: var(--vibe-background) !important;
 }
 
-.vibe-theme-dark .richtext-footer {
+.dark.richtext-footer {
     background-color: var(--vibe-muted) !important;
     border-top-color: var(--vibe-border) !important;
     color: var(--vibe-muted-foreground) !important;
 }
 
 /* TreeView - Fix hover white-on-white and expand icon visibility */
-.vibe-theme-dark .vibe-tree-view {
+.dark.vibe-tree-view {
     color: var(--vibe-foreground) !important;
 }
 
-.vibe-theme-dark .tree-node-content {
+.dark.tree-node-content {
     color: var(--vibe-foreground) !important;
 }
 
-.vibe-theme-dark .tree-node-content:hover {
+.dark.tree-node-content:hover {
     background-color: var(--vibe-muted) !important;
     color: var(--vibe-foreground) !important;
 }
 
-.vibe-theme-dark .tree-node-selected .tree-node-content {
+.dark.tree-node-selected .tree-node-content {
     background-color: var(--vibe-primary) !important;
     color: var(--vibe-primary-foreground) !important;
 }
 
-.vibe-theme-dark .tree-node-expand-icon {
+.dark.tree-node-expand-icon {
     color: var(--vibe-foreground) !important;
 }
 
-.vibe-theme-dark .tree-node-expand-icon svg {
+.dark.tree-node-expand-icon svg {
     fill: currentColor !important;
     color: var(--vibe-foreground) !important;
 }
 
-.vibe-theme-dark .tree-node-label {
+.dark.tree-node-label {
     color: inherit !important;
 }
 
@@ -9855,271 +10298,280 @@
     transform: rotate(-90deg);
 }
 
-.vibe-theme-dark .vibe-collapsible-trigger {
+/* Dark mode fixes for collapsible */
+.dark .vibe-collapsible-trigger,
+.dark .collapsible-trigger-wrapper,
+.dark .collapsible-trigger-wrapper * {
     color: var(--vibe-foreground) !important;
 }
 
-.vibe-theme-dark .vibe-collapsible-trigger:hover {
+.dark .vibe-collapsible-trigger:hover,
+.dark .collapsible-trigger-wrapper:hover {
     background-color: var(--vibe-muted) !important;
 }
 
-.vibe-theme-dark .vibe-collapsible .collapsible-content {
+.dark .vibe-collapsible .collapsible-content {
     background-color: var(--vibe-background) !important;
     color: var(--vibe-foreground) !important;
+}
+
+/* Override any inline background styles in dark mode */
+.dark .collapsible-trigger-wrapper > div[style*="background"] {
+    background-color: var(--vibe-muted) !important;
 }
 
 /* Table Content - Fix white text on white background */
-.vibe-theme-dark .vibe-table {
+.dark .vibe-table {
     background-color: var(--vibe-background) !important;
     color: var(--vibe-foreground) !important;
 }
 
-.vibe-theme-dark .vibe-table td {
+.dark .vibe-table td {
     color: var(--vibe-foreground) !important;
     background-color: transparent !important;
 }
 
-.vibe-theme-dark .vibe-table tbody tr {
+.dark.vibe-table tbody tr {
     background-color: transparent !important;
 }
 
-.vibe-theme-dark .vibe-table tbody tr:hover {
+.dark.vibe-table tbody tr:hover {
     background-color: color-mix(in srgb, var(--vibe-primary) 15%, transparent) !important;
 }
 
-.vibe-theme-dark .vibe-table tbody tr:nth-child(even) {
+.dark.vibe-table tbody tr:nth-child(even) {
     background-color: rgba(255, 255, 255, 0.02) !important;
 }
 
-.vibe-theme-dark .vibe-datatable td {
+.dark.vibe-datatable td {
     color: var(--vibe-foreground) !important;
 }
 
-.vibe-theme-dark .vibe-datatable tbody tr {
+.dark.vibe-datatable tbody tr {
     background-color: transparent !important;
 }
 
-.vibe-theme-dark .vibe-datatable tbody tr:nth-child(even) {
+.dark.vibe-datatable tbody tr:nth-child(even) {
     background-color: rgba(255, 255, 255, 0.02) !important;
 }
 
 /* Toast - Ensure proper z-index and visibility in dark mode */
-.vibe-theme-dark .vibe-toast {
+.dark.vibe-toast {
     background-color: var(--vibe-card) !important;
     border-color: var(--vibe-border) !important;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
     z-index: 10000 !important;
 }
 
-.vibe-theme-dark .vibe-toast .toast-title {
+.dark.vibe-toast .toast-title {
     color: var(--vibe-card-foreground) !important;
 }
 
-.vibe-theme-dark .vibe-toast .toast-description {
+.dark.vibe-toast .toast-description {
     color: var(--vibe-muted-foreground) !important;
 }
 
-.vibe-theme-dark .vibe-toast .toast-close {
+.dark.vibe-toast .toast-close {
     color: var(--vibe-muted-foreground) !important;
 }
 
-.vibe-theme-dark .vibe-toast .toast-close:hover {
+.dark.vibe-toast .toast-close:hover {
     background-color: var(--vibe-muted) !important;
     color: var(--vibe-foreground) !important;
 }
 
-.vibe-theme-dark .vibe-toast-container {
+.dark.vibe-toast-container {
     z-index: 10000 !important;
 }
 
 /* Toast variants in dark mode */
-.vibe-theme-dark .vibe-toast.toast-success {
+.dark.vibe-toast.toast-success {
     background-color: color-mix(in srgb, var(--vibe-success, #10b981) 20%, var(--vibe-card)) !important;
     border-color: var(--vibe-success, #10b981) !important;
 }
 
-.vibe-theme-dark .vibe-toast.toast-error,
-.vibe-theme-dark .vibe-toast.toast-destructive {
+.dark.vibe-toast.toast-error,
+.dark.vibe-toast.toast-destructive {
     background-color: color-mix(in srgb, var(--vibe-destructive) 20%, var(--vibe-card)) !important;
     border-color: var(--vibe-destructive) !important;
 }
 
-.vibe-theme-dark .vibe-toast.toast-warning {
+.dark.vibe-toast.toast-warning {
     background-color: color-mix(in srgb, var(--vibe-warning, #f59e0b) 20%, var(--vibe-card)) !important;
     border-color: var(--vibe-warning, #f59e0b) !important;
 }
 
-.vibe-theme-dark .vibe-toast.toast-info {
+.dark.vibe-toast.toast-info {
     background-color: color-mix(in srgb, var(--vibe-info, #3b82f6) 20%, var(--vibe-card)) !important;
     border-color: var(--vibe-info, #3b82f6) !important;
 }
 
 /* FileUpload - Ensure proper styling and button functionality */
-.vibe-theme-dark .vibe-file-upload {
+.dark.vibe-file-upload {
     background-color: var(--vibe-background) !important;
     border-color: var(--vibe-border) !important;
 }
 
-.vibe-theme-dark .file-upload-empty {
+.dark.file-upload-empty {
     color: var(--vibe-foreground) !important;
 }
 
-.vibe-theme-dark .file-upload-title {
+.dark.file-upload-title {
     color: var(--vibe-foreground) !important;
 }
 
-.vibe-theme-dark .file-upload-hint {
+.dark.file-upload-hint {
     color: var(--vibe-muted-foreground) !important;
 }
 
-.vibe-theme-dark .file-upload-icon {
+.dark.file-upload-icon {
     color: var(--vibe-muted-foreground) !important;
 }
 
-.vibe-theme-dark .file-upload-button {
+.dark.file-upload-button {
     background-color: var(--vibe-primary) !important;
     color: var(--vibe-primary-foreground) !important;
 }
 
-.vibe-theme-dark .file-upload-button:hover {
+.dark.file-upload-button:hover {
     background-color: color-mix(in srgb, var(--vibe-primary) 90%, white) !important;
 }
 
-.vibe-theme-dark .file-upload-item {
+.dark.file-upload-item {
     background-color: var(--vibe-muted) !important;
 }
 
-.vibe-theme-dark .file-item-name {
+.dark.file-item-name {
     color: var(--vibe-foreground) !important;
 }
 
-.vibe-theme-dark .file-item-size {
+.dark.file-item-size {
     color: var(--vibe-muted-foreground) !important;
 }
 
-.vibe-theme-dark .file-upload-dragging {
+.dark.file-upload-dragging {
     background-color: color-mix(in srgb, var(--vibe-primary) 10%, var(--vibe-background)) !important;
     border-color: var(--vibe-primary) !important;
 }
 
 /* Select Dropdown - Fix white text on white background */
-.vibe-theme-dark .vibe-select {
+.dark.vibe-select {
     background-color: var(--vibe-input) !important;
     border-color: var(--vibe-border) !important;
     color: var(--vibe-foreground) !important;
 }
 
-.vibe-theme-dark .vibe-select:focus {
+.dark.vibe-select:focus {
     border-color: var(--vibe-primary) !important;
     outline: none !important;
 }
 
-.vibe-theme-dark .select-trigger {
+.dark.select-trigger {
     background-color: var(--vibe-input) !important;
     color: var(--vibe-foreground) !important;
     border-color: var(--vibe-border) !important;
 }
 
-.vibe-theme-dark .select-content {
+.dark.select-content {
     background-color: var(--vibe-card) !important;
     border-color: var(--vibe-border) !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
 }
 
-.vibe-theme-dark .select-item {
+.dark.select-item {
     color: var(--vibe-foreground) !important;
     background-color: transparent !important;
 }
 
-.vibe-theme-dark .select-item:hover {
+.dark.select-item:hover {
     background-color: var(--vibe-muted) !important;
     color: var(--vibe-foreground) !important;
 }
 
-.vibe-theme-dark .select-item.selected {
+.dark.select-item.selected {
     background-color: var(--vibe-primary) !important;
     color: var(--vibe-primary-foreground) !important;
 }
 
-.vibe-theme-dark .select-value {
+.dark.select-value {
     color: var(--vibe-foreground) !important;
 }
 
-.vibe-theme-dark .select-placeholder {
+.dark.select-placeholder {
     color: var(--vibe-muted-foreground) !important;
 }
 
 /* Additional Card fixes for nested elements */
-.vibe-theme-dark .vibe-card {
+.dark.vibe-card {
     background-color: var(--vibe-card) !important;
     border-color: var(--vibe-border) !important;
 }
 
-.vibe-theme-dark .vibe-card-header {
+.dark.vibe-card-header {
     background-color: transparent !important;
     color: var(--vibe-card-foreground) !important;
 }
 
-.vibe-theme-dark .vibe-card-title {
+.dark.vibe-card-title {
     color: var(--vibe-card-foreground) !important;
 }
 
-.vibe-theme-dark .vibe-card-description {
+.dark.vibe-card-description {
     color: var(--vibe-muted-foreground) !important;
 }
 
-.vibe-theme-dark .vibe-card-footer {
+.dark.vibe-card-footer {
     background-color: transparent !important;
     border-top-color: var(--vibe-border) !important;
     color: var(--vibe-foreground) !important;
 }
 
 /* Ensure all card child elements inherit proper colors */
-.vibe-theme-dark .vibe-card p,
-.vibe-theme-dark .vibe-card span,
-.vibe-theme-dark .vibe-card div:not(.vibe-button):not(.vibe-btn) {
+.dark.vibe-card p,
+.dark.vibe-card span,
+.dark.vibe-card div:not(.vibe-button):not(.vibe-btn) {
     color: var(--vibe-card-foreground) !important;
 }
 
 /* Ensure buttons inside cards maintain their own styling */
-.vibe-theme-dark .vibe-card .vibe-button,
-.vibe-theme-dark .vibe-card .vibe-btn {
+.dark.vibe-card .vibe-button,
+.dark.vibe-card .vibe-btn {
     color: revert !important;
 }
 
 /* DataTable - Additional fixes for all white elements */
-.vibe-theme-dark .vibe-datatable {
+.dark.vibe-datatable {
     background-color: var(--vibe-background) !important;
 }
 
-.vibe-theme-dark .vibe-datatable .datatable-container {
+.dark.vibe-datatable .datatable-container {
     background-color: var(--vibe-background) !important;
 }
 
-.vibe-theme-dark .vibe-datatable .datatable-table {
+.dark.vibe-datatable .datatable-table {
     background-color: var(--vibe-background) !important;
 }
 
-.vibe-theme-dark .vibe-datatable .search-input {
+.dark.vibe-datatable .search-input {
     background-color: var(--vibe-input) !important;
     color: var(--vibe-foreground) !important;
     border-color: var(--vibe-border) !important;
 }
 
-.vibe-theme-dark .vibe-datatable .search-input::placeholder {
+.dark.vibe-datatable .search-input::placeholder {
     color: var(--vibe-muted-foreground) !important;
 }
 
-.vibe-theme-dark .vibe-datatable .search-icon {
+.dark.vibe-datatable .search-icon {
     color: var(--vibe-muted-foreground) !important;
 }
 
-.vibe-theme-dark .vibe-datatable .pagination-info,
-.vibe-theme-dark .vibe-datatable .pagination-button {
+.dark.vibe-datatable .pagination-info,
+.dark.vibe-datatable .pagination-button {
     color: var(--vibe-foreground) !important;
 }
 
-.vibe-theme-dark .vibe-datatable .pagination-button:disabled {
+.dark.vibe-datatable .pagination-button:disabled {
     color: var(--vibe-muted-foreground) !important;
     opacity: 0.5 !important;
 }

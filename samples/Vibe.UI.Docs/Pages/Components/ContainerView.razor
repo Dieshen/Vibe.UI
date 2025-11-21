@@ -1,42 +1,115 @@
 @page "/components/container"
+@using Vibe.UI.Components
 
 <PageTitle>Container - Vibe.UI</PageTitle>
 
 <ComponentPage ComponentName="Container"
                Category="Layout"
-               Description="A layout component that centers content and applies consistent horizontal padding."
+               Description="A layout component that centers content and applies consistent horizontal padding with configurable max-width."
                RelatedComponents="@relatedComponents">
 
     <PreviewContent>
         <div class="preview-demo">
-            <div style="padding: 1.5rem; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; margin-bottom: 1rem;">
-                <h4 style="margin: 0 0 0.5rem 0; color: #856404;">Component Not Yet Implemented</h4>
-                <p style="margin: 0; color: #856404;">
-                    The Container component has not been implemented yet. The API documentation below represents the planned interface.
-                </p>
-            </div>
+            <Container MaxWidth="Container.ContainerSize.Medium">
+                <Card>
+                    <div style="padding: 2rem; text-align: center;">
+                        <h3 style="margin: 0 0 1rem 0;">Centered Container</h3>
+                        <p style="margin: 0; color: var(--vibe-muted-foreground);">
+                            This content is centered with a maximum width of 768px
+                        </p>
+                    </div>
+                </Card>
+            </Container>
         </div>
     </PreviewContent>
 
     <Examples>
         <div class="example-item">
             <h3>Basic Usage</h3>
+            <p>Create a centered container with default large size:</p>
             <CodeBlock Code="@BasicCode" Language="razor" />
+
+            <div style="margin-top: 1rem; background: var(--vibe-muted); padding: 1rem; border-radius: var(--vibe-radius);">
+                <Container>
+                    <div style="padding: 1rem; background: var(--vibe-background); border-radius: var(--vibe-radius); text-align: center;">
+                        Centered content with 1024px max-width
+                    </div>
+                </Container>
+            </div>
         </div>
 
         <div class="example-item">
-            <h3>Max Width Sizes</h3>
+            <h3>Container Sizes</h3>
+            <p>Different max-width sizes for various layouts:</p>
             <CodeBlock Code="@SizesCode" Language="razor" />
+
+            <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+                <div style="background: var(--vibe-muted); padding: 0.5rem; border-radius: var(--vibe-radius);">
+                    <Container MaxWidth="Container.ContainerSize.Small">
+                        <div style="padding: 1rem; background: var(--vibe-background); border-radius: var(--vibe-radius); text-align: center;">
+                            Small (640px)
+                        </div>
+                    </Container>
+                </div>
+
+                <div style="background: var(--vibe-muted); padding: 0.5rem; border-radius: var(--vibe-radius);">
+                    <Container MaxWidth="Container.ContainerSize.Medium">
+                        <div style="padding: 1rem; background: var(--vibe-background); border-radius: var(--vibe-radius); text-align: center;">
+                            Medium (768px)
+                        </div>
+                    </Container>
+                </div>
+
+                <div style="background: var(--vibe-muted); padding: 0.5rem; border-radius: var(--vibe-radius);">
+                    <Container MaxWidth="Container.ContainerSize.Large">
+                        <div style="padding: 1rem; background: var(--vibe-background); border-radius: var(--vibe-radius); text-align: center;">
+                            Large (1024px)
+                        </div>
+                    </Container>
+                </div>
+            </div>
         </div>
 
         <div class="example-item">
             <h3>Fluid Container</h3>
+            <p>Full-width container without max-width constraint:</p>
             <CodeBlock Code="@FluidCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Container Fluid="true">
+                    <div style="padding: 1rem; background: var(--vibe-primary); color: var(--vibe-primary-foreground); border-radius: var(--vibe-radius); text-align: center;">
+                        This spans the full width
+                    </div>
+                </Container>
+            </div>
         </div>
 
         <div class="example-item">
-            <h3>With Padding</h3>
+            <h3>Custom Padding</h3>
+            <p>Override the default padding:</p>
             <CodeBlock Code="@PaddingCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Container Padding="3rem">
+                    <div style="padding: 1rem; background: var(--vibe-accent); color: var(--vibe-accent-foreground); border-radius: var(--vibe-radius); text-align: center;">
+                        Container with 3rem padding
+                    </div>
+                </Container>
+            </div>
+        </div>
+
+        <div class="example-item">
+            <h3>Non-Centered Container</h3>
+            <p>Disable auto-centering for left-aligned layouts:</p>
+            <CodeBlock Code="@NonCenteredCode" Language="razor" />
+
+            <div style="margin-top: 1rem;">
+                <Container MaxWidth="Container.ContainerSize.Medium" Centered="false">
+                    <div style="padding: 1rem; background: var(--vibe-muted); border-radius: var(--vibe-radius);">
+                        Left-aligned container
+                    </div>
+                </Container>
+            </div>
         </div>
     </Examples>
 
@@ -55,25 +128,25 @@
                     <td><code>MaxWidth</code></td>
                     <td>ContainerSize</td>
                     <td>Large</td>
-                    <td>Maximum width (Small, Medium, Large, XLarge, Full)</td>
+                    <td>Maximum width preset</td>
                 </tr>
                 <tr>
                     <td><code>Fluid</code></td>
                     <td>bool</td>
                     <td>false</td>
-                    <td>Whether to fill full width</td>
+                    <td>Whether to fill full width (ignores MaxWidth)</td>
                 </tr>
                 <tr>
                     <td><code>Padding</code></td>
-                    <td>string</td>
+                    <td>string?</td>
                     <td>null</td>
-                    <td>Custom padding value</td>
+                    <td>Custom padding value (overrides default)</td>
                 </tr>
                 <tr>
                     <td><code>Centered</code></td>
                     <td>bool</td>
                     <td>true</td>
-                    <td>Whether to center the container</td>
+                    <td>Whether to center the container horizontally</td>
                 </tr>
                 <tr>
                     <td><code>ChildContent</code></td>
@@ -83,46 +156,94 @@
                 </tr>
             </tbody>
         </table>
+
+        <h4 style="margin-top: 1.5rem;">ContainerSize Values</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Value</th>
+                    <th>Max Width</th>
+                    <th>Use Case</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Small</code></td>
+                    <td>640px</td>
+                    <td>Narrow content, forms, mobile-first layouts</td>
+                </tr>
+                <tr>
+                    <td><code>Medium</code></td>
+                    <td>768px</td>
+                    <td>Articles, blog posts, readable text content</td>
+                </tr>
+                <tr>
+                    <td><code>Large</code></td>
+                    <td>1024px</td>
+                    <td>Default - most page layouts</td>
+                </tr>
+                <tr>
+                    <td><code>XLarge</code></td>
+                    <td>1280px</td>
+                    <td>Wide layouts, dashboards</td>
+                </tr>
+                <tr>
+                    <td><code>XXLarge</code></td>
+                    <td>1536px</td>
+                    <td>Very wide layouts, large screens</td>
+                </tr>
+                <tr>
+                    <td><code>Full</code></td>
+                    <td>none</td>
+                    <td>Full width (same as Fluid=true)</td>
+                </tr>
+            </tbody>
+        </table>
     </Props>
 
     <AccessibilityNotes>
         <ul>
-            <li>No impact on semantic structure</li>
+            <li>No impact on semantic structure - purely presentational</li>
             <li>Maintains accessibility of child content</li>
-            <li>Responsive design supports readability</li>
+            <li>Responsive design improves readability on all screen sizes</li>
+            <li>Proper padding prevents content from touching edges</li>
         </ul>
     </AccessibilityNotes>
 </ComponentPage>
 
 @code {
-    private List<string> relatedComponents = new() { "Grid", "Stack", "Box" };
+    private List<string> relatedComponents = new() { "Grid", "Stack", "Card" };
 
     private string BasicCode => @"<Container>
     <h1>Page Title</h1>
-    <p>This content is centered and has consistent padding.</p>
+    <p>This content is centered with consistent padding.</p>
 </Container>";
 
-    private string SizesCode => @"<Container MaxWidth=""ContainerSize.Small"">
+    private string SizesCode => @"<Container MaxWidth=""Container.ContainerSize.Small"">
     Small container (640px max)
 </Container>
 
-<Container MaxWidth=""ContainerSize.Medium"">
+<Container MaxWidth=""Container.ContainerSize.Medium"">
     Medium container (768px max)
 </Container>
 
-<Container MaxWidth=""ContainerSize.Large"">
+<Container MaxWidth=""Container.ContainerSize.Large"">
     Large container (1024px max)
 </Container>
 
-<Container MaxWidth=""ContainerSize.XLarge"">
+<Container MaxWidth=""Container.ContainerSize.XLarge"">
     Extra large container (1280px max)
 </Container>";
 
     private string FluidCode => @"<Container Fluid=""true"">
-    <p>This container spans the full width of the viewport.</p>
+    <p>This container spans the full viewport width.</p>
 </Container>";
 
-    private string PaddingCode => @"<Container Padding=""2rem"">
-    <p>Container with custom padding.</p>
+    private string PaddingCode => @"<Container Padding=""3rem"">
+    <p>Container with custom 3rem padding.</p>
+</Container>";
+
+    private string NonCenteredCode => @"<Container MaxWidth=""Container.ContainerSize.Medium"" Centered=""false"">
+    <p>This container is left-aligned instead of centered.</p>
 </Container>";
 }

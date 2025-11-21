@@ -2,8 +2,10 @@
 @inherits Base.VibeComponent
 
 <div class="@CombinedClass">
-    @TriggerContent(IsOpen)
-    
+    <div class="collapsible-trigger-wrapper" @onclick="ToggleAsync">
+        @TriggerContent(IsOpen)
+    </div>
+
     <div class="collapsible-content @(IsOpen ? "expanded" : "")">
         @ChildContent
     </div>

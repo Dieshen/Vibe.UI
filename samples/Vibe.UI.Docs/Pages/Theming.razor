@@ -5,15 +5,40 @@
 <div class="docs-page">
     <div class="page-header">
         <h1>Theming</h1>
-        <p class="lead">Customize the look and feel of your application with Vibe.UI's powerful theming system.</p>
+        <p class="lead">Customize your application with Vibe.UI's shadcn-inspired theming system using pure CSS variables.</p>
     </div>
 
     <section class="section">
         <h2>Overview</h2>
         <p>
-            Vibe.UI provides a flexible theming system built on CSS custom properties (variables).
-            You can easily customize colors, spacing, typography, and other design tokens to match your brand.
+            Vibe.UI follows the <strong>shadcn/ui theming approach</strong> - a simple, pure CSS theming system that
+            requires no service registration or complex setup. Themes are defined using CSS custom properties with
+            <code>:root</code> and <code>.dark</code> selectors.
         </p>
+        <Alert Variant="Alert.AlertVariant.Info">
+            <strong>No C# Services Required!</strong>
+            <br />
+            Unlike the old system, theming now works purely through CSS. No ThemeManager, no service registration, just clean CSS variables.
+        </Alert>
+    </section>
+
+    <section class="section">
+        <h2>How It Works</h2>
+        <p>Vibe.UI uses CSS custom properties (variables) for theming. The theme toggle simply adds or removes a <code>.dark</code> class on the <code>&lt;html&gt;</code> element:</p>
+
+        <div class="theme-flow">
+            <div class="flow-item">
+                <code>:root</code> defines light theme colors
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-item">
+                <code>.dark</code> overrides with dark colors
+            </div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-item">
+                Components use <code>--vibe-*</code> variables
+            </div>
+        </div>
     </section>
 
     <section class="section">
@@ -21,188 +46,246 @@
         <p>All Vibe.UI components use the following CSS custom properties:</p>
 
         <div class="theme-variables">
-            <h3>Colors</h3>
+            <h3>Color Palette</h3>
             <ul>
                 <li><code>--vibe-background</code> - Main background color</li>
                 <li><code>--vibe-foreground</code> - Main text color</li>
                 <li><code>--vibe-primary</code> - Primary brand color</li>
-                <li><code>--vibe-primary-foreground</code> - Text color on primary</li>
-                <li><code>--vibe-secondary</code> - Secondary background color</li>
-                <li><code>--vibe-secondary-foreground</code> - Text color on secondary</li>
+                <li><code>--vibe-primary-foreground</code> - Text on primary backgrounds</li>
+                <li><code>--vibe-secondary</code> - Secondary/muted background color</li>
+                <li><code>--vibe-secondary-foreground</code> - Text on secondary backgrounds</li>
                 <li><code>--vibe-accent</code> - Accent color for highlights</li>
-                <li><code>--vibe-accent-foreground</code> - Text color on accent</li>
+                <li><code>--vibe-accent-foreground</code> - Text on accent backgrounds</li>
                 <li><code>--vibe-muted</code> - Muted background color</li>
                 <li><code>--vibe-muted-foreground</code> - Muted text color</li>
+                <li><code>--vibe-destructive</code> - Error/danger color</li>
+                <li><code>--vibe-destructive-foreground</code> - Text on destructive backgrounds</li>
                 <li><code>--vibe-border</code> - Border color</li>
-                <li><code>--vibe-card</code> - Card background color</li>
-                <li><code>--vibe-card-foreground</code> - Text color on cards</li>
-            </ul>
-
-            <h3>Other Properties</h3>
-            <ul>
-                <li><code>--vibe-radius</code> - Border radius for components</li>
+                <li><code>--vibe-input</code> - Input border color</li>
                 <li><code>--vibe-ring</code> - Focus ring color</li>
+                <li><code>--vibe-card</code> - Card background color</li>
+                <li><code>--vibe-card-foreground</code> - Text on cards</li>
+                <li><code>--vibe-popover</code> - Popover background color</li>
+                <li><code>--vibe-popover-foreground</code> - Text in popovers</li>
+            </ul>
+
+            <h3>Border Radius</h3>
+            <ul>
+                <li><code>--vibe-radius</code> - Border radius for components (default: 0.5rem)</li>
             </ul>
         </div>
     </section>
 
     <section class="section">
-        <h2>Using the ThemeManager</h2>
-        <p>Vibe.UI includes a <code>ThemeManager</code> service for programmatic theme management:</p>
+        <h2>CLI Setup</h2>
+        <p>When you run <code>vibe init</code>, the CLI will prompt you to select a base color scheme:</p>
 
-        <CodeBlock Code="@ThemeManagerCode" Language="csharp" />
+        <CodeBlock Code="@CliInitCode" Language="bash" />
+
+        <p>This generates a CSS file with your chosen color palette in HSL format:</p>
+
+        <CodeBlock Code="@GeneratedCssCode" Language="css" />
     </section>
 
     <section class="section">
-        <h2>Applying Custom Themes</h2>
-        <p>You can create and register custom themes in your application:</p>
+        <h2>Using the ThemeToggle Component</h2>
+        <p>The simplest way to add theme switching is with the <code>&lt;ThemeToggle /&gt;</code> component:</p>
 
-        <CodeBlock Code="@CustomThemeCode" Language="csharp" />
-    </section>
+        <CodeBlock Code="@ThemeToggleCode" Language="razor" />
 
-    <section class="section">
-        <h2>CSS Custom Themes</h2>
-        <p>For simple customization, you can override CSS variables directly:</p>
+        <p>The ThemeToggle component:</p>
+        <ul>
+            <li>✅ Automatically detects system preference</li>
+            <li>✅ Persists user choice to localStorage</li>
+            <li>✅ Works without any service registration</li>
+            <li>✅ Pure CSS and inline JavaScript - zero dependencies</li>
+        </ul>
 
-        <CodeBlock Code="@CssVariablesCode" Language="css" />
-    </section>
-
-    <section class="section">
-        <h2>Built-in Themes</h2>
-        <p>Vibe.UI comes with several built-in themes:</p>
-
-        <div class="theme-showcase">
-            <div class="theme-card">
-                <h4>Light</h4>
-                <p>Clean, bright theme perfect for daytime use</p>
-            </div>
-            <div class="theme-card">
-                <h4>Dark</h4>
-                <p>Easy on the eyes for low-light environments</p>
-            </div>
-            <div class="theme-card">
-                <h4>Ocean</h4>
-                <p>Calm blue tones inspired by the sea</p>
-            </div>
-            <div class="theme-card">
-                <h4>Forest</h4>
-                <p>Natural green palette for a refreshing look</p>
-            </div>
-            <div class="theme-card">
-                <h4>Sunset</h4>
-                <p>Warm orange hues reminiscent of golden hour</p>
-            </div>
-            <div class="theme-card">
-                <h4>Purple</h4>
-                <p>Royal purple theme with modern vibes</p>
-            </div>
-            <div class="theme-card">
-                <h4>Midnight</h4>
-                <p>Deep dark theme with subtle purple accents</p>
-            </div>
+        <div style="margin-top: 1rem;">
+            <ThemeToggle />
+            <span style="margin-left: 0.5rem;">Try it out!</span>
         </div>
     </section>
 
     <section class="section">
-        <h2>Theme Persistence</h2>
-        <p>Save user theme preferences using localStorage:</p>
+        <h2>Customizing Colors</h2>
+        <p>You can override theme colors directly in your <code>app.css</code> file:</p>
 
-        <CodeBlock Code="@PersistenceCode" Language="csharp" />
+        <CodeBlock Code="@CustomColorsCode" Language="css" />
     </section>
 
     <section class="section">
-        <h2>Dynamic Theme Switching</h2>
-        <p>Switch themes dynamically at runtime using JavaScript interop:</p>
+        <h2>Creating a Custom Theme</h2>
+        <p>To create a completely custom theme, define new CSS variables:</p>
 
-        <CodeBlock Code="@DynamicSwitchingCode" Language="csharp" />
+        <CodeBlock Code="@CustomThemeCode" Language="css" />
+    </section>
+
+    <section class="section">
+        <h2>Using HSL Colors</h2>
+        <p>Vibe.UI uses HSL (Hue, Saturation, Lightness) color format for better manipulation and consistency:</p>
+
+        <CodeBlock Code="@HslExampleCode" Language="css" />
+
+        <Alert Variant="Alert.AlertVariant.Info">
+            <strong>Why HSL?</strong>
+            <br />
+            HSL makes it easier to create color variations (lighter, darker) and maintain consistent saturation across themes.
+            It's the same approach used by shadcn/ui.
+        </Alert>
+    </section>
+
+    <section class="section">
+        <h2>Best Practices</h2>
+        <ul>
+            <li>Use <code>@("@")layer vibe</code> to organize theme styles in the cascade</li>
+            <li>Define colors in HSL format for better manipulation</li>
+            <li>Test both light and dark modes during development</li>
+            <li>Use semantic variable names (<code>--vibe-destructive</code>) instead of colors (<code>--vibe-red</code>)</li>
+            <li>Keep the <code>:root</code> block for light theme and <code>.dark</code> for dark theme</li>
+            <li>Don't forget to set transition properties for smooth theme changes</li>
+        </ul>
+    </section>
+
+    <section class="section">
+        <h2>Migration from Old System</h2>
+        <p>If you're migrating from the old ThemeManager system:</p>
+
+        <Alert Variant="Alert.AlertVariant.Warning">
+            <strong>Breaking Changes</strong>
+            <br />
+            The old <code>ThemeManager</code>, <code>ThemeRoot</code>, <code>ThemePanel</code>, and <code>ThemeSelector</code> components have been removed.
+        </Alert>
+
+        <h3>What Changed</h3>
+        <ul>
+            <li>❌ <strong>Removed:</strong> <code>ThemeManager</code> service</li>
+            <li>❌ <strong>Removed:</strong> <code>ThemeRoot</code> component</li>
+            <li>❌ <strong>Removed:</strong> <code>ThemePanel</code> component</li>
+            <li>❌ <strong>Removed:</strong> <code>ThemeSelector</code> component</li>
+            <li>❌ <strong>Removed:</strong> <code>AddVibeUI(options)</code> theme configuration</li>
+            <li>✅ <strong>Simplified:</strong> <code>ThemeToggle</code> now works standalone</li>
+            <li>✅ <strong>New:</strong> Pure CSS theming with <code>:root</code> and <code>.dark</code></li>
+        </ul>
+
+        <h3>Migration Steps</h3>
+        <ol>
+            <li>Remove <code>&lt;ThemeRoot&gt;</code> from App.razor</li>
+            <li>Remove ThemeManager service injection from components</li>
+            <li>Replace <code>&lt;ThemePanel /&gt;</code> with <code>&lt;ThemeToggle /&gt;</code></li>
+            <li>Update <code>Program.cs</code> to use simple <code>AddVibeUI()</code> (no options needed)</li>
+            <li>Run <code>vibe init</code> to generate new theme CSS</li>
+        </ol>
+    </section>
+
+    <section class="section">
+        <h2>Related Components</h2>
+        <ul>
+            <li><a href="/components/themetoggle">ThemeToggle</a> - Simple theme switching component</li>
+        </ul>
     </section>
 </div>
 
 @code {
-    private string ThemeManagerCode => @"@inject ThemeManager ThemeManager
+    private string CliInitCode => @"$ vibe init
 
-protected override async Task OnInitializedAsync()
-{
-    await ThemeManager.InitializeAsync();
+Which base color would you like to use?
+> Slate
+  Gray
+  Zinc
+  Neutral
+  Stone
+  Blue
 
-    // Get current theme
-    var currentTheme = ThemeManager.CurrentTheme;
+Where should we save your component files?
+> Components
 
-    // Apply a theme
-    await ThemeManager.ApplyThemeAsync(""dark"");
+Where is your global CSS file?
+> wwwroot/css/app.css";
+
+    private string GeneratedCssCode => @"@layer vibe {
+  :root {
+    --vibe-background: hsl(0 0% 100%);
+    --vibe-foreground: hsl(222.2 84% 4.9%);
+    --vibe-primary: hsl(222.2 47.4% 11.2%);
+    --vibe-primary-foreground: hsl(210 40% 98%);
+    --vibe-secondary: hsl(210 40% 96.1%);
+    --vibe-secondary-foreground: hsl(222.2 47.4% 11.2%);
+    --vibe-accent: hsl(210 40% 96.1%);
+    --vibe-accent-foreground: hsl(222.2 47.4% 11.2%);
+    --vibe-destructive: hsl(0 84.2% 60.2%);
+    --vibe-destructive-foreground: hsl(210 40% 98%);
+    --vibe-muted: hsl(210 40% 96.1%);
+    --vibe-muted-foreground: hsl(215.4 16.3% 46.9%);
+    --vibe-border: hsl(214.3 31.8% 91.4%);
+    --vibe-input: hsl(214.3 31.8% 91.4%);
+    --vibe-ring: hsl(222.2 84% 4.9%);
+    --vibe-card: hsl(0 0% 100%);
+    --vibe-card-foreground: hsl(222.2 84% 4.9%);
+    --vibe-popover: hsl(0 0% 100%);
+    --vibe-popover-foreground: hsl(222.2 84% 4.9%);
+    --vibe-radius: 0.5rem;
+  }
+
+  .dark {
+    --vibe-background: hsl(222.2 84% 4.9%);
+    --vibe-foreground: hsl(210 40% 98%);
+    --vibe-primary: hsl(210 40% 98%);
+    --vibe-primary-foreground: hsl(222.2 47.4% 11.2%);
+    /* ... dark mode colors ... */
+  }
 }";
 
-    private string CustomThemeCode => @"var customTheme = new Theme
-{
-    Id = ""corporate"",
-    Name = ""Corporate"",
-    Type = ThemeType.Custom,
-    Variables = new Dictionary<string, string>
-    {
-        [""--vibe-background""] = ""#ffffff"",
-        [""--vibe-foreground""] = ""#1a1a1a"",
-        [""--vibe-primary""] = ""#0066cc"",
-        [""--vibe-primary-foreground""] = ""#ffffff"",
-        [""--vibe-border""] = ""#e0e0e0"",
-        // Add more variables...
-    }
-};
+    private string ThemeToggleCode => @"<!-- In your layout or page -->
+<ThemeToggle />
 
-ThemeManager.RegisterTheme(customTheme);
-await ThemeManager.ApplyThemeAsync(""corporate"");";
+<!-- That's it! No service registration needed. -->
+";
 
-    private string CssVariablesCode => @":root {
-    --vibe-primary: #your-brand-color;
-    --vibe-background: #your-bg-color;
-    --vibe-foreground: #your-text-color;
+    private string CustomColorsCode => @"/* In your app.css */
+:root {
+  --vibe-primary: hsl(262 83% 58%);  /* Custom purple */
+  --vibe-primary-foreground: hsl(0 0% 100%);
 }
 
-/* Or for dark mode specifically */
-[data-theme=""dark""] {
-    --vibe-background: #1a1a1a;
-    --vibe-foreground: #ffffff;
+.dark {
+  --vibe-primary: hsl(263 70% 50%);  /* Darker purple */
 }";
 
-    private string PersistenceCode => @"@inject IJSRuntime JSRuntime
-@inject ThemeManager ThemeManager
+    private string CustomThemeCode => @"@layer vibe {
+  :root {
+    /* Your brand colors */
+    --vibe-background: hsl(0 0% 100%);
+    --vibe-foreground: hsl(240 10% 3.9%);
+    --vibe-primary: hsl(346 77% 50%);  /* Brand red */
+    --vibe-primary-foreground: hsl(0 0% 100%);
 
-private async Task SaveThemePreference(string themeId)
-{
-    await JSRuntime.InvokeVoidAsync(""localStorage.setItem"", ""theme"", themeId);
-    await ThemeManager.ApplyThemeAsync(themeId);
-}
+    /* Semantic colors */
+    --vibe-destructive: hsl(0 84% 60%);
+    --vibe-destructive-foreground: hsl(0 0% 98%);
+    --vibe-border: hsl(240 5.9% 90%);
+    --vibe-radius: 0.75rem;  /* Rounder corners */
+  }
 
-protected override async Task OnAfterRenderAsync(bool firstRender)
-{
-    if (firstRender)
-    {
-        var savedTheme = await JSRuntime.InvokeAsync<string>(
-            ""localStorage.getItem"", ""theme"");
-
-        if (!string.IsNullOrEmpty(savedTheme))
-        {
-            await ThemeManager.ApplyThemeAsync(savedTheme);
-        }
-    }
+  .dark {
+    --vibe-background: hsl(240 10% 3.9%);
+    --vibe-foreground: hsl(0 0% 98%);
+    --vibe-primary: hsl(346 77% 60%);  /* Lighter red for dark mode */
+    --vibe-primary-foreground: hsl(240 10% 3.9%);
+    --vibe-border: hsl(240 3.7% 15.9%);
+  }
 }";
 
-    private string DynamicSwitchingCode => @"@inject ThemeManager ThemeManager
+    private string HslExampleCode => @"/* HSL Format: hsl(hue saturation% lightness%) */
 
-<select @onchange=""OnThemeChanged"">
-    @foreach (var theme in ThemeManager.AvailableThemes)
-    {
-        <option value=""@theme.Id"">@theme.Name</option>
-    }
-</select>
+--vibe-primary: hsl(221 83% 53%);
+/*               ↑   ↑   ↑
+/*               │   │   └─ Lightness (0-100%)
+/*               │   └───── Saturation (0-100%)
+/*               └────────── Hue (0-360)
 
-@code {
-    private async Task OnThemeChanged(ChangeEventArgs e)
-    {
-        var themeId = e.Value?.ToString();
-        if (!string.IsNullOrEmpty(themeId))
-        {
-            await ThemeManager.ApplyThemeAsync(themeId);
-        }
-    }
-}";
+/* Easy variations: */
+--vibe-primary-light: hsl(221 83% 70%);  /* Increase lightness */
+--vibe-primary-dark: hsl(221 83% 30%);   /* Decrease lightness */
+--vibe-primary-pale: hsl(221 40% 53%);   /* Decrease saturation */";
 }

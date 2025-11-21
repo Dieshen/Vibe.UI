@@ -1,0 +1,134 @@
+@namespace Vibe.UI.Components
+@inherits Vibe.UI.Base.VibeComponent
+
+<div class="@CombinedClass @DirectionClass @WrapClass @AlignClass @JustifyClass" style="@StackStyle" @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// Gets or sets the child content
+    /// </summary>
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets the stack direction
+    /// </summary>
+    [Parameter]
+    public StackDirection Direction { get; set; } = StackDirection.Vertical;
+
+    /// <summary>
+    /// Gets or sets the spacing between items
+    /// </summary>
+    [Parameter]
+    public string Spacing { get; set; } = "1rem";
+
+    /// <summary>
+    /// Gets or sets the cross-axis alignment
+    /// </summary>
+    [Parameter]
+    public StackAlign Align { get; set; } = StackAlign.Stretch;
+
+    /// <summary>
+    /// Gets or sets the main-axis alignment
+    /// </summary>
+    [Parameter]
+    public StackJustify Justify { get; set; } = StackJustify.Start;
+
+    /// <summary>
+    /// Gets or sets whether items can wrap
+    /// </summary>
+    [Parameter]
+    public bool Wrap { get; set; }
+
+    /// <inheritdoc/>
+    protected override string ComponentClass => "vibe-stack";
+
+    private string DirectionClass => Direction switch
+    {
+        StackDirection.Horizontal => "vibe-stack-horizontal",
+        StackDirection.Vertical => "vibe-stack-vertical",
+        _ => "vibe-stack-vertical"
+    };
+
+    private string WrapClass => Wrap ? "vibe-stack-wrap" : string.Empty;
+
+    private string AlignClass => Align switch
+    {
+        StackAlign.Start => "",
+        StackAlign.Center => "",
+        StackAlign.End => "",
+        StackAlign.Stretch => "",
+        _ => ""
+    };
+
+    private string JustifyClass => Justify switch
+    {
+        StackJustify.Start => "",
+        StackJustify.Center => "",
+        StackJustify.End => "",
+        StackJustify.SpaceBetween => "",
+        StackJustify.SpaceAround => "",
+        StackJustify.SpaceEvenly => "",
+        _ => ""
+    };
+
+    private string StackStyle
+    {
+        get
+        {
+            var styles = new List<string>();
+
+            styles.Add($"gap: {Spacing}");
+
+            // Align items (cross-axis)
+            styles.Add(Align switch
+            {
+                StackAlign.Start => "align-items: flex-start",
+                StackAlign.Center => "align-items: center",
+                StackAlign.End => "align-items: flex-end",
+                StackAlign.Stretch => "align-items: stretch",
+                _ => "align-items: stretch"
+            });
+
+            // Justify content (main-axis)
+            styles.Add(Justify switch
+            {
+                StackJustify.Start => "justify-content: flex-start",
+                StackJustify.Center => "justify-content: center",
+                StackJustify.End => "justify-content: flex-end",
+                StackJustify.SpaceBetween => "justify-content: space-between",
+                StackJustify.SpaceAround => "justify-content: space-around",
+                StackJustify.SpaceEvenly => "justify-content: space-evenly",
+                _ => "justify-content: flex-start"
+            });
+
+            return string.Join("; ", styles);
+        }
+    }
+
+    public enum StackDirection
+    {
+        Vertical,
+        Horizontal
+    }
+
+    public enum StackAlign
+    {
+        Start,
+        Center,
+        End,
+        Stretch
+    }
+
+    public enum StackJustify
+    {
+        Start,
+        Center,
+        End,
+        SpaceBetween,
+        SpaceAround,
+        SpaceEvenly
+    }
+}

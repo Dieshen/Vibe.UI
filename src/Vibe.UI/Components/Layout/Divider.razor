@@ -1,0 +1,91 @@
+@namespace Vibe.UI.Components
+@inherits Vibe.UI.Base.VibeComponent
+
+@if (!string.IsNullOrEmpty(Label))
+{
+    <div class="@CombinedClass @OrientationClass @StyleClass @LabelPositionClass vibe-divider-label" @attributes="AdditionalAttributes">
+        @Label
+    </div>
+}
+else
+{
+    <hr class="@CombinedClass @OrientationClass @StyleClass" style="@DividerStyleValue" @attributes="AdditionalAttributes" />
+}
+
+@code {
+    /// <summary>
+    /// Gets or sets the orientation of the divider
+    /// </summary>
+    [Parameter]
+    public DividerOrientation Orientation { get; set; } = DividerOrientation.Horizontal;
+
+    /// <summary>
+    /// Gets or sets the label text to display in divider
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Gets or sets the label position
+    /// </summary>
+    [Parameter]
+    public DividerLabelPosition LabelPosition { get; set; } = DividerLabelPosition.Center;
+
+    /// <summary>
+    /// Gets or sets the line style
+    /// </summary>
+    [Parameter]
+    public DividerLineStyle LineStyle { get; set; } = DividerLineStyle.Solid;
+
+    /// <summary>
+    /// Gets or sets the line thickness in pixels
+    /// </summary>
+    [Parameter]
+    public int Thickness { get; set; } = 1;
+
+    /// <inheritdoc/>
+    protected override string ComponentClass => "vibe-divider";
+
+    private string OrientationClass => Orientation switch
+    {
+        DividerOrientation.Horizontal => "vibe-divider-horizontal",
+        DividerOrientation.Vertical => "vibe-divider-vertical",
+        _ => "vibe-divider-horizontal"
+    };
+
+    private string StyleClass => LineStyle switch
+    {
+        DividerLineStyle.Dashed => "vibe-divider-dashed",
+        DividerLineStyle.Dotted => "vibe-divider-dotted",
+        _ => ""
+    };
+
+    private string LabelPositionClass => !string.IsNullOrEmpty(Label) ? LabelPosition switch
+    {
+        DividerLabelPosition.Left => "vibe-divider-label-left",
+        DividerLabelPosition.Right => "vibe-divider-label-right",
+        _ => ""
+    } : "";
+
+    private string? DividerStyleValue => Thickness > 1 ? $"border-width: {Thickness}px" : null;
+
+    public enum DividerOrientation
+    {
+        Horizontal,
+        Vertical
+    }
+
+    public enum DividerLabelPosition
+    {
+        Left,
+        Center,
+        Right
+    }
+
+    public enum DividerLineStyle
+    {
+        Solid,
+        Dashed,
+        Dotted
+    }
+}

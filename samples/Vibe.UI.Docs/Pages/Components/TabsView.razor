@@ -5,58 +5,69 @@
 
 <ComponentPage ComponentName="Tabs"
                Category="Navigation"
-               Description="Organizes content into multiple panels where only one is visible at a time."
+               Description="Organizes content into multiple panels where only one is visible at a time with tab navigation."
                RelatedComponents="@relatedComponents">
 
     <PreviewContent>
-        <div class="preview-demo">
-            <h4>Basic Tabs</h4>
-            <div style="padding: 1rem; background: var(--surface-1, #f8f9fa); border-radius: 8px;">
-                <p style="margin-bottom: 1rem; font-size: 0.875rem; color: #666;">
-                    Note: Tabs component implementation is in progress. The API shown in examples below demonstrates the intended usage.
-                </p>
-                <div style="border: 1px dashed #ddd; padding: 2rem; text-align: center; border-radius: 4px;">
-                    <p style="margin: 0; color: #999;">Live preview will be available when Tabs component API is finalized</p>
-                </div>
-            </div>
+        <div class="preview-demo" style="max-width: 800px; margin: 0 auto;">
+            <Alert Variant="Alert.AlertVariant.Info" style="margin-bottom: 1.5rem;">
+                <strong>Note:</strong> The Tabs component uses a programmatic API with AddTab().
+                A declarative child component API is planned for a future release.
+            </Alert>
 
-            <h4 style="margin-top: 1.5rem;">Expected Behavior</h4>
-            <div style="padding: 1rem; background: var(--surface-1, #f8f9fa); border-radius: 8px;">
-                <ul style="margin: 0; padding-left: 1.5rem;">
-                    <li>Click tab buttons to switch between content panels</li>
-                    <li>Only one panel visible at a time</li>
-                    <li>Active tab is highlighted</li>
-                    <li>Keyboard navigation with Arrow keys</li>
-                    <li>Disabled tabs cannot be activated</li>
-                </ul>
-            </div>
+            <Card>
+                <div style="padding: 1rem;">
+                    <p>Current implementation requires programmatic tab registration.</p>
+                    <p>See the code examples below for usage patterns.</p>
+                </div>
+            </Card>
         </div>
     </PreviewContent>
 
     <Examples>
         <div class="example-item">
-            <h3>Basic Usage</h3>
-            <CodeBlock Code="@BasicCode" Language="razor" />
+            <h3>How It Works</h3>
+            <p>The current Tabs component implementation uses an internal API where tabs are registered programmatically:</p>
+            <CodeBlock Code="@HowItWorksCode" Language="csharp" />
         </div>
 
         <div class="example-item">
-            <h3>Vertical Tabs</h3>
-            <CodeBlock Code="@VerticalCode" Language="razor" />
+            <h3>Component Structure</h3>
+            <p>The Tabs component renders:</p>
+            <ul>
+                <li>A tab list with clickable tab triggers</li>
+                <li>Tab panels that show/hide based on the active tab</li>
+                <li>Proper ARIA attributes for accessibility</li>
+            </ul>
+            <CodeBlock Code="@StructureCode" Language="razor" />
         </div>
 
         <div class="example-item">
-            <h3>With Icons</h3>
-            <CodeBlock Code="@IconsCode" Language="razor" />
+            <h3>Creating Tabs Programmatically</h3>
+            <p>Tabs are added via the internal AddTab() method:</p>
+            <CodeBlock Code="@ProgrammaticCode" Language="csharp" />
         </div>
 
         <div class="example-item">
-            <h3>Disabled Tab</h3>
-            <CodeBlock Code="@DisabledCode" Language="razor" />
-        </div>
-
-        <div class="example-item">
-            <h3>Controlled Tabs</h3>
+            <h3>Controlled State</h3>
+            <p>You can control which tab is active using two-way binding:</p>
             <CodeBlock Code="@ControlledCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Tab Events</h3>
+            <p>Listen to tab activation events:</p>
+            <CodeBlock Code="@EventsCode" Language="razor" />
+        </div>
+
+        <div class="example-item">
+            <h3>Future API (Planned)</h3>
+            <p>A declarative child component API is planned for easier usage:</p>
+            <CodeBlock Code="@FutureApiCode" Language="razor" />
+            <Alert Variant="Alert.AlertVariant.Warning" style="margin-top: 1rem;">
+                <strong>Coming Soon:</strong> This declarative API is not yet implemented.
+                Use the programmatic approach shown above for now.
+            </Alert>
         </div>
     </Examples>
 
@@ -72,34 +83,40 @@
             </thead>
             <tbody>
                 <tr>
-                    <td><code>ActiveTab</code></td>
+                    <td><code>ActiveTabId</code></td>
                     <td>string</td>
                     <td>null</td>
-                    <td>Currently active tab key</td>
+                    <td>ID of the currently active tab</td>
                 </tr>
                 <tr>
-                    <td><code>DefaultTab</code></td>
-                    <td>string</td>
-                    <td>null</td>
-                    <td>Default active tab key</td>
+                    <td><code>ActiveTabIdChanged</code></td>
+                    <td>EventCallback&lt;string&gt;</td>
+                    <td>-</td>
+                    <td>Callback when active tab changes (enables two-way binding)</td>
                 </tr>
                 <tr>
-                    <td><code>Orientation</code></td>
-                    <td>Orientation</td>
-                    <td>Horizontal</td>
-                    <td>Tab orientation</td>
-                </tr>
-                <tr>
-                    <td><code>Variant</code></td>
-                    <td>TabsVariant</td>
-                    <td>Underline</td>
-                    <td>Visual style (Underline, Enclosed, Pills)</td>
+                    <td><code>OnTabActivated</code></td>
+                    <td>EventCallback&lt;TabActivatedEventArgs&gt;</td>
+                    <td>-</td>
+                    <td>Event fired when a tab is activated</td>
                 </tr>
                 <tr>
                     <td><code>ChildContent</code></td>
                     <td>RenderFragment</td>
                     <td>-</td>
-                    <td>Tab panels content</td>
+                    <td>Child content (currently for future child components)</td>
+                </tr>
+                <tr>
+                    <td><code>Class</code></td>
+                    <td>string</td>
+                    <td>""</td>
+                    <td>Additional CSS classes</td>
+                </tr>
+                <tr>
+                    <td><code>AdditionalAttributes</code></td>
+                    <td>Dictionary&lt;string, object&gt;</td>
+                    <td>null</td>
+                    <td>Additional HTML attributes</td>
                 </tr>
             </tbody>
         </table>
@@ -116,9 +133,37 @@
             </thead>
             <tbody>
                 <tr>
-                    <td><code>ActiveTabChanged</code></td>
+                    <td><code>ActiveTabIdChanged</code></td>
                     <td>EventCallback&lt;string&gt;</td>
-                    <td>Callback when active tab changes</td>
+                    <td>Fires when the active tab ID changes</td>
+                </tr>
+                <tr>
+                    <td><code>OnTabActivated</code></td>
+                    <td>EventCallback&lt;TabActivatedEventArgs&gt;</td>
+                    <td>Fires when a tab is activated with tab details</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 style="margin-top: 1.5rem;">TabActivatedEventArgs</h4>
+        <table class="api-table">
+            <thead>
+                <tr>
+                    <th>Property</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>TabId</code></td>
+                    <td>string</td>
+                    <td>The ID of the activated tab</td>
+                </tr>
+                <tr>
+                    <td><code>Title</code></td>
+                    <td>RenderFragment</td>
+                    <td>The title/label of the activated tab</td>
                 </tr>
             </tbody>
         </table>
@@ -126,109 +171,137 @@
 
     <AccessibilityNotes>
         <ul>
-            <li>ARIA role="tablist", "tab", and "tabpanel"</li>
-            <li>Keyboard navigation (Arrow keys, Home, End)</li>
-            <li>aria-selected for current tab</li>
-            <li>Focus management between tabs</li>
-            <li>Hidden panels use aria-hidden</li>
+            <li>Uses proper ARIA roles: <code>role="tablist"</code>, <code>role="tab"</code>, and <code>role="tabpanel"</code></li>
+            <li><code>aria-selected</code> attribute on active tab button</li>
+            <li>Tab panels have unique IDs for proper labeling</li>
+            <li>Disabled tabs use the <code>disabled</code> attribute</li>
+            <li>Keyboard navigation should be implemented (currently limited to click)</li>
         </ul>
     </AccessibilityNotes>
 </ComponentPage>
 
 @code {
-    private List<string> relatedComponents = new() { "Accordion", "Stepper", "Menu" };
+    private List<string> relatedComponents = new() { "Accordion", "Stepper", "Menu", "Collapsible" };
 
-    private string BasicCode => @"<Tabs>
+    private string HowItWorksCode => @"// Internal TabItem class structure
+internal class TabItem
+{
+    public string Id { get; }
+    public RenderFragment Title { get; }
+    public RenderFragment Content { get; }
+    public bool Disabled { get; }
+    public bool DefaultActive { get; }
+}
+
+// Tabs component maintains a list of TabItem instances
+private List<TabItem> _tabs = new();
+
+// Tabs are added via internal AddTab() method
+internal void AddTab(TabItem tab)
+{
+    _tabs.Add(tab);
+    // First tab or DefaultActive tab becomes active
+}";
+
+    private string StructureCode => @"<!-- Rendered HTML structure -->
+<div class=""vibe-tabs"">
+    <!-- Tab triggers -->
+    <div class=""vibe-tabs-list"" role=""tablist"">
+        <button type=""button""
+                class=""vibe-tabs-trigger vibe-tabs-trigger-active""
+                role=""tab""
+                aria-selected=""true"">
+            Tab 1
+        </button>
+        <button type=""button""
+                class=""vibe-tabs-trigger""
+                role=""tab""
+                aria-selected=""false"">
+            Tab 2
+        </button>
+    </div>
+
+    <!-- Tab panels -->
+    <div class=""vibe-tabs-content"">
+        <div class=""vibe-tabs-panel vibe-tabs-panel-active""
+             role=""tabpanel"">
+            Content 1
+        </div>
+        <div class=""vibe-tabs-panel""
+             role=""tabpanel"">
+            Content 2
+        </div>
+    </div>
+</div>";
+
+    private string ProgrammaticCode => @"@* Current implementation requires creating a wrapper or custom component *@
+
+@code {
+    private Tabs tabsRef;
+
+    protected override void OnInitialized()
+    {
+        // Tabs need to be added programmatically
+        // This requires accessing the component's internal API
+        // A declarative child component approach is recommended for future releases
+    }
+}";
+
+    private string ControlledCode => @"<Tabs @bind-ActiveTabId=""@currentTabId"">
+    @* Tabs would be registered here *@
+</Tabs>
+
+<p>Current Active Tab: @currentTabId</p>
+
+@code {
+    private string currentTabId = ""tab1"";
+}";
+
+    private string EventsCode => @"<Tabs ActiveTabId=""@activeTab""
+      ActiveTabIdChanged=""@OnActiveTabChanged""
+      OnTabActivated=""@OnTabActivated"">
+    @* Tab content *@
+</Tabs>
+
+@code {
+    private string activeTab = ""home"";
+
+    private void OnActiveTabChanged(string newTabId)
+    {
+        Console.WriteLine($""Tab changed to: {newTabId}"");
+        activeTab = newTabId;
+    }
+
+    private void OnTabActivated(Tabs.TabActivatedEventArgs args)
+    {
+        Console.WriteLine($""Tab {args.TabId} was activated"");
+    }
+}";
+
+    private string FutureApiCode => @"@* Planned declarative API (not yet implemented) *@
+<Tabs @bind-ActiveTabId=""@activeTab"">
     <TabList>
-        <Tab Key=""home"">Home</Tab>
-        <Tab Key=""profile"">Profile</Tab>
-        <Tab Key=""settings"">Settings</Tab>
+        <TabTrigger Id=""home"">Home</TabTrigger>
+        <TabTrigger Id=""profile"">Profile</TabTrigger>
+        <TabTrigger Id=""settings"" Disabled=""true"">Settings</TabTrigger>
     </TabList>
     <TabPanels>
-        <TabPanel Key=""home"">
+        <TabPanel Id=""home"">
             <h3>Home Content</h3>
-            <p>Welcome to the home page.</p>
+            <p>Welcome to the home tab.</p>
         </TabPanel>
-        <TabPanel Key=""profile"">
+        <TabPanel Id=""profile"">
             <h3>Profile Content</h3>
-            <p>Your profile information.</p>
+            <p>Your profile information goes here.</p>
         </TabPanel>
-        <TabPanel Key=""settings"">
+        <TabPanel Id=""settings"">
             <h3>Settings Content</h3>
-            <p>Manage your settings.</p>
+            <p>Application settings.</p>
         </TabPanel>
-    </TabPanels>
-</Tabs>";
-
-    private string VerticalCode => @"<Tabs Orientation=""Orientation.Vertical"">
-    <TabList>
-        <Tab Key=""account"">Account</Tab>
-        <Tab Key=""security"">Security</Tab>
-        <Tab Key=""notifications"">Notifications</Tab>
-    </TabList>
-    <TabPanels>
-        <TabPanel Key=""account"">Account settings</TabPanel>
-        <TabPanel Key=""security"">Security settings</TabPanel>
-        <TabPanel Key=""notifications"">Notification preferences</TabPanel>
-    </TabPanels>
-</Tabs>";
-
-    private string IconsCode => @"<Tabs>
-    <TabList>
-        <Tab Key=""overview"">
-            <span class=""icon"">📊</span>
-            Overview
-        </Tab>
-        <Tab Key=""analytics"">
-            <span class=""icon"">📈</span>
-            Analytics
-        </Tab>
-        <Tab Key=""reports"">
-            <span class=""icon"">📄</span>
-            Reports
-        </Tab>
-    </TabList>
-    <TabPanels>
-        <TabPanel Key=""overview"">Overview content</TabPanel>
-        <TabPanel Key=""analytics"">Analytics content</TabPanel>
-        <TabPanel Key=""reports"">Reports content</TabPanel>
-    </TabPanels>
-</Tabs>";
-
-    private string DisabledCode => @"<Tabs>
-    <TabList>
-        <Tab Key=""enabled"">Enabled</Tab>
-        <Tab Key=""disabled"" Disabled=""true"">Disabled</Tab>
-        <Tab Key=""another"">Another</Tab>
-    </TabList>
-    <TabPanels>
-        <TabPanel Key=""enabled"">Enabled content</TabPanel>
-        <TabPanel Key=""disabled"">Disabled content</TabPanel>
-        <TabPanel Key=""another"">Another content</TabPanel>
-    </TabPanels>
-</Tabs>";
-
-    private string ControlledCode => @"<Tabs ActiveTab=""@activeTab"" ActiveTabChanged=""@HandleTabChange"">
-    <TabList>
-        <Tab Key=""tab1"">Tab 1</Tab>
-        <Tab Key=""tab2"">Tab 2</Tab>
-        <Tab Key=""tab3"">Tab 3</Tab>
-    </TabList>
-    <TabPanels>
-        <TabPanel Key=""tab1"">Content 1</TabPanel>
-        <TabPanel Key=""tab2"">Content 2</TabPanel>
-        <TabPanel Key=""tab3"">Content 3</TabPanel>
     </TabPanels>
 </Tabs>
 
-<p>Current Tab: @activeTab</p>
-
 @code {
-    private string activeTab = ""tab1"";
-
-    private void HandleTabChange(string tab)
-    {
-        activeTab = tab;
-    }
+    private string activeTab = ""home"";
 }";
 }

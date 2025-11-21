@@ -1,0 +1,64 @@
+@namespace Vibe.UI.Components
+@inherits Vibe.UI.Base.VibeComponent
+
+<div class="@CombinedClass" style="@GridItemStyle" @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// Gets or sets the child content
+    /// </summary>
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets the column span
+    /// </summary>
+    [Parameter]
+    public int ColSpan { get; set; } = 1;
+
+    /// <summary>
+    /// Gets or sets the column span for medium screens
+    /// </summary>
+    [Parameter]
+    public int? ColSpanMd { get; set; }
+
+    /// <summary>
+    /// Gets or sets the column span for large screens
+    /// </summary>
+    [Parameter]
+    public int? ColSpanLg { get; set; }
+
+    /// <summary>
+    /// Gets or sets the row span
+    /// </summary>
+    [Parameter]
+    public int RowSpan { get; set; } = 1;
+
+    /// <inheritdoc/>
+    protected override string ComponentClass => "vibe-grid-item";
+
+    /// <summary>
+    /// Generates the inline style for grid item spanning
+    /// </summary>
+    private string GridItemStyle
+    {
+        get
+        {
+            var styles = new List<string>();
+
+            if (ColSpan > 1)
+            {
+                styles.Add($"grid-column: span {ColSpan}");
+            }
+
+            if (RowSpan > 1)
+            {
+                styles.Add($"grid-row: span {RowSpan}");
+            }
+
+            return styles.Count > 0 ? string.Join("; ", styles) : string.Empty;
+        }
+    }
+}

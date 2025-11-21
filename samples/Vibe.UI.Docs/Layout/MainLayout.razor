@@ -1,7 +1,7 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager Navigation
 
-@* ThemeInitializer removed - using custom theme.js instead *@
+<ThemeProvider/>
 
 <div class="docs-container">
     <!-- Top Navigation Bar -->
@@ -24,9 +24,7 @@
                 <a href="https://github.com/Dieshen/Vibe.UI" target="_blank" class="github-link" title="View on GitHub">
                     <span class="icon">⚙</span>
                 </a>
-                <button class="theme-toggle-btn" @onclick="ToggleTheme" title="Toggle theme">
-                    <span class="icon">@(currentTheme == "dark" ? "☀️" : "🌙")</span>
-                </button>
+                <ThemeToggle />
             </div>
         </div>
     </header>
@@ -60,18 +58,8 @@
 </div>
 
 @code {
-    [Inject]
-    private Vibe.UI.Themes.Services.ThemeManager ThemeManager { get; set; } = default!;
-
     private bool sidebarOpen = false;
     private bool searchOpen = false;
-    private string currentTheme = "light";
-
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-        currentTheme = ThemeManager.CurrentTheme?.Id ?? "light";
-    }
 
     private void ToggleSidebar()
     {
@@ -86,13 +74,6 @@
     private void CloseSearch()
     {
         searchOpen = false;
-    }
-
-    private async Task ToggleTheme()
-    {
-        currentTheme = currentTheme == "dark" ? "light" : "dark";
-        await ThemeManager.SetThemeAsync(currentTheme);
-        StateHasChanged();
     }
 
     private string GetBaseUrl()

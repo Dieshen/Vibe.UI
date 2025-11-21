@@ -1,0 +1,113 @@
+@namespace Vibe.UI.Components
+@inherits Vibe.UI.Base.VibeComponent
+
+<div class="@CombinedClass" @attributes="AdditionalAttributes">
+    <div class="vibe-menu-trigger" @onclick="ToggleMenu">
+        @if (Trigger != null)
+        {
+            @Trigger
+        }
+        else
+        {
+            <button type="button" class="vibe-button">
+                Menu
+            </button>
+        }
+    </div>
+
+    @if (IsOpen)
+    {
+        <div class="vibe-menu-content" style="@PlacementStyle">
+            @ChildContent
+        </div>
+        @if (CloseOnClickOutside)
+        {
+            <div class="menu-backdrop" @onclick="CloseMenu" style="position: fixed; inset: 0; z-index: 40;"></div>
+        }
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Gets or sets the menu content
+    /// </summary>
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets the trigger content
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Trigger { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the menu is open
+    /// </summary>
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback when menu open state changes
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> IsOpenChanged { get; set; }
+
+    /// <summary>
+    /// Gets or sets the menu placement
+    /// </summary>
+    [Parameter]
+    public MenuPlacement Placement { get; set; } = MenuPlacement.BottomStart;
+
+    /// <summary>
+    /// Gets or sets whether to close menu after item selection
+    /// </summary>
+    [Parameter]
+    public bool CloseOnSelect { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets whether to close menu when clicking outside
+    /// </summary>
+    [Parameter]
+    public bool CloseOnClickOutside { get; set; } = true;
+
+    /// <inheritdoc/>
+    protected override string ComponentClass => "vibe-menu";
+
+    private string PlacementStyle => Placement switch
+    {
+        MenuPlacement.BottomStart => "top: 100%; left: 0; margin-top: 0.25rem;",
+        MenuPlacement.BottomEnd => "top: 100%; right: 0; margin-top: 0.25rem;",
+        MenuPlacement.TopStart => "bottom: 100%; left: 0; margin-bottom: 0.25rem;",
+        MenuPlacement.TopEnd => "bottom: 100%; right: 0; margin-bottom: 0.25rem;",
+        _ => "top: 100%; left: 0; margin-top: 0.25rem;"
+    };
+
+    private async Task ToggleMenu()
+    {
+        IsOpen = !IsOpen;
+        if (IsOpenChanged.HasDelegate)
+        {
+            await IsOpenChanged.InvokeAsync(IsOpen);
+        }
+    }
+
+    private async Task CloseMenu()
+    {
+        if (IsOpen)
+        {
+            IsOpen = false;
+            if (IsOpenChanged.HasDelegate)
+            {
+                await IsOpenChanged.InvokeAsync(IsOpen);
+            }
+        }
+    }
+
+    public enum MenuPlacement
+    {
+        BottomStart,
+        BottomEnd,
+        TopStart,
+        TopEnd
+    }
+}
