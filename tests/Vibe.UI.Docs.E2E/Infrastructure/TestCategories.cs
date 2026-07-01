@@ -24,4 +24,9 @@ public static class TestCategories
     /// Mobile tests - Tests requiring mobile viewport or responsive behavior
     /// </summary>
     public const string Mobile = "Mobile";
+
+    /// <summary>
+    /// Compatibility tests - Browser smoke tests for supported hosting models
+    /// </summary>
+    public const string Compatibility = "Compatibility";
 }

@@ -1,0 +1,96 @@
+@page "/"
+
+<PageTitle>Vibe.UI standalone WebAssembly compatibility</PageTitle>
+
+<section class="compat-page" data-testid="standalone-client-smoke">
+    <div class="compat-page-header">
+        <div>
+            <Badge Variant="secondary">Standalone WebAssembly</Badge>
+            <h1>Vibe.UI standalone client smoke test</h1>
+            <p>
+                This page verifies that Vibe.UI components render and update inside a standalone
+                Blazor WebAssembly app.
+            </p>
+        </div>
+
+        <ThemeToggle ShowLabel="true" />
+    </div>
+
+    <Card>
+        <CardTitle>Interactive component path</CardTitle>
+        <CardDescription>Button, input, checkbox, dialog, alert, badge, and theme assets.</CardDescription>
+
+        <ChildContent>
+            <Alert Title="Client runtime active" Variant="AlertVariant.Default">
+                Current interaction count: @_clickCount. Name value: @_name.
+            </Alert>
+
+            <div class="compat-grid">
+                <Input Id="standalone-name"
+                       Label="Name"
+                       Value="@_name"
+                       ValueChanged="OnNameChanged"
+                       HelperText="Updates through WebAssembly event handling." />
+
+                <Checkbox Checked="@_confirmed" CheckedChanged="OnConfirmedChanged">
+                    Standalone checkbox state: @(_confirmed ? "checked" : "unchecked")
+                </Checkbox>
+            </div>
+
+            <div class="compat-actions">
+                <Button OnClick="Increment" data-testid="standalone-increment">
+                    Increment client state
+                </Button>
+                <Button Variant="ButtonVariant.Outline" OnClick="OpenDialog" data-testid="standalone-dialog">
+                    Open dialog
+                </Button>
+            </div>
+        </ChildContent>
+    </Card>
+
+    <Dialog @bind-IsOpen="_dialogOpen">
+        <Header>
+            <strong>Standalone dialog</strong>
+        </Header>
+        <ChildContent>
+            The dialog rendered and opened from a standalone WebAssembly event.
+        </ChildContent>
+        <Footer>
+            <Button Variant="ButtonVariant.Secondary" OnClick="CloseDialog">Close</Button>
+        </Footer>
+    </Dialog>
+</section>
+
+@code {
+    private int _clickCount;
+    private string _name = "Vibe";
+    private bool _confirmed = true;
+    private bool _dialogOpen;
+
+    private void Increment(MouseEventArgs _)
+    {
+        _clickCount++;
+    }
+
+    private Task OnNameChanged(string value)
+    {
+        _name = value;
+        return Task.CompletedTask;
+    }
+
+    private Task OnConfirmedChanged(bool value)
+    {
+        _confirmed = value;
+        return Task.CompletedTask;
+    }
+
+    private void OpenDialog(MouseEventArgs _)
+    {
+        _dialogOpen = true;
+    }
+
+    private void CloseDialog(MouseEventArgs _)
+    {
+        _dialogOpen = false;
+    }
+}

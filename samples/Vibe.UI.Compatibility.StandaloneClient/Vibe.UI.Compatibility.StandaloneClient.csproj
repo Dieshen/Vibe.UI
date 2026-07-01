@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <VibePackageVersion Condition="'$(VibePackageVersion)' == ''">1.0.0-beta</VibePackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.17" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.17" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(VibeUsePackageReferences)' != 'true'">
+    <ProjectReference Include="..\..\src\Vibe.UI\Vibe.UI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(VibeUsePackageReferences)' == 'true'">
+    <PackageReference Include="Vibe.UI" Version="$(VibePackageVersion)" />
+    <PackageReference Include="Vibe.UI.CSS" Version="$(VibePackageVersion)" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>
