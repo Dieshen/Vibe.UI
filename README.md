@@ -5,16 +5,16 @@
 [![codecov](https://codecov.io/gh/Dieshen/Vibe.UI/branch/main/graph/badge.svg)](https://codecov.io/gh/Dieshen/Vibe.UI)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-> **Alpha Release (1.0.0-alpha)** - This library is in active development. APIs may change between releases. We welcome feedback and contributions as we work toward a stable 1.0 release. See [Known Limitations](#known-limitations) below.
+> **Beta Release (1.0.0-beta)** - This library is ready for broader dogfooding across supported Blazor hosting models. APIs may still change before stable 1.0. See [Known Limitations](#known-limitations) below.
 
-A comprehensive Blazor component library inspired by Shadcn UI, built with Razor components and C#. Complete with **90+ components**, comprehensive theming, Chart.js integration, form validation, icon library, testing infrastructure, CLI tooling, and IDE extensions.
+A comprehensive Blazor component library inspired by Shadcn UI, built with Razor components and C#. Complete with **110 components**, comprehensive theming, Chart.js integration, form validation, icon library, testing infrastructure, CLI tooling, and IDE extensions.
 
 > **Built for developers who want full control.** Copy components into your project and customize them, or use our NuGet package for quick integration.
 
 ## Features
 
 ### Components & Features
-- **90+ Accessible UI Components** - Comprehensive component library with Input, Form, Data Display, Navigation, Overlay, Feedback, and Advanced components
+- **110 Accessible UI Components** - Comprehensive component library with Input, Form, Data Display, Navigation, Overlay, Feedback, and Advanced components
 - **Chart.js Integration** - Full-featured data visualization with 7 chart types (Line, Bar, Pie, Doughnut, Radar, PolarArea, Area)
 - **Icon Library** - 70+ Lucide icons built-in with SVG support and customizable styling
 - **Form Validation** - Built-in validators (email, phone, password strength, credit card, etc.) with real-time feedback
@@ -52,7 +52,7 @@ Install components as source code you can customize:
 
 ```bash
 # Install CLI tool
-dotnet tool install -g Vibe.UI.CLI
+dotnet tool install -g Vibe.UI.CLI --version 1.0.0-beta
 
 # Initialize in your project
 cd MyBlazorApp
@@ -77,7 +77,7 @@ Infrastructure goes in `Vibe/`, components in `Components/`.
 Use pre-built components from package:
 
 ```bash
-dotnet add package Vibe.UI
+dotnet add package Vibe.UI --version 1.0.0-beta
 ```
 
 **Benefits:**
@@ -384,7 +384,7 @@ Vibe.UI uses CSS variables for theming. Here are the main variables:
 
 ## Available Components
 
-Vibe.UI includes a comprehensive set of **90+ production-ready components**:
+Vibe.UI includes a comprehensive set of **110 production-ready components**:
 
 ### Layout Components
 - **AspectRatio** - Container maintaining a specific aspect ratio
@@ -596,7 +596,7 @@ Found a security vulnerability? Please review our [Security Policy](.github/SECU
 
 ## Known Limitations
 
-As an alpha release, Vibe.UI has some known limitations we're actively working on:
+As a beta release, Vibe.UI has some known limitations we're actively working on:
 
 ### Components
 - **Error states**: Not all form components fully support `[aria-invalid]` styling yet
@@ -613,7 +613,8 @@ As an alpha release, Vibe.UI has some known limitations we're actively working o
 For detailed roadmaps, see:
 - `docs/Vibe.UI.ShadcnParity.md` - Component parity with shadcn/ui
 - `docs/Vibe.UI.CSS.TailwindParity.md` - Utility parity with Tailwind CSS
-- `docs/Alpha-0.1.0-Checklist.md` - Alpha release checklist
+- `docs/Beta-Readiness-Checklist.md` - Beta release checklist
+- `docs/Alpha-0.1.0-Checklist.md` - Historical alpha release checklist
 
 ## Sponsorship
 

@@ -5,7 +5,7 @@ CLI tool for adding Vibe.UI components to your Blazor projects.
 ## Installation
 
 ```bash
-dotnet tool install -g Vibe.UI.CLI
+dotnet tool install -g Vibe.UI.CLI --version 1.0.0-beta
 ```
 
 ## Quick Start
@@ -68,7 +68,7 @@ This design provides:
 - **Easier discovery**: All components visible in one directory
 - **Less cognitive load**: No need to remember which category a component belongs to
 - **Cleaner autocomplete**: Better IDE experience
-- **Scalable**: Works well even with 90+ components
+- **Scalable**: Works well even with 110 components
 
 **Why not category subdirectories?**
 

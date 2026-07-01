@@ -140,7 +140,7 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         }
         else if (settings.WithCss && csprojPath == null)
         {
-            AnsiConsole.MarkupLine($"[yellow]Warning:[/] No .csproj file found. Run [yellow]dotnet add package Vibe.UI.CSS[/] manually.");
+            AnsiConsole.MarkupLine($"[yellow]Warning:[/] No .csproj file found. Run [yellow]dotnet add package Vibe.UI.CSS --version {CliVersion.Current}[/] manually.");
         }
 
         AnsiConsole.MarkupLine($"\n[blue]Next steps:[/]");
