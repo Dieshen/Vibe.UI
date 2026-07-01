@@ -28,6 +28,15 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: npm
+        cache-dependency-path: |
+          src/Vibe.UI/ts-src/package-lock.json
+          samples/Vibe.UI.Docs/ts-src/package-lock.json
+
     - name: Determine version
       id: version
       run: |
@@ -41,6 +50,48 @@ jobs:
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "Publishing version: $VERSION"
 
+    - name: Validate beta version
+      run: |
+        set -euo pipefail
+        VERSION="${{ steps.version.outputs.version }}"
+
+        case "$VERSION" in
+          1.0.0-beta|1.0.0-beta.[0-9]*) ;;
+          *)
+            echo "::error::Beta publish version must be 1.0.0-beta or 1.0.0-beta.N, got '${VERSION}'"
+            exit 1
+            ;;
+        esac
+
+        for project in \
+          src/Vibe.UI.CSS/Vibe.UI.CSS.csproj \
+          src/Vibe.UI/Vibe.UI.csproj \
+          src/Vibe.UI.CLI/Vibe.UI.CLI.csproj
+        do
+          PROJECT_VERSION="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' "$project" | head -n 1)"
+          if [ "$PROJECT_VERSION" != "$VERSION" ]; then
+            echo "::error::${project} version '${PROJECT_VERSION}' does not match publish version '${VERSION}'"
+            exit 1
+          fi
+        done
+
+    - name: Validate Vibe.UI TypeScript
+      working-directory: src/Vibe.UI/ts-src
+      run: |
+        npm ci
+        npm test
+        npm run deploy
+
+    - name: Validate docs TypeScript
+      working-directory: samples/Vibe.UI.Docs/ts-src
+      run: |
+        npm ci
+        npm test
+        npm run deploy
+
+    - name: Verify generated JavaScript is committed
+      run: git diff --exit-code -- src/Vibe.UI/wwwroot/js/vibe-chart.js samples/Vibe.UI.Docs/wwwroot/js/chart.umd.js samples/Vibe.UI.Docs/wwwroot/js/shiki-interop.js samples/Vibe.UI.Docs/wwwroot/js/docs.js
+
     - name: Restore Vibe.UI.CSS
       run: dotnet restore src/Vibe.UI.CSS/Vibe.UI.CSS.csproj
 
@@ -50,20 +101,54 @@ jobs:
     - name: Restore Vibe.UI.CLI
       run: dotnet restore src/Vibe.UI.CLI/Vibe.UI.CLI.csproj
 
+    - name: Restore compatibility test fixtures
+      run: |
+        dotnet restore samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj
+        dotnet restore samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj
+        dotnet restore tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj
+
     - name: Build Vibe.UI.CSS
-      run: dotnet build src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-restore
+      run: dotnet build src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
 
     - name: Build Vibe.UI
-      run: dotnet build src/Vibe.UI/Vibe.UI.csproj --configuration Release --no-restore
+      run: dotnet build src/Vibe.UI/Vibe.UI.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
 
     - name: Build Vibe.UI.CLI
-      run: dotnet build src/Vibe.UI.CLI/Vibe.UI.CLI.csproj --configuration Release --no-restore
+      run: dotnet build src/Vibe.UI.CLI/Vibe.UI.CLI.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+
+    - name: Build compatibility test fixtures
+      run: |
+        dotnet build samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+        dotnet build samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+        dotnet build tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+
+    - name: Restore unit tests
+      run: |
+        dotnet restore tests/Vibe.UI.CSS.Tests/Vibe.UI.CSS.Tests.csproj
+        dotnet restore tests/Vibe.UI.Tests/Vibe.UI.Tests.csproj
+        dotnet restore tests/Vibe.UI.CLI.Tests/Vibe.UI.CLI.Tests.csproj
 
     - name: Run tests
       run: |
-        dotnet test tests/Vibe.UI.CSS.Tests/Vibe.UI.CSS.Tests.csproj --configuration Release --verbosity normal
-        dotnet test tests/Vibe.UI.Tests/Vibe.UI.Tests.csproj --configuration Release --verbosity normal
-        dotnet test tests/Vibe.UI.CLI.Tests/Vibe.UI.CLI.Tests.csproj --configuration Release --verbosity normal
+        dotnet test tests/Vibe.UI.CSS.Tests/Vibe.UI.CSS.Tests.csproj --configuration Release --no-restore --verbosity normal -p:TreatWarningsAsErrors=true
+        dotnet test tests/Vibe.UI.Tests/Vibe.UI.Tests.csproj --configuration Release --no-restore --verbosity normal -p:TreatWarningsAsErrors=true
+        dotnet test tests/Vibe.UI.CLI.Tests/Vibe.UI.CLI.Tests.csproj --configuration Release --no-restore --verbosity normal -p:TreatWarningsAsErrors=true
+
+    - name: Install Playwright browsers
+      run: pwsh tests/Vibe.UI.Docs.E2E/bin/Release/net9.0/playwright.ps1 install --with-deps chromium firefox webkit
+
+    - name: Run docs integration browser tests
+      run: BROWSER=chromium dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Integration -- RunConfiguration.TestSessionTimeout=300000
+
+    - name: Run docs smoke browser tests
+      run: BROWSER=chromium dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Smoke -- RunConfiguration.TestSessionTimeout=600000
+
+    - name: Run compatibility browser tests
+      run: |
+        for browser in chromium firefox webkit; do
+          echo "Running compatibility browser tests with ${browser}"
+          BROWSER="${browser}" dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Compatibility -- RunConfiguration.TestSessionTimeout=180000
+        done
 
     - name: Pack Vibe.UI.CSS
       run: |
@@ -80,16 +165,8 @@ jobs:
     - name: List packages
       run: ls -lh ./packages/
 
-    - name: Verify package contents
-      run: |
-        echo "=== Vibe.UI.CSS Package Contents ==="
-        unzip -l ./packages/Vibe.UI.CSS.${{ steps.version.outputs.version }}.nupkg
-        echo ""
-        echo "=== Vibe.UI Package Contents ==="
-        unzip -l ./packages/Vibe.UI.${{ steps.version.outputs.version }}.nupkg | grep -E "icon|README"
-        echo ""
-        echo "=== Vibe.UI.CLI Package Contents ==="
-        unzip -l ./packages/Vibe.UI.CLI.${{ steps.version.outputs.version }}.nupkg | grep -E "icon|README"
+    - name: Validate local packages
+      run: pwsh scripts/Validate-LocalPackages.ps1 -PackagesPath ./packages -Version "${{ steps.version.outputs.version }}"
 
     - name: Push to NuGet.org
       run: |
