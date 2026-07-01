@@ -23,10 +23,10 @@
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
         <div class="vibe-flex vibe-items-center vibe-gap-6 vibe-flex-wrap vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
-            <Avatar ImageUrl="https://i.pravatar.cc/150?img=1" Size="32" />
-            <Avatar ImageUrl="https://i.pravatar.cc/150?img=2" Size="40" />
-            <Avatar ImageUrl="https://i.pravatar.cc/150?img=3" Size="48" />
-            <Avatar ImageUrl="https://i.pravatar.cc/150?img=4" Size="64" />
+            <Avatar ImageUrl="icon-192.png" Size="32" />
+            <Avatar ImageUrl="icon-512.png" Size="40" />
+            <Avatar ImageUrl="logo.png" Size="48" />
+            <Avatar ImageUrl="favicon.png" Size="64" />
             <Avatar Initials="JD" Size="48" />
             <Avatar Initials="AS" Size="48" />
             <Avatar FallbackIcon="👤" Size="48" />
@@ -44,7 +44,7 @@
                 Display a user avatar with an image source.
             </p>
             <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <Avatar Src="https://i.pravatar.cc/150?img=1" Alt="User Avatar" />
+                <Avatar Src="icon-192.png" Alt="User Avatar" />
             </div>
             <CodeBlock Code="@BasicCode" Language="razor" />
         </div>
@@ -56,10 +56,10 @@
                 Avatars come in multiple sizes to fit different contexts.
             </p>
             <div class="vibe-flex vibe-items-center vibe-gap-4 vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <Avatar Size="24" Src="https://i.pravatar.cc/150?img=2" />
-                <Avatar Size="32" Src="https://i.pravatar.cc/150?img=3" />
-                <Avatar Size="48" Src="https://i.pravatar.cc/150?img=4" />
-                <Avatar Size="64" Src="https://i.pravatar.cc/150?img=5" />
+                <Avatar Size="24" Src="icon-192.png" />
+                <Avatar Size="32" Src="icon-512.png" />
+                <Avatar Size="48" Src="logo.png" />
+                <Avatar Size="64" Src="favicon.png" />
             </div>
             <CodeBlock Code="@SizesCode" Language="razor" />
         </div>
@@ -100,11 +100,11 @@
             </p>
             <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
                 <div class="vibe-flex vibe-items-center -space-x-3">
-                    <Avatar Src="https://i.pravatar.cc/150?img=1" />
-                    <Avatar Src="https://i.pravatar.cc/150?img=2" />
-                    <Avatar Src="https://i.pravatar.cc/150?img=3" />
-                    <Avatar Src="https://i.pravatar.cc/150?img=4" />
-                    <Avatar Src="https://i.pravatar.cc/150?img=5" />
+                    <Avatar Src="icon-192.png" />
+                    <Avatar Src="icon-512.png" />
+                    <Avatar Src="logo.png" />
+                    <Avatar Src="favicon.png" />
+                    <Avatar Initials="MK" />
                 </div>
             </div>
             <CodeBlock Code="@GroupCode" Language="razor" />
@@ -230,12 +230,12 @@
 </div>
 
 @code {
-    private string BasicCode => @"<Avatar Src=""https://i.pravatar.cc/150?img=1"" Alt=""User Avatar"" />";
+    private string BasicCode => @"<Avatar Src=""icon-192.png"" Alt=""User Avatar"" />";
 
-    private string SizesCode => @"<Avatar Size=""24"" Src=""https://i.pravatar.cc/150?img=2"" />
-<Avatar Size=""32"" Src=""https://i.pravatar.cc/150?img=3"" />
-<Avatar Size=""48"" Src=""https://i.pravatar.cc/150?img=4"" />
-<Avatar Size=""64"" Src=""https://i.pravatar.cc/150?img=5"" />";
+    private string SizesCode => @"<Avatar Size=""24"" Src=""icon-192.png"" />
+<Avatar Size=""32"" Src=""icon-512.png"" />
+<Avatar Size=""48"" Src=""logo.png"" />
+<Avatar Size=""64"" Src=""favicon.png"" />";
 
     private string InitialsCode => @"<Avatar Initials=""JD"" />
 <Avatar Initials=""AS"" />
@@ -246,11 +246,11 @@
 </Avatar>";
 
     private string GroupCode => @"<div class=""vibe-flex vibe-items-center -space-x-3"">
-    <Avatar Src=""https://i.pravatar.cc/150?img=1"" />
-    <Avatar Src=""https://i.pravatar.cc/150?img=2"" />
-    <Avatar Src=""https://i.pravatar.cc/150?img=3"" />
-    <Avatar Src=""https://i.pravatar.cc/150?img=4"" />
-    <Avatar Src=""https://i.pravatar.cc/150?img=5"" />
+    <Avatar Src=""icon-192.png"" />
+    <Avatar Src=""icon-512.png"" />
+    <Avatar Src=""logo.png"" />
+    <Avatar Src=""favicon.png"" />
+    <Avatar Initials=""MK"" />
 </div>";
 }
 

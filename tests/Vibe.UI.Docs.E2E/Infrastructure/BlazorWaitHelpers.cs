@@ -35,7 +35,13 @@ public static class BlazorWaitHelpers
     public static async Task WaitForShikiReadyAsync(this IPage page, int timeout = 10000)
     {
         await page.WaitForFunctionAsync(
-            "() => window.isHighlighterReady === true",
+            @"() => {
+                if (typeof window.isHighlighterReady === 'function') {
+                    return window.isHighlighterReady();
+                }
+
+                return window.isHighlighterReady === true;
+            }",
             null,
             new PageWaitForFunctionOptions { Timeout = timeout }
         );

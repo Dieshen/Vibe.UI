@@ -3,16 +3,11 @@
  * Provides VSCode-quality syntax highlighting for code blocks
  */
 
+import { createHighlighter as createShikiHighlighter } from 'shiki/bundle/web';
+
 // Type definitions for Shiki
 interface ShikiHighlighter {
   codeToHtml(code: string, options: { lang: string; theme: string }): string;
-}
-
-interface ShikiBundle {
-  createHighlighter(options: {
-    themes: string[];
-    langs: string[];
-  }): Promise<ShikiHighlighter>;
 }
 
 // Supported languages (type-safe)
@@ -74,26 +69,18 @@ async function initHighlighter(): Promise<ShikiHighlighter> {
   if (highlighter) return highlighter;
   if (highlighterPromise) return highlighterPromise;
 
-  highlighterPromise = (async (): Promise<ShikiHighlighter> => {
+  const pendingHighlighter = (async (): Promise<ShikiHighlighter> => {
     while (initializationAttempts < MAX_INIT_ATTEMPTS) {
       try {
         initializationAttempts++;
         console.log(`[Shiki] Initializing highlighter (attempt ${initializationAttempts})...`);
 
-        // Dynamic import of Shiki from CDN - use web bundle (limited languages)
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore - Dynamic CDN import URL not resolvable at compile time
-        const shiki = (await import(
-          'https://esm.sh/shiki@1.22.0/bundle/web'
-        )) as ShikiBundle;
-
-        // Only load languages that are in the web bundle
-        highlighter = await shiki.createHighlighter({
+        highlighter = (await createShikiHighlighter({
           themes: [THEMES.light, THEMES.dark],
           langs: [...WEB_BUNDLE_LANGUAGES]
-        });
+        })) as ShikiHighlighter;
 
-        console.log('[Shiki] Highlighter initialized successfully with web bundle languages');
+        console.log('[Shiki] Highlighter initialized successfully with local web bundle languages');
         return highlighter;
       } catch (error) {
         console.error(`[Shiki] Initialization attempt ${initializationAttempts} failed:`, error);
@@ -108,7 +95,15 @@ async function initHighlighter(): Promise<ShikiHighlighter> {
     throw new Error('[Shiki] Failed to initialize after maximum attempts');
   })();
 
-  return highlighterPromise;
+  highlighterPromise = pendingHighlighter;
+
+  try {
+    return await pendingHighlighter;
+  } catch (error) {
+    highlighterPromise = null;
+    initializationAttempts = 0;
+    throw error;
+  }
 }
 
 /**

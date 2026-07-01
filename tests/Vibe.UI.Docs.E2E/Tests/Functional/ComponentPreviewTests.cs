@@ -298,6 +298,7 @@ public class ComponentPreviewTests : E2ETestBase
             if (await previewButton.IsVisibleAsync())
             {
                 var buttonText = await previewButton.TextContentAsync();
+                buttonText.ShouldNotBeNull("Preview button should render text after the prop update");
                 buttonText.ShouldContain("Custom Button Text", Case.Insensitive,
                     "Button text should update to match input");
             }

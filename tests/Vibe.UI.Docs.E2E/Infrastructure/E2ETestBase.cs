@@ -9,9 +9,6 @@ namespace Vibe.UI.Docs.E2E.Infrastructure;
 /// </summary>
 public abstract class E2ETestBase : IAsyncLifetime
 {
-    private static readonly object _installLock = new();
-    private static bool _browsersInstalled;
-
     protected IPlaywright Playwright { get; private set; } = null!;
     protected IBrowser Browser { get; private set; } = null!;
     protected IBrowserContext Context { get; private set; } = null!;
@@ -40,9 +37,6 @@ public abstract class E2ETestBase : IAsyncLifetime
 
     public virtual async Task InitializeAsync()
     {
-        // Ensure browsers are installed (thread-safe, runs once per test run)
-        EnsureBrowsersInstalled();
-
         // Ensure the docs site is reachable when using the default base URL.
         // If DOCS_BASE_URL points elsewhere, assume the caller/CI starts the server externally.
         await DocsServerManager.AcquireAsync(BaseUrl, CancellationToken.None);
@@ -141,25 +135,4 @@ public abstract class E2ETestBase : IAsyncLifetime
         await Page.ScreenshotAsync(new() { Path = screenshotPath });
     }
 
-    /// <summary>
-    /// Ensures Playwright browsers are installed. Thread-safe and runs only once per test run.
-    /// </summary>
-    private static void EnsureBrowsersInstalled()
-    {
-        if (_browsersInstalled) return;
-
-        lock (_installLock)
-        {
-            if (_browsersInstalled) return;
-
-            // Install browsers using Playwright CLI programmatically
-            var exitCode = Microsoft.Playwright.Program.Main(["install", "chromium"]);
-            if (exitCode != 0)
-            {
-                throw new Exception($"Failed to install Playwright browsers. Exit code: {exitCode}");
-            }
-
-            _browsersInstalled = true;
-        }
-    }
 }

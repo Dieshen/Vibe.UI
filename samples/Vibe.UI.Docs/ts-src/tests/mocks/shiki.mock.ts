@@ -46,10 +46,9 @@ export const mockShikiBundle = {
   )
 };
 
-// Setup function to mock the dynamic import
+// Setup function to mock the local Shiki web bundle import
 export function setupShikiMock(): void {
-  // Mock the dynamic import
-  vi.doMock('https://esm.sh/shiki@1.22.0/bundle/web', () => mockShikiBundle);
+  vi.doMock('shiki/bundle/web', () => mockShikiBundle);
 
   // Reset state
   mockHighlighterInstance = null;
@@ -60,7 +59,7 @@ export function setupShikiMock(): void {
 
 // Teardown function
 export function teardownShikiMock(): void {
-  vi.doUnmock('https://esm.sh/shiki@1.22.0/bundle/web');
+  vi.doUnmock('shiki/bundle/web');
   mockHighlighterInstance = null;
   shouldFailInit = false;
   initAttempts = 0;
@@ -83,7 +82,7 @@ export function resetInitAttempts(): void {
   initAttempts = 0;
 }
 
-// Mock the CDN import at module level
+// Mock the Shiki import at module level
 export function mockShikiImport(): void {
   // @ts-ignore - Mocking global import
   const originalImport = globalThis.import;
@@ -93,7 +92,7 @@ export function mockShikiImport(): void {
     if (url.includes('shiki')) {
       if (shouldFailInit && initAttempts < 3) {
         initAttempts++;
-        throw new Error('Mock Shiki CDN load failed');
+        throw new Error('Mock Shiki bundle load failed');
       }
       initAttempts++;
       await new Promise((resolve) => setTimeout(resolve, 10));

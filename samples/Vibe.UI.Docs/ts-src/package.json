@@ -4,12 +4,14 @@
   "description": "TypeScript source for Vibe.UI Documentation site",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run build:bundle",
+    "build:bundle": "esbuild src/shiki-interop.ts --bundle --format=esm --target=es2022 --supported:template-literal=false --minify-whitespace --sourcemap --outfile=dist/shiki-interop.js",
     "build:watch": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "deploy": "npm run build && npm run deploy:shiki && npm run deploy:docs",
+    "deploy": "npm run build && npm run deploy:chart && npm run deploy:shiki && npm run deploy:docs",
+    "deploy:chart": "copyfiles -f node_modules/chart.js/dist/chart.umd.js ../wwwroot/js/",
     "deploy:shiki": "copyfiles -f dist/shiki-interop.js ../wwwroot/js/",
     "deploy:docs": "copyfiles -f dist/docs.js ../wwwroot/js/",
     "lint": "eslint src tests --ext .ts",
@@ -25,12 +27,14 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.10.0",
-    "@vitest/coverage-v8": "^1.0.4",
+    "@vitest/coverage-v8": "^4.1.9",
+    "chart.js": "^4.4.1",
     "copyfiles": "^2.4.1",
-    "happy-dom": "^12.10.3",
+    "esbuild": "^0.28.1",
+    "happy-dom": "^20.10.6",
     "jsdom": "^23.0.1",
+    "shiki": "^1.22.0",
     "typescript": "^5.3.3",
-    "vitest": "^1.0.4"
-  },
-  "dependencies": {}
+    "vitest": "^4.1.9"
+  }
 }
