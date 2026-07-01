@@ -71,17 +71,17 @@
         /// <summary>
         /// Gets or sets the item's label.
         /// </summary>
-        public string Label { get; set; }
+        public string Label { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the item's value.
         /// </summary>
-        public string Value { get; set; }
+        public string Value { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the item's keyboard shortcut.
         /// </summary>
-        public string Shortcut { get; set; }
+        public string? Shortcut { get; set; }
 
         /// <summary>
         /// Gets or sets whether the item is disabled.
@@ -147,10 +147,8 @@
                   .ToList();
 
     /// <summary>
-    /// Checks if the given item is the selected one.
+    /// Gets or sets the current input value.
     /// </summary>
-    /// <param name="item">The item to check.</param>
-    /// <returns>True if the item is selected, false otherwise.</returns>
     private string InputValue
     {
         get => _inputValue;

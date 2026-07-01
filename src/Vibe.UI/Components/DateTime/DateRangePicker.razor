@@ -437,7 +437,7 @@
     /// </summary>
     private void HandleStartMonthChange(ChangeEventArgs e)
     {
-        if (int.TryParse(e.Value.ToString(), out int month))
+        if (int.TryParse(e.Value!.ToString(), out int month))
         {
             CurrentStartMonth = month;
             
@@ -451,7 +451,7 @@
     /// </summary>
     private void HandleStartYearChange(ChangeEventArgs e)
     {
-        if (int.TryParse(e.Value.ToString(), out int year))
+        if (int.TryParse(e.Value!.ToString(), out int year))
         {
             CurrentStartYear = year;
             
@@ -465,7 +465,7 @@
     /// </summary>
     private void HandleEndMonthChange(ChangeEventArgs e)
     {
-        if (int.TryParse(e.Value.ToString(), out int month))
+        if (int.TryParse(e.Value!.ToString(), out int month))
         {
             CurrentEndMonth = month;
             
@@ -479,7 +479,7 @@
     /// </summary>
     private void HandleEndYearChange(ChangeEventArgs e)
     {
-        if (int.TryParse(e.Value.ToString(), out int year))
+        if (int.TryParse(e.Value!.ToString(), out int year))
         {
             CurrentEndYear = year;
             

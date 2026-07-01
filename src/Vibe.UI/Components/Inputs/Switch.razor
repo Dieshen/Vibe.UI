@@ -39,7 +39,7 @@
         if (Disabled)
             return Task.CompletedTask;
 
-        Checked = (bool)e.Value;
+        Checked = (bool)e.Value!;
         return CheckedChanged.InvokeAsync(Checked);
     }
 }

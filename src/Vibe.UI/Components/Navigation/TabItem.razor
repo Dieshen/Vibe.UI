@@ -17,13 +17,13 @@
     /// Gets or sets the tab id
     /// </summary>
     [Parameter]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     /// <summary>
     /// Gets or sets the tab header
     /// </summary>
     [Parameter]
-    public string Header { get; set; }
+    public string? Header { get; set; }
 
     /// <summary>
     /// Gets or sets whether the tab is disabled
@@ -41,7 +41,7 @@
     /// Gets or sets the tab header icon
     /// </summary>
     [Parameter]
-    public string Icon { get; set; }
+    public string? Icon { get; set; }
 
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-tab-item";

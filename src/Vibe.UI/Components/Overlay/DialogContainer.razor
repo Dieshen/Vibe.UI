@@ -38,9 +38,9 @@
 
 @code {
     private bool _isOpen = false;
-    private string _title;
-    private RenderFragment _content;
-    private string _dialogId;
+    private string? _title;
+    private RenderFragment? _content;
+    private string? _dialogId;
     private string? _titleId;
 
     private IJSObjectReference? _dialogModule;
@@ -74,7 +74,7 @@
         DialogService.OnDialogClosed += HandleDialogClosed;
     }
 
-    private void HandleDialogOpened(object sender, DialogOpenedEventArgs args)
+    private void HandleDialogOpened(object? sender, DialogOpenedEventArgs args)
     {
         InvokeAsync(() =>
         {
@@ -87,7 +87,7 @@
         });
     }
 
-    private void HandleDialogClosed(object sender, DialogClosedEventArgs args)
+    private void HandleDialogClosed(object? sender, DialogClosedEventArgs args)
     {
         if (args.Id == _dialogId)
         {

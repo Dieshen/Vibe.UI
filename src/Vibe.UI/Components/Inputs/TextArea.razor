@@ -9,13 +9,13 @@
     /// Gets or sets the textarea value
     /// </summary>
     [Parameter]
-    public string Value { get; set; }
+    public string? Value { get; set; }
 
     /// <summary>
     /// Gets or sets the placeholder text
     /// </summary>
     [Parameter]
-    public string Placeholder { get; set; }
+    public string? Placeholder { get; set; }
 
     /// <summary>
     /// Gets or sets whether the textarea is disabled
@@ -39,7 +39,7 @@
     /// Gets or sets the callback for when the textarea value changes
     /// </summary>
     [Parameter]
-    public EventCallback<string> ValueChanged { get; set; }
+    public EventCallback<string?> ValueChanged { get; set; }
 
     /// <summary>
     /// Gets or sets the callback for when the input event occurs

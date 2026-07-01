@@ -10,6 +10,9 @@ public class ChartDataBuilder
 {
     private readonly ChartData _chartData;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChartDataBuilder"/> class.
+    /// </summary>
     public ChartDataBuilder()
     {
         _chartData = new ChartData();

@@ -101,12 +101,12 @@
         /// <summary>
         /// Gets or sets the column title.
         /// </summary>
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the property name to bind to.
         /// </summary>
-        public string PropertyName { get; set; }
+        public string PropertyName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets whether the column is sortable.
@@ -116,7 +116,7 @@
         /// <summary>
         /// Gets or sets the custom template for the column.
         /// </summary>
-        public RenderFragment<T> Template { get; set; }
+        public RenderFragment<T>? Template { get; set; }
     }
 
     /// <summary>
@@ -135,7 +135,7 @@
     /// Gets or sets the custom content for the toolbar.
     /// </summary>
     [Parameter]
-    public RenderFragment ToolbarContent { get; set; }
+    public RenderFragment? ToolbarContent { get; set; }
 
     /// <summary>
     /// Gets or sets whether to show the toolbar.
@@ -177,7 +177,7 @@
     /// Gets or sets a function to determine the CSS class for a row.
     /// </summary>
     [Parameter]
-    public Func<TItem, string> RowClass { get; set; }
+    public Func<TItem, string>? RowClass { get; set; }
 
     /// <summary>
     /// Gets the component CSS class name.
@@ -207,7 +207,7 @@
     /// <summary>
     /// The property name to sort by.
     /// </summary>
-    private string SortProperty { get; set; }
+    private string? SortProperty { get; set; }
 
     /// <summary>
     /// Whether to sort in ascending order.
@@ -336,7 +336,7 @@
     /// <param name="item">The item to get the property value from.</param>
     /// <param name="propertyName">The name of the property.</param>
     /// <returns>The property value.</returns>
-    private object GetPropertyValue(TItem item, string propertyName)
+    private object? GetPropertyValue(TItem item, string propertyName)
     {
         if (string.IsNullOrEmpty(propertyName))
             return null;

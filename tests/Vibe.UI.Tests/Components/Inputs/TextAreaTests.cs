@@ -267,7 +267,7 @@ public class TextAreaTests : TestBase
     public void TextArea_WithNullValueInEvent_HandlesGracefully()
     {
         // Arrange
-        string capturedValue = "initial";
+        string? capturedValue = "initial";
         var cut = RenderComponent<TextArea>(parameters => parameters
             .Add(p => p.ValueChanged, value => capturedValue = value));
 

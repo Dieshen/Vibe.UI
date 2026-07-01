@@ -257,7 +257,7 @@
     /// </summary>
     private void HandleMonthChange(ChangeEventArgs e)
     {
-        if (int.TryParse(e.Value.ToString(), out int month))
+        if (int.TryParse(e.Value!.ToString(), out int month))
         {
             CurrentMonth = month;
         }
@@ -268,7 +268,7 @@
     /// </summary>
     private void HandleYearChange(ChangeEventArgs e)
     {
-        if (int.TryParse(e.Value.ToString(), out int year))
+        if (int.TryParse(e.Value!.ToString(), out int year))
         {
             CurrentYear = year;
         }

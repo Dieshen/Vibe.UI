@@ -31,17 +31,17 @@
         /// <summary>
         /// Gets or sets the menu's ID.
         /// </summary>
-        public string Id { get; set; }
+        public string Id { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the menu's label.
         /// </summary>
-        public string Label { get; set; }
+        public string Label { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the menu's content.
         /// </summary>
-        public RenderFragment Content { get; set; }
+        public RenderFragment? Content { get; set; }
     }
 
     /// <summary>
@@ -58,7 +58,7 @@
     /// <summary>
     /// The ID of the active menu.
     /// </summary>
-    private string ActiveMenu;
+    private string? ActiveMenu;
 
     /// <summary>
     /// Toggles a menu.

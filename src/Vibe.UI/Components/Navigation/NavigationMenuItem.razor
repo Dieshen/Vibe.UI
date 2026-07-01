@@ -28,13 +28,13 @@
     /// Gets or sets the content of the trigger button.
     /// </summary>
     [Parameter]
-    public RenderFragment TriggerContent { get; set; }
+    public RenderFragment? TriggerContent { get; set; }
 
     /// <summary>
     /// Gets or sets the content to display when the item is active.
     /// </summary>
     [Parameter]
-    public RenderFragment Content { get; set; }
+    public RenderFragment? Content { get; set; }
 
     /// <summary>
     /// Gets or sets whether the menu item is disabled.
@@ -58,7 +58,7 @@
     /// Gets or sets the parent navigation menu.
     /// </summary>
     [CascadingParameter]
-    public NavigationMenu ParentMenu { get; set; }
+    public NavigationMenu ParentMenu { get; set; } = default!;
 
     /// <summary>
     /// Gets whether the menu item is active.

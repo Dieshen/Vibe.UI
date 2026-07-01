@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <WarningsAsErrors Condition="'$(WarningsAsErrors)' == ''">nullable</WarningsAsErrors>
+    <WarningsAsErrors Condition="'$(WarningsAsErrors)' != ''">$(WarningsAsErrors);nullable</WarningsAsErrors>
+  </PropertyGroup>
+</Project>

@@ -122,7 +122,7 @@
     /// </summary>
     private ElementReference ViewportRef;
 
-    private System.Timers.Timer _autoPlayTimer;
+    private System.Timers.Timer? _autoPlayTimer;
     private bool _isDragging = false;
     private double _dragStartX;
     private double _dragStartY;
@@ -173,9 +173,9 @@
             {
                 if ((DateTime.Now - _lastAutoAdvance).TotalMilliseconds >= AutoPlayInterval && !_isDragging)
                 {
-                    _ = InvokeAsync(() => // Fire-and-forget: timer callback cannot await
+                    _ = InvokeAsync(async () => // Fire-and-forget: timer callback cannot await
                     {
-                        NextSlide();
+                        await NextSlide();
                         StateHasChanged();
                     });
                     _lastAutoAdvance = DateTime.Now;
@@ -278,7 +278,6 @@
 
         if (_isSwiping)
         {
-            double containerSize = 100; // 100%
             double delta = Orientation == CarouselOrientation.Horizontal ? diffX : diffY;
             double percentage = (delta / 300) * 100; // Convert to percentage
             _dragCurrentOffset = percentage;

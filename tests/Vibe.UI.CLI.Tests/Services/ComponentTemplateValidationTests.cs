@@ -182,7 +182,7 @@ public class ComponentTemplateValidationTests
             because: "parameter properties should have valid C# syntax");
 
         // Verify computed property syntax
-        template.Should().MatchRegex(@"private\s+string\s+\w+\s*=>",
+        template.Should().MatchRegex(@"private\s+string\??\s+\w+\s*=>",
             because: "computed properties should use expression-bodied syntax");
     }
 

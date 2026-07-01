@@ -16,7 +16,7 @@
                 {
                     <div class="multiselect-tag">
                         <span class="multiselect-tag-label">@(ItemTemplate != null ? ItemTemplate(item) :
-                                                item.ToString())</span>
+                                                item!.ToString())</span>
                         <button type="button" class="multiselect-tag-remove" @onclick="(e) => RemoveItem(e, item)">
                             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path
@@ -81,7 +81,7 @@
                             </div>
 
                             <div class="multiselect-option-content">
-                                @(ItemTemplate != null ? ItemTemplate(item) : item.ToString())
+                                @(ItemTemplate != null ? ItemTemplate(item) : item!.ToString())
                             </div>
                         </div>
                     }
@@ -113,7 +113,7 @@
     /// Gets or sets the template to display each item.
     /// </summary>
     [Parameter]
-    public Func<TItem, string> ItemTemplate { get; set; }
+    public Func<TItem, string>? ItemTemplate { get; set; }
 
     /// <summary>
     /// Gets or sets the collection of selected items.
@@ -137,7 +137,7 @@
     /// Gets or sets the label for the multiselect.
     /// </summary>
     [Parameter]
-    public string Label { get; set; }
+    public string? Label { get; set; }
 
     /// <summary>
     /// Gets or sets the placeholder text when no items are selected.
@@ -149,7 +149,7 @@
     /// Gets or sets the helper text displayed below the control.
     /// </summary>
     [Parameter]
-    public string HelperText { get; set; }
+    public string? HelperText { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the control is disabled.
@@ -173,13 +173,13 @@
     /// Gets or sets a function to filter items based on search text.
     /// </summary>
     [Parameter]
-    public Func<TItem, string, bool> FilterFunc { get; set; }
+    public Func<TItem, string, bool>? FilterFunc { get; set; }
 
     /// <summary>
     /// Gets or sets the function to compare items for equality.
     /// </summary>
     [Parameter]
-    public Func<TItem, TItem, bool> CompareItems { get; set; }
+    public Func<TItem, TItem, bool>? CompareItems { get; set; }
 
     /// <summary>
     /// Gets or sets a unique identifier for the control.

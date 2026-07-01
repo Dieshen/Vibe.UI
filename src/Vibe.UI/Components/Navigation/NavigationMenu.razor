@@ -35,7 +35,7 @@
     /// Gets or sets the content to display in the viewport.
     /// </summary>
     [Parameter]
-    public RenderFragment ViewportContent { get; set; }
+    public RenderFragment? ViewportContent { get; set; }
 
     /// <summary>
     /// Dictionary tracking the position and size of menu items.
@@ -45,7 +45,7 @@
     /// <summary>
     /// Gets or sets the active menu item's ID.
     /// </summary>
-    private string ActiveItemId { get; set; }
+    private string? ActiveItemId { get; set; }
 
     /// <summary>
     /// Gets whether the viewport indicator should be visible.
@@ -60,7 +60,7 @@
     {
         get
         {
-            if (IsViewportIndicatorVisible && ItemPositions.TryGetValue(ActiveItemId, out var position))
+            if (!string.IsNullOrEmpty(ActiveItemId) && ItemPositions.TryGetValue(ActiveItemId, out var position))
             {
                 return $"left: {position.Left}px; width: {position.Width}px";
             }

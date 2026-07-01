@@ -43,23 +43,10 @@
 </aside>
 
 @code {
-    private bool _isOpen = true;
-    private int _width = 280;
-    private bool _isResizing;
+    private int EffectiveWidth => Math.Clamp(Width, 200, 600);
 
     [Parameter]
-    public bool IsOpen
-    {
-        get => _isOpen;
-        set
-        {
-            if (_isOpen != value)
-            {
-                _isOpen = value;
-                IsOpenChanged.InvokeAsync(value);
-            }
-        }
-    }
+    public bool IsOpen { get; set; } = true;
 
     [Parameter]
     public EventCallback<bool> IsOpenChanged { get; set; }
@@ -89,11 +76,7 @@
     public SidebarPosition Position { get; set; } = SidebarPosition.Left;
 
     [Parameter]
-    public int Width
-    {
-        get => _width;
-        set => _width = Math.Clamp(value, 200, 600);
-    }
+    public int Width { get; set; } = 280;
 
     [Parameter]
     public int CollapsedWidth { get; set; } = 60;
@@ -115,20 +98,30 @@
     protected override string ComponentClass => CombinedCssClass;
 
     private string SidebarStyle => IsOpen
-    ? $"width: {Width}px;"
+    ? $"width: {EffectiveWidth}px;"
     : $"width: {CollapsedWidth}px;";
 
-    public void Toggle()
+    public Task Toggle()
     {
-        IsOpen = !IsOpen;
+        return SetIsOpenAsync(!IsOpen);
     }
 
-    public void Open() => IsOpen = true;
-    public void Close() => IsOpen = false;
+    public Task Open() => SetIsOpenAsync(true);
+    public Task Close() => SetIsOpenAsync(false);
+
+    private async Task SetIsOpenAsync(bool isOpen)
+    {
+        if (IsOpen == isOpen)
+        {
+            return;
+        }
+
+        IsOpen = isOpen;
+        await IsOpenChanged.InvokeAsync(isOpen);
+    }
 
     private void StartResize(MouseEventArgs e)
     {
-        _isResizing = true;
         // Would need JS interop for actual drag handling
     }
 

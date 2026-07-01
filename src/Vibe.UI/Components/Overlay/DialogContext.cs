@@ -10,7 +10,14 @@ public class DialogContext
     private readonly Func<Task> _closeAction;
     private readonly Action? _onStateChanged;
 
+    /// <summary>
+    /// Gets the element ID used to label the dialog title.
+    /// </summary>
     public string? TitleId { get; private set; }
+
+    /// <summary>
+    /// Gets the element ID used to describe the dialog body.
+    /// </summary>
     public string? DescriptionId { get; private set; }
 
     /// <summary>
@@ -18,6 +25,7 @@ public class DialogContext
     /// </summary>
     /// <param name="openAction">The action to execute when opening the dialog.</param>
     /// <param name="closeAction">The action to execute when closing the dialog.</param>
+    /// <param name="onStateChanged">An optional callback to notify the owner that context state changed.</param>
     public DialogContext(Func<Task> openAction, Func<Task> closeAction, Action? onStateChanged = null)
     {
         _openAction = openAction;
@@ -37,6 +45,10 @@ public class DialogContext
     /// <returns>A task representing the asynchronous operation.</returns>
     public Task Close() => _closeAction();
 
+    /// <summary>
+    /// Updates the title element ID.
+    /// </summary>
+    /// <param name="id">The title element ID, or <see langword="null"/> when no title is registered.</param>
     public void SetTitleId(string? id)
     {
         if (TitleId == id)
@@ -46,6 +58,10 @@ public class DialogContext
         _onStateChanged?.Invoke();
     }
 
+    /// <summary>
+    /// Updates the description element ID.
+    /// </summary>
+    /// <param name="id">The description element ID, or <see langword="null"/> when no description is registered.</param>
     public void SetDescriptionId(string? id)
     {
         if (DescriptionId == id)

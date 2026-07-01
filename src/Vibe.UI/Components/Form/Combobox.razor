@@ -45,12 +45,12 @@
         /// <summary>
         /// Gets or sets the option's label.
         /// </summary>
-        public string Label { get; set; }
+        public string Label { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the option's value.
         /// </summary>
-        public string Value { get; set; }
+        public string Value { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets whether the option is disabled.
@@ -74,13 +74,13 @@
     /// Gets or sets the selected value.
     /// </summary>
     [Parameter]
-    public string Value { get; set; }
+    public string? Value { get; set; }
 
     /// <summary>
     /// Gets or sets the callback when the value changes.
     /// </summary>
     [Parameter]
-    public EventCallback<string> ValueChanged { get; set; }
+    public EventCallback<string?> ValueChanged { get; set; }
 
     /// <summary>
     /// Gets or sets whether to allow free text input.
@@ -120,7 +120,7 @@
     /// <summary>
     /// The currently highlighted option.
     /// </summary>
-    private ComboboxOption HighlightedOption = null;
+    private ComboboxOption? HighlightedOption;
 
     /// <summary>
     /// Initialize the component.
@@ -257,7 +257,7 @@
         if (!FilteredOptions.Any())
             return;
 
-        var currentIndex = FilteredOptions.IndexOf(HighlightedOption);
+        var currentIndex = HighlightedOption == null ? -1 : FilteredOptions.IndexOf(HighlightedOption);
         if (currentIndex == -1)
         {
             HighlightedOption = FilteredOptions.FirstOrDefault();
@@ -291,7 +291,7 @@
     /// Selects an option.
     /// </summary>
     /// <param name="option">The option to select.</param>
-    private async Task SelectOption(ComboboxOption option)
+    private async Task SelectOption(ComboboxOption? option)
     {
         if (option == null || option.Disabled)
             return;

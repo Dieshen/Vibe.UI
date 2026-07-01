@@ -93,7 +93,7 @@
 
     <div class="richtext-editor" contenteditable="@((!ReadOnly).ToString().ToLower())" @ref="_editorRef"
         @oninput="HandleInput" placeholder="@Placeholder" role="textbox" aria-label="@AriaLabel">
-        @((MarkupString)Content)
+        @((MarkupString)_content)
     </div>
 
     @if (ShowCharCount)
@@ -109,17 +109,7 @@
     private string _content = string.Empty;
 
     [Parameter]
-    public string Content
-    {
-        get => _content;
-        set
-        {
-            if (_content != value)
-            {
-                _content = value ?? string.Empty;
-            }
-        }
-    }
+    public string? Content { get; set; }
 
     [Parameter]
     public EventCallback<string> ContentChanged { get; set; }
@@ -161,6 +151,11 @@
     );
 
     protected override string ComponentClass => CombinedCssClass;
+
+    protected override void OnParametersSet()
+    {
+        _content = Content ?? string.Empty;
+    }
 
     private async Task HandleInput(ChangeEventArgs e)
     {

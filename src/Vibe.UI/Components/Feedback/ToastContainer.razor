@@ -31,7 +31,7 @@
         Console.WriteLine("[ToastContainer] Subscribed successfully");
     }
 
-    private void HandleToastAdded(object sender, ToastEventArgs args)
+    private void HandleToastAdded(object? sender, ToastEventArgs args)
     {
         Console.WriteLine($"[ToastContainer] HandleToastAdded called: {args.Title}");
         InvokeAsync(() =>
@@ -59,7 +59,7 @@
         });
     }
 
-    private void HandleToastRemoved(object sender, ToastEventArgs args)
+    private void HandleToastRemoved(object? sender, ToastEventArgs args)
     {
         InvokeAsync(() =>
         {
@@ -85,11 +85,11 @@
 
     private class ToastItem
     {
-        public string Id { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string Variant { get; set; }
-        public string Icon { get; set; }
+        public string Id { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Variant { get; set; } = string.Empty;
+        public string? Icon { get; set; }
         public int Duration { get; set; }
     }
 }

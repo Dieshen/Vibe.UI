@@ -1,6 +1,5 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
-@using Vibe.UI.Enums
 
 <div class="@CombinedClass" @attributes="AdditionalAttributes">
     @if (Header != null || CardTitle != null || CardDescription != null)
@@ -48,25 +47,25 @@
     /// Gets or sets the card header (legacy - use CardTitle/CardDescription for composition style)
     /// </summary>
     [Parameter]
-    public RenderFragment Header { get; set; }
+    public RenderFragment? Header { get; set; }
 
     /// <summary>
     /// Gets or sets the card footer
     /// </summary>
     [Parameter]
-    public RenderFragment Footer { get; set; }
+    public RenderFragment? Footer { get; set; }
 
     /// <summary>
     /// Gets or sets the card title (composition style)
     /// </summary>
     [Parameter]
-    public RenderFragment CardTitle { get; set; }
+    public RenderFragment? CardTitle { get; set; }
 
     /// <summary>
     /// Gets or sets the card description (composition style)
     /// </summary>
     [Parameter]
-    public RenderFragment CardDescription { get; set; }
+    public RenderFragment? CardDescription { get; set; }
 
     /// <summary>
     /// Gets or sets the card variant style.

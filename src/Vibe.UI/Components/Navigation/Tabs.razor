@@ -45,13 +45,13 @@
     /// Gets or sets the active tab ID
     /// </summary>
     [Parameter]
-    public string ActiveTabId { get; set; }
+    public string? ActiveTabId { get; set; }
 
     /// <summary>
     /// Gets or sets the callback for when the active tab changes
     /// </summary>
     [Parameter]
-    public EventCallback<string> ActiveTabIdChanged { get; set; }
+    public EventCallback<string?> ActiveTabIdChanged { get; set; }
 
     /// <summary>
     /// Gets or sets the callback for when a tab is activated

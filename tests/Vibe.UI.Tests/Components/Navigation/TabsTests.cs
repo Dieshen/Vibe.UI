@@ -33,7 +33,7 @@ public class TabsTests : TestBase
         string? activatedTabId = null;
         var cut = RenderComponent<Tabs>(parameters => parameters
             .Add(p => p.ActiveTabId, "tab1")
-            .Add(p => p.ActiveTabIdChanged, EventCallback.Factory.Create<string>(this, id => activatedTabId = id)));
+            .Add(p => p.ActiveTabIdChanged, EventCallback.Factory.Create<string?>(this, id => activatedTabId = id)));
 
         // Assert - ActiveTabId can be set
         cut.Instance.ActiveTabId.ShouldBe("tab1");

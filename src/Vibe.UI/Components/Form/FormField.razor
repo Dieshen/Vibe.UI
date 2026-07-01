@@ -32,19 +32,19 @@
     /// Gets or sets the field label.
     /// </summary>
     [Parameter]
-    public string Label { get; set; }
+    public string? Label { get; set; }
 
     /// <summary>
     /// Gets or sets the field description.
     /// </summary>
     [Parameter]
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
     /// Gets or sets the field validation expression.
     /// </summary>
     [Parameter]
-    public Expression<Func<TValue>> ValidationFor { get; set; }
+    public Expression<Func<TValue>>? ValidationFor { get; set; }
 
     /// <summary>
     /// Gets or sets the field content.
@@ -56,7 +56,7 @@
     /// Gets or sets the field ID.
     /// </summary>
     [Parameter]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     /// <summary>
     /// Gets or sets whether the field has validation errors.

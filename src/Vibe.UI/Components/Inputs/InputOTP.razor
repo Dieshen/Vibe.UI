@@ -20,20 +20,10 @@
 
 @code {
     private ElementReference[] _inputs = new ElementReference[6]; // Initialize with default length
-    private string _value = string.Empty;
+    private string _currentValue = string.Empty;
 
     [Parameter]
-    public string Value
-    {
-        get => _value;
-        set
-        {
-            if (_value != value)
-            {
-                _value = value ?? string.Empty;
-            }
-        }
-    }
+    public string? Value { get; set; }
 
     [Parameter]
     public EventCallback<string> ValueChanged { get; set; }
@@ -80,9 +70,14 @@
         }
     }
 
+    protected override void OnParametersSet()
+    {
+        _currentValue = Value ?? string.Empty;
+    }
+
     private string GetCharAt(int index)
     {
-        return index < _value.Length ? _value[index].ToString() : string.Empty;
+        return index < _currentValue.Length ? _currentValue[index].ToString() : string.Empty;
     }
 
     private async Task HandleInput(int index, ChangeEventArgs e)
@@ -101,11 +96,11 @@
         }
 
         // Update value
-        var chars = _value.PadRight(Length).ToCharArray();
+        var chars = _currentValue.PadRight(Length).ToCharArray();
         chars[index] = inputValue[^1];
-        _value = new string(chars).TrimEnd();
+        _currentValue = new string(chars).TrimEnd();
 
-        await ValueChanged.InvokeAsync(_value);
+        await ValueChanged.InvokeAsync(_currentValue);
 
         // Auto-focus next input
         if (index < Length - 1 && !string.IsNullOrEmpty(inputValue))
@@ -114,9 +109,9 @@
         }
 
         // Check if complete
-        if (_value.Length == Length)
+        if (_currentValue.Length == Length)
         {
-            await OnComplete.InvokeAsync(_value);
+            await OnComplete.InvokeAsync(_currentValue);
         }
 
         StateHasChanged();
@@ -134,10 +129,10 @@
             else
             {
                 // Clear current
-                var chars = _value.PadRight(Length).ToCharArray();
+                var chars = _currentValue.PadRight(Length).ToCharArray();
                 chars[index] = ' ';
-                _value = new string(chars).TrimEnd();
-                await ValueChanged.InvokeAsync(_value);
+                _currentValue = new string(chars).TrimEnd();
+                await ValueChanged.InvokeAsync(_currentValue);
                 StateHasChanged();
             }
         }
