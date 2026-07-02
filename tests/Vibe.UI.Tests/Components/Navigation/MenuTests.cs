@@ -8,6 +8,11 @@ public class MenuTests : TestBase
         var cut = RenderComponent<Menu>();
 
         cut.Find(".vibe-menu").ShouldNotBeNull();
+        var trigger = cut.Find(".vibe-menu-trigger");
+        trigger.GetAttribute("role").ShouldBe("button");
+        trigger.GetAttribute("tabindex").ShouldBe("0");
+        trigger.GetAttribute("aria-haspopup").ShouldBe("menu");
+        trigger.GetAttribute("aria-expanded").ShouldBe("false");
         var button = cut.Find(".vibe-menu-trigger button");
         button.GetAttribute("type").ShouldBe("button");
         button.TextContent.Trim().ShouldBe("Menu");
@@ -40,6 +45,8 @@ public class MenuTests : TestBase
             .AddChildContent("<button>Delete</button>"));
 
         cut.Find(".vibe-menu-content").TextContent.ShouldContain("Delete");
+        cut.Find(".vibe-menu-content").GetAttribute("role").ShouldBe("menu");
+        cut.Find(".vibe-menu-trigger").GetAttribute("aria-expanded").ShouldBe("true");
         cut.Find(".menu-backdrop").ShouldNotBeNull();
     }
 
@@ -54,6 +61,23 @@ public class MenuTests : TestBase
 
         changedValue.ShouldBe(true);
         cut.Find(".vibe-menu-content").ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Menu_TogglesWithKeyboardAndClosesWithEscape()
+    {
+        bool? changedValue = null;
+        var cut = RenderComponent<Menu>(parameters => parameters
+            .Add(p => p.IsOpenChanged, value => changedValue = value)
+            .AddChildContent("Menu content"));
+
+        cut.Find(".vibe-menu-trigger").KeyDown("Enter");
+        changedValue.ShouldBe(true);
+        cut.Find(".vibe-menu-content").ShouldNotBeNull();
+
+        cut.Find(".vibe-menu-trigger").KeyDown("Escape");
+        changedValue.ShouldBe(false);
+        cut.FindAll(".vibe-menu-content").ShouldBeEmpty();
     }
 
     [Fact]

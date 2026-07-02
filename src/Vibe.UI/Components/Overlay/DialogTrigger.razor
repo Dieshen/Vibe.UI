@@ -1,7 +1,13 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
 
-<span class="@CombinedClass" @onclick="OnTriggerClick" @attributes="AdditionalAttributes">
+<span class="@CombinedClass"
+      role="button"
+      tabindex="0"
+      aria-haspopup="dialog"
+      @onclick="OnTriggerClick"
+      @onkeydown="HandleKeyDown"
+      @attributes="AdditionalAttributes">
     @ChildContent
 </span>
 
@@ -40,6 +46,14 @@
         if (OnClick.HasDelegate)
         {
             await OnClick.InvokeAsync();
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is "Enter" or " ")
+        {
+            await OnTriggerClick();
         }
     }
 }

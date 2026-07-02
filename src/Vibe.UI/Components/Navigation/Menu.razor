@@ -2,7 +2,14 @@
 @inherits Vibe.UI.Base.VibeComponent
 
 <div class="@CombinedClass" @attributes="AdditionalAttributes">
-    <div class="vibe-menu-trigger" @onclick="ToggleMenu">
+    <div class="vibe-menu-trigger"
+         role="button"
+         tabindex="0"
+         aria-haspopup="menu"
+         aria-expanded="@(IsOpen ? "true" : "false")"
+         aria-controls="@ContentId"
+         @onclick="ToggleMenu"
+         @onkeydown="HandleTriggerKeyDown">
         @if (Trigger != null)
         {
             @Trigger
@@ -17,7 +24,7 @@
 
     @if (IsOpen)
     {
-        <div class="vibe-menu-content" style="@PlacementStyle">
+        <div id="@ContentId" class="vibe-menu-content" role="menu" style="@PlacementStyle">
             @ChildContent
         </div>
         @if (CloseOnClickOutside)
@@ -73,6 +80,8 @@
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-menu";
 
+    private readonly string ContentId = $"vibe-menu-content-{Guid.NewGuid():N}";
+
     private string PlacementStyle => Placement switch
     {
         MenuPlacement.BottomStart => "top: 100%; left: 0; margin-top: 0.25rem;",
@@ -88,6 +97,18 @@
         if (IsOpenChanged.HasDelegate)
         {
             await IsOpenChanged.InvokeAsync(IsOpen);
+        }
+    }
+
+    private async Task HandleTriggerKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is "Enter" or " ")
+        {
+            await ToggleMenu();
+        }
+        else if (e.Key == "Escape" && IsOpen)
+        {
+            await CloseMenu();
         }
     }
 

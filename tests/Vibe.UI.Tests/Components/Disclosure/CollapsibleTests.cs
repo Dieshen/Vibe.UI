@@ -12,6 +12,10 @@ public class CollapsibleTests : TestBase
 
         // Assert
         cut.Find(".vibe-collapsible").ShouldNotBeNull();
+        var trigger = cut.Find(".collapsible-trigger-wrapper");
+        trigger.GetAttribute("role").ShouldBe("button");
+        trigger.GetAttribute("tabindex").ShouldBe("0");
+        trigger.GetAttribute("aria-expanded").ShouldBe("false");
     }
 
     [Fact]
@@ -76,6 +80,7 @@ public class CollapsibleTests : TestBase
         // Assert
         var content = cut.Find(".collapsible-content");
         content.ClassList.ShouldContain("expanded");
+        cut.Find(".collapsible-trigger-wrapper").GetAttribute("aria-expanded").ShouldBe("true");
     }
 
     [Fact]
@@ -108,6 +113,19 @@ public class CollapsibleTests : TestBase
 
         // Assert
         cut.Instance.IsOpen.ShouldBe(!initialState);
+    }
+
+    [Fact]
+    public void Collapsible_Toggles_WithKeyboard()
+    {
+        var cut = RenderComponent<Collapsible>(parameters => parameters
+            .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
+            .AddChildContent("Collapsible Content"));
+
+        cut.Find(".collapsible-trigger-wrapper").KeyDown("Enter");
+
+        cut.Find(".collapsible-trigger-wrapper").GetAttribute("aria-expanded").ShouldBe("true");
+        cut.Find(".collapsible-content").ClassList.ShouldContain("expanded");
     }
 
     [Fact]

@@ -2,11 +2,17 @@
 @inherits Base.VibeComponent
 
 <div class="@CombinedClass">
-    <div class="collapsible-trigger-wrapper" @onclick="ToggleAsync">
+    <div class="collapsible-trigger-wrapper"
+         role="button"
+         tabindex="0"
+         aria-expanded="@(IsOpen ? "true" : "false")"
+         aria-controls="@ContentId"
+         @onclick="ToggleAsync"
+         @onkeydown="HandleTriggerKeyDown">
         @TriggerContent(IsOpen)
     </div>
 
-    <div class="vibe-collapsible-content collapsible-content @(IsOpen ? "expanded" : "")">
+    <div id="@ContentId" class="vibe-collapsible-content collapsible-content @(IsOpen ? "expanded" : "")">
         @ChildContent
     </div>
 </div>
@@ -41,6 +47,8 @@
     /// </summary>
     protected override string ComponentClass => "vibe-collapsible";
 
+    private readonly string ContentId = $"vibe-collapsible-content-{Guid.NewGuid():N}";
+
     /// <summary>
     /// Toggles the collapsible state.
     /// </summary>
@@ -48,5 +56,13 @@
     {
         IsOpen = !IsOpen;
         await IsOpenChanged.InvokeAsync(IsOpen);
+    }
+
+    private async Task HandleTriggerKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is "Enter" or " ")
+        {
+            await ToggleAsync();
+        }
     }
 }

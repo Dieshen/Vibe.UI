@@ -56,7 +56,8 @@ public class FileUploadTests : TestBase
 
         // Assert
         var input = cut.Find("input[type='file']");
-        input.GetAttribute("style")!.ShouldContain("display: none");
+        input.ClassList.ShouldContain("file-upload-input");
+        input.GetAttribute("id").ShouldStartWith("vibe-file-upload-");
     }
 
     [Fact]
@@ -92,6 +93,33 @@ public class FileUploadTests : TestBase
         // Assert
         var button = cut.Find(".file-upload-button");
         button.TextContent.ShouldContain("Browse Files");
+        button.Click();
+    }
+
+    [Fact]
+    public void FileUpload_EmptyStateIsKeyboardAccessible()
+    {
+        var cut = RenderComponent<FileUpload>();
+
+        var empty = cut.Find(".file-upload-empty");
+        empty.GetAttribute("role").ShouldBe("button");
+        empty.GetAttribute("tabindex").ShouldBe("0");
+        empty.GetAttribute("aria-controls").ShouldBe(cut.Find("input[type='file']").GetAttribute("id"));
+
+        empty.KeyDown("Enter");
+        empty.KeyDown(" ");
+    }
+
+    [Fact]
+    public void FileUpload_RemoveButtonHasAccessibleLabel()
+    {
+        var cut = RenderComponent<FileUpload>(parameters => parameters
+            .Add(p => p.Files, new List<FileUpload.UploadedFile>
+            {
+                new() { Name = "report.pdf", Size = 1024 }
+            }));
+
+        cut.Find(".file-item-remove").GetAttribute("aria-label").ShouldBe("Remove report.pdf");
     }
 
     [Fact]

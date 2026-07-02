@@ -2,13 +2,20 @@
 @inherits Base.VibeComponent
 
 <div class="@CombinedClass" @ref="PopoverRef">
-    <div class="popover-trigger" @onclick="TogglePopover">
+    <div class="popover-trigger"
+         role="button"
+         tabindex="0"
+         aria-expanded="@(IsOpen ? "true" : "false")"
+         aria-haspopup="dialog"
+         aria-controls="@ContentId"
+         @onclick="TogglePopover"
+         @onkeydown="HandleTriggerKeyDown">
         @TriggerContent
     </div>
 
     @if (IsOpen)
     {
-        <div class="popover-content @PositionClass">
+        <div id="@ContentId" class="popover-content @PositionClass" role="dialog">
             @Content
         </div>
 
@@ -67,12 +74,26 @@
     /// </summary>
     private ElementReference PopoverRef;
 
+    private readonly string ContentId = $"vibe-popover-content-{Guid.NewGuid():N}";
+
     /// <summary>
     /// Toggles the popover state.
     /// </summary>
     private void TogglePopover()
     {
         IsOpen = !IsOpen;
+    }
+
+    private void HandleTriggerKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is "Enter" or " ")
+        {
+            TogglePopover();
+        }
+        else if (e.Key == "Escape" && IsOpen)
+        {
+            IsOpen = false;
+        }
     }
 
     /// <summary>

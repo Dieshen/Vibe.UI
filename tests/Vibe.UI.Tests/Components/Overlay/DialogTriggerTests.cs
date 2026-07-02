@@ -13,6 +13,9 @@ public class DialogTriggerTests : TestBase
         var trigger = cut.Find(".vibe-dialog-trigger");
         trigger.TagName.ShouldBe("SPAN");
         trigger.TextContent.ShouldBe("Open");
+        trigger.GetAttribute("role").ShouldBe("button");
+        trigger.GetAttribute("tabindex").ShouldBe("0");
+        trigger.GetAttribute("aria-haspopup").ShouldBe("dialog");
         trigger.ClassList.ShouldContain("trigger-shell");
         trigger.GetAttribute("data-trigger").ShouldBe("dialog");
     }
@@ -44,6 +47,25 @@ public class DialogTriggerTests : TestBase
             }));
 
         cut.Find(".vibe-dialog-trigger").Click();
+
+        changed.ShouldBe(true);
+        cut.Find(".vibe-dialog").ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void DialogTrigger_OpensParentDialogWithKeyboard()
+    {
+        bool? changed = null;
+        var cut = RenderComponent<DialogRoot>(parameters => parameters
+            .Add(p => p.IsOpenChanged, EventCallback.Factory.Create<bool>(this, value => changed = value))
+            .AddChildContent(builder =>
+            {
+                builder.OpenComponent<DialogTrigger>(0);
+                builder.AddAttribute(1, "ChildContent", (RenderFragment)(trigger => trigger.AddContent(0, "Open")));
+                builder.CloseComponent();
+            }));
+
+        cut.Find(".vibe-dialog-trigger").KeyDown("Enter");
 
         changed.ShouldBe(true);
         cut.Find(".vibe-dialog").ShouldNotBeNull();

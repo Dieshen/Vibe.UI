@@ -4,18 +4,25 @@
 <div @attributes="AdditionalAttributes" class="@CombinedCssClass" @ondrop="HandleDrop" @ondragover:preventDefault
     @ondragenter="() => _isDragging = true" @ondragleave="() => _isDragging = false">
 
-    <input type="file" @ref="_fileInput" style="display: none;" multiple="@Multiple" accept="@Accept"
+    <input type="file" id="@_inputId" @ref="_fileInput" class="file-upload-input" multiple="@Multiple" accept="@Accept"
         @onchange="HandleFileSelect" />
 
     @if (Files.Count == 0)
     {
-        <div class="file-upload-empty" @onclick="OpenFilePicker">
-            <div class="file-upload-icon">📁</div>
+        <div class="file-upload-empty"
+             role="button"
+             tabindex="0"
+             aria-controls="@_inputId"
+             @onclick="OpenFilePicker"
+             @onkeydown="HandlePickerKeyDown">
+            <div class="file-upload-icon" aria-hidden="true">📁</div>
             <div class="file-upload-text">
                 <p class="file-upload-title">@DropText</p>
                 <p class="file-upload-hint">@HintText</p>
             </div>
-            <button type="button" class="file-upload-button">Browse Files</button>
+            <button type="button" class="file-upload-button" @onclick="OpenFilePicker" @onclick:stopPropagation="true">
+                Browse Files
+            </button>
         </div>
     }
     else
@@ -24,12 +31,12 @@
             @foreach (var file in Files)
             {
                 <div class="file-upload-item" @key="file.Name">
-                    <div class="file-item-icon">📄</div>
+                    <div class="file-item-icon" aria-hidden="true">📄</div>
                     <div class="file-item-info">
                         <div class="file-item-name">@file.Name</div>
                         <div class="file-item-size">@FormatFileSize(file.Size)</div>
                     </div>
-                    <button type="button" class="file-item-remove" @onclick="() => RemoveFile(file)">×</button>
+                    <button type="button" class="file-item-remove" aria-label="@($"Remove {file.Name}")" @onclick="() => RemoveFile(file)">×</button>
                 </div>
             }
             <button type="button" class="file-upload-add" @onclick="OpenFilePicker">
@@ -42,6 +49,7 @@
 @code {
     private ElementReference _fileInput;
     private bool _isDragging;
+    private readonly string _inputId = $"vibe-file-upload-{Guid.NewGuid():N}";
 
     [Parameter]
     public List<UploadedFile> Files { get; set; } = new();
@@ -88,6 +96,14 @@
     {
         // Would need JS interop to trigger file input click
         await Task.CompletedTask;
+    }
+
+    private async Task HandlePickerKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key is "Enter" or " ")
+        {
+            await OpenFilePicker();
+        }
     }
 
     private async Task HandleFileSelect(ChangeEventArgs e)
