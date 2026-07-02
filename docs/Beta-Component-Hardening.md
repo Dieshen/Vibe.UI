@@ -7,7 +7,7 @@ This tracker defines the beta confidence bar for component hardening. It is inte
 - Source component set: 110 Razor components in `src/Vibe.UI/Components`.
 - Beta hardening target: at least 80% direct unit-test coverage across source components.
 - Numeric target: 88 of 110 components with direct component tests.
-- Current direct unit coverage: 88 of 110 components, or 80.0%.
+- Current direct unit coverage: 110 of 110 components, or 100.0%.
 - Remaining direct unit tests needed for 80%: 0 components.
 - Current docs browser smoke coverage: 53 component routes.
 - Browser smoke target: every top-level documented component page must stay in `Category=Smoke`.
@@ -18,24 +18,24 @@ Direct unit coverage means a component has an explicit `*Tests.cs` file under `t
 
 | Category | Total | Direct unit tests | Docs smoke routes |
 | --- | ---: | ---: | ---: |
-| Advanced | 4 | 3 | 3 |
-| DataDisplay | 8 | 7 | 7 |
+| Advanced | 4 | 4 | 3 |
+| DataDisplay | 8 | 8 | 7 |
 | DateTime | 3 | 3 | 3 |
-| Disclosure | 5 | 3 | 3 |
+| Disclosure | 5 | 5 | 3 |
 | Feedback | 9 | 9 | 4 |
 | Form | 7 | 7 | 3 |
 | Inputs | 23 | 23 | 11 |
-| Layout | 12 | 7 | 7 |
-| Navigation | 14 | 11 | 6 |
-| Overlay | 17 | 8 | 4 |
+| Layout | 12 | 12 | 7 |
+| Navigation | 14 | 14 | 6 |
+| Overlay | 17 | 17 | 4 |
 | Theme | 2 | 2 | 1 |
-| Utility | 6 | 5 | 1 |
+| Utility | 6 | 6 | 1 |
 
 ## 80% Target Status
 
-The 80% direct component unit-test target is complete at 88 of 110 components.
+The 80% direct component unit-test target is complete at 110 of 110 components.
 
-Post-target hardening can continue with lower-risk wrappers and subcomponents such as `Kbd`, `GridItem`, `TabItem`, and dialog subcomponents, plus deeper browser coverage for JS-heavy components.
+Post-target hardening can continue with deeper browser coverage for JS-heavy components, accessibility-focused interaction checks, and docs parity for top-level component routes.
 
 ## Mutation-Style Quality Checks
 

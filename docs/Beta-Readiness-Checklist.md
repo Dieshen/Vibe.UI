@@ -23,7 +23,7 @@ This checklist targets the `1.0.0-beta` release line. Beta means Vibe.UI is read
 - [x] Compatibility tests support externally managed app URLs through `VIBE_STANDALONE_BASE_URL` and `VIBE_WEBAPP_BASE_URL`.
 - [x] Compatibility fixtures are included in `Vibe.sln`.
 - [x] Compatibility behavior is documented in `docs/Compatibility.md`.
-- [x] 80% direct component unit coverage target is complete; see `docs/Beta-Component-Hardening.md`.
+- [x] 100% direct component unit coverage is complete; see `docs/Beta-Component-Hardening.md`.
 
 ### CI And Publish Gates
 
