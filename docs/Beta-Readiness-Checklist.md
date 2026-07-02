@@ -87,7 +87,7 @@ Remove-Item Env:BROWSER
 ### Known Beta Debt
 
 - [ ] The docs E2E functional/mobile/accessibility suites beyond `Category=Compatibility`, `Category=Integration`, and `Category=Smoke` should be reviewed separately before stable 1.0.
-- [ ] Direct component unit coverage is currently below the beta confidence target; use `docs/Beta-Component-Hardening.md` for the next 17-test slice.
+- [ ] Direct component unit coverage is currently below the beta confidence target; use `docs/Beta-Component-Hardening.md` for the next 16-test slice.
 - [ ] Docs Shiki browser behavior still has skipped Vitest blocks; the Chromium integration E2E suite is the current browser-level coverage.
 - [ ] Committed generated CSS still includes a timestamp header; remove or stabilize it before stable 1.0 to avoid recurring noisy diffs.
 - [ ] Publish workflow still depends on `NUGET_API_KEY`; trusted publishing can be considered before stable 1.0.

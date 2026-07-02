@@ -7,8 +7,8 @@ This tracker defines the beta confidence bar for component hardening. It is inte
 - Source component set: 110 Razor components in `src/Vibe.UI/Components`.
 - Beta hardening target: at least 80% direct unit-test coverage across source components.
 - Numeric target: 88 of 110 components with direct component tests.
-- Current direct unit coverage: 71 of 110 components, or 64.5%.
-- Remaining direct unit tests needed for 80%: 17 components.
+- Current direct unit coverage: 72 of 110 components, or 65.5%.
+- Remaining direct unit tests needed for 80%: 16 components.
 - Current docs browser smoke coverage: 53 component routes.
 - Browser smoke target: every top-level documented component page must stay in `Category=Smoke`.
 
@@ -23,7 +23,7 @@ Direct unit coverage means a component has an explicit `*Tests.cs` file under `t
 | DateTime | 3 | 3 | 3 |
 | Disclosure | 5 | 3 | 3 |
 | Feedback | 9 | 8 | 4 |
-| Form | 7 | 6 | 3 |
+| Form | 7 | 7 | 3 |
 | Inputs | 23 | 23 | 11 |
 | Layout | 12 | 7 | 7 |
 | Navigation | 14 | 3 | 6 |
@@ -31,27 +31,26 @@ Direct unit coverage means a component has an explicit `*Tests.cs` file under `t
 | Theme | 2 | 0 | 1 |
 | Utility | 6 | 2 | 1 |
 
-## Next 17 Direct Unit Tests
+## Next 16 Direct Unit Tests
 
 These are the most useful next tests to reach the 80% beta bar. Priority favors interactive, composition-heavy, or public consumer-facing components over simple wrappers.
 
-1. `Combobox`
-2. `Command`
-3. `DropdownMenu`
-4. `Popover`
-5. `AlertDialog`
-6. `NavigationMenu`
-7. `NavigationMenuItem`
-8. `Menubar`
-9. `Menu`
-10. `MenuItem`
-11. `MenuSeparator`
-12. `Breadcrumb`
-13. `BreadcrumbItem`
-14. `ToastContainer`
-15. `ThemeProvider`
-16. `ThemeToggle`
-17. `ScrollArea`
+1. `Command`
+2. `DropdownMenu`
+3. `Popover`
+4. `AlertDialog`
+5. `NavigationMenu`
+6. `NavigationMenuItem`
+7. `Menubar`
+8. `Menu`
+9. `MenuItem`
+10. `MenuSeparator`
+11. `Breadcrumb`
+12. `BreadcrumbItem`
+13. `ToastContainer`
+14. `ThemeProvider`
+15. `ThemeToggle`
+16. `ScrollArea`
 
 After this slice lands, reassess before adding more lower-risk wrapper tests such as `Kbd`, `GridItem`, `TabItem`, and dialog subcomponents.
 
