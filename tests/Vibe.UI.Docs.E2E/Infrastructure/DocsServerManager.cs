@@ -8,6 +8,8 @@ internal static class DocsServerManager
     private static readonly object _lock = new();
     private static Process? _process;
     private static int _activeUsers;
+    private static readonly Queue<string> _recentOutput = new();
+    private static bool _processExitHandlerRegistered;
 
     internal static string DefaultBaseUrl => "http://localhost:5000";
 
@@ -30,34 +32,14 @@ internal static class DocsServerManager
 
     internal static void Release(string baseUrl)
     {
-        var shouldStop = false;
-
         lock (_lock)
         {
             _activeUsers = Math.Max(0, _activeUsers - 1);
-
-            if (_activeUsers == 0
-                && string.Equals(baseUrl.TrimEnd('/'), DefaultBaseUrl, StringComparison.OrdinalIgnoreCase)
-                && _process != null
-                && !_process.HasExited)
-            {
-                shouldStop = true;
-            }
         }
 
-        if (!shouldStop)
-        {
-            return;
-        }
-
-        try
-        {
-            _process?.Kill(entireProcessTree: true);
-        }
-        catch
-        {
-            // Ignore shutdown failures; test runner is exiting anyway.
-        }
+        // Keep the shared docs server alive for the test process. Restarting
+        // between individual E2E tests is slow and can miss readiness windows
+        // on hosted CI runners. The process-exit handler handles final cleanup.
     }
 
     private static Task EnsureStartedAsync(CancellationToken cancellationToken)
@@ -90,15 +72,19 @@ internal static class DocsServerManager
                 throw new InvalidOperationException("Failed to start docs server process.");
             }
 
-            _process.OutputDataReceived += (_, __) => { };
-            _process.ErrorDataReceived += (_, __) => { };
+            _process.OutputDataReceived += (_, e) => AddOutput(e.Data);
+            _process.ErrorDataReceived += (_, e) => AddOutput(e.Data);
             _process.BeginOutputReadLine();
             _process.BeginErrorReadLine();
 
-            AppDomain.CurrentDomain.ProcessExit += (_, __) =>
+            if (!_processExitHandlerRegistered)
             {
-                try { _process?.Kill(entireProcessTree: true); } catch { }
-            };
+                AppDomain.CurrentDomain.ProcessExit += (_, __) =>
+                {
+                    try { _process?.Kill(entireProcessTree: true); } catch { }
+                };
+                _processExitHandlerRegistered = true;
+            }
         }
 
         return Task.CompletedTask;
@@ -108,7 +94,7 @@ internal static class DocsServerManager
     {
         using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
 
-        var deadline = DateTimeOffset.UtcNow.AddSeconds(60);
+        var deadline = DateTimeOffset.UtcNow.AddSeconds(90);
         Exception? last = null;
 
         while (DateTimeOffset.UtcNow < deadline)
@@ -131,7 +117,35 @@ internal static class DocsServerManager
             await Task.Delay(500, cancellationToken);
         }
 
-        throw new TimeoutException($"Docs server did not become ready at {baseUrl} within 60s.", last);
+        throw new TimeoutException(
+            $"Docs server did not become ready at {baseUrl} within 90s. Recent output:{Environment.NewLine}{GetRecentOutput()}",
+            last);
+    }
+
+    private static void AddOutput(string? line)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+        {
+            return;
+        }
+
+        lock (_recentOutput)
+        {
+            _recentOutput.Enqueue(line);
+
+            while (_recentOutput.Count > 40)
+            {
+                _recentOutput.Dequeue();
+            }
+        }
+    }
+
+    private static string GetRecentOutput()
+    {
+        lock (_recentOutput)
+        {
+            return string.Join(Environment.NewLine, _recentOutput);
+        }
     }
 
     private static string GetRepoRoot()
