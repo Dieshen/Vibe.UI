@@ -81,6 +81,13 @@ jobs:
     - name: Validate local packages
       run: pwsh scripts/Validate-LocalPackages.ps1 -PackagesPath ./packages
 
+    - name: Rebuild compatibility fixtures after package validation
+      run: |
+        dotnet restore samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj
+        dotnet restore samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj
+        dotnet build samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+        dotnet build samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+
     - name: Install Playwright browsers
       run: pwsh tests/Vibe.UI.Docs.E2E/bin/Release/net9.0/playwright.ps1 install --with-deps chromium firefox webkit
 
