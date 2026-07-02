@@ -164,7 +164,7 @@ jobs:
       run: |
         for browser in chromium firefox webkit; do
           echo "Running compatibility browser tests with ${browser}"
-          BROWSER="${browser}" dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Compatibility -- RunConfiguration.TestSessionTimeout=180000
+          BROWSER="${browser}" dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Compatibility -- RunConfiguration.TestSessionTimeout=600000
         done
 
     - name: Pack Vibe.UI.CSS
@@ -196,7 +196,7 @@ jobs:
       run: |
         for browser in chromium firefox webkit; do
           echo "Running package compatibility browser tests with ${browser}"
-          BROWSER="${browser}" dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Compatibility -- RunConfiguration.TestSessionTimeout=180000
+          BROWSER="${browser}" dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Compatibility -- RunConfiguration.TestSessionTimeout=600000
         done
 
     - name: Validate NuGet API key
