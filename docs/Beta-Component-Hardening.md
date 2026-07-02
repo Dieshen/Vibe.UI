@@ -7,8 +7,8 @@ This tracker defines the beta confidence bar for component hardening. It is inte
 - Source component set: 110 Razor components in `src/Vibe.UI/Components`.
 - Beta hardening target: at least 80% direct unit-test coverage across source components.
 - Numeric target: 88 of 110 components with direct component tests.
-- Current direct unit coverage: 73 of 110 components, or 66.4%.
-- Remaining direct unit tests needed for 80%: 15 components.
+- Current direct unit coverage: 74 of 110 components, or 67.3%.
+- Remaining direct unit tests needed for 80%: 14 components.
 - Current docs browser smoke coverage: 53 component routes.
 - Browser smoke target: every top-level documented component page must stay in `Category=Smoke`.
 
@@ -27,29 +27,28 @@ Direct unit coverage means a component has an explicit `*Tests.cs` file under `t
 | Inputs | 23 | 23 | 11 |
 | Layout | 12 | 7 | 7 |
 | Navigation | 14 | 3 | 6 |
-| Overlay | 17 | 6 | 4 |
+| Overlay | 17 | 7 | 4 |
 | Theme | 2 | 0 | 1 |
 | Utility | 6 | 3 | 1 |
 
-## Next 15 Direct Unit Tests
+## Next 14 Direct Unit Tests
 
 These are the most useful next tests to reach the 80% beta bar. Priority favors interactive, composition-heavy, or public consumer-facing components over simple wrappers.
 
 1. `DropdownMenu`
 2. `Popover`
-3. `AlertDialog`
-4. `NavigationMenu`
-5. `NavigationMenuItem`
-6. `Menubar`
-7. `Menu`
-8. `MenuItem`
-9. `MenuSeparator`
-10. `Breadcrumb`
-11. `BreadcrumbItem`
-12. `ToastContainer`
-13. `ThemeProvider`
-14. `ThemeToggle`
-15. `ScrollArea`
+3. `NavigationMenu`
+4. `NavigationMenuItem`
+5. `Menubar`
+6. `Menu`
+7. `MenuItem`
+8. `MenuSeparator`
+9. `Breadcrumb`
+10. `BreadcrumbItem`
+11. `ToastContainer`
+12. `ThemeProvider`
+13. `ThemeToggle`
+14. `ScrollArea`
 
 After this slice lands, reassess before adding more lower-risk wrapper tests such as `Kbd`, `GridItem`, `TabItem`, and dialog subcomponents.
 
