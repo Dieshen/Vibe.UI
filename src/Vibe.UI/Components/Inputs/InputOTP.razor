@@ -2,16 +2,16 @@
 @inherits VibeComponent
 
 <div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="group" aria-label="@AriaLabel">
-    @for (int i = 0; i < Length; i++)
+    @for (int i = 0; i < _length; i++)
     {
         var index = i;
-        <input type="@(Pattern == OTPPattern.Numeric ? "tel" : "text")" @ref="@_inputs[i]" class="input-otp-slot"
+        <input type="@(Pattern == OTPPattern.Numeric ? "tel" : "text")" @ref="_inputs[index]" class="input-otp-slot"
             maxlength="1" value="@GetCharAt(index)" @oninput="@(e => HandleInput(index, e))"
             @onkeydown="@(e => HandleKeyDown(index, e))" @onpaste="@HandlePaste" disabled="@Disabled"
             inputmode="@(Pattern == OTPPattern.Numeric ? "numeric" : "text")" autocomplete="one-time-code"
             aria-label="@($"Character {index + 1}")" />
 
-        @if (index < Length - 1 && SeparatorIndices.Contains(index))
+        @if (ShouldRenderSeparator(index))
         {
             <span class="input-otp-separator">@Separator</span>
         }
@@ -19,8 +19,9 @@
 </div>
 
 @code {
-    private ElementReference[] _inputs = new ElementReference[6]; // Initialize with default length
+    private ElementReference[] _inputs = [];
     private string _currentValue = string.Empty;
+    private int _length;
 
     [Parameter]
     public string? Value { get; set; }
@@ -60,24 +61,35 @@
 
     protected override string ComponentClass => CombinedCssClass;
 
-    protected override void OnInitialized()
-    {
-        _inputs = new ElementReference[Length];
-        if (!SeparatorIndices.Any() && Length > 3)
-        {
-            // Default separator in the middle
-            SeparatorIndices.Add((Length / 2) - 1);
-        }
-    }
-
     protected override void OnParametersSet()
     {
+        _length = Math.Max(0, Length);
+        if (_inputs.Length != _length)
+        {
+            _inputs = new ElementReference[_length];
+        }
+
         _currentValue = Value ?? string.Empty;
     }
 
     private string GetCharAt(int index)
     {
         return index < _currentValue.Length ? _currentValue[index].ToString() : string.Empty;
+    }
+
+    private bool ShouldRenderSeparator(int index)
+    {
+        if (index >= _length - 1)
+        {
+            return false;
+        }
+
+        if (SeparatorIndices.Count == 0 && _length > 3)
+        {
+            return index == (_length / 2) - 1;
+        }
+
+        return SeparatorIndices.Contains(index);
     }
 
     private async Task HandleInput(int index, ChangeEventArgs e)
@@ -96,20 +108,20 @@
         }
 
         // Update value
-        var chars = _currentValue.PadRight(Length).ToCharArray();
+        var chars = _currentValue.PadRight(_length).ToCharArray();
         chars[index] = inputValue[^1];
         _currentValue = new string(chars).TrimEnd();
 
         await ValueChanged.InvokeAsync(_currentValue);
 
         // Auto-focus next input
-        if (index < Length - 1 && !string.IsNullOrEmpty(inputValue))
+        if (index < _length - 1 && !string.IsNullOrEmpty(inputValue))
         {
             await FocusInput(index + 1);
         }
 
         // Check if complete
-        if (_currentValue.Length == Length)
+        if (_currentValue.Length == _length)
         {
             await OnComplete.InvokeAsync(_currentValue);
         }
@@ -129,7 +141,7 @@
             else
             {
                 // Clear current
-                var chars = _currentValue.PadRight(Length).ToCharArray();
+                var chars = _currentValue.PadRight(_length).ToCharArray();
                 chars[index] = ' ';
                 _currentValue = new string(chars).TrimEnd();
                 await ValueChanged.InvokeAsync(_currentValue);
@@ -140,7 +152,7 @@
         {
             await FocusInput(index - 1);
         }
-        else if (e.Key == "ArrowRight" && index < Length - 1)
+        else if (e.Key == "ArrowRight" && index < _length - 1)
         {
             await FocusInput(index + 1);
         }
