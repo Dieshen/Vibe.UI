@@ -6,7 +6,7 @@
     {
         <div class="menubar-menu">
             <button class="menubar-trigger @(ActiveMenu == menu.Id ? "active" : "")" @onclick="() => ToggleMenu(menu.Id)"
-                role="menuitem" aria-haspopup="true" aria-expanded="@(ActiveMenu == menu.Id)">
+                role="menuitem" aria-haspopup="true" aria-expanded="@(ActiveMenu == menu.Id ? "true" : "false")">
                 @menu.Label
             </button>
 

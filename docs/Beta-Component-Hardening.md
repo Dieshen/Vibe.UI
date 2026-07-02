@@ -7,8 +7,8 @@ This tracker defines the beta confidence bar for component hardening. It is inte
 - Source component set: 110 Razor components in `src/Vibe.UI/Components`.
 - Beta hardening target: at least 80% direct unit-test coverage across source components.
 - Numeric target: 88 of 110 components with direct component tests.
-- Current direct unit coverage: 80 of 110 components, or 72.7%.
-- Remaining direct unit tests needed for 80%: 8 components.
+- Current direct unit coverage: 83 of 110 components, or 75.5%.
+- Remaining direct unit tests needed for 80%: 5 components.
 - Current docs browser smoke coverage: 53 component routes.
 - Browser smoke target: every top-level documented component page must stay in `Category=Smoke`.
 
@@ -26,23 +26,20 @@ Direct unit coverage means a component has an explicit `*Tests.cs` file under `t
 | Form | 7 | 7 | 3 |
 | Inputs | 23 | 23 | 11 |
 | Layout | 12 | 7 | 7 |
-| Navigation | 14 | 6 | 6 |
+| Navigation | 14 | 9 | 6 |
 | Overlay | 17 | 8 | 4 |
 | Theme | 2 | 0 | 1 |
 | Utility | 6 | 5 | 1 |
 
-## Next 8 Direct Unit Tests
+## Next 5 Direct Unit Tests
 
 These are the most useful next tests to reach the 80% beta bar. Priority favors interactive, composition-heavy, or public consumer-facing components over simple wrappers.
 
 1. `NavigationMenu`
 2. `NavigationMenuItem`
-3. `Menubar`
-4. `Menu`
-5. `MenuItem`
-6. `ToastContainer`
-7. `ThemeProvider`
-8. `ThemeToggle`
+3. `ToastContainer`
+4. `ThemeProvider`
+5. `ThemeToggle`
 
 After this slice lands, reassess before adding more lower-risk wrapper tests such as `Kbd`, `GridItem`, `TabItem`, and dialog subcomponents.
 
