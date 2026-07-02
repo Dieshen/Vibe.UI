@@ -118,6 +118,9 @@ jobs:
     - name: Restore Vibe.UI.CLI
       run: dotnet restore src/Vibe.UI.CLI/Vibe.UI.CLI.csproj
 
+    - name: Restore docs app
+      run: dotnet restore samples/Vibe.UI.Docs/Vibe.UI.Docs.csproj
+
     - name: Restore compatibility test fixtures
       run: |
         dotnet restore samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj
@@ -132,6 +135,9 @@ jobs:
 
     - name: Build Vibe.UI.CLI
       run: dotnet build src/Vibe.UI.CLI/Vibe.UI.CLI.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+
+    - name: Build docs app
+      run: dotnet build samples/Vibe.UI.Docs/Vibe.UI.Docs.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
 
     - name: Build compatibility test fixtures
       run: |
