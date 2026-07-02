@@ -314,7 +314,7 @@ public class ComponentService
             ["scrollarea"] = new ComponentInfo { Name = "ScrollArea", Category = "Utility", Description = "Augments native scroll functionality for custom, cross-browser styling" },
             ["dropdownmenu"] = new ComponentInfo { Name = "DropdownMenu", Category = "Utility", Description = "Displays a menu to the user triggered by a button" },
             ["kbd"] = new ComponentInfo { Name = "Kbd", Category = "Utility", Description = "Keyboard shortcut display component" },
-            ["qrcode"] = new ComponentInfo { Name = "QRCode", Category = "Utility", Description = "QR code generator for URLs and text", HasCss = false },
+            ["qrcode"] = new ComponentInfo { Name = "QRCode", Category = "Utility", Description = "Experimental QR-style visual preview for URLs and text", HasCss = false },
             ["icon"] = new ComponentInfo { Name = "Icon", Category = "Utility", Description = "Lucide icon component with size and color customization" },
 
             // Advanced Components (4 components)

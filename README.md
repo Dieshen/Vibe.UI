@@ -14,7 +14,7 @@ A comprehensive Blazor component library inspired by Shadcn UI, built with Razor
 ## Features
 
 ### Components & Features
-- **110 Accessible UI Components** - Comprehensive component library with Input, Form, Data Display, Navigation, Overlay, Feedback, and Advanced components
+- **110 UI Components** - Comprehensive component library with accessibility-minded Input, Form, Data Display, Navigation, Overlay, Feedback, and Advanced components
 - **Chart.js Integration** - Full-featured data visualization with 7 chart types (Line, Bar, Pie, Doughnut, Radar, PolarArea, Area)
 - **Icon Library** - 70+ Lucide icons built-in with SVG support and customizable styling
 - **Form Validation** - Built-in validators (email, phone, password strength, credit card, etc.) with real-time feedback
@@ -498,7 +498,7 @@ Vibe.UI includes a comprehensive set of **110 production-ready components**:
 - **DropdownMenu** - Context-specific dropdown menu
 - **Icon** - 70+ Lucide icons with SVG support and customizable styling
 - **Kbd** - Keyboard shortcut display component
-- **QRCode** - QR code generator for URLs and text
+- **QRCode** - Experimental QR-style visual preview for URLs and text
 
 ### Advanced Components
 - **TreeView** - Hierarchical data display with expand/collapse

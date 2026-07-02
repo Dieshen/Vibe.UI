@@ -43,6 +43,8 @@ This checklist targets the `1.0.0-beta` release line. Beta means Vibe.UI is read
 - [x] NuGet publish workflow runs the all-browser compatibility tests before packing and pushing packages.
 - [x] NuGet publish workflow validates required package contents before pushing packages.
 - [x] NuGet publish workflow validates local package install/build behavior before pushing packages.
+- [x] NuGet publish workflow rebuilds compatibility fixtures from locally packed `.nupkg` files and reruns all-browser compatibility tests before pushing packages.
+- [x] NuGet publish workflow defaults manual dispatches to dry-run mode and validates `NUGET_API_KEY` before non-dry-run publish.
 - [x] NuGet publish workflow validates TypeScript source/tests and committed generated JavaScript before packaging.
 - [x] NuGet publish workflow runs the docs `Category=Integration` browser tests under Chromium before packaging.
 - [x] NuGet publish workflow runs the docs `Category=Smoke` browser tests under Chromium before packaging.
@@ -74,6 +76,13 @@ dotnet pack src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-buil
 dotnet pack src/Vibe.UI/Vibe.UI.csproj --configuration Release --no-build --output ./packages
 dotnet pack src/Vibe.UI.CLI/Vibe.UI.CLI.csproj --configuration Release --no-build --output ./packages
 pwsh scripts/Validate-LocalPackages.ps1 -PackagesPath ./packages
+dotnet restore samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --source ./packages --source https://api.nuget.org/v3/index.json -p:VibeUsePackageReferences=true -p:VibePackageVersion=1.0.0-beta
+dotnet restore samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --source ./packages --source https://api.nuget.org/v3/index.json -p:VibeUsePackageReferences=true -p:VibePackageVersion=1.0.0-beta
+dotnet build samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion=1.0.0-beta
+dotnet build samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion=1.0.0-beta
+BROWSER=chromium dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Compatibility -- RunConfiguration.TestSessionTimeout=180000
+BROWSER=firefox dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Compatibility -- RunConfiguration.TestSessionTimeout=180000
+BROWSER=webkit dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Compatibility -- RunConfiguration.TestSessionTimeout=180000
 ```
 
 PowerShell equivalent for a single compatibility browser run:
@@ -87,7 +96,7 @@ Remove-Item Env:BROWSER
 ### Known Beta Debt
 
 - [ ] The docs E2E functional/mobile/accessibility suites beyond `Category=Compatibility`, `Category=Integration`, and `Category=Smoke` should be reviewed separately before stable 1.0.
-- [x] Direct component unit coverage meets the beta confidence target at 88 of 110 source components.
+- [x] Direct component unit coverage covers 110 of 110 source components.
 - [ ] Docs Shiki browser behavior still has skipped Vitest blocks; the Chromium integration E2E suite is the current browser-level coverage.
 - [ ] Committed generated CSS still includes a timestamp header; remove or stabilize it before stable 1.0 to avoid recurring noisy diffs.
-- [ ] Publish workflow still depends on `NUGET_API_KEY`; trusted publishing can be considered before stable 1.0.
+- [ ] Publish workflow still depends on `NUGET_API_KEY` for non-dry-run publishing; trusted publishing can be considered before stable 1.0.

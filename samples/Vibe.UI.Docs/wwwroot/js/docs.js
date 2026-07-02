@@ -4,7 +4,7 @@
 
 // Copy Install Command
 function copyInstallCommand() {
-  const command = 'dotnet tool install -g Vibe.UI.CLI';
+  const command = 'dotnet tool install -g Vibe.UI.CLI --version 1.0.0-beta';
 
   navigator.clipboard.writeText(command).then(() => {
     showToast('Copied to clipboard!');

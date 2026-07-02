@@ -81,12 +81,13 @@ jobs:
     - name: Validate local packages
       run: pwsh scripts/Validate-LocalPackages.ps1 -PackagesPath ./packages
 
-    - name: Rebuild compatibility fixtures after package validation
+    - name: Rebuild compatibility fixtures from local packages
       run: |
-        dotnet restore samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj
-        dotnet restore samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj
-        dotnet build samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
-        dotnet build samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+        PACKAGE_VERSION="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' src/Vibe.UI/Vibe.UI.csproj | head -n 1)"
+        dotnet restore samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --source ./packages --source https://api.nuget.org/v3/index.json -p:VibeUsePackageReferences=true -p:VibePackageVersion="${PACKAGE_VERSION}"
+        dotnet restore samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --source ./packages --source https://api.nuget.org/v3/index.json -p:VibeUsePackageReferences=true -p:VibePackageVersion="${PACKAGE_VERSION}"
+        dotnet build samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion="${PACKAGE_VERSION}"
+        dotnet build samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion="${PACKAGE_VERSION}"
 
     - name: Install Playwright browsers
       run: pwsh tests/Vibe.UI.Docs.E2E/bin/Release/net9.0/playwright.ps1 install --with-deps chromium firefox webkit

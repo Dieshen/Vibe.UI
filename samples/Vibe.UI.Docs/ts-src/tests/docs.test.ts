@@ -39,7 +39,7 @@ describe('docs', () => {
 
       const clipboard = getMockClipboard();
       expect(clipboard?.writeTextCalls).toHaveLength(1);
-      expect(clipboard?.writeTextCalls[0]).toBe('dotnet tool install -g Vibe.UI.CLI');
+      expect(clipboard?.writeTextCalls[0]).toBe('dotnet tool install -g Vibe.UI.CLI --version 1.0.0-beta');
     });
 
     it('should show success toast after copying', async () => {

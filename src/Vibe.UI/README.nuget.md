@@ -91,7 +91,7 @@ If using the `Chart` component, add Chart.js:
 - Built-in theming system (light/dark mode)
 - Chart.js integration
 - Form validation helpers
-- ARIA-compliant accessibility
+- ARIA and keyboard support across core interactive components
 - Responsive design
 - Minimal dependencies
 

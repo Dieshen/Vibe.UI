@@ -6,9 +6,14 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to publish (e.g., 1.0.0)'
+        description: 'Version to publish; must match the package project versions (e.g., 1.0.0-beta)'
         required: true
         type: string
+      dry_run:
+        description: 'Validate, pack, and upload artifacts without pushing to NuGet.org'
+        required: true
+        default: true
+        type: boolean
 
 env:
   DOTNET_VERSION: '9.0.x'
@@ -49,6 +54,18 @@ jobs:
         fi
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "Publishing version: $VERSION"
+
+    - name: Determine publish mode
+      id: publish_mode
+      run: |
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          DRY_RUN="${{ inputs.dry_run }}"
+        else
+          DRY_RUN="false"
+        fi
+
+        echo "dry_run=$DRY_RUN" >> $GITHUB_OUTPUT
+        echo "Dry run: $DRY_RUN"
 
     - name: Validate beta version
       run: |
@@ -168,7 +185,36 @@ jobs:
     - name: Validate local packages
       run: pwsh scripts/Validate-LocalPackages.ps1 -PackagesPath ./packages -Version "${{ steps.version.outputs.version }}"
 
+    - name: Rebuild compatibility fixtures from local packages
+      run: |
+        dotnet restore samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --source ./packages --source https://api.nuget.org/v3/index.json -p:VibeUsePackageReferences=true -p:VibePackageVersion="${{ steps.version.outputs.version }}"
+        dotnet restore samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --source ./packages --source https://api.nuget.org/v3/index.json -p:VibeUsePackageReferences=true -p:VibePackageVersion="${{ steps.version.outputs.version }}"
+        dotnet build samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion="${{ steps.version.outputs.version }}"
+        dotnet build samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion="${{ steps.version.outputs.version }}"
+
+    - name: Run package compatibility browser tests
+      run: |
+        for browser in chromium firefox webkit; do
+          echo "Running package compatibility browser tests with ${browser}"
+          BROWSER="${browser}" dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Compatibility -- RunConfiguration.TestSessionTimeout=180000
+        done
+
+    - name: Validate NuGet API key
+      if: steps.publish_mode.outputs.dry_run != 'true'
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      run: |
+        if [ -z "${NUGET_API_KEY}" ]; then
+          echo "::error::NUGET_API_KEY secret is required for non-dry-run publishing"
+          exit 1
+        fi
+
+    - name: Dry run complete
+      if: steps.publish_mode.outputs.dry_run == 'true'
+      run: echo "Dry run completed. Packages were validated and will be uploaded as artifacts, but not pushed to NuGet.org."
+
     - name: Push to NuGet.org
+      if: steps.publish_mode.outputs.dry_run != 'true'
       run: |
         dotnet nuget push ./packages/Vibe.UI.CSS.${{ steps.version.outputs.version }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
         dotnet nuget push ./packages/Vibe.UI.${{ steps.version.outputs.version }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
