@@ -3,13 +3,25 @@
 
 <div class="@CombinedClass" @attributes="AdditionalAttributes">
     <h3 class="vibe-accordion-item-header">
-        <button type="button" class="vibe-accordion-item-trigger" @onclick="ToggleExpanded" aria-expanded="@(IsExpanded ? "true" : "false")">
+        <button id="@_triggerId"
+                type="button"
+                class="vibe-accordion-item-trigger"
+                @onclick="ToggleExpanded"
+                aria-expanded="@(IsExpanded ? "true" : "false")"
+                aria-controls="@_contentId"
+                aria-disabled="@Disabled.ToString().ToLowerInvariant()"
+                disabled="@Disabled">
             @Header
             <span class="vibe-accordion-item-icon"></span>
         </button>
     </h3>
 
-    <div class="vibe-accordion-item-content" style="@ContentStyle">
+    <div id="@_contentId"
+         class="vibe-accordion-item-content"
+         style="@ContentStyle"
+         role="region"
+         aria-labelledby="@_triggerId"
+         hidden="@(!IsExpanded)">
         <div class="vibe-accordion-item-content-inner">
             @Content
         </div>
@@ -18,6 +30,8 @@
 
 @code {
     private string _id = Guid.NewGuid().ToString();
+    private readonly string _triggerId = $"vibe-accordion-trigger-{Guid.NewGuid():N}";
+    private readonly string _contentId = $"vibe-accordion-content-{Guid.NewGuid():N}";
 
     [CascadingParameter]
     private Accordion? Parent { get; set; }

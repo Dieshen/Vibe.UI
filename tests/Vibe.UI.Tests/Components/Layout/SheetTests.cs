@@ -26,6 +26,19 @@ public class SheetTests : TestBase
     }
 
     [Fact]
+    public void Sheet_Hides_Overlay_WhenShowOverlayFalse()
+    {
+        // Act
+        var cut = Render<Sheet>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.ShowOverlay, false));
+
+        // Assert
+        cut.Find(".sheet-content").ShouldNotBeNull();
+        cut.FindAll(".sheet-overlay").ShouldBeEmpty();
+    }
+
+    [Fact]
     public void Sheet_Displays_Title()
     {
         // Arrange
@@ -58,6 +71,27 @@ public class SheetTests : TestBase
     }
 
     [Fact]
+    public void Sheet_Wires_TitleAndDescription_AccessibilityAttributes()
+    {
+        // Act
+        var cut = Render<Sheet>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.Title, "Sheet Title")
+            .Add(p => p.Description, "Sheet Description"));
+
+        // Assert
+        var dialog = cut.Find(".sheet-content");
+        var title = cut.Find(".sheet-title");
+        var description = cut.Find(".sheet-description");
+
+        dialog.GetAttribute("role").ShouldBe("dialog");
+        dialog.GetAttribute("aria-modal").ShouldBe("true");
+        dialog.GetAttribute("tabindex").ShouldBe("-1");
+        dialog.GetAttribute("aria-labelledby").ShouldBe(title.GetAttribute("id"));
+        dialog.GetAttribute("aria-describedby").ShouldBe(description.GetAttribute("id"));
+    }
+
+    [Fact]
     public void Sheet_Applies_SideClass()
     {
         // Act
@@ -84,6 +118,22 @@ public class SheetTests : TestBase
     }
 
     [Fact]
+    public void Sheet_CloseButtonInvokesIsOpenChanged()
+    {
+        // Arrange
+        bool? changedValue = null;
+        var cut = Render<Sheet>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.IsOpenChanged, value => changedValue = value));
+
+        // Act
+        cut.Find(".sheet-close").Click();
+
+        // Assert
+        cut.WaitForAssertion(() => changedValue.ShouldBe(false));
+    }
+
+    [Fact]
     public void Sheet_Hides_CloseButton_WhenDisabled()
     {
         // Act
@@ -93,6 +143,74 @@ public class SheetTests : TestBase
 
         // Assert
         cut.FindAll(".sheet-close").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Sheet_OverlayClickInvokesIsOpenChanged_WhenEnabled()
+    {
+        // Arrange
+        bool? changedValue = null;
+        var cut = Render<Sheet>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.CloseOnOverlayClick, true)
+            .Add(p => p.IsOpenChanged, value => changedValue = value));
+
+        // Act
+        cut.Find(".sheet-overlay").Click();
+
+        // Assert
+        cut.WaitForAssertion(() => changedValue.ShouldBe(false));
+    }
+
+    [Fact]
+    public void Sheet_OverlayClickDoesNotClose_WhenDisabled()
+    {
+        // Arrange
+        var callbackInvoked = false;
+        var cut = Render<Sheet>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.CloseOnOverlayClick, false)
+            .Add(p => p.IsOpenChanged, _ => callbackInvoked = true));
+
+        // Act
+        cut.Find(".sheet-overlay").Click();
+
+        // Assert
+        callbackInvoked.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Sheet_EscapeInvokesIsOpenChanged_WhenEnabled()
+    {
+        // Arrange
+        bool? changedValue = null;
+        var cut = Render<Sheet>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.CloseOnEscape, true)
+            .Add(p => p.IsOpenChanged, value => changedValue = value));
+
+        // Act
+        cut.Find(".sheet-content").KeyDown("Escape");
+
+        // Assert
+        cut.WaitForAssertion(() => changedValue.ShouldBe(false));
+    }
+
+    [Fact]
+    public void Sheet_EscapeDoesNotClose_WhenDisabled()
+    {
+        // Arrange
+        var callbackInvoked = false;
+        var cut = Render<Sheet>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.CloseOnEscape, false)
+            .Add(p => p.IsOpenChanged, _ => callbackInvoked = true));
+
+        // Act
+        cut.Find(".sheet-content").KeyDown("Escape");
+
+        // Assert
+        callbackInvoked.ShouldBeFalse();
     }
 
     [Fact]
@@ -135,5 +253,23 @@ public class SheetTests : TestBase
         // Assert
         var content = cut.Find(".sheet-content");
         content.GetAttribute("style")!.ShouldContain("--sheet-size");
+    }
+
+    [Fact]
+    public void Sheet_PreservesAdditionalAttributes_OnDialogElement()
+    {
+        // Act
+        var cut = Render<Sheet>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                ["data-testid"] = "sheet-dialog",
+                ["aria-label"] = "Custom sheet label"
+            }));
+
+        // Assert
+        var dialog = cut.Find(".sheet-content");
+        dialog.GetAttribute("data-testid").ShouldBe("sheet-dialog");
+        dialog.GetAttribute("aria-label").ShouldBe("Custom sheet label");
     }
 }

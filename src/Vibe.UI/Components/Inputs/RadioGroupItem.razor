@@ -2,7 +2,7 @@
 @inherits VibeComponent
 
 <label @attributes="AdditionalAttributes" class="@CombinedCssClass">
-    <input type="radio" class="vibe-radio-group-item-input" name="@GroupName" value="@Value" checked="@IsChecked"
+    <input id="@Id" type="radio" class="vibe-radio-group-item-input" name="@GroupName" value="@Value" checked="@IsChecked"
         disabled="@IsDisabled" @onchange="HandleChange" />
     <span class="vibe-radio-group-item-control"></span>
     @if (ChildContent != null)

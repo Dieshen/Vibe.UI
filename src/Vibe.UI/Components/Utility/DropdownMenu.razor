@@ -2,13 +2,20 @@
 @inherits Base.VibeComponent
 
 <div class="@CombinedClass" @ref="DropdownRef" @attributes="AdditionalAttributes">
-    <div class="dropdown-trigger" @onclick="ToggleDropdown">
+    <div class="dropdown-trigger"
+         role="button"
+         tabindex="0"
+         aria-haspopup="menu"
+         aria-expanded="@IsOpen.ToString().ToLowerInvariant()"
+         aria-controls="@_contentId"
+         @onclick="ToggleDropdown"
+         @onkeydown="HandleTriggerKeyDown">
         @TriggerContent
     </div>
 
     @if (IsOpen)
     {
-        <div class="dropdown-content @PositionClass" style="@PositionStyle">
+        <div id="@_contentId" class="dropdown-content @PositionClass" style="@PositionStyle" role="menu">
             @Content
         </div>
         @* Backdrop handles click-outside without JS *@
@@ -66,12 +73,29 @@
     /// </summary>
     private ElementReference DropdownRef;
 
+    private readonly string _contentId = $"dropdown-content-{Guid.NewGuid():N}";
+
     /// <summary>
     /// Toggles the dropdown state.
     /// </summary>
     private void ToggleDropdown()
     {
         IsOpen = !IsOpen;
+    }
+
+    private void HandleTriggerKeyDown(KeyboardEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case "Enter":
+            case " ":
+            case "Spacebar":
+                ToggleDropdown();
+                break;
+            case "Escape":
+                CloseDropdown();
+                break;
+        }
     }
 
     /// <summary>

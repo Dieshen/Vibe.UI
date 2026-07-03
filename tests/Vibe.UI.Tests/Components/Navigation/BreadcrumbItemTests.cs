@@ -32,7 +32,24 @@ public class BreadcrumbItemTests : TestBase
             .AddChildContent("Current"));
 
         cut.Find(".vibe-breadcrumb-item").ClassList.ShouldContain("breadcrumb-last");
+        cut.FindAll("a.breadcrumb-link").ShouldBeEmpty();
+        var current = cut.Find("span.breadcrumb-link");
+        current.TextContent.ShouldBe("Current");
+        current.GetAttribute("aria-current").ShouldBe("page");
         cut.FindAll(".breadcrumb-separator").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void BreadcrumbItem_RendersNavigableLink_WhenNotLast()
+    {
+        var cut = Render<BreadcrumbItem>(parameters => parameters
+            .Add(p => p.Href, "/docs")
+            .AddChildContent("Docs"));
+
+        var link = cut.Find("a.breadcrumb-link");
+        link.GetAttribute("href").ShouldBe("/docs");
+        link.HasAttribute("aria-current").ShouldBeFalse();
+        cut.FindAll("span.breadcrumb-link").ShouldBeEmpty();
     }
 
     [Fact]

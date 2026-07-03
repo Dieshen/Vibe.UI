@@ -5,7 +5,7 @@
     <span class="vibe-tag-label">@Label</span>
     @if (Removable)
     {
-        <button type="button" class="vibe-tag-remove" @onclick="HandleRemove" aria-label="Remove tag">
+        <button type="button" class="vibe-tag-remove" @onclick="HandleRemove" aria-label="@RemoveButtonAriaLabel">
             <span aria-hidden="true">&times;</span>
         </button>
     }
@@ -42,14 +42,24 @@
     [Parameter]
     public EventCallback OnRemove { get; set; }
 
+    /// <summary>
+    /// Gets or sets the accessible label for the remove button.
+    /// </summary>
+    [Parameter]
+    public string? RemoveAriaLabel { get; set; }
+
     protected override string ComponentClass =>
         new Vibe.UI.Base.ClassBuilder()
             .Add("vibe-tag")
             .AddVariant("vibe-tag", Variant)
             .AddVariant("vibe-tag", Size)
             .AddIf("vibe-tag-removable", Removable)
-            .AddClass(Class)
             .Build();
+
+    private string RemoveButtonAriaLabel =>
+        !string.IsNullOrWhiteSpace(RemoveAriaLabel)
+            ? RemoveAriaLabel
+            : string.IsNullOrWhiteSpace(Label) ? "Remove tag" : $"Remove {Label}";
 
     private async Task HandleRemove()
     {

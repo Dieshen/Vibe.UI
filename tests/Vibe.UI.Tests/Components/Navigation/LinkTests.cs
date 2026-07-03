@@ -83,4 +83,41 @@ public class LinkTests : TestBase
         link.ClassList.ShouldContain("nav-link");
         link.GetAttribute("data-link").ShouldBe("primary");
     }
+
+    [Fact]
+    public void Link_AppliesAllUnderlineClasses()
+    {
+        var always = Render<Link>(parameters => parameters
+            .Add(p => p.Href, "/always")
+            .Add(p => p.Underline, Link.LinkUnderline.Always)
+            .AddChildContent("Always"));
+        var hover = Render<Link>(parameters => parameters
+            .Add(p => p.Href, "/hover")
+            .Add(p => p.Underline, Link.LinkUnderline.Hover)
+            .AddChildContent("Hover"));
+        var none = Render<Link>(parameters => parameters
+            .Add(p => p.Href, "/none")
+            .Add(p => p.Underline, Link.LinkUnderline.None)
+            .AddChildContent("None"));
+
+        always.Find("a").ClassList.ShouldContain("vibe-link-underline-always");
+        hover.Find("a").ClassList.ShouldContain("vibe-link-underline-hover");
+        none.Find("a").ClassList.ShouldContain("vibe-link-underline-none");
+    }
+
+    [Fact]
+    public void Link_AppliesAllVariantClasses()
+    {
+        var secondary = Render<Link>(parameters => parameters
+            .Add(p => p.Href, "/secondary")
+            .Add(p => p.Variant, Link.LinkVariant.Secondary)
+            .AddChildContent("Secondary"));
+        var muted = Render<Link>(parameters => parameters
+            .Add(p => p.Href, "/muted")
+            .Add(p => p.Variant, Link.LinkVariant.Muted)
+            .AddChildContent("Muted"));
+
+        secondary.Find("a").ClassList.ShouldContain("vibe-link-secondary");
+        muted.Find("a").ClassList.ShouldContain("vibe-link-muted");
+    }
 }

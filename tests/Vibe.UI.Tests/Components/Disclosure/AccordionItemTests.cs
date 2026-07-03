@@ -18,7 +18,16 @@ public class AccordionItemTests : TestBase
         var item = cut.Find(".vibe-accordion-item");
         item.TextContent.ShouldContain("General");
         item.InnerHtml.ShouldContain("General content");
-        cut.Find(".vibe-accordion-item-trigger").GetAttribute("aria-expanded").ShouldBe("false");
+        var trigger = cut.Find(".vibe-accordion-item-trigger");
+        var content = cut.Find(".vibe-accordion-item-content");
+
+        trigger.GetAttribute("aria-expanded").ShouldBe("false");
+        trigger.GetAttribute("aria-controls").ShouldBe(content.GetAttribute("id"));
+        trigger.GetAttribute("aria-disabled").ShouldBe("false");
+        trigger.HasAttribute("disabled").ShouldBeFalse();
+        content.GetAttribute("role").ShouldBe("region");
+        content.GetAttribute("aria-labelledby").ShouldBe(trigger.GetAttribute("id"));
+        content.HasAttribute("hidden").ShouldBeTrue();
     }
 
     [Fact]
@@ -40,6 +49,7 @@ public class AccordionItemTests : TestBase
         item.ClassList.ShouldContain("vibe-accordion-item-expanded");
         cut.Find(".vibe-accordion-item-trigger").GetAttribute("aria-expanded").ShouldBe("true");
         cut.Find(".vibe-accordion-item-content").GetAttribute("style").ShouldBeEmpty();
+        cut.Find(".vibe-accordion-item-content").HasAttribute("hidden").ShouldBeFalse();
     }
 
     [Fact]
@@ -61,7 +71,12 @@ public class AccordionItemTests : TestBase
         var item = cut.Find(".vibe-accordion-item");
         item.ClassList.ShouldContain("vibe-accordion-item-disabled");
         item.ClassList.ShouldNotContain("vibe-accordion-item-expanded");
-        cut.Find(".vibe-accordion-item-content").GetAttribute("style").ShouldBe("display: none;");
+        var trigger = cut.Find(".vibe-accordion-item-trigger");
+        trigger.HasAttribute("disabled").ShouldBeTrue();
+        trigger.GetAttribute("aria-disabled").ShouldBe("true");
+        var content = cut.Find(".vibe-accordion-item-content");
+        content.GetAttribute("style").ShouldBe("display: none;");
+        content.HasAttribute("hidden").ShouldBeTrue();
     }
 
     [Fact]

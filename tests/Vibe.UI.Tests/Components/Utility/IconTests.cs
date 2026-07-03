@@ -134,6 +134,50 @@ public class IconTests : TestBase
     }
 
     [Fact]
+    public void Icon_IsDecorativeByDefault()
+    {
+        // Act
+        var cut = Render<Icon>(parameters => parameters
+            .Add(p => p.Name, "heart"));
+
+        // Assert
+        var icon = cut.Find("svg");
+        icon.GetAttribute("aria-hidden").ShouldBe("true");
+        icon.GetAttribute("role").ShouldBeNull();
+        icon.GetAttribute("focusable").ShouldBe("false");
+    }
+
+    [Fact]
+    public void Icon_UsesSemanticImageRole_WhenAriaLabelProvided()
+    {
+        // Act
+        var cut = Render<Icon>(parameters => parameters
+            .Add(p => p.Name, "heart")
+            .Add(p => p.AriaLabel, "Favorite"));
+
+        // Assert
+        var icon = cut.Find("svg");
+        icon.GetAttribute("role").ShouldBe("img");
+        icon.GetAttribute("aria-label").ShouldBe("Favorite");
+        icon.GetAttribute("aria-hidden").ShouldBeNull();
+    }
+
+    [Fact]
+    public void Icon_UsesSemanticImageRole_WhenLabelledByAttributeProvided()
+    {
+        // Act
+        var cut = Render<Icon>(parameters => parameters
+            .Add(p => p.Name, "heart")
+            .AddUnmatched("aria-labelledby", "favorite-title"));
+
+        // Assert
+        var icon = cut.Find("svg");
+        icon.GetAttribute("role").ShouldBe("img");
+        icon.GetAttribute("aria-labelledby").ShouldBe("favorite-title");
+        icon.GetAttribute("aria-hidden").ShouldBeNull();
+    }
+
+    [Fact]
     public void Icon_Renders_CustomSvg()
     {
         // Arrange

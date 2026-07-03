@@ -3,9 +3,50 @@
 :global(.vibe-link) {
   color: var(--vibe-primary);
   text-decoration: none;
+  text-underline-offset: 0.2em;
 }
 
-:global(.vibe-link:hover) {
+:global(.vibe-link-primary) {
+  color: var(--vibe-primary);
+}
+
+:global(.vibe-link-secondary) {
+  color: var(--vibe-secondary-foreground);
+}
+
+:global(.vibe-link-muted) {
+  color: var(--vibe-muted-foreground);
+}
+
+:global(.vibe-link-underline-always) {
   text-decoration: underline;
 }
 
+:global(.vibe-link-underline-hover:hover) {
+  text-decoration: underline;
+}
+
+:global(.vibe-link-underline-none),
+:global(.vibe-link-underline-none:hover) {
+  text-decoration: none;
+}
+
+:global(.vibe-link-disabled) {
+  color: var(--vibe-muted-foreground);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+:global(.vibe-link-button) {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+}
+
+:global(.vibe-link:focus-visible) {
+  outline: 2px solid var(--vibe-ring);
+  outline-offset: 2px;
+}

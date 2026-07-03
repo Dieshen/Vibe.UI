@@ -49,6 +49,11 @@
     background-color: var(--vibe-muted);
 }
 
+.vibe-sheet .sheet-close:focus-visible {
+    outline: 2px solid var(--vibe-ring);
+    outline-offset: 2px;
+}
+
 .vibe-sheet .sheet-header {
     padding: 1.5rem 1.5rem 0.5rem 1.5rem;
 }

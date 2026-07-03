@@ -13,6 +13,11 @@ public class DropdownMenuTests : TestBase
 
         var trigger = cut.Find(".dropdown-trigger");
         trigger.TextContent.ShouldBe("Actions");
+        trigger.GetAttribute("role").ShouldBe("button");
+        trigger.GetAttribute("tabindex").ShouldBe("0");
+        trigger.GetAttribute("aria-haspopup").ShouldBe("menu");
+        trigger.GetAttribute("aria-expanded").ShouldBe("false");
+        trigger.GetAttribute("aria-controls").ShouldNotBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -35,6 +40,9 @@ public class DropdownMenuTests : TestBase
         cut.Find(".dropdown-trigger").Click();
 
         cut.Find(".dropdown-content").TextContent.ShouldContain("Delete");
+        cut.Find(".dropdown-trigger").GetAttribute("aria-expanded").ShouldBe("true");
+        cut.Find(".dropdown-content").GetAttribute("role").ShouldBe("menu");
+        cut.Find(".dropdown-content").GetAttribute("id").ShouldBe(cut.Find(".dropdown-trigger").GetAttribute("aria-controls"));
         cut.Find(".dropdown-backdrop").ShouldNotBeNull();
 
         cut.Find(".dropdown-trigger").Click();
@@ -54,6 +62,27 @@ public class DropdownMenuTests : TestBase
         cut.Find(".dropdown-backdrop").Click();
 
         cut.FindAll(".dropdown-content").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void DropdownMenu_OpensAndCloses_WithKeyboard()
+    {
+        var cut = Render<DropdownMenu>(parameters => parameters
+            .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Actions"))
+            .Add(p => p.Content, builder => builder.AddContent(0, "Menu item")));
+
+        var trigger = cut.Find(".dropdown-trigger");
+        trigger.KeyDown("Enter");
+
+        cut.Find(".dropdown-content").TextContent.ShouldContain("Menu item");
+        cut.Find(".dropdown-trigger").GetAttribute("aria-expanded").ShouldBe("true");
+
+        cut.Find(".dropdown-trigger").KeyDown("Escape");
+        cut.FindAll(".dropdown-content").ShouldBeEmpty();
+        cut.Find(".dropdown-trigger").GetAttribute("aria-expanded").ShouldBe("false");
+
+        cut.Find(".dropdown-trigger").KeyDown(" ");
+        cut.Find(".dropdown-content").TextContent.ShouldContain("Menu item");
     }
 
     [Fact]

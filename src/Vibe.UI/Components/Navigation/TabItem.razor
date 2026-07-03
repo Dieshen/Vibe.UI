@@ -1,12 +1,28 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
+@implements IAsyncDisposable
 
-<div class="@CombinedClass" role="tabpanel" id="@($"tabpanel-{Id}")" aria-labelledby="@($"tab-{Id}")" tabindex="0"
-    @attributes="AdditionalAttributes" style="display: @(IsActive ? "block" : "none")">
-    @ChildContent
-</div>
+@if (ParentTabs == null)
+{
+    <div @attributes="AdditionalAttributes"
+        class="@CombinedClass"
+        role="tabpanel"
+        id="@GetStandalonePanelId(ResolvedId)"
+        aria-labelledby="@GetStandaloneTriggerId(ResolvedId)"
+        tabindex="0"
+        hidden="@(!IsActive)">
+        @ChildContent
+    </div>
+}
 
 @code {
+    private readonly string _generatedId = Guid.NewGuid().ToString("N");
+    private Tabs? _registeredParent;
+    private string? _registeredId;
+
+    [CascadingParameter]
+    private Tabs? ParentTabs { get; set; }
+
     /// <summary>
     /// Gets or sets the tab content
     /// </summary>
@@ -38,10 +54,37 @@
     public bool IsActive { get; set; }
 
     /// <summary>
+    /// Gets or sets whether the tab should be active by default when registered with Tabs
+    /// </summary>
+    [Parameter]
+    public bool DefaultActive { get; set; }
+
+    /// <summary>
     /// Gets or sets the tab header icon
     /// </summary>
     [Parameter]
     public string? Icon { get; set; }
+
+    internal string ResolvedId => string.IsNullOrWhiteSpace(Id) ? _generatedId : Id!;
+
+    internal string PanelClass => CombinedClass;
+
+    internal RenderFragment HeaderContent => builder =>
+    {
+        if (!string.IsNullOrWhiteSpace(Icon))
+        {
+            builder.OpenElement(0, "span");
+            builder.AddAttribute(1, "class", "vibe-tabs-trigger-icon");
+            builder.AddAttribute(2, "aria-hidden", "true");
+            builder.AddContent(3, Icon);
+            builder.CloseElement();
+        }
+
+        builder.OpenElement(4, "span");
+        builder.AddAttribute(5, "class", "vibe-tabs-trigger-label");
+        builder.AddContent(6, string.IsNullOrWhiteSpace(Header) ? ResolvedId : Header);
+        builder.CloseElement();
+    };
 
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-tab-item";
@@ -53,9 +96,46 @@
     {
         base.OnParametersSet();
 
-        if (string.IsNullOrEmpty(Id))
+        if (ParentTabs == null)
         {
-            Id = Guid.NewGuid().ToString("N");
+            UnregisterFromParent();
+            return;
         }
+
+        RegisterWithParent();
+    }
+
+    private void RegisterWithParent()
+    {
+        var currentId = ResolvedId;
+
+        if (_registeredParent != null
+            && (!ReferenceEquals(_registeredParent, ParentTabs) || _registeredId != currentId))
+        {
+            _registeredParent.RemoveTab(_registeredId!);
+        }
+
+        ParentTabs!.AddTab(this);
+        _registeredParent = ParentTabs;
+        _registeredId = currentId;
+    }
+
+    private void UnregisterFromParent()
+    {
+        if (_registeredParent == null || _registeredId == null)
+            return;
+
+        _registeredParent.RemoveTab(_registeredId);
+        _registeredParent = null;
+        _registeredId = null;
+    }
+
+    private static string GetStandalonePanelId(string tabId) => $"tabpanel-{tabId}";
+    private static string GetStandaloneTriggerId(string tabId) => $"tab-{tabId}";
+
+    public ValueTask DisposeAsync()
+    {
+        UnregisterFromParent();
+        return ValueTask.CompletedTask;
     }
 }

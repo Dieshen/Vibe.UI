@@ -11,6 +11,9 @@ public class ContextMenuItemTests : TestBase
         // Assert
         var menuItem = cut.Find(".vibe-context-menu-item");
         menuItem.ShouldNotBeNull();
+        menuItem.GetAttribute("role").ShouldBe("menuitem");
+        menuItem.GetAttribute("tabindex").ShouldBe("0");
+        menuItem.GetAttribute("aria-disabled").ShouldBe("false");
     }
 
     [Fact]
@@ -42,6 +45,7 @@ public class ContextMenuItemTests : TestBase
         // Assert
         var iconElement = cut.Find(".context-item-icon");
         iconElement.ShouldNotBeNull();
+        iconElement.GetAttribute("aria-hidden").ShouldBe("true");
     }
 
     [Fact]
@@ -70,6 +74,8 @@ public class ContextMenuItemTests : TestBase
         // Assert
         var menuItem = cut.Find(".vibe-context-menu-item");
         menuItem.ClassList.ShouldContain("disabled");
+        menuItem.GetAttribute("tabindex").ShouldBe("-1");
+        menuItem.GetAttribute("aria-disabled").ShouldBe("true");
     }
 
     [Fact]
@@ -98,6 +104,38 @@ public class ContextMenuItemTests : TestBase
 
         // Assert
         clicked.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ContextMenuItem_InvokesOnItemClick_WhenActivatedByKeyboard()
+    {
+        // Arrange
+        var clicked = false;
+        var cut = Render<ContextMenuItem>(parameters => parameters
+            .Add(p => p.OnItemClick, args => clicked = true));
+
+        // Act
+        cut.Find(".vibe-context-menu-item").KeyDown("Enter");
+
+        // Assert
+        clicked.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ContextMenuItem_DoesNotInvokeOnItemClick_WhenDisabledAndActivatedByKeyboard()
+    {
+        // Arrange
+        var clicked = false;
+        var cut = Render<ContextMenuItem>(parameters => parameters
+            .Add(p => p.Disabled, true)
+            .Add(p => p.OnItemClick, args => clicked = true));
+
+        // Act
+        cut.Find(".vibe-context-menu-item").KeyDown("Enter");
+        cut.Find(".vibe-context-menu-item").KeyDown(" ");
+
+        // Assert
+        clicked.ShouldBeFalse();
     }
 
     [Fact]
@@ -137,5 +175,19 @@ public class ContextMenuItemTests : TestBase
 
         // Assert
         cut.FindAll(".context-item-shortcut").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void ContextMenuItem_PreservesAdditionalAttributes()
+    {
+        // Act
+        var cut = Render<ContextMenuItem>(parameters => parameters
+            .AddUnmatched("data-testid", "context-menu-item")
+            .AddUnmatched("aria-label", "Rename item"));
+
+        // Assert
+        var item = cut.Find(".vibe-context-menu-item");
+        item.GetAttribute("data-testid").ShouldBe("context-menu-item");
+        item.GetAttribute("aria-label").ShouldBe("Rename item");
     }
 }

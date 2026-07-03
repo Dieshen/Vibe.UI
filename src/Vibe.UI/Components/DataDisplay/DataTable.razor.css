@@ -137,6 +137,7 @@
 }
 
 .datatable-table th.sortable {
+    padding: 0;
     cursor: pointer;
     transition: var(--vibe-transition);
 }
@@ -150,6 +151,22 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--vibe-spacing-2);
+    width: 100%;
+}
+
+.datatable-sort-button {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: inherit;
+    text-align: left;
+    cursor: pointer;
+    outline: none;
 }
 
 :global(.dark) .datatable-toolbar {
@@ -392,6 +409,14 @@
     padding: 0.5rem 0.75rem;
 }
 
+.vibe-datatable.vibe-datatable-compact .datatable-table th.sortable {
+    padding: 0;
+}
+
+.vibe-datatable.vibe-datatable-compact .datatable-sort-button {
+    padding: 0.5rem 0.75rem;
+}
+
 .vibe-datatable.vibe-datatable-compact .datatable-table td {
     padding: 0.5rem 0.75rem;
 }
@@ -445,9 +470,14 @@
     }
 
     .datatable-table th,
+    .datatable-sort-button,
     .datatable-table td {
         padding: 0.5rem 0.75rem;
         font-size: 0.8125rem;
+    }
+
+    .datatable-table th.sortable {
+        padding: 0;
     }
 }
 
@@ -457,8 +487,13 @@
     }
 
     .datatable-table th,
+    .datatable-sort-button,
     .datatable-table td {
         padding: 0.375rem 0.5rem;
+    }
+
+    .datatable-table th.sortable {
+        padding: 0;
     }
 
     .header-label {
@@ -475,7 +510,7 @@
    FOCUS STYLES (Accessibility)
    ======================================== */
 
-.datatable-table th.sortable:focus-visible {
+.datatable-sort-button:focus-visible {
     outline: 2px solid var(--vibe-ring);
     outline-offset: -2px;
 }

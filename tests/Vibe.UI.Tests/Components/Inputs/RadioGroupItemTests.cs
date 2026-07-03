@@ -223,6 +223,7 @@ public class RadioGroupItemTests : TestBase
 
         // Assert
         cut.Instance.Id.ShouldBe("custom-id");
+        cut.Find("input[type='radio']").GetAttribute("id").ShouldBe("custom-id");
     }
 
     [Fact]

@@ -2,10 +2,19 @@
 @inherits Base.VibeComponent
 
 <li class="@CombinedClass @(IsLast ? "breadcrumb-last" : "")" @attributes="AdditionalAttributes">
-    <a href="@Href" class="breadcrumb-link" @onclick="OnClickHandler"
-        @onclick:preventDefault="@(!string.IsNullOrEmpty(Href))">
-        @ChildContent
-    </a>
+    @if (IsLast)
+    {
+        <span class="breadcrumb-link" aria-current="page">
+            @ChildContent
+        </span>
+    }
+    else
+    {
+        <a href="@Href" class="breadcrumb-link" @onclick="OnClickHandler"
+            @onclick:preventDefault="@OnClick.HasDelegate">
+            @ChildContent
+        </a>
+    }
     @if (!IsLast && (!string.IsNullOrEmpty(Separator) || SeparatorContent != null))
     {
         <span class="breadcrumb-separator" aria-hidden="true">

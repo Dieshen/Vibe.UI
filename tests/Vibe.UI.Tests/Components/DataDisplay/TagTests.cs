@@ -35,7 +35,20 @@ public class TagTests : BunitContext
             .Add(x => x.Label, "Hello")
             .Add(x => x.Removable, true));
 
-        cut.FindAll("button.vibe-tag-remove").Count.ShouldBe(1);
+        var removeButton = cut.Find("button.vibe-tag-remove");
+        removeButton.GetAttribute("type").ShouldBe("button");
+        removeButton.GetAttribute("aria-label").ShouldBe("Remove Hello");
+    }
+
+    [Fact]
+    public void Tag_UsesCustomRemoveAriaLabel_WhenProvided()
+    {
+        var cut = Render<Tag>(p => p
+            .Add(x => x.Label, "Hello")
+            .Add(x => x.Removable, true)
+            .Add(x => x.RemoveAriaLabel, "Dismiss greeting tag"));
+
+        cut.Find("button.vibe-tag-remove").GetAttribute("aria-label").ShouldBe("Dismiss greeting tag");
     }
 
     [Fact]
@@ -49,6 +62,17 @@ public class TagTests : BunitContext
 
         cut.Find("button.vibe-tag-remove").Click();
         removed.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Tag_AppliesCustomClassOnlyOnce()
+    {
+        var cut = Render<Tag>(p => p
+            .Add(x => x.Label, "Hello")
+            .Add(x => x.Class, "custom-tag"));
+
+        var classes = cut.Find("span").GetAttribute("class")!.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        classes.Count(c => c == "custom-tag").ShouldBe(1);
     }
 }
 

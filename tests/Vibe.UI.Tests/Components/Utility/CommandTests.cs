@@ -12,14 +12,31 @@ public class CommandTests : TestBase
         var input = cut.Find("input.command-input");
         input.GetAttribute("placeholder").ShouldBe("Type a command or search...");
         input.GetAttribute("role").ShouldBe("combobox");
+        input.GetAttribute("aria-label").ShouldBe("Command search");
         input.GetAttribute("aria-autocomplete").ShouldBe("list");
+        input.GetAttribute("aria-haspopup").ShouldBe("listbox");
+        input.GetAttribute("aria-expanded").ShouldBe("true");
         input.GetAttribute("autocomplete").ShouldBe("off");
         input.GetAttribute("spellcheck").ShouldBe("false");
 
         var list = cut.Find(".command-list");
         list.GetAttribute("role").ShouldBe("listbox");
         list.GetAttribute("id").ShouldNotBeNullOrEmpty();
+        list.GetAttribute("aria-label").ShouldBe("Command search results");
         input.GetAttribute("aria-controls").ShouldBe(list.GetAttribute("id"));
+    }
+
+    [Fact]
+    public void Command_RendersCustomInputAccessibleName()
+    {
+        var cut = Render<Command>(parameters => parameters
+            .Add(p => p.InputAriaLabel, "Search project actions"));
+
+        var input = cut.Find("input.command-input");
+        var list = cut.Find(".command-list");
+
+        input.GetAttribute("aria-label").ShouldBe("Search project actions");
+        list.GetAttribute("aria-label").ShouldBe("Search project actions results");
     }
 
     [Fact]
@@ -51,8 +68,10 @@ public class CommandTests : TestBase
         var items = cut.FindAll(".command-item");
         items.Count.ShouldBe(4);
         items[0].GetAttribute("role").ShouldBe("option");
+        items[0].GetAttribute("tabindex").ShouldBe("0");
         items[0].GetAttribute("aria-selected").ShouldBe("false");
         items[0].GetAttribute("aria-disabled").ShouldBe("false");
+        items[1].GetAttribute("tabindex").ShouldBe("-1");
         items[1].GetAttribute("aria-disabled").ShouldBe("true");
         items[1].ClassList.ShouldContain("disabled");
     }
@@ -110,6 +129,25 @@ public class CommandTests : TestBase
     }
 
     [Fact]
+    public void Command_EscapeClearsInput_WhenFilterHasNoResults()
+    {
+        var cut = Render<Command>(parameters => parameters
+            .Add(p => p.Items, CreateItems()));
+
+        var input = cut.Find("input");
+        input.Input("missing");
+        cut.FindAll(".command-item").ShouldBeEmpty();
+
+        input.KeyDown("Escape");
+
+        input.GetAttribute("value").ShouldBe(string.Empty);
+        var items = cut.FindAll(".command-item");
+        items.Count.ShouldBe(4);
+        items[0].ClassList.ShouldContain("selected");
+        input.GetAttribute("aria-activedescendant").ShouldBe(items[0].GetAttribute("id"));
+    }
+
+    [Fact]
     public void Command_ArrowDownSkipsDisabledItems()
     {
         var cut = Render<Command>(parameters => parameters
@@ -121,6 +159,29 @@ public class CommandTests : TestBase
         var items = cut.FindAll(".command-item");
         items[2].ClassList.ShouldContain("selected");
         cut.Find("input").GetAttribute("aria-activedescendant").ShouldBe(items[2].GetAttribute("id"));
+    }
+
+    [Fact]
+    public void Command_NavigationDoesNotSelectOrInvoke_WhenAllItemsAreDisabled()
+    {
+        Command.CommandItem? selected = null;
+        var cut = Render<Command>(parameters => parameters
+            .Add(p => p.Items, CreateAllDisabledItems())
+            .Add(p => p.ItemSelected, item => selected = item));
+
+        var input = cut.Find("input");
+        input.Focus();
+        input.KeyDown("ArrowDown");
+        input.KeyDown("End");
+        input.KeyDown("Home");
+        input.KeyDown("Enter");
+
+        selected.ShouldBeNull();
+        input.GetAttribute("aria-activedescendant").ShouldBeNull();
+        foreach (var item in cut.FindAll(".command-item"))
+        {
+            item.ClassList.Contains("selected").ShouldBeFalse();
+        }
     }
 
     [Fact]
@@ -167,6 +228,20 @@ public class CommandTests : TestBase
             .Add(p => p.ItemSelected, item => selected = item));
 
         cut.FindAll(".command-item")[2].Click();
+
+        selected.ShouldNotBeNull();
+        selected.Value.ShouldBe("save");
+    }
+
+    [Fact]
+    public void Command_FocusedItemEnterSelectsEnabledItem()
+    {
+        Command.CommandItem? selected = null;
+        var cut = Render<Command>(parameters => parameters
+            .Add(p => p.Items, CreateItems())
+            .Add(p => p.ItemSelected, item => selected = item));
+
+        cut.FindAll(".command-item")[2].KeyDown("Enter");
 
         selected.ShouldNotBeNull();
         selected.Value.ShouldBe("save");
@@ -232,6 +307,12 @@ public class CommandTests : TestBase
         new() { Label = "Delete File", Value = "delete", Disabled = true },
         new() { Label = "Open File", Value = "open" },
         new() { Label = "Save File", Value = "save" },
+        new() { Label = "Archive File", Value = "archive", Disabled = true }
+    ];
+
+    private static List<Command.CommandItem> CreateAllDisabledItems() =>
+    [
+        new() { Label = "Delete File", Value = "delete", Disabled = true },
         new() { Label = "Archive File", Value = "archive", Disabled = true }
     ];
 }

@@ -1,6 +1,10 @@
 /* TabItem baseline styles */
 
-:global(.vibe-tab-item) {
-  display: contents;
+.vibe-tab-item {
+  display: block;
+}
+
+.vibe-tab-item[hidden] {
+  display: none;
 }
 

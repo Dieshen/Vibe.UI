@@ -1,15 +1,27 @@
 @namespace Vibe.UI.Components
+@using System.Globalization
 @inherits VibeComponent
 
 <div @attributes="AdditionalAttributes" class="@CombinedCssClass">
-    <div class="vibe-color-picker-preview" @onclick="TogglePicker">
-        <div class="vibe-color-picker-swatch" style="background-color: @Value;"></div>
+    <div class="vibe-color-picker-preview"
+         role="button"
+         tabindex="@TriggerTabIndex"
+         aria-label="@TriggerAriaLabel"
+         aria-haspopup="dialog"
+         aria-expanded="@ExpandedAriaValue"
+         aria-controls="@_popoverId"
+         aria-disabled="@DisabledAriaValue"
+         @onclick="TogglePicker"
+         @onkeydown="HandleTriggerKeyDown">
+        <div class="vibe-color-picker-swatch" style="background-color: @PreviewColor;" aria-hidden="true"></div>
         <span class="vibe-color-picker-value">@DisplayValue</span>
     </div>
 
     @if (IsOpen)
     {
-        <div class="vibe-color-picker-popover">
+        <div id="@_popoverId" class="vibe-color-picker-popover" role="dialog" aria-labelledby="@_popoverLabelId">
+            <div id="@_popoverLabelId" class="vibe-color-picker-sr-only">Color picker</div>
+
             <div class="vibe-color-picker-saturation" @onmousedown="HandleSaturationMouseDown">
                 <div class="vibe-color-picker-saturation-overlay"></div>
                 <div class="vibe-color-picker-saturation-pointer" style="left: @(Saturation)%; top: @(100 - Lightness)%;">
@@ -18,14 +30,16 @@
 
             <div class="vibe-color-picker-controls">
                 <div class="vibe-color-picker-hue-slider">
-                    <input type="range" min="0" max="360" value="@Hue" @oninput="HandleHueChange"
+                    <label class="vibe-color-picker-sr-only" for="@_hueInputId">Hue</label>
+                    <input id="@_hueInputId" type="range" min="0" max="360" value="@Hue" @oninput="HandleHueChange"
                         class="vibe-color-picker-slider" />
                 </div>
 
                 @if (ShowAlpha)
                 {
                     <div class="vibe-color-picker-alpha-slider">
-                        <input type="range" min="0" max="100" value="@(Alpha * 100)" @oninput="HandleAlphaChange"
+                        <label class="vibe-color-picker-sr-only" for="@_alphaInputId">Alpha</label>
+                        <input id="@_alphaInputId" type="range" min="0" max="100" value="@(Alpha * 100)" @oninput="HandleAlphaChange"
                             class="vibe-color-picker-slider" />
                     </div>
                 }
@@ -33,25 +47,25 @@
 
             <div class="vibe-color-picker-inputs">
                 <div class="vibe-color-picker-input-group">
-                    <label>HEX</label>
-                    <input type="text" value="@HexValue" @oninput="HandleHexInput" class="vibe-color-picker-input" />
+                    <label for="@_hexInputId">HEX</label>
+                    <input id="@_hexInputId" type="text" value="@HexValue" @oninput="HandleHexInput" class="vibe-color-picker-input" />
                 </div>
 
                 @if (ShowRgbInputs)
                 {
                     <div class="vibe-color-picker-input-group">
-                        <label>R</label>
-                        <input type="number" min="0" max="255" value="@Red" @oninput="HandleRgbInput"
+                        <label for="@_redInputId">R</label>
+                        <input id="@_redInputId" type="number" min="0" max="255" value="@Red" @oninput="HandleRgbInput"
                             class="vibe-color-picker-input" />
                     </div>
                     <div class="vibe-color-picker-input-group">
-                        <label>G</label>
-                        <input type="number" min="0" max="255" value="@Green" @oninput="HandleRgbInput"
+                        <label for="@_greenInputId">G</label>
+                        <input id="@_greenInputId" type="number" min="0" max="255" value="@Green" @oninput="HandleRgbInput"
                             class="vibe-color-picker-input" />
                     </div>
                     <div class="vibe-color-picker-input-group">
-                        <label>B</label>
-                        <input type="number" min="0" max="255" value="@Blue" @oninput="HandleRgbInput"
+                        <label for="@_blueInputId">B</label>
+                        <input id="@_blueInputId" type="number" min="0" max="255" value="@Blue" @oninput="HandleRgbInput"
                             class="vibe-color-picker-input" />
                     </div>
                 }
@@ -59,11 +73,12 @@
 
             @if (ShowPresets && Presets.Any())
             {
-                <div class="vibe-color-picker-presets">
+                <div class="vibe-color-picker-presets" role="group" aria-labelledby="@_presetsLabelId">
+                    <div id="@_presetsLabelId" class="vibe-color-picker-sr-only">Preset colors</div>
                     @foreach (var preset in Presets)
                     {
-                        <button type="button" class="vibe-color-picker-preset" style="background-color: @preset;"
-                            @onclick="() => SelectPreset(preset)">
+                        <button @key="preset" type="button" class="vibe-color-picker-preset" style="background-color: @GetPresetBackgroundColor(preset);"
+                            aria-label="@GetPresetAriaLabel(preset)" title="@GetPresetAriaLabel(preset)" @onclick="() => SelectPreset(preset)">
                         </button>
                     }
                 </div>
@@ -101,6 +116,15 @@
     [Parameter]
     public string? CssClass { get; set; }
 
+    private readonly string _popoverId = $"vibe-color-picker-popover-{Guid.NewGuid():N}";
+    private readonly string _popoverLabelId = $"vibe-color-picker-label-{Guid.NewGuid():N}";
+    private readonly string _presetsLabelId = $"vibe-color-picker-presets-{Guid.NewGuid():N}";
+    private readonly string _hueInputId = $"vibe-color-picker-hue-{Guid.NewGuid():N}";
+    private readonly string _alphaInputId = $"vibe-color-picker-alpha-{Guid.NewGuid():N}";
+    private readonly string _hexInputId = $"vibe-color-picker-hex-{Guid.NewGuid():N}";
+    private readonly string _redInputId = $"vibe-color-picker-red-{Guid.NewGuid():N}";
+    private readonly string _greenInputId = $"vibe-color-picker-green-{Guid.NewGuid():N}";
+    private readonly string _blueInputId = $"vibe-color-picker-blue-{Guid.NewGuid():N}";
     private bool IsOpen { get; set; }
     private double Hue { get; set; }
     private double Saturation { get; set; } = 100;
@@ -110,7 +134,12 @@
     private int Green { get; set; }
     private int Blue { get; set; }
     private string HexValue { get; set; } = "#000000";
-    private string DisplayValue => ShowAlpha && Alpha < 1 ? $"rgba({Red},{Green},{Blue},{Alpha:F2})" : HexValue;
+    private string DisplayValue => ShowAlpha && Alpha < 1 ? FormatRgba(Alpha, "0.00") : HexValue;
+    private string PreviewColor => ShowAlpha && Alpha < 1 ? FormatRgba(Alpha, "0.##") : HexValue;
+    private string TriggerAriaLabel => $"Color picker, selected {DisplayValue}";
+    private string ExpandedAriaValue => IsOpen ? "true" : "false";
+    private string DisabledAriaValue => Disabled ? "true" : "false";
+    private string TriggerTabIndex => Disabled ? "-1" : "0";
 
     private string CombinedCssClass => CombineClasses(
     "vibe-color-picker",
@@ -123,7 +152,7 @@
 
     protected override void OnParametersSet()
     {
-        ParseColor(Value);
+        TryApplyColor(Value);
     }
 
     private void TogglePicker()
@@ -134,46 +163,75 @@
         }
     }
 
-    private void ParseColor(string color)
+    private void HandleTriggerKeyDown(KeyboardEventArgs e)
     {
-        // Simple hex parser - could be enhanced for rgb/hsl support
-        if (color.StartsWith("#") && color.Length >= 7)
+        if (Disabled)
         {
-            HexValue = color.Substring(0, 7);
-            Red = Convert.ToInt32(color.Substring(1, 2), 16);
-            Green = Convert.ToInt32(color.Substring(3, 2), 16);
-            Blue = Convert.ToInt32(color.Substring(5, 2), 16);
-
-            if (color.Length == 9)
-            {
-                Alpha = Convert.ToInt32(color.Substring(7, 2), 16) / 255.0;
-            }
-
-            var (h, s, l) = RgbToHsl(Red, Green, Blue);
-            Hue = h;
-            Saturation = s;
-            Lightness = l;
+            return;
         }
+
+        if (e.Key is "Enter" or " " or "Spacebar")
+        {
+            IsOpen = !IsOpen;
+        }
+        else if (e.Key == "Escape" && IsOpen)
+        {
+            IsOpen = false;
+        }
+    }
+
+    private bool TryApplyColor(string? color)
+    {
+        if (!TryParseColor(color, out var parsed))
+        {
+            return false;
+        }
+
+        ApplyColor(parsed);
+        return true;
+    }
+
+    private void ApplyColor(ParsedColor parsed)
+    {
+        HexValue = parsed.HexValue;
+        Red = parsed.Red;
+        Green = parsed.Green;
+        Blue = parsed.Blue;
+        Alpha = parsed.Alpha;
+
+        var (h, s, l) = RgbToHsl(Red, Green, Blue);
+        Hue = h;
+        Saturation = s;
+        Lightness = l;
     }
 
     private async Task HandleHueChange(ChangeEventArgs e)
     {
-        Hue = double.Parse(e.Value?.ToString() ?? "0");
+        if (!TryParseDouble(e.Value?.ToString(), out var hue))
+        {
+            return;
+        }
+
+        Hue = Math.Clamp(hue, 0, 360);
         await UpdateColorFromHsl();
     }
 
     private async Task HandleAlphaChange(ChangeEventArgs e)
     {
-        Alpha = double.Parse(e.Value?.ToString() ?? "100") / 100;
+        if (!TryParseDouble(e.Value?.ToString(), out var alpha))
+        {
+            return;
+        }
+
+        Alpha = Math.Clamp(alpha, 0, 100) / 100;
         await UpdateValue();
     }
 
     private async Task HandleHexInput(ChangeEventArgs e)
     {
-        var hex = e.Value?.ToString() ?? "#000000";
-        if (hex.StartsWith("#") && (hex.Length == 7 || hex.Length == 9))
+        if (TryParseColor(e.Value?.ToString(), out var parsed))
         {
-            ParseColor(hex);
+            ApplyColor(parsed);
             await UpdateValue();
         }
     }
@@ -200,20 +258,104 @@
         ? $"{HexValue}{(int)(Alpha * 255):X2}"
         : HexValue;
 
-        Value = newValue;
         await ValueChanged.InvokeAsync(newValue);
     }
 
     private async Task SelectPreset(string color)
     {
-        Value = color;
-        ParseColor(color);
-        await ValueChanged.InvokeAsync(color);
+        if (!TryParseColor(color, out var parsed))
+        {
+            return;
+        }
+
+        ApplyColor(parsed);
+        await ValueChanged.InvokeAsync(parsed.Value);
     }
 
     private void HandleSaturationMouseDown(MouseEventArgs e)
     {
         // Would need JS interop for proper drag handling
+    }
+
+    private string GetPresetAriaLabel(string color)
+    {
+        return TryParseColor(color, out var parsed)
+            ? $"Select preset color {parsed.Value}"
+            : "Invalid preset color";
+    }
+
+    private string GetPresetBackgroundColor(string color)
+    {
+        return TryParseColor(color, out var parsed)
+            ? GetCssColor(parsed)
+            : "transparent";
+    }
+
+    private string FormatRgba(double alpha, string alphaFormat)
+    {
+        return $"rgba({Red}, {Green}, {Blue}, {alpha.ToString(alphaFormat, CultureInfo.InvariantCulture)})";
+    }
+
+    private static string GetCssColor(ParsedColor parsed)
+    {
+        return parsed.Alpha < 1
+            ? $"rgba({parsed.Red}, {parsed.Green}, {parsed.Blue}, {parsed.Alpha.ToString("0.##", CultureInfo.InvariantCulture)})"
+            : parsed.HexValue;
+    }
+
+    private static bool TryParseColor(string? color, out ParsedColor parsed)
+    {
+        parsed = default;
+
+        if (string.IsNullOrWhiteSpace(color))
+        {
+            return false;
+        }
+
+        var trimmed = color.Trim();
+        if (trimmed.Length is not (7 or 9) || trimmed[0] != '#')
+        {
+            return false;
+        }
+
+        if (!TryParseHexByte(trimmed, 1, out var red) ||
+            !TryParseHexByte(trimmed, 3, out var green) ||
+            !TryParseHexByte(trimmed, 5, out var blue))
+        {
+            return false;
+        }
+
+        var alpha = 1.0;
+        int? alphaByte = null;
+        if (trimmed.Length == 9)
+        {
+            if (!TryParseHexByte(trimmed, 7, out var parsedAlpha))
+            {
+                return false;
+            }
+
+            alphaByte = parsedAlpha;
+            alpha = parsedAlpha / 255.0;
+        }
+
+        var hexValue = $"#{red:X2}{green:X2}{blue:X2}";
+        var value = alphaByte.HasValue ? $"{hexValue}{alphaByte.Value:X2}" : hexValue;
+        parsed = new ParsedColor(value, hexValue, red, green, blue, alpha);
+        return true;
+    }
+
+    private static bool TryParseHexByte(string value, int startIndex, out int component)
+    {
+        return int.TryParse(
+            value.AsSpan(startIndex, 2),
+            NumberStyles.HexNumber,
+            CultureInfo.InvariantCulture,
+            out component);
+    }
+
+    private static bool TryParseDouble(string? value, out double result)
+    {
+        return double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out result);
     }
 
     // Color conversion utilities
@@ -277,4 +419,6 @@
         if (t < 2.0 / 3) return p + (q - p) * (2.0 / 3 - t) * 6;
         return p;
     }
+
+    private readonly record struct ParsedColor(string Value, string HexValue, int Red, int Green, int Blue, double Alpha);
 }

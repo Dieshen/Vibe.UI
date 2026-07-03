@@ -52,9 +52,13 @@ public class AlertDialogTests : TestBase
         var cut = Render<AlertDialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.Title, string.Empty)
+            .Add(p => p.Description, "This action cannot be undone.")
             .AddChildContent("Delete item?"));
 
+        var dialog = cut.Find(".vibe-alert-dialog");
         cut.FindAll(".vibe-alert-dialog-header").ShouldBeEmpty();
+        dialog.GetAttribute("aria-labelledby").ShouldBeNull();
+        dialog.GetAttribute("aria-describedby").ShouldBeNull();
     }
 
     [Fact]
@@ -66,8 +70,11 @@ public class AlertDialogTests : TestBase
             .Add(p => p.Description, string.Empty)
             .AddChildContent("Delete item?"));
 
-        cut.Find(".vibe-alert-dialog-title").ShouldNotBeNull();
+        var dialog = cut.Find(".vibe-alert-dialog");
+        var title = cut.Find(".vibe-alert-dialog-title");
         cut.FindAll(".vibe-alert-dialog-description").ShouldBeEmpty();
+        dialog.GetAttribute("aria-labelledby").ShouldBe(title.GetAttribute("id"));
+        dialog.GetAttribute("aria-describedby").ShouldBeNull();
     }
 
     [Fact]
@@ -171,6 +178,7 @@ public class AlertDialogTests : TestBase
         var dialog = cut.Find(".vibe-alert-dialog");
         dialog.GetAttribute("data-testid").ShouldBe("alert-dialog");
         dialog.GetAttribute("aria-label").ShouldBe("Confirm delete");
+        dialog.GetAttribute("aria-labelledby").ShouldBeNull();
     }
 
     [Fact]
