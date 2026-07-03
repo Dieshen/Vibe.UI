@@ -24,17 +24,17 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7.0.0
       with:
         fetch-depth: 0
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5.4.0
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6.4.0
       with:
         node-version: '26'
         cache: npm
@@ -227,7 +227,7 @@ jobs:
         dotnet nuget push ./packages/Vibe.UI.CLI.${{ steps.version.outputs.version }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
     - name: Upload packages as artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7.0.1
       with:
         name: nuget-packages
         path: ./packages/*.nupkg
