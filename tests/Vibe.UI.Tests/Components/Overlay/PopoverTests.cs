@@ -5,7 +5,7 @@ public class PopoverTests : TestBase
     [Fact]
     public void Popover_RendersTriggerAndBaseClass()
     {
-        var cut = RenderComponent<Popover>(parameters => parameters
+        var cut = Render<Popover>(parameters => parameters
             .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Details")));
 
         var root = cut.Find(".vibe-popover");
@@ -22,7 +22,7 @@ public class PopoverTests : TestBase
     [Fact]
     public void Popover_DoesNotRenderContentInitially()
     {
-        var cut = RenderComponent<Popover>(parameters => parameters
+        var cut = Render<Popover>(parameters => parameters
             .Add(p => p.Content, builder => builder.AddContent(0, "Popover content")));
 
         cut.FindAll(".popover-content").ShouldBeEmpty();
@@ -32,7 +32,7 @@ public class PopoverTests : TestBase
     [Fact]
     public void Popover_TogglesContent_WhenTriggerIsClicked()
     {
-        var cut = RenderComponent<Popover>(parameters => parameters
+        var cut = Render<Popover>(parameters => parameters
             .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Details"))
             .Add(p => p.Content, builder => builder.AddMarkupContent(0, "<p>Popover content</p>")));
 
@@ -52,7 +52,7 @@ public class PopoverTests : TestBase
     [Fact]
     public void Popover_TogglesWithKeyboard()
     {
-        var cut = RenderComponent<Popover>(parameters => parameters
+        var cut = Render<Popover>(parameters => parameters
             .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Details"))
             .Add(p => p.Content, builder => builder.AddContent(0, "Popover content")));
 
@@ -68,7 +68,7 @@ public class PopoverTests : TestBase
     [Fact]
     public void Popover_BackdropClosesContent_WhenCloseOnClickOutsideIsEnabled()
     {
-        var cut = RenderComponent<Popover>(parameters => parameters
+        var cut = Render<Popover>(parameters => parameters
             .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Details"))
             .Add(p => p.Content, builder => builder.AddContent(0, "Popover content"))
             .Add(p => p.CloseOnClickOutside, true));
@@ -82,7 +82,7 @@ public class PopoverTests : TestBase
     [Fact]
     public void Popover_BackdropDoesNotCloseContent_WhenCloseOnClickOutsideIsDisabled()
     {
-        var cut = RenderComponent<Popover>(parameters => parameters
+        var cut = Render<Popover>(parameters => parameters
             .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Details"))
             .Add(p => p.Content, builder => builder.AddContent(0, "Popover content"))
             .Add(p => p.CloseOnClickOutside, false));
@@ -96,7 +96,7 @@ public class PopoverTests : TestBase
     [Fact]
     public void Popover_AppliesPositionAndAlignmentClasses()
     {
-        var cut = RenderComponent<Popover>(parameters => parameters
+        var cut = Render<Popover>(parameters => parameters
             .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Details"))
             .Add(p => p.Content, builder => builder.AddContent(0, "Popover content"))
             .Add(p => p.Position, "top")
@@ -112,7 +112,7 @@ public class PopoverTests : TestBase
     [Fact]
     public void Popover_AppliesCustomClass()
     {
-        var cut = RenderComponent<Popover>(parameters => parameters
+        var cut = Render<Popover>(parameters => parameters
             .Add(p => p.Class, "wide-popover"));
 
         cut.Find(".vibe-popover").ClassList.ShouldContain("wide-popover");

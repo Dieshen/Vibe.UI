@@ -6,7 +6,7 @@ public class ConfettiTests : TestBase
     public void Confetti_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Confetti>();
+        var cut = Render<Confetti>();
 
         // Assert
         var confetti = cut.Find(".vibe-confetti");
@@ -17,7 +17,7 @@ public class ConfettiTests : TestBase
     public void Confetti_IsInactive_Initially()
     {
         // Act
-        var cut = RenderComponent<Confetti>();
+        var cut = Render<Confetti>();
 
         // Assert
         var confetti = cut.Find(".vibe-confetti");
@@ -28,7 +28,7 @@ public class ConfettiTests : TestBase
     public void Confetti_BecomesActive_WhenActivated()
     {
         // Act
-        var cut = RenderComponent<Confetti>(parameters => parameters
+        var cut = Render<Confetti>(parameters => parameters
             .Add(p => p.Active, true));
 
         // Assert
@@ -40,7 +40,7 @@ public class ConfettiTests : TestBase
     public void Confetti_UsesDefaultParticleCount()
     {
         // Act
-        var cut = RenderComponent<Confetti>(parameters => parameters
+        var cut = Render<Confetti>(parameters => parameters
             .Add(p => p.Active, true));
 
         // Assert
@@ -55,7 +55,7 @@ public class ConfettiTests : TestBase
         var particleCount = 100;
 
         // Act
-        var cut = RenderComponent<Confetti>(parameters => parameters
+        var cut = Render<Confetti>(parameters => parameters
             .Add(p => p.ParticleCount, particleCount)
             .Add(p => p.Active, true));
 
@@ -71,7 +71,7 @@ public class ConfettiTests : TestBase
         var duration = 5000;
 
         // Act
-        var cut = RenderComponent<Confetti>(parameters => parameters
+        var cut = Render<Confetti>(parameters => parameters
             .Add(p => p.Duration, duration));
 
         // Assert
@@ -83,7 +83,7 @@ public class ConfettiTests : TestBase
     public void Confetti_Applies_CustomOrigin()
     {
         // Act
-        var cut = RenderComponent<Confetti>(parameters => parameters
+        var cut = Render<Confetti>(parameters => parameters
             .Add(p => p.Origin, Confetti.ConfettiOrigin.Top)
             .Add(p => p.Active, true));
 
@@ -96,7 +96,7 @@ public class ConfettiTests : TestBase
     public void Confetti_Applies_CustomPattern()
     {
         // Act
-        var cut = RenderComponent<Confetti>(parameters => parameters
+        var cut = Render<Confetti>(parameters => parameters
             .Add(p => p.Pattern, Confetti.ConfettiPattern.Fountain));
 
         // Assert
@@ -108,7 +108,7 @@ public class ConfettiTests : TestBase
     public void Confetti_GeneratesParticles_WhenActive()
     {
         // Act
-        var cut = RenderComponent<Confetti>(parameters => parameters
+        var cut = Render<Confetti>(parameters => parameters
             .Add(p => p.Active, true));
 
         // Assert

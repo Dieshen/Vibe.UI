@@ -6,7 +6,7 @@ public class DialogTests : TestBase
     public void Dialog_DoesNotRender_WhenClosed()
     {
         // Act
-        var cut = RenderComponent<Dialog>(parameters => parameters
+        var cut = Render<Dialog>(parameters => parameters
             .Add(p => p.IsOpen, false)
             .AddChildContent("Dialog Content"));
 
@@ -18,7 +18,7 @@ public class DialogTests : TestBase
     public void Dialog_Renders_WhenOpen()
     {
         // Act
-        var cut = RenderComponent<Dialog>(parameters => parameters
+        var cut = Render<Dialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .AddChildContent("Dialog Content"));
 
@@ -30,7 +30,7 @@ public class DialogTests : TestBase
     public void Dialog_Has_DialogRole()
     {
         // Act
-        var cut = RenderComponent<Dialog>(parameters => parameters
+        var cut = Render<Dialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .AddChildContent("Dialog Content"));
 
@@ -44,7 +44,7 @@ public class DialogTests : TestBase
     public void Dialog_Renders_Overlay()
     {
         // Act
-        var cut = RenderComponent<Dialog>(parameters => parameters
+        var cut = Render<Dialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .AddChildContent("Dialog Content"));
 
@@ -56,7 +56,7 @@ public class DialogTests : TestBase
     public void Dialog_Renders_ChildContent()
     {
         // Act
-        var cut = RenderComponent<Dialog>(parameters => parameters
+        var cut = Render<Dialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .AddChildContent("<div class='test-content'>Test Content</div>"));
 
@@ -69,7 +69,7 @@ public class DialogTests : TestBase
     public void Dialog_Renders_Header_WhenProvided()
     {
         // Act
-        var cut = RenderComponent<Dialog>(parameters => parameters
+        var cut = Render<Dialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.Header, builder => builder.AddContent(0, "Dialog Header"))
             .AddChildContent("Dialog Content"));
@@ -83,7 +83,7 @@ public class DialogTests : TestBase
     public void Dialog_Renders_Footer_WhenProvided()
     {
         // Act
-        var cut = RenderComponent<Dialog>(parameters => parameters
+        var cut = Render<Dialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.Footer, builder => builder.AddContent(0, "Dialog Footer"))
             .AddChildContent("Dialog Content"));
@@ -98,7 +98,7 @@ public class DialogTests : TestBase
     {
         // Arrange
         bool stateChanged = false;
-        var cut = RenderComponent<Dialog>(parameters => parameters
+        var cut = Render<Dialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.CloseOnOutsideClick, true)
             .Add(p => p.IsOpenChanged, EventCallback.Factory.Create<bool>(this, value => stateChanged = true))
@@ -116,7 +116,7 @@ public class DialogTests : TestBase
     {
         // Arrange
         bool stateChanged = false;
-        var cut = RenderComponent<Dialog>(parameters => parameters
+        var cut = Render<Dialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.CloseOnOutsideClick, false)
             .Add(p => p.IsOpenChanged, EventCallback.Factory.Create<bool>(this, value => stateChanged = true))
@@ -133,7 +133,7 @@ public class DialogTests : TestBase
     public void Dialog_Applies_AdditionalAttributes()
     {
         // Act
-        var cut = RenderComponent<Dialog>(parameters => parameters
+        var cut = Render<Dialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .AddUnmatched("data-test", "dialog-value")
             .AddChildContent("Dialog Content"));

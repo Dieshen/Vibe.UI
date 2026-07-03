@@ -6,7 +6,7 @@ public class MentionsTests : TestBase
     public void Mentions_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Mentions>();
+        var cut = Render<Mentions>();
 
         // Assert
         cut.Find(".vibe-mentions").ShouldNotBeNull();
@@ -16,7 +16,7 @@ public class MentionsTests : TestBase
     public void Mentions_Renders_InputField()
     {
         // Act
-        var cut = RenderComponent<Mentions>();
+        var cut = Render<Mentions>();
 
         // Assert
         cut.Find(".mentions-input").ShouldNotBeNull();
@@ -26,7 +26,7 @@ public class MentionsTests : TestBase
     public void Mentions_Has_DefaultPlaceholder()
     {
         // Act
-        var cut = RenderComponent<Mentions>();
+        var cut = Render<Mentions>();
 
         // Assert
         var input = cut.Find(".mentions-input");
@@ -37,7 +37,7 @@ public class MentionsTests : TestBase
     public void Mentions_Accepts_CustomPlaceholder()
     {
         // Act
-        var cut = RenderComponent<Mentions>(parameters => parameters
+        var cut = Render<Mentions>(parameters => parameters
             .Add(p => p.Placeholder, "Custom placeholder"));
 
         // Assert
@@ -49,7 +49,7 @@ public class MentionsTests : TestBase
     public void Mentions_Has_DefaultMentionPrefix()
     {
         // Act
-        var cut = RenderComponent<Mentions>();
+        var cut = Render<Mentions>();
 
         // Assert
         cut.Instance.MentionPrefix.ShouldBe("@");
@@ -59,7 +59,7 @@ public class MentionsTests : TestBase
     public void Mentions_Accepts_CustomMentionPrefix()
     {
         // Act
-        var cut = RenderComponent<Mentions>(parameters => parameters
+        var cut = Render<Mentions>(parameters => parameters
             .Add(p => p.MentionPrefix, "#"));
 
         // Assert
@@ -70,7 +70,7 @@ public class MentionsTests : TestBase
     public void Mentions_Allows_Hashtags_ByDefault()
     {
         // Act
-        var cut = RenderComponent<Mentions>();
+        var cut = Render<Mentions>();
 
         // Assert
         cut.Instance.AllowHashtags.ShouldBeTrue();
@@ -80,7 +80,7 @@ public class MentionsTests : TestBase
     public void Mentions_Disables_Input_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<Mentions>(parameters => parameters
+        var cut = Render<Mentions>(parameters => parameters
             .Add(p => p.Disabled, true));
 
         // Assert
@@ -93,7 +93,7 @@ public class MentionsTests : TestBase
     public void Mentions_Has_DefaultMaxSuggestions()
     {
         // Act
-        var cut = RenderComponent<Mentions>();
+        var cut = Render<Mentions>();
 
         // Assert
         cut.Instance.MaxSuggestions.ShouldBe(5);
@@ -103,7 +103,7 @@ public class MentionsTests : TestBase
     public void Mentions_Has_AriaLabel()
     {
         // Act
-        var cut = RenderComponent<Mentions>(parameters => parameters
+        var cut = Render<Mentions>(parameters => parameters
             .Add(p => p.AriaLabel, "Mention users"));
 
         // Assert
@@ -115,7 +115,7 @@ public class MentionsTests : TestBase
     public void Mentions_Applies_CustomCssClass()
     {
         // Act
-        var cut = RenderComponent<Mentions>(parameters => parameters
+        var cut = Render<Mentions>(parameters => parameters
             .Add(p => p.CssClass, "custom-mentions"));
 
         // Assert

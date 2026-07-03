@@ -5,7 +5,7 @@ public class MenuItemTests : TestBase
     [Fact]
     public void MenuItem_RendersButtonContentAndBaseClass()
     {
-        var cut = RenderComponent<MenuItem>(parameters => parameters
+        var cut = Render<MenuItem>(parameters => parameters
             .AddChildContent("Save"));
 
         var item = cut.Find("button.vibe-menu-item");
@@ -16,7 +16,7 @@ public class MenuItemTests : TestBase
     [Fact]
     public void MenuItem_RendersIcon()
     {
-        var cut = RenderComponent<MenuItem>(parameters => parameters
+        var cut = Render<MenuItem>(parameters => parameters
             .Add(p => p.Icon, "!")
             .AddChildContent("Delete"));
 
@@ -26,7 +26,7 @@ public class MenuItemTests : TestBase
     [Fact]
     public void MenuItem_OmitsIcon_WhenIconIsEmpty()
     {
-        var cut = RenderComponent<MenuItem>(parameters => parameters
+        var cut = Render<MenuItem>(parameters => parameters
             .Add(p => p.Icon, string.Empty)
             .AddChildContent("Save"));
 
@@ -36,7 +36,7 @@ public class MenuItemTests : TestBase
     [Fact]
     public void MenuItem_AppliesDangerClass()
     {
-        var cut = RenderComponent<MenuItem>(parameters => parameters
+        var cut = Render<MenuItem>(parameters => parameters
             .Add(p => p.Danger, true)
             .AddChildContent("Delete"));
 
@@ -46,7 +46,7 @@ public class MenuItemTests : TestBase
     [Fact]
     public void MenuItem_AppliesDisabledState()
     {
-        var cut = RenderComponent<MenuItem>(parameters => parameters
+        var cut = Render<MenuItem>(parameters => parameters
             .Add(p => p.Disabled, true)
             .AddChildContent("Save"));
 
@@ -59,7 +59,7 @@ public class MenuItemTests : TestBase
     public void MenuItem_ClickInvokesCallback_WhenEnabled()
     {
         var clicked = false;
-        var cut = RenderComponent<MenuItem>(parameters => parameters
+        var cut = Render<MenuItem>(parameters => parameters
             .Add(p => p.OnClick, _ => clicked = true)
             .AddChildContent("Save"));
 
@@ -72,7 +72,7 @@ public class MenuItemTests : TestBase
     public void MenuItem_ClickDoesNotInvokeCallback_WhenDisabled()
     {
         var clicked = false;
-        var cut = RenderComponent<MenuItem>(parameters => parameters
+        var cut = Render<MenuItem>(parameters => parameters
             .Add(p => p.Disabled, true)
             .Add(p => p.OnClick, _ => clicked = true)
             .AddChildContent("Save"));
@@ -85,7 +85,7 @@ public class MenuItemTests : TestBase
     [Fact]
     public void MenuItem_PreservesAdditionalAttributes()
     {
-        var cut = RenderComponent<MenuItem>(parameters => parameters
+        var cut = Render<MenuItem>(parameters => parameters
             .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
             {
                 ["data-testid"] = "menu-item",
@@ -101,7 +101,7 @@ public class MenuItemTests : TestBase
     [Fact]
     public void MenuItem_AppliesCustomClass()
     {
-        var cut = RenderComponent<MenuItem>(parameters => parameters
+        var cut = Render<MenuItem>(parameters => parameters
             .Add(p => p.Class, "primary-action")
             .AddChildContent("Save"));
 

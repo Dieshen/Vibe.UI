@@ -228,7 +228,7 @@ public class EndToEndInstallationTests : IDisposable
 
         // Verify directory contains at least these 3 razor files
         var razorFiles = Directory.GetFiles(componentsPath, "*.razor", SearchOption.TopDirectoryOnly);
-        razorFiles.Should().HaveCountGreaterOrEqualTo(3, "Should have at least 3 .razor files");
+        razorFiles.Should().HaveCount(count => count >= 3, "Should have at least 3 .razor files");
 
         var componentNames = razorFiles.Select(Path.GetFileNameWithoutExtension).ToList();
         componentNames.Should().Contain("Button");
@@ -350,7 +350,7 @@ public class EndToEndInstallationTests : IDisposable
         var installedComponents = _componentService.GetInstalledComponents(_testProjectPath, _componentsDir);
 
         // Assert: All installed components are detected
-        installedComponents.Should().HaveCountGreaterOrEqualTo(3);
+        installedComponents.Should().HaveCount(count => count >= 3);
         installedComponents.Should().Contain("Button");
         installedComponents.Should().Contain("Input");
         installedComponents.Should().Contain("Checkbox");

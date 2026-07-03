@@ -26,15 +26,15 @@
   "author": "Vibe.UI Contributors",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^20.10.0",
+    "@types/node": "^26.1.0",
     "@vitest/coverage-v8": "^4.1.9",
-    "chart.js": "^4.4.1",
+    "chart.js": "^4.5.1",
     "copyfiles": "^2.4.1",
     "esbuild": "^0.28.1",
     "happy-dom": "^20.10.6",
-    "jsdom": "^23.0.1",
-    "shiki": "^1.22.0",
-    "typescript": "^5.3.3",
+    "jsdom": "^29.1.1",
+    "shiki": "^4.3.0",
+    "typescript": "^6.0.3",
     "vitest": "^4.1.9"
   }
 }

@@ -6,7 +6,7 @@ public class CardTests : TestBase
     public void Card_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Card>(parameters => parameters
+        var cut = Render<Card>(parameters => parameters
             .AddChildContent("Card content"));
 
         // Assert
@@ -19,7 +19,7 @@ public class CardTests : TestBase
     public void Card_Renders_WithHeader()
     {
         // Act
-        var cut = RenderComponent<Card>(parameters => parameters
+        var cut = Render<Card>(parameters => parameters
             .Add(p => p.Header, "Card Header")
             .AddChildContent("Body"));
 
@@ -31,7 +31,7 @@ public class CardTests : TestBase
     public void Card_Renders_WithFooter()
     {
         // Act
-        var cut = RenderComponent<Card>(parameters => parameters
+        var cut = Render<Card>(parameters => parameters
             .Add(p => p.Footer, "Card Footer")
             .AddChildContent("Body"));
 
@@ -43,7 +43,7 @@ public class CardTests : TestBase
     public void Card_WithEmptyContent_RendersEmpty()
     {
         // Act
-        var cut = RenderComponent<Card>(parameters => parameters
+        var cut = Render<Card>(parameters => parameters
             .AddChildContent(""));
 
         // Assert
@@ -55,7 +55,7 @@ public class CardTests : TestBase
     public void Card_WithNullHeader_OnlyRendersBody()
     {
         // Act
-        var cut = RenderComponent<Card>(parameters => parameters
+        var cut = Render<Card>(parameters => parameters
             .AddChildContent("Body content"));
 
         // Assert
@@ -67,7 +67,7 @@ public class CardTests : TestBase
     public void Card_WithNullFooter_OnlyRendersHeaderAndBody()
     {
         // Act
-        var cut = RenderComponent<Card>(parameters => parameters
+        var cut = Render<Card>(parameters => parameters
             .Add(p => p.Header, "Header")
             .AddChildContent("Body"));
 
@@ -81,7 +81,7 @@ public class CardTests : TestBase
     public void Card_WithAllSections_RendersAllCorrectly()
     {
         // Act
-        var cut = RenderComponent<Card>(parameters => parameters
+        var cut = Render<Card>(parameters => parameters
             .Add(p => p.Header, "Card Header")
             .Add(p => p.Footer, "Card Footer")
             .AddChildContent("Card Body"));
@@ -96,7 +96,7 @@ public class CardTests : TestBase
     public void Card_WithCustomClass_AppliesCorrectly()
     {
         // Act
-        var cut = RenderComponent<Card>(parameters => parameters
+        var cut = Render<Card>(parameters => parameters
             .Add(p => p.Class, "custom-card-class")
             .AddChildContent("Content"));
 
@@ -109,7 +109,7 @@ public class CardTests : TestBase
     public void Card_WithAdditionalAttributes_AppliesCorrectly()
     {
         // Act
-        var cut = RenderComponent<Card>(parameters => parameters
+        var cut = Render<Card>(parameters => parameters
             .AddChildContent("Content")
             .AddUnmatched("data-testid", "test-card")
             .AddUnmatched("aria-label", "Test Card"));
@@ -124,7 +124,7 @@ public class CardTests : TestBase
     public void Card_WithComplexHeader_RendersCorrectly()
     {
         // Act
-        var cut = RenderComponent<Card>(parameters => parameters
+        var cut = Render<Card>(parameters => parameters
             .Add(p => p.Header, builder =>
             {
                 builder.OpenElement(0, "div");
@@ -144,7 +144,7 @@ public class CardTests : TestBase
     public void Card_WithComplexFooter_RendersCorrectly()
     {
         // Act
-        var cut = RenderComponent<Card>(parameters => parameters
+        var cut = Render<Card>(parameters => parameters
             .AddChildContent("Body")
             .Add(p => p.Footer, builder =>
             {
@@ -167,7 +167,7 @@ public class CardTests : TestBase
         var largeContent = new string('X', 10000);
 
         // Act
-        var cut = RenderComponent<Card>(parameters => parameters
+        var cut = Render<Card>(parameters => parameters
             .AddChildContent(largeContent));
 
         // Assert
@@ -180,7 +180,7 @@ public class CardTests : TestBase
     public void Card_WithNestedComponents_RendersCorrectly()
     {
         // Act
-        var cut = RenderComponent<Card>(parameters => parameters
+        var cut = Render<Card>(parameters => parameters
             .AddChildContent(builder =>
             {
                 builder.OpenElement(0, "div");
@@ -205,7 +205,7 @@ public class CardTests : TestBase
     public void Card_WithOnlyHeader_RendersHeaderAndBody()
     {
         // Act
-        var cut = RenderComponent<Card>(parameters => parameters
+        var cut = Render<Card>(parameters => parameters
             .Add(p => p.Header, "Only Header")
             .AddChildContent("Body"));
 

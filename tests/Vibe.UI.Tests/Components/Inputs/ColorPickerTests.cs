@@ -6,7 +6,7 @@ public class ColorPickerTests : TestBase
     public void ColorPicker_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<ColorPicker>();
+        var cut = Render<ColorPicker>();
 
         // Assert
         var picker = cut.Find(".vibe-color-picker");
@@ -17,7 +17,7 @@ public class ColorPickerTests : TestBase
     public void ColorPicker_Displays_ColorSwatch()
     {
         // Act
-        var cut = RenderComponent<ColorPicker>(parameters => parameters
+        var cut = Render<ColorPicker>(parameters => parameters
             .Add(p => p.Value, "#FF0000"));
 
         // Assert
@@ -29,7 +29,7 @@ public class ColorPickerTests : TestBase
     public void ColorPicker_Displays_ColorValue()
     {
         // Act
-        var cut = RenderComponent<ColorPicker>(parameters => parameters
+        var cut = Render<ColorPicker>(parameters => parameters
             .Add(p => p.Value, "#00FF00"));
 
         // Assert
@@ -41,7 +41,7 @@ public class ColorPickerTests : TestBase
     public void ColorPicker_Shows_Popover_WhenClicked()
     {
         // Act
-        var cut = RenderComponent<ColorPicker>();
+        var cut = Render<ColorPicker>();
         var preview = cut.Find(".vibe-color-picker-preview");
         preview.Click();
 
@@ -54,7 +54,7 @@ public class ColorPickerTests : TestBase
     public void ColorPicker_Shows_AlphaSlider_WhenEnabled()
     {
         // Act
-        var cut = RenderComponent<ColorPicker>(parameters => parameters
+        var cut = Render<ColorPicker>(parameters => parameters
             .Add(p => p.ShowAlpha, true));
 
         var preview = cut.Find(".vibe-color-picker-preview");
@@ -68,7 +68,7 @@ public class ColorPickerTests : TestBase
     public void ColorPicker_Hides_AlphaSlider_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<ColorPicker>(parameters => parameters
+        var cut = Render<ColorPicker>(parameters => parameters
             .Add(p => p.ShowAlpha, false));
 
         var preview = cut.Find(".vibe-color-picker-preview");
@@ -82,7 +82,7 @@ public class ColorPickerTests : TestBase
     public void ColorPicker_Shows_RgbInputs_ByDefault()
     {
         // Act
-        var cut = RenderComponent<ColorPicker>();
+        var cut = Render<ColorPicker>();
         var preview = cut.Find(".vibe-color-picker-preview");
         preview.Click();
 
@@ -95,7 +95,7 @@ public class ColorPickerTests : TestBase
     public void ColorPicker_Shows_Presets_WhenEnabled()
     {
         // Act
-        var cut = RenderComponent<ColorPicker>(parameters => parameters
+        var cut = Render<ColorPicker>(parameters => parameters
             .Add(p => p.ShowPresets, true));
 
         var preview = cut.Find(".vibe-color-picker-preview");
@@ -110,7 +110,7 @@ public class ColorPickerTests : TestBase
     public void ColorPicker_Applies_DisabledState()
     {
         // Act
-        var cut = RenderComponent<ColorPicker>(parameters => parameters
+        var cut = Render<ColorPicker>(parameters => parameters
             .Add(p => p.Disabled, true));
 
         // Assert
@@ -121,7 +121,7 @@ public class ColorPickerTests : TestBase
     public void ColorPicker_Applies_CustomCssClass()
     {
         // Act
-        var cut = RenderComponent<ColorPicker>(parameters => parameters
+        var cut = Render<ColorPicker>(parameters => parameters
             .Add(p => p.CssClass, "custom-picker"));
 
         // Assert

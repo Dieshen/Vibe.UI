@@ -5,7 +5,7 @@ public class InputOTPTests : TestBase
     [Fact]
     public void InputOTP_RendersDefaultNumericSlots()
     {
-        var cut = RenderComponent<InputOTP>();
+        var cut = Render<InputOTP>();
 
         var group = cut.Find(".input-otp");
         group.GetAttribute("role").ShouldBe("group");
@@ -22,7 +22,7 @@ public class InputOTPTests : TestBase
     [Fact]
     public void InputOTP_RendersExistingValueAcrossSlots()
     {
-        var cut = RenderComponent<InputOTP>(parameters => parameters
+        var cut = Render<InputOTP>(parameters => parameters
             .Add(p => p.Value, "123")
             .Add(p => p.Length, 4));
 
@@ -36,7 +36,7 @@ public class InputOTPTests : TestBase
     [Fact]
     public void InputOTP_RendersSeparatorsAtConfiguredIndices()
     {
-        var cut = RenderComponent<InputOTP>(parameters => parameters
+        var cut = Render<InputOTP>(parameters => parameters
             .Add(p => p.Length, 4)
             .Add(p => p.Separator, "/")
             .Add(p => p.SeparatorIndices, new List<int> { 0, 2 }));
@@ -50,12 +50,12 @@ public class InputOTPTests : TestBase
     [Fact]
     public void InputOTP_UpdatesSlotCount_WhenLengthChanges()
     {
-        var cut = RenderComponent<InputOTP>(parameters => parameters
+        var cut = Render<InputOTP>(parameters => parameters
             .Add(p => p.Length, 2));
 
         cut.FindAll("input").Count.ShouldBe(2);
 
-        cut.SetParametersAndRender(parameters => parameters
+        cut.Render(parameters => parameters
             .Add(p => p.Length, 4));
 
         cut.FindAll("input").Count.ShouldBe(4);
@@ -64,7 +64,7 @@ public class InputOTPTests : TestBase
     [Fact]
     public void InputOTP_AppliesAlphaPatternAttributes()
     {
-        var cut = RenderComponent<InputOTP>(parameters => parameters
+        var cut = Render<InputOTP>(parameters => parameters
             .Add(p => p.Pattern, InputOTP.OTPPattern.Alpha));
 
         var input = cut.Find("input");
@@ -75,7 +75,7 @@ public class InputOTPTests : TestBase
     [Fact]
     public void InputOTP_AppliesDisabledState()
     {
-        var cut = RenderComponent<InputOTP>(parameters => parameters
+        var cut = Render<InputOTP>(parameters => parameters
             .Add(p => p.Disabled, true));
 
         cut.Find(".input-otp").ClassList.ShouldContain("input-otp-disabled");
@@ -86,7 +86,7 @@ public class InputOTPTests : TestBase
     public void InputOTP_InvokesValueChanged_ForValidInput()
     {
         string? changedValue = null;
-        var cut = RenderComponent<InputOTP>(parameters => parameters
+        var cut = Render<InputOTP>(parameters => parameters
             .Add(p => p.ValueChanged, value => changedValue = value));
 
         cut.Find("input").Input("7");
@@ -98,7 +98,7 @@ public class InputOTPTests : TestBase
     public void InputOTP_RejectsInvalidNumericInput()
     {
         string? changedValue = null;
-        var cut = RenderComponent<InputOTP>(parameters => parameters
+        var cut = Render<InputOTP>(parameters => parameters
             .Add(p => p.ValueChanged, value => changedValue = value));
 
         cut.Find("input").Input("A");
@@ -110,7 +110,7 @@ public class InputOTPTests : TestBase
     public void InputOTP_InvokesOnComplete_WhenLengthIsFilled()
     {
         string? completedValue = null;
-        var cut = RenderComponent<InputOTP>(parameters => parameters
+        var cut = Render<InputOTP>(parameters => parameters
             .Add(p => p.Length, 2)
             .Add(p => p.Value, "1")
             .Add(p => p.OnComplete, value => completedValue = value));
@@ -124,7 +124,7 @@ public class InputOTPTests : TestBase
     public void InputOTP_BackspaceClearsCurrentSlot()
     {
         string? changedValue = null;
-        var cut = RenderComponent<InputOTP>(parameters => parameters
+        var cut = Render<InputOTP>(parameters => parameters
             .Add(p => p.Length, 2)
             .Add(p => p.Value, "12")
             .Add(p => p.ValueChanged, value => changedValue = value));

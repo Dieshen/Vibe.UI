@@ -5,7 +5,7 @@ public class DialogTriggerTests : TestBase
     [Fact]
     public void DialogTrigger_RendersContentAndAttributes()
     {
-        var cut = RenderComponent<DialogTrigger>(parameters => parameters
+        var cut = Render<DialogTrigger>(parameters => parameters
             .Add(p => p.Class, "trigger-shell")
             .AddUnmatched("data-trigger", "dialog")
             .AddChildContent("Open"));
@@ -24,7 +24,7 @@ public class DialogTriggerTests : TestBase
     public void DialogTrigger_InvokesClickCallback()
     {
         var clicked = false;
-        var cut = RenderComponent<DialogTrigger>(parameters => parameters
+        var cut = Render<DialogTrigger>(parameters => parameters
             .Add(p => p.OnClick, EventCallback.Factory.Create(this, () => clicked = true))
             .AddChildContent("Open"));
 
@@ -37,7 +37,7 @@ public class DialogTriggerTests : TestBase
     public void DialogTrigger_OpensParentDialog()
     {
         bool? changed = null;
-        var cut = RenderComponent<DialogRoot>(parameters => parameters
+        var cut = Render<DialogRoot>(parameters => parameters
             .Add(p => p.IsOpenChanged, EventCallback.Factory.Create<bool>(this, value => changed = value))
             .AddChildContent(builder =>
             {
@@ -56,7 +56,7 @@ public class DialogTriggerTests : TestBase
     public void DialogTrigger_OpensParentDialogWithKeyboard()
     {
         bool? changed = null;
-        var cut = RenderComponent<DialogRoot>(parameters => parameters
+        var cut = Render<DialogRoot>(parameters => parameters
             .Add(p => p.IsOpenChanged, EventCallback.Factory.Create<bool>(this, value => changed = value))
             .AddChildContent(builder =>
             {

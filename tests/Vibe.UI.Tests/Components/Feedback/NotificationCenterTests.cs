@@ -6,7 +6,7 @@ public class NotificationCenterTests : TestBase
     public void NotificationCenter_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<NotificationCenter>();
+        var cut = Render<NotificationCenter>();
 
         // Assert
         var notificationCenter = cut.Find(".vibe-notification-center");
@@ -17,7 +17,7 @@ public class NotificationCenterTests : TestBase
     public void NotificationCenter_Displays_TriggerButton()
     {
         // Act
-        var cut = RenderComponent<NotificationCenter>();
+        var cut = Render<NotificationCenter>();
 
         // Assert
         var trigger = cut.Find(".notification-trigger");
@@ -35,7 +35,7 @@ public class NotificationCenterTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<NotificationCenter>(parameters => parameters
+        var cut = Render<NotificationCenter>(parameters => parameters
             .Add(p => p.Notifications, notifications));
 
         // Assert
@@ -54,7 +54,7 @@ public class NotificationCenterTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<NotificationCenter>(parameters => parameters
+        var cut = Render<NotificationCenter>(parameters => parameters
             .Add(p => p.Notifications, notifications));
 
         // Assert
@@ -65,7 +65,7 @@ public class NotificationCenterTests : TestBase
     public void NotificationCenter_OpensPanel_WhenTriggerClicked()
     {
         // Act
-        var cut = RenderComponent<NotificationCenter>();
+        var cut = Render<NotificationCenter>();
         var trigger = cut.Find(".notification-trigger");
         trigger.Click();
 
@@ -85,7 +85,7 @@ public class NotificationCenterTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<NotificationCenter>(parameters => parameters
+        var cut = Render<NotificationCenter>(parameters => parameters
             .Add(p => p.Notifications, notifications));
         var trigger = cut.Find(".notification-trigger");
         trigger.Click();
@@ -99,7 +99,7 @@ public class NotificationCenterTests : TestBase
     public void NotificationCenter_Shows_EmptyState_WhenNoNotifications()
     {
         // Act
-        var cut = RenderComponent<NotificationCenter>();
+        var cut = Render<NotificationCenter>();
         var trigger = cut.Find(".notification-trigger");
         trigger.Click();
 
@@ -112,7 +112,7 @@ public class NotificationCenterTests : TestBase
     public void NotificationCenter_Displays_Filters_WhenEnabled()
     {
         // Act
-        var cut = RenderComponent<NotificationCenter>(parameters => parameters
+        var cut = Render<NotificationCenter>(parameters => parameters
             .Add(p => p.ShowFilters, true));
         var trigger = cut.Find(".notification-trigger");
         trigger.Click();
@@ -126,7 +126,7 @@ public class NotificationCenterTests : TestBase
     public void NotificationCenter_Hides_Filters_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<NotificationCenter>(parameters => parameters
+        var cut = Render<NotificationCenter>(parameters => parameters
             .Add(p => p.ShowFilters, false));
         var trigger = cut.Find(".notification-trigger");
         trigger.Click();
@@ -145,7 +145,7 @@ public class NotificationCenterTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<NotificationCenter>(parameters => parameters
+        var cut = Render<NotificationCenter>(parameters => parameters
             .Add(p => p.Notifications, notifications)
             .Add(p => p.AllowClearAll, true));
         var trigger = cut.Find(".notification-trigger");

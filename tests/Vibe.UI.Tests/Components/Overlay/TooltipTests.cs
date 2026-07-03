@@ -6,7 +6,7 @@ public class TooltipTests : TestBase
     public void Tooltip_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Tooltip>(parameters => parameters
+        var cut = Render<Tooltip>(parameters => parameters
             .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Hover me"))
             .Add(p => p.Content, builder => builder.AddContent(0, "Tooltip text")));
 
@@ -19,7 +19,7 @@ public class TooltipTests : TestBase
     public void Tooltip_Applies_PlacementClass()
     {
         // Act
-        var cut = RenderComponent<Tooltip>(parameters => parameters
+        var cut = Render<Tooltip>(parameters => parameters
             .Add(p => p.Placement, "bottom")
             .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Hover me"))
             .Add(p => p.Content, builder => builder.AddContent(0, "Tooltip text")));
@@ -32,7 +32,7 @@ public class TooltipTests : TestBase
     public void Tooltip_Renders_TriggerContent()
     {
         // Act
-        var cut = RenderComponent<Tooltip>(parameters => parameters
+        var cut = Render<Tooltip>(parameters => parameters
             .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Hover me"))
             .Add(p => p.Content, builder => builder.AddContent(0, "Tooltip text")));
 
@@ -45,7 +45,7 @@ public class TooltipTests : TestBase
     public void Tooltip_Renders_TooltipContent()
     {
         // Act
-        var cut = RenderComponent<Tooltip>(parameters => parameters
+        var cut = Render<Tooltip>(parameters => parameters
             .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Hover me"))
             .Add(p => p.Content, builder => builder.AddContent(0, "Tooltip text")));
 
@@ -58,7 +58,7 @@ public class TooltipTests : TestBase
     public void Tooltip_IsHidden_Initially()
     {
         // Act
-        var cut = RenderComponent<Tooltip>(parameters => parameters
+        var cut = Render<Tooltip>(parameters => parameters
             .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Hover me"))
             .Add(p => p.Content, builder => builder.AddContent(0, "Tooltip text")));
 
@@ -71,7 +71,7 @@ public class TooltipTests : TestBase
     public void Tooltip_Has_DefaultDelay()
     {
         // Act
-        var cut = RenderComponent<Tooltip>(parameters => parameters
+        var cut = Render<Tooltip>(parameters => parameters
             .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Hover me"))
             .Add(p => p.Content, builder => builder.AddContent(0, "Tooltip text")));
 
@@ -83,7 +83,7 @@ public class TooltipTests : TestBase
     public void Tooltip_Accepts_CustomDelay()
     {
         // Act
-        var cut = RenderComponent<Tooltip>(parameters => parameters
+        var cut = Render<Tooltip>(parameters => parameters
             .Add(p => p.DelayMS, 500)
             .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Hover me"))
             .Add(p => p.Content, builder => builder.AddContent(0, "Tooltip text")));
@@ -96,7 +96,7 @@ public class TooltipTests : TestBase
     public void Tooltip_Applies_AdditionalAttributes()
     {
         // Act
-        var cut = RenderComponent<Tooltip>(parameters => parameters
+        var cut = Render<Tooltip>(parameters => parameters
             .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Hover me"))
             .Add(p => p.Content, builder => builder.AddContent(0, "Tooltip text"))
             .AddUnmatched("data-test", "tooltip-value"));

@@ -6,7 +6,7 @@ public class DrawerTests : TestBase
     public void Drawer_DoesNotRender_WhenClosed()
     {
         // Act
-        var cut = RenderComponent<Drawer>(parameters => parameters
+        var cut = Render<Drawer>(parameters => parameters
             .Add(p => p.IsOpen, false));
 
         // Assert
@@ -17,7 +17,7 @@ public class DrawerTests : TestBase
     public void Drawer_Renders_WhenOpen()
     {
         // Act
-        var cut = RenderComponent<Drawer>(parameters => parameters
+        var cut = Render<Drawer>(parameters => parameters
             .Add(p => p.IsOpen, true));
 
         // Assert
@@ -32,7 +32,7 @@ public class DrawerTests : TestBase
         var content = "Drawer Content";
 
         // Act
-        var cut = RenderComponent<Drawer>(parameters => parameters
+        var cut = Render<Drawer>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.ChildContent, builder => builder.AddContent(0, content)));
 
@@ -48,7 +48,7 @@ public class DrawerTests : TestBase
         var side = "left";
 
         // Act
-        var cut = RenderComponent<Drawer>(parameters => parameters
+        var cut = Render<Drawer>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.Side, side));
 
@@ -61,7 +61,7 @@ public class DrawerTests : TestBase
     public void Drawer_Applies_DefaultSide()
     {
         // Act
-        var cut = RenderComponent<Drawer>(parameters => parameters
+        var cut = Render<Drawer>(parameters => parameters
             .Add(p => p.IsOpen, true));
 
         // Assert
@@ -73,7 +73,7 @@ public class DrawerTests : TestBase
     public void Drawer_Shows_CloseButton_WhenEnabled()
     {
         // Act
-        var cut = RenderComponent<Drawer>(parameters => parameters
+        var cut = Render<Drawer>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.ShowCloseButton, true));
 
@@ -86,7 +86,7 @@ public class DrawerTests : TestBase
     public void Drawer_Hides_CloseButton_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<Drawer>(parameters => parameters
+        var cut = Render<Drawer>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.ShowCloseButton, false));
 
@@ -98,7 +98,7 @@ public class DrawerTests : TestBase
     public void Drawer_Renders_Overlay()
     {
         // Act
-        var cut = RenderComponent<Drawer>(parameters => parameters
+        var cut = Render<Drawer>(parameters => parameters
             .Add(p => p.IsOpen, true));
 
         // Assert
@@ -110,7 +110,7 @@ public class DrawerTests : TestBase
     public void Drawer_Renders_Content()
     {
         // Act
-        var cut = RenderComponent<Drawer>(parameters => parameters
+        var cut = Render<Drawer>(parameters => parameters
             .Add(p => p.IsOpen, true));
 
         // Assert

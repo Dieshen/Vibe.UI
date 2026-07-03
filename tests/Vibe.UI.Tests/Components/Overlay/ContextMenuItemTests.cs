@@ -6,7 +6,7 @@ public class ContextMenuItemTests : TestBase
     public void ContextMenuItem_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<ContextMenuItem>();
+        var cut = Render<ContextMenuItem>();
 
         // Assert
         var menuItem = cut.Find(".vibe-context-menu-item");
@@ -20,7 +20,7 @@ public class ContextMenuItemTests : TestBase
         var content = "Menu Item";
 
         // Act
-        var cut = RenderComponent<ContextMenuItem>(parameters => parameters
+        var cut = Render<ContextMenuItem>(parameters => parameters
             .Add(p => p.ChildContent, builder => builder.AddContent(0, content)));
 
         // Assert
@@ -35,7 +35,7 @@ public class ContextMenuItemTests : TestBase
         var icon = "<svg>icon</svg>";
 
         // Act
-        var cut = RenderComponent<ContextMenuItem>(parameters => parameters
+        var cut = Render<ContextMenuItem>(parameters => parameters
             .Add(p => p.Icon, icon)
             .Add(p => p.ChildContent, builder => builder.AddContent(0, "Item")));
 
@@ -51,7 +51,7 @@ public class ContextMenuItemTests : TestBase
         var shortcut = "Ctrl+S";
 
         // Act
-        var cut = RenderComponent<ContextMenuItem>(parameters => parameters
+        var cut = Render<ContextMenuItem>(parameters => parameters
             .Add(p => p.Shortcut, shortcut)
             .Add(p => p.ChildContent, builder => builder.AddContent(0, "Save")));
 
@@ -64,7 +64,7 @@ public class ContextMenuItemTests : TestBase
     public void ContextMenuItem_Applies_DisabledClass_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<ContextMenuItem>(parameters => parameters
+        var cut = Render<ContextMenuItem>(parameters => parameters
             .Add(p => p.Disabled, true));
 
         // Assert
@@ -76,7 +76,7 @@ public class ContextMenuItemTests : TestBase
     public void ContextMenuItem_DoesNotApply_DisabledClass_WhenEnabled()
     {
         // Act
-        var cut = RenderComponent<ContextMenuItem>(parameters => parameters
+        var cut = Render<ContextMenuItem>(parameters => parameters
             .Add(p => p.Disabled, false));
 
         // Assert
@@ -89,7 +89,7 @@ public class ContextMenuItemTests : TestBase
     {
         // Arrange
         var clicked = false;
-        var cut = RenderComponent<ContextMenuItem>(parameters => parameters
+        var cut = Render<ContextMenuItem>(parameters => parameters
             .Add(p => p.OnItemClick, args => clicked = true));
 
         // Act
@@ -105,7 +105,7 @@ public class ContextMenuItemTests : TestBase
     {
         // Arrange
         var clicked = false;
-        var cut = RenderComponent<ContextMenuItem>(parameters => parameters
+        var cut = Render<ContextMenuItem>(parameters => parameters
             .Add(p => p.Disabled, true)
             .Add(p => p.OnItemClick, args => clicked = true));
 
@@ -121,7 +121,7 @@ public class ContextMenuItemTests : TestBase
     public void ContextMenuItem_HidesIcon_WhenNotProvided()
     {
         // Act
-        var cut = RenderComponent<ContextMenuItem>(parameters => parameters
+        var cut = Render<ContextMenuItem>(parameters => parameters
             .Add(p => p.ChildContent, builder => builder.AddContent(0, "Item")));
 
         // Assert
@@ -132,7 +132,7 @@ public class ContextMenuItemTests : TestBase
     public void ContextMenuItem_HidesShortcut_WhenNotProvided()
     {
         // Act
-        var cut = RenderComponent<ContextMenuItem>(parameters => parameters
+        var cut = Render<ContextMenuItem>(parameters => parameters
             .Add(p => p.ChildContent, builder => builder.AddContent(0, "Item")));
 
         // Assert

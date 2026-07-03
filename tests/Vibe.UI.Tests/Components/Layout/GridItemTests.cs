@@ -5,7 +5,7 @@ public class GridItemTests : TestBase
     [Fact]
     public void GridItem_RendersContent()
     {
-        var cut = RenderComponent<GridItem>(parameters => parameters
+        var cut = Render<GridItem>(parameters => parameters
             .AddChildContent("<strong>Widget</strong>"));
 
         var item = cut.Find(".vibe-grid-item");
@@ -15,7 +15,7 @@ public class GridItemTests : TestBase
     [Fact]
     public void GridItem_DefaultSpanHasEmptyStyle()
     {
-        var cut = RenderComponent<GridItem>();
+        var cut = Render<GridItem>();
 
         cut.Find(".vibe-grid-item").GetAttribute("style").ShouldBeEmpty();
     }
@@ -23,7 +23,7 @@ public class GridItemTests : TestBase
     [Fact]
     public void GridItem_AppliesColumnAndRowSpanStyles()
     {
-        var cut = RenderComponent<GridItem>(parameters => parameters
+        var cut = Render<GridItem>(parameters => parameters
             .Add(p => p.ColSpan, 4)
             .Add(p => p.RowSpan, 2));
 
@@ -35,7 +35,7 @@ public class GridItemTests : TestBase
     [Fact]
     public void GridItem_PreservesResponsiveSpanParameters()
     {
-        var cut = RenderComponent<GridItem>(parameters => parameters
+        var cut = Render<GridItem>(parameters => parameters
             .Add(p => p.ColSpanMd, 6)
             .Add(p => p.ColSpanLg, 8));
 
@@ -46,7 +46,7 @@ public class GridItemTests : TestBase
     [Fact]
     public void GridItem_PreservesCustomClassAndAttributes()
     {
-        var cut = RenderComponent<GridItem>(parameters => parameters
+        var cut = Render<GridItem>(parameters => parameters
             .Add(p => p.Class, "featured")
             .AddUnmatched("data-cell", "summary"));
 

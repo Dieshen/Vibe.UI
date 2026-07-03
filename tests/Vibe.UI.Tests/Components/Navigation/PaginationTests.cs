@@ -6,7 +6,7 @@ public class PaginationTests : TestBase
     public void Pagination_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Pagination>();
+        var cut = Render<Pagination>();
 
         // Assert
         var pagination = cut.Find(".vibe-pagination");
@@ -18,7 +18,7 @@ public class PaginationTests : TestBase
     public void Pagination_Renders_CorrectNumberOfPages()
     {
         // Act
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 5)
             .Add(p => p.CurrentPage, 1));
 
@@ -31,7 +31,7 @@ public class PaginationTests : TestBase
     public void Pagination_Highlights_CurrentPage()
     {
         // Act
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 5)
             .Add(p => p.CurrentPage, 3));
 
@@ -44,7 +44,7 @@ public class PaginationTests : TestBase
     public void Pagination_Disables_PrevButton_OnFirstPage()
     {
         // Act
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 5)
             .Add(p => p.CurrentPage, 1));
 
@@ -57,7 +57,7 @@ public class PaginationTests : TestBase
     public void Pagination_Disables_NextButton_OnLastPage()
     {
         // Act
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 5)
             .Add(p => p.CurrentPage, 5));
 
@@ -70,7 +70,7 @@ public class PaginationTests : TestBase
     public void Pagination_Shows_FirstLastButtons_WhenEnabled()
     {
         // Act
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 10)
             .Add(p => p.CurrentPage, 5)
             .Add(p => p.ShowFirstLast, true));
@@ -84,7 +84,7 @@ public class PaginationTests : TestBase
     public void Pagination_Hides_FirstLastButtons_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 10)
             .Add(p => p.CurrentPage, 5)
             .Add(p => p.ShowFirstLast, false));
@@ -99,7 +99,7 @@ public class PaginationTests : TestBase
     {
         // Arrange
         var selectedPage = 0;
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 5)
             .Add(p => p.CurrentPage, 1)
             .Add(p => p.PageChanged, page => selectedPage = page));
@@ -116,7 +116,7 @@ public class PaginationTests : TestBase
     public void Pagination_Shows_Ellipsis_ForManyPages()
     {
         // Act
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 20)
             .Add(p => p.CurrentPage, 10)
             .Add(p => p.MaxVisiblePages, 7));
@@ -131,7 +131,7 @@ public class PaginationTests : TestBase
     {
         // Arrange
         var selectedPage = 0;
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 5)
             .Add(p => p.CurrentPage, 3)
             .Add(p => p.PageChanged, page => selectedPage = page));
@@ -148,7 +148,7 @@ public class PaginationTests : TestBase
     {
         // Arrange
         var selectedPage = 0;
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 5)
             .Add(p => p.CurrentPage, 3)
             .Add(p => p.PageChanged, page => selectedPage = page));
@@ -165,7 +165,7 @@ public class PaginationTests : TestBase
     {
         // Arrange
         var selectedPage = 0;
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 10)
             .Add(p => p.CurrentPage, 5)
             .Add(p => p.ShowFirstLast, true)
@@ -183,7 +183,7 @@ public class PaginationTests : TestBase
     {
         // Arrange
         var selectedPage = 0;
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 10)
             .Add(p => p.CurrentPage, 5)
             .Add(p => p.ShowFirstLast, true)
@@ -200,7 +200,7 @@ public class PaginationTests : TestBase
     public void Pagination_FirstButton_DisabledOnFirstPage()
     {
         // Act
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 10)
             .Add(p => p.CurrentPage, 1)
             .Add(p => p.ShowFirstLast, true));
@@ -215,7 +215,7 @@ public class PaginationTests : TestBase
     public void Pagination_LastButton_DisabledOnLastPage()
     {
         // Act
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 10)
             .Add(p => p.CurrentPage, 10)
             .Add(p => p.ShowFirstLast, true));
@@ -230,7 +230,7 @@ public class PaginationTests : TestBase
     public void Pagination_WithSinglePage_BothPrevNextDisabled()
     {
         // Act
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 1)
             .Add(p => p.CurrentPage, 1));
 
@@ -243,7 +243,7 @@ public class PaginationTests : TestBase
     public void Pagination_WithZeroPages_HandlesGracefully()
     {
         // Act
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 0)
             .Add(p => p.CurrentPage, 1));
 
@@ -257,7 +257,7 @@ public class PaginationTests : TestBase
     {
         // Arrange
         var callbackInvoked = false;
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 5)
             .Add(p => p.CurrentPage, 3)
             .Add(p => p.PageChanged, page => callbackInvoked = true));
@@ -275,7 +275,7 @@ public class PaginationTests : TestBase
     {
         // Arrange
         var selectedPage = 0;
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 5)
             .Add(p => p.CurrentPage, 1)
             .Add(p => p.PageChanged, page => selectedPage = page));
@@ -293,7 +293,7 @@ public class PaginationTests : TestBase
     {
         // Arrange
         var selectedPage = 0;
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 5)
             .Add(p => p.CurrentPage, 5)
             .Add(p => p.PageChanged, page => selectedPage = page));
@@ -310,7 +310,7 @@ public class PaginationTests : TestBase
     public void Pagination_VeryLargePageCount_RendersWithEllipsis()
     {
         // Act - 1000 pages
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 1000)
             .Add(p => p.CurrentPage, 500)
             .Add(p => p.MaxVisiblePages, 7));
@@ -328,7 +328,7 @@ public class PaginationTests : TestBase
     public void Pagination_PageRangeCalculation_CurrentPageNearStart()
     {
         // Act - Current page near start
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 20)
             .Add(p => p.CurrentPage, 2)
             .Add(p => p.MaxVisiblePages, 7));
@@ -342,7 +342,7 @@ public class PaginationTests : TestBase
     public void Pagination_PageRangeCalculation_CurrentPageNearEnd()
     {
         // Act - Current page near end
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 20)
             .Add(p => p.CurrentPage, 19)
             .Add(p => p.MaxVisiblePages, 7));
@@ -356,7 +356,7 @@ public class PaginationTests : TestBase
     public void Pagination_PageRangeCalculation_CurrentPageInMiddle()
     {
         // Act - Current page in middle
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 20)
             .Add(p => p.CurrentPage, 10)
             .Add(p => p.MaxVisiblePages, 7));
@@ -370,7 +370,7 @@ public class PaginationTests : TestBase
     public void Pagination_MaxVisiblePages_LimitsRenderedPages()
     {
         // Act
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 100)
             .Add(p => p.CurrentPage, 50)
             .Add(p => p.MaxVisiblePages, 5));
@@ -384,7 +384,7 @@ public class PaginationTests : TestBase
     public void Pagination_WithSmallMaxVisiblePages_ShowsCorrectPages()
     {
         // Act
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 20)
             .Add(p => p.CurrentPage, 10)
             .Add(p => p.MaxVisiblePages, 3));
@@ -407,7 +407,7 @@ public class PaginationTests : TestBase
     public void Pagination_AriaLabel_SetCorrectly()
     {
         // Act
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 5)
             .Add(p => p.CurrentPage, 1));
 
@@ -420,7 +420,7 @@ public class PaginationTests : TestBase
     public void Pagination_NavigationRole_SetCorrectly()
     {
         // Act
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 5)
             .Add(p => p.CurrentPage, 1));
 
@@ -433,7 +433,7 @@ public class PaginationTests : TestBase
     public void Pagination_AllPagesVisible_NoEllipsis()
     {
         // Act - TotalPages equals MaxVisiblePages
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 7)
             .Add(p => p.CurrentPage, 4)
             .Add(p => p.MaxVisiblePages, 7));
@@ -448,7 +448,7 @@ public class PaginationTests : TestBase
     {
         // Arrange
         var selectedPage = 0;
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 5)
             .Add(p => p.CurrentPage, 1)
             .Add(p => p.PageChanged, page => selectedPage = page));
@@ -457,15 +457,15 @@ public class PaginationTests : TestBase
         cut.Find(".pagination-next").Click();
         selectedPage.ShouldBe(2);
 
-        cut.SetParametersAndRender(parameters => parameters.Add(p => p.CurrentPage, 2));
+        cut.Render(parameters => parameters.Add(p => p.CurrentPage, 2));
         cut.Find(".pagination-next").Click();
         selectedPage.ShouldBe(3);
 
-        cut.SetParametersAndRender(parameters => parameters.Add(p => p.CurrentPage, 3));
+        cut.Render(parameters => parameters.Add(p => p.CurrentPage, 3));
         cut.Find(".pagination-next").Click();
         selectedPage.ShouldBe(4);
 
-        cut.SetParametersAndRender(parameters => parameters.Add(p => p.CurrentPage, 4));
+        cut.Render(parameters => parameters.Add(p => p.CurrentPage, 4));
         cut.Find(".pagination-next").Click();
         selectedPage.ShouldBe(5);
     }
@@ -475,7 +475,7 @@ public class PaginationTests : TestBase
     {
         // Arrange
         var selectedPage = 0;
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 10)
             .Add(p => p.CurrentPage, 1)
             .Add(p => p.PageChanged, page => selectedPage = page));
@@ -494,7 +494,7 @@ public class PaginationTests : TestBase
     public void Pagination_WithMaxVisiblePagesLargerThanTotal_ShowsAllPages()
     {
         // Act
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 3)
             .Add(p => p.CurrentPage, 2)
             .Add(p => p.MaxVisiblePages, 10));
@@ -512,7 +512,7 @@ public class PaginationTests : TestBase
     public void Pagination_EmptyResults_RendersWithoutCrashing()
     {
         // Act - Edge case: TotalPages = 1, which might represent empty results
-        var cut = RenderComponent<Pagination>(parameters => parameters
+        var cut = Render<Pagination>(parameters => parameters
             .Add(p => p.TotalPages, 1)
             .Add(p => p.CurrentPage, 1));
 

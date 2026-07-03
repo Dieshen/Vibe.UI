@@ -6,7 +6,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Checkbox>();
+        var cut = Render<Checkbox>();
 
         // Assert
         var checkbox = cut.Find("input[type='checkbox']");
@@ -18,7 +18,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_Renders_WithLabel()
     {
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .AddChildContent("Accept terms"));
 
         // Assert
@@ -30,7 +30,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_Renders_AsChecked()
     {
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Checked, true));
 
         // Assert
@@ -42,7 +42,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_Applies_Disabled_Attribute()
     {
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Disabled, true));
 
         // Assert
@@ -56,7 +56,7 @@ public class CheckboxTests : TestBase
     {
         // Arrange
         var checkedValue = false;
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.CheckedChanged, newValue => checkedValue = newValue));
 
         // Act
@@ -70,7 +70,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_DoesNotInvokeCallback_WhenNoDelegate()
     {
         // Arrange
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Checked, false));
 
         // Act & Assert - Should not throw
@@ -83,7 +83,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_WithNullChildContent_RendersWithoutLabel()
     {
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.ChildContent, (RenderFragment?)null));
 
         // Assert
@@ -94,7 +94,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_WithEmptyChildContent_RendersWithEmptyLabel()
     {
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .AddChildContent(string.Empty));
 
         // Assert
@@ -106,7 +106,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_WithComplexChildContent_RendersCorrectly()
     {
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .AddChildContent("<strong>Bold</strong> label text"));
 
         // Assert
@@ -121,7 +121,7 @@ public class CheckboxTests : TestBase
         var longLabel = new string('A', 500);
 
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .AddChildContent(longLabel));
 
         // Assert
@@ -135,7 +135,7 @@ public class CheckboxTests : TestBase
     {
         // Arrange
         var checkedValue = true;
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Checked, true)
             .Add(p => p.CheckedChanged, newValue => checkedValue = newValue));
 
@@ -151,7 +151,7 @@ public class CheckboxTests : TestBase
     {
         // Arrange
         var checkedValue = false;
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Checked, false)
             .Add(p => p.CheckedChanged, newValue => checkedValue = newValue));
 
@@ -169,7 +169,7 @@ public class CheckboxTests : TestBase
     {
         // Arrange
         var checkedValue = false;
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Checked, false)
             .Add(p => p.Disabled, true)
             .Add(p => p.CheckedChanged, newValue => checkedValue = newValue));
@@ -182,7 +182,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_DisabledWithChecked_RendersCorrectly()
     {
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Checked, true)
             .Add(p => p.Disabled, true)
             .AddChildContent("Disabled and Checked"));
@@ -200,7 +200,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_WithNonBooleanValue_HandlesGracefully()
     {
         // Arrange
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Checked, false)
             .Add(p => p.CheckedChanged, EventCallback.Factory.Create<bool>(this, _ => { })));
 
@@ -214,7 +214,7 @@ public class CheckboxTests : TestBase
     {
         // Arrange
         var toggleCount = 0;
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.CheckedChanged, newValue => toggleCount++));
 
         var checkbox = cut.Find("input[type='checkbox']");
@@ -235,7 +235,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_HasBaseClass()
     {
         // Act
-        var cut = RenderComponent<Checkbox>();
+        var cut = Render<Checkbox>();
 
         // Assert
         cut.Find("label").ClassList.ShouldContain("vibe-checkbox");
@@ -245,7 +245,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_WhenNotDisabled_DoesNotHaveDisabledClass()
     {
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Disabled, false));
 
         // Assert
@@ -258,7 +258,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_WithAdditionalAttributes_MergesCorrectly()
     {
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .AddChildContent("Custom")
             .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
             {

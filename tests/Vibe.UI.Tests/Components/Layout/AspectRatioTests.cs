@@ -6,7 +6,7 @@ public class AspectRatioTests : TestBase
     public void AspectRatio_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<AspectRatio>(parameters => parameters
+        var cut = Render<AspectRatio>(parameters => parameters
             .AddChildContent("Content"));
 
         // Assert
@@ -18,7 +18,7 @@ public class AspectRatioTests : TestBase
     public void AspectRatio_Applies_Default16_9_Ratio()
     {
         // Act
-        var cut = RenderComponent<AspectRatio>(parameters => parameters
+        var cut = Render<AspectRatio>(parameters => parameters
             .AddChildContent("Content"));
 
         // Assert
@@ -32,7 +32,7 @@ public class AspectRatioTests : TestBase
     public void AspectRatio_Applies_CustomRatio()
     {
         // Act (4:3 ratio)
-        var cut = RenderComponent<AspectRatio>(parameters => parameters
+        var cut = Render<AspectRatio>(parameters => parameters
             .Add(p => p.Ratio, 4.0 / 3.0)
             .AddChildContent("Content"));
 
@@ -47,7 +47,7 @@ public class AspectRatioTests : TestBase
     public void AspectRatio_Applies_SquareRatio()
     {
         // Act (1:1 ratio)
-        var cut = RenderComponent<AspectRatio>(parameters => parameters
+        var cut = Render<AspectRatio>(parameters => parameters
             .Add(p => p.Ratio, 1.0)
             .AddChildContent("Square"));
 
@@ -61,7 +61,7 @@ public class AspectRatioTests : TestBase
     public void AspectRatio_Renders_ChildContent()
     {
         // Act
-        var cut = RenderComponent<AspectRatio>(parameters => parameters
+        var cut = Render<AspectRatio>(parameters => parameters
             .AddChildContent("<div class='test-content'>Test</div>"));
 
         // Assert
@@ -73,7 +73,7 @@ public class AspectRatioTests : TestBase
     public void AspectRatio_WithZeroRatio_HandlesGracefully()
     {
         // Act - Edge case: ratio of 0 would cause division by zero
-        var cut = RenderComponent<AspectRatio>(parameters => parameters
+        var cut = Render<AspectRatio>(parameters => parameters
             .Add(p => p.Ratio, 0.0)
             .AddChildContent("Content"));
 
@@ -86,7 +86,7 @@ public class AspectRatioTests : TestBase
     public void AspectRatio_WithNegativeRatio_HandlesGracefully()
     {
         // Act - Edge case: negative ratio
-        var cut = RenderComponent<AspectRatio>(parameters => parameters
+        var cut = Render<AspectRatio>(parameters => parameters
             .Add(p => p.Ratio, -1.0)
             .AddChildContent("Content"));
 
@@ -99,7 +99,7 @@ public class AspectRatioTests : TestBase
     public void AspectRatio_WithVeryLargeRatio_HandlesCorrectly()
     {
         // Act - Ultra-wide ratio (21:9)
-        var cut = RenderComponent<AspectRatio>(parameters => parameters
+        var cut = Render<AspectRatio>(parameters => parameters
             .Add(p => p.Ratio, 21.0 / 9.0)
             .AddChildContent("Content"));
 
@@ -114,7 +114,7 @@ public class AspectRatioTests : TestBase
     public void AspectRatio_WithVerySmallRatio_HandlesCorrectly()
     {
         // Act - Portrait ratio (9:16)
-        var cut = RenderComponent<AspectRatio>(parameters => parameters
+        var cut = Render<AspectRatio>(parameters => parameters
             .Add(p => p.Ratio, 9.0 / 16.0)
             .AddChildContent("Content"));
 
@@ -129,7 +129,7 @@ public class AspectRatioTests : TestBase
     public void AspectRatio_WithCinematicRatio_AppliesCorrectly()
     {
         // Act - Cinematic 2.39:1 ratio
-        var cut = RenderComponent<AspectRatio>(parameters => parameters
+        var cut = Render<AspectRatio>(parameters => parameters
             .Add(p => p.Ratio, 2.39)
             .AddChildContent("Content"));
 
@@ -144,7 +144,7 @@ public class AspectRatioTests : TestBase
     public void AspectRatio_WithCustomClass_AppliesCorrectly()
     {
         // Act
-        var cut = RenderComponent<AspectRatio>(parameters => parameters
+        var cut = Render<AspectRatio>(parameters => parameters
             .Add(p => p.Class, "custom-aspect-class")
             .AddChildContent("Content"));
 
@@ -162,7 +162,7 @@ public class AspectRatioTests : TestBase
     public void AspectRatio_WithEmptyContent_RendersEmpty()
     {
         // Act
-        var cut = RenderComponent<AspectRatio>(parameters => parameters
+        var cut = Render<AspectRatio>(parameters => parameters
             .AddChildContent(""));
 
         // Assert
@@ -174,7 +174,7 @@ public class AspectRatioTests : TestBase
     public void AspectRatio_WithImageContent_RendersCorrectly()
     {
         // Act
-        var cut = RenderComponent<AspectRatio>(parameters => parameters
+        var cut = Render<AspectRatio>(parameters => parameters
             .Add(p => p.Ratio, 16.0 / 9.0)
             .AddChildContent("<img src='test.jpg' alt='test' />"));
 
@@ -188,7 +188,7 @@ public class AspectRatioTests : TestBase
     public void AspectRatio_WithVideoContent_RendersCorrectly()
     {
         // Act
-        var cut = RenderComponent<AspectRatio>(parameters => parameters
+        var cut = Render<AspectRatio>(parameters => parameters
             .Add(p => p.Ratio, 16.0 / 9.0)
             .AddChildContent("<video src='test.mp4'></video>"));
 
@@ -202,7 +202,7 @@ public class AspectRatioTests : TestBase
     public void AspectRatio_Ratio4_3_CalculatesCorrectPadding()
     {
         // Act - Classic TV ratio 4:3
-        var cut = RenderComponent<AspectRatio>(parameters => parameters
+        var cut = Render<AspectRatio>(parameters => parameters
             .Add(p => p.Ratio, 4.0 / 3.0)
             .AddChildContent("Content"));
 
@@ -217,7 +217,7 @@ public class AspectRatioTests : TestBase
     public void AspectRatio_WithNestedContent_MaintainsRatio()
     {
         // Act
-        var cut = RenderComponent<AspectRatio>(parameters => parameters
+        var cut = Render<AspectRatio>(parameters => parameters
             .Add(p => p.Ratio, 1.0)
             .AddChildContent(builder =>
             {

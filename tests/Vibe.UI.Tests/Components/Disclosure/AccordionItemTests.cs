@@ -5,7 +5,7 @@ public class AccordionItemTests : TestBase
     [Fact]
     public void AccordionItem_RendersHeaderAndContent()
     {
-        var cut = RenderComponent<Accordion>(parameters => parameters
+        var cut = Render<Accordion>(parameters => parameters
             .AddChildContent(builder =>
             {
                 builder.OpenComponent<AccordionItem>(0);
@@ -24,7 +24,7 @@ public class AccordionItemTests : TestBase
     [Fact]
     public void AccordionItem_TogglesExpandedState()
     {
-        var cut = RenderComponent<Accordion>(parameters => parameters
+        var cut = Render<Accordion>(parameters => parameters
             .AddChildContent(builder =>
             {
                 builder.OpenComponent<AccordionItem>(0);
@@ -45,7 +45,7 @@ public class AccordionItemTests : TestBase
     [Fact]
     public void AccordionItem_DisabledSuppressesToggle()
     {
-        var cut = RenderComponent<Accordion>(parameters => parameters
+        var cut = Render<Accordion>(parameters => parameters
             .AddChildContent(builder =>
             {
                 builder.OpenComponent<AccordionItem>(0);
@@ -67,7 +67,7 @@ public class AccordionItemTests : TestBase
     [Fact]
     public void AccordionItem_ExpandedByDefaultStartsOpen()
     {
-        var cut = RenderComponent<Accordion>(parameters => parameters
+        var cut = Render<Accordion>(parameters => parameters
             .AddChildContent(builder =>
             {
                 builder.OpenComponent<AccordionItem>(0);
@@ -84,7 +84,7 @@ public class AccordionItemTests : TestBase
     [Fact]
     public void AccordionItem_PreservesCustomClassAndAttributes()
     {
-        var cut = RenderComponent<Accordion>(parameters => parameters
+        var cut = Render<Accordion>(parameters => parameters
             .AddChildContent(builder =>
             {
                 builder.OpenComponent<AccordionItem>(0);

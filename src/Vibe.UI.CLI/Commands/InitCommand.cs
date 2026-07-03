@@ -42,7 +42,10 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         public bool WithCss { get; init; }
     }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    public Task<int> ExecuteAsync(CommandContext context, Settings settings) =>
+        ExecuteAsync(context, settings, CancellationToken.None);
+
+    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         AnsiConsole.MarkupLine("[blue]Initializing Vibe.UI in your project...[/]\n");
 
@@ -395,7 +398,7 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
             // 2. Packaged with CLI in Templates folder (adjacent to executable)
             Path.Combine(assemblyLocation, "Templates"),
 
-            // 3. Dotnet global tool: Templates folder in package root (../../.. from tools/net9.0/any)
+            // 3. Dotnet global tool: Templates folder in package root (../../.. from tools/net10.0/any)
             Path.GetFullPath(Path.Combine(assemblyLocation, "..", "..", "..", "Templates")),
 
             // 4. Using AppContext.BaseDirectory

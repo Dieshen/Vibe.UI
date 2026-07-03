@@ -7,19 +7,19 @@ using Xunit;
 
 namespace Vibe.UI.Tests.Components.DataDisplay;
 
-public class TagTests : TestContext
+public class TagTests : BunitContext
 {
     [Fact]
     public void Tag_RendersLabel()
     {
-        var cut = RenderComponent<Tag>(p => p.Add(x => x.Label, "Hello"));
+        var cut = Render<Tag>(p => p.Add(x => x.Label, "Hello"));
         cut.Markup.ShouldContain("Hello");
     }
 
     [Fact]
     public void Tag_AppliesVariantAndSizeClasses()
     {
-        var cut = RenderComponent<Tag>(p => p
+        var cut = Render<Tag>(p => p
             .Add(x => x.Label, "Hello")
             .Add(x => x.Variant, TagVariant.Primary)
             .Add(x => x.Size, TagSize.Large));
@@ -31,7 +31,7 @@ public class TagTests : TestContext
     [Fact]
     public void Tag_WhenRemovable_RendersRemoveButton()
     {
-        var cut = RenderComponent<Tag>(p => p
+        var cut = Render<Tag>(p => p
             .Add(x => x.Label, "Hello")
             .Add(x => x.Removable, true));
 
@@ -42,7 +42,7 @@ public class TagTests : TestContext
     public void Tag_WhenRemoveClicked_InvokesCallback()
     {
         var removed = false;
-        var cut = RenderComponent<Tag>(p => p
+        var cut = Render<Tag>(p => p
             .Add(x => x.Label, "Hello")
             .Add(x => x.Removable, true)
             .Add(x => x.OnRemove, EventCallback.Factory.Create(this, () => removed = true)));

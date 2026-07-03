@@ -6,7 +6,7 @@ public class ToggleTests : TestBase
     public void Toggle_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Toggle>(parameters => parameters
+        var cut = Render<Toggle>(parameters => parameters
             .AddChildContent("Toggle"));
 
         // Assert
@@ -20,7 +20,7 @@ public class ToggleTests : TestBase
     public void Toggle_Renders_AsPressed()
     {
         // Act
-        var cut = RenderComponent<Toggle>(parameters => parameters
+        var cut = Render<Toggle>(parameters => parameters
             .Add(p => p.Pressed, true)
             .AddChildContent("On"));
 
@@ -33,7 +33,7 @@ public class ToggleTests : TestBase
     public void Toggle_Applies_Disabled_Attribute()
     {
         // Act
-        var cut = RenderComponent<Toggle>(parameters => parameters
+        var cut = Render<Toggle>(parameters => parameters
             .Add(p => p.Disabled, true)
             .AddChildContent("Disabled"));
 
@@ -46,7 +46,7 @@ public class ToggleTests : TestBase
     public void Toggle_Applies_Variant_Class()
     {
         // Act
-        var cut = RenderComponent<Toggle>(parameters => parameters
+        var cut = Render<Toggle>(parameters => parameters
             .Add(p => p.Variant, "outline")
             .AddChildContent("Toggle"));
 
@@ -58,7 +58,7 @@ public class ToggleTests : TestBase
     public void Toggle_Applies_Size_Class()
     {
         // Act
-        var cut = RenderComponent<Toggle>(parameters => parameters
+        var cut = Render<Toggle>(parameters => parameters
             .Add(p => p.Size, "sm")
             .AddChildContent("Small"));
 
@@ -71,7 +71,7 @@ public class ToggleTests : TestBase
     {
         // Arrange
         var pressedValue = false;
-        var cut = RenderComponent<Toggle>(parameters => parameters
+        var cut = Render<Toggle>(parameters => parameters
             .Add(p => p.PressedChanged, newValue => pressedValue = newValue)
             .AddChildContent("Toggle"));
 
@@ -87,7 +87,7 @@ public class ToggleTests : TestBase
     {
         // Arrange
         var pressedValue = false;
-        var cut = RenderComponent<Toggle>(parameters => parameters
+        var cut = Render<Toggle>(parameters => parameters
             .Add(p => p.Disabled, true)
             .Add(p => p.PressedChanged, newValue => pressedValue = newValue)
             .AddChildContent("Disabled"));

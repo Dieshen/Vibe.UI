@@ -5,7 +5,7 @@ public class MenubarTests : TestBase
     [Fact]
     public void Menubar_RendersBaseClassAndRole()
     {
-        var cut = RenderComponent<Menubar>();
+        var cut = Render<Menubar>();
 
         var menubar = cut.Find(".vibe-menubar");
         menubar.GetAttribute("role").ShouldBe("menubar");
@@ -14,7 +14,7 @@ public class MenubarTests : TestBase
     [Fact]
     public void Menubar_RendersMenuTriggers()
     {
-        var cut = RenderComponent<Menubar>(parameters => parameters
+        var cut = Render<Menubar>(parameters => parameters
             .Add(p => p.Menus, CreateMenus()));
 
         var triggers = cut.FindAll(".menubar-trigger");
@@ -28,7 +28,7 @@ public class MenubarTests : TestBase
     [Fact]
     public void Menubar_OpensMenuContent_WhenTriggerIsClicked()
     {
-        var cut = RenderComponent<Menubar>(parameters => parameters
+        var cut = Render<Menubar>(parameters => parameters
             .Add(p => p.Menus, CreateMenus()));
 
         cut.FindAll(".menubar-trigger")[0].Click();
@@ -43,7 +43,7 @@ public class MenubarTests : TestBase
     [Fact]
     public void Menubar_ClickingActiveTriggerClosesMenu()
     {
-        var cut = RenderComponent<Menubar>(parameters => parameters
+        var cut = Render<Menubar>(parameters => parameters
             .Add(p => p.Menus, CreateMenus()));
 
         cut.FindAll(".menubar-trigger")[0].Click();
@@ -56,7 +56,7 @@ public class MenubarTests : TestBase
     [Fact]
     public void Menubar_SwitchesActiveMenu()
     {
-        var cut = RenderComponent<Menubar>(parameters => parameters
+        var cut = Render<Menubar>(parameters => parameters
             .Add(p => p.Menus, CreateMenus()));
 
         cut.FindAll(".menubar-trigger")[0].Click();
@@ -71,7 +71,7 @@ public class MenubarTests : TestBase
     [Fact]
     public void Menubar_BackdropClosesActiveMenu()
     {
-        var cut = RenderComponent<Menubar>(parameters => parameters
+        var cut = Render<Menubar>(parameters => parameters
             .Add(p => p.Menus, CreateMenus()));
 
         cut.FindAll(".menubar-trigger")[0].Click();
@@ -83,7 +83,7 @@ public class MenubarTests : TestBase
     [Fact]
     public void Menubar_AppliesCustomClass()
     {
-        var cut = RenderComponent<Menubar>(parameters => parameters
+        var cut = Render<Menubar>(parameters => parameters
             .Add(p => p.Class, "app-menubar"));
 
         cut.Find(".vibe-menubar").ClassList.ShouldContain("app-menubar");

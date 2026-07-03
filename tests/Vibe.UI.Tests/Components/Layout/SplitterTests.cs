@@ -6,7 +6,7 @@ public class SplitterTests : TestBase
     public void Splitter_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Splitter>();
+        var cut = Render<Splitter>();
 
         // Assert
         var splitter = cut.Find(".vibe-splitter");
@@ -17,7 +17,7 @@ public class SplitterTests : TestBase
     public void Splitter_Applies_OrientationClass()
     {
         // Act
-        var cut = RenderComponent<Splitter>(parameters => parameters
+        var cut = Render<Splitter>(parameters => parameters
             .Add(p => p.Orientation, Splitter.SplitterOrientation.Vertical));
 
         // Assert
@@ -29,7 +29,7 @@ public class SplitterTests : TestBase
     public void Splitter_Renders_TwoPanes()
     {
         // Act
-        var cut = RenderComponent<Splitter>();
+        var cut = Render<Splitter>();
 
         // Assert
         var panes = cut.FindAll(".splitter-pane");
@@ -40,7 +40,7 @@ public class SplitterTests : TestBase
     public void Splitter_Renders_Divider()
     {
         // Act
-        var cut = RenderComponent<Splitter>();
+        var cut = Render<Splitter>();
 
         // Assert
         var divider = cut.Find(".splitter-divider");
@@ -54,7 +54,7 @@ public class SplitterTests : TestBase
         var content = "First Pane";
 
         // Act
-        var cut = RenderComponent<Splitter>(parameters => parameters
+        var cut = Render<Splitter>(parameters => parameters
             .Add(p => p.FirstPane, builder => builder.AddContent(0, content)));
 
         // Assert
@@ -69,7 +69,7 @@ public class SplitterTests : TestBase
         var content = "Second Pane";
 
         // Act
-        var cut = RenderComponent<Splitter>(parameters => parameters
+        var cut = Render<Splitter>(parameters => parameters
             .Add(p => p.SecondPane, builder => builder.AddContent(0, content)));
 
         // Assert
@@ -84,7 +84,7 @@ public class SplitterTests : TestBase
         var initialSize = 60.0;
 
         // Act
-        var cut = RenderComponent<Splitter>(parameters => parameters
+        var cut = Render<Splitter>(parameters => parameters
             .Add(p => p.InitialSize, initialSize));
 
         // Assert
@@ -96,7 +96,7 @@ public class SplitterTests : TestBase
     public void Splitter_Applies_HorizontalOrientation_ByDefault()
     {
         // Act
-        var cut = RenderComponent<Splitter>();
+        var cut = Render<Splitter>();
 
         // Assert
         var splitter = cut.Find(".vibe-splitter");
@@ -111,7 +111,7 @@ public class SplitterTests : TestBase
         var maxSize = 80.0;
 
         // Act
-        var cut = RenderComponent<Splitter>(parameters => parameters
+        var cut = Render<Splitter>(parameters => parameters
             .Add(p => p.MinSize, minSize)
             .Add(p => p.MaxSize, maxSize));
 
@@ -124,7 +124,7 @@ public class SplitterTests : TestBase
     public void Splitter_Renders_DividerHandle()
     {
         // Act
-        var cut = RenderComponent<Splitter>();
+        var cut = Render<Splitter>();
 
         // Assert
         var handle = cut.Find(".divider-handle");

@@ -21,7 +21,7 @@ public class FormTests : TestBase
     public void Form_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, new TestModel())
             .AddChildContent("<div>Form content</div>"));
 
@@ -34,7 +34,7 @@ public class FormTests : TestBase
     public void Form_Renders_EditForm()
     {
         // Act
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, new TestModel())
             .AddChildContent("<div>Form content</div>"));
 
@@ -47,7 +47,7 @@ public class FormTests : TestBase
     public void Form_Renders_ChildContent()
     {
         // Act
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, new TestModel())
             .AddChildContent("<div class='test-content'>Test Form</div>"));
 
@@ -60,7 +60,7 @@ public class FormTests : TestBase
     public void Form_Applies_FormName()
     {
         // Act
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, new TestModel())
             .Add(p => p.FormName, "userForm")
             .AddChildContent("<div>Content</div>"));
@@ -73,7 +73,7 @@ public class FormTests : TestBase
     public void Form_InitializesModel_WhenNotProvided()
     {
         // Act
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .AddChildContent("<div>Content</div>"));
 
         // Assert
@@ -87,7 +87,7 @@ public class FormTests : TestBase
         var model = new TestModel { Name = "John", Email = "john@example.com", Age = 25 };
 
         // Act
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .AddChildContent("<div>Content</div>"));
 
@@ -103,7 +103,7 @@ public class FormTests : TestBase
         var model = new TestModel(); // Empty - will fail validation
 
         // Act
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .AddChildContent("<button type='submit'>Submit</button>"));
 
@@ -122,7 +122,7 @@ public class FormTests : TestBase
         EditContext? capturedContext = null;
         var model = new TestModel { Name = "John", Email = "john@example.com", Age = 25 };
 
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .Add(p => p.OnSubmit, context => capturedContext = context)
             .AddChildContent("<button type='submit'>Submit</button>"));
@@ -142,7 +142,7 @@ public class FormTests : TestBase
         EditContext? capturedContext = null;
         var model = new TestModel(); // Empty model - will fail validation
 
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .Add(p => p.OnInvalidSubmit, context => capturedContext = context)
             .AddChildContent("<button type='submit'>Submit</button>"));
@@ -168,7 +168,7 @@ public class FormTests : TestBase
             Age = 10 // Must be >= 18 - invalid
         };
 
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .AddChildContent("<button type='submit'>Submit</button>"));
 
@@ -192,7 +192,7 @@ public class FormTests : TestBase
             Age = 25 // Valid
         };
 
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .AddChildContent("<button type='submit'>Submit</button>"));
 
@@ -234,7 +234,7 @@ public class FormTests : TestBase
         // Arrange
         var model = new ExtendedTestModel { Name = "" };
 
-        var cut = RenderComponent<Vibe.UI.Components.Form<ExtendedTestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<ExtendedTestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .AddChildContent("<button type='submit'>Submit</button>"));
 
@@ -258,7 +258,7 @@ public class FormTests : TestBase
             Age = 25
         };
 
-        var cut = RenderComponent<Vibe.UI.Components.Form<ExtendedTestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<ExtendedTestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .AddChildContent("<button type='submit'>Submit</button>"));
 
@@ -282,7 +282,7 @@ public class FormTests : TestBase
             Age = 25
         };
 
-        var cut = RenderComponent<Vibe.UI.Components.Form<ExtendedTestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<ExtendedTestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .AddChildContent("<button type='submit'>Submit</button>"));
 
@@ -306,7 +306,7 @@ public class FormTests : TestBase
             Age = 150 // Too high
         };
 
-        var cut = RenderComponent<Vibe.UI.Components.Form<ExtendedTestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<ExtendedTestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .AddChildContent("<button type='submit'>Submit</button>"));
 
@@ -332,7 +332,7 @@ public class FormTests : TestBase
     public void Form_WithEmptyModel_CanStillRender()
     {
         // Act
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .AddChildContent("<button type='submit'>Submit</button>"));
 
         // Assert
@@ -344,7 +344,7 @@ public class FormTests : TestBase
     public void Form_WithComplexNestedContent_Renders()
     {
         // Act
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, new TestModel())
             .AddChildContent("<div><fieldset><input type='text'/><button>Submit</button></fieldset></div>"));
 
@@ -364,7 +364,7 @@ public class FormTests : TestBase
         // Arrange
         var model = new TestModel { Name = "John", Email = "john@example.com", Age = 25 };
 
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .AddChildContent("<button type='submit'>Submit</button>"));
 
@@ -382,7 +382,7 @@ public class FormTests : TestBase
         // Arrange
         var model = new TestModel { Name = "John", Email = "john@example.com", Age = 25 };
 
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .AddChildContent("<button type='submit'>Submit</button>"));
 
@@ -408,7 +408,7 @@ public class FormTests : TestBase
         EditContext? capturedContext = null;
         var model = new TestModel { Name = "John", Email = "john@example.com", Age = 25 };
 
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .Add(p => p.OnSubmit, context =>
             {
@@ -432,7 +432,7 @@ public class FormTests : TestBase
         EditContext? capturedContext = null;
         var model = new TestModel(); // Invalid
 
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .Add(p => p.OnInvalidSubmit, context =>
             {
@@ -457,7 +457,7 @@ public class FormTests : TestBase
         var invalidCallbackInvoked = false;
         var model = new TestModel { Name = "John", Email = "john@example.com", Age = 25 };
 
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .Add(p => p.OnSubmit, _ => validCallbackInvoked = true)
             .Add(p => p.OnInvalidSubmit, _ => invalidCallbackInvoked = true)
@@ -480,7 +480,7 @@ public class FormTests : TestBase
         var invalidCallbackInvoked = false;
         var model = new TestModel(); // Invalid
 
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .Add(p => p.OnSubmit, _ => validCallbackInvoked = true)
             .Add(p => p.OnInvalidSubmit, _ => invalidCallbackInvoked = true)
@@ -503,7 +503,7 @@ public class FormTests : TestBase
     public void Form_IncludesDataAnnotationsValidator()
     {
         // Act
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, new TestModel())
             .AddChildContent("<div>Content</div>"));
 
@@ -531,7 +531,7 @@ public class FormTests : TestBase
             Age = 18 // Minimum valid
         };
 
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .AddChildContent("<button type='submit'>Submit</button>"));
 
@@ -554,7 +554,7 @@ public class FormTests : TestBase
             Age = 100 // Maximum valid
         };
 
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .AddChildContent("<button type='submit'>Submit</button>"));
 
@@ -577,7 +577,7 @@ public class FormTests : TestBase
             Age = 17 // Below minimum
         };
 
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .AddChildContent("<button type='submit'>Submit</button>"));
 
@@ -600,7 +600,7 @@ public class FormTests : TestBase
             Age = 101 // Above maximum
         };
 
-        var cut = RenderComponent<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
             .Add(p => p.Model, model)
             .AddChildContent("<button type='submit'>Submit</button>"));
 

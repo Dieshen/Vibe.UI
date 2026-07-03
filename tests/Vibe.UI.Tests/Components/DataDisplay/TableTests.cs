@@ -6,7 +6,7 @@ public class TableTests : TestBase
     public void Table_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Table>(parameters => parameters
+        var cut = Render<Table>(parameters => parameters
             .AddChildContent("<tr><td>Cell</td></tr>"));
 
         // Assert
@@ -17,7 +17,7 @@ public class TableTests : TestBase
     public void Table_Renders_TableElement()
     {
         // Act
-        var cut = RenderComponent<Table>(parameters => parameters
+        var cut = Render<Table>(parameters => parameters
             .AddChildContent("<tr><td>Cell</td></tr>"));
 
         // Assert
@@ -28,7 +28,7 @@ public class TableTests : TestBase
     public void Table_Renders_Tbody()
     {
         // Act
-        var cut = RenderComponent<Table>(parameters => parameters
+        var cut = Render<Table>(parameters => parameters
             .AddChildContent("<tr><td>Cell</td></tr>"));
 
         // Assert
@@ -39,7 +39,7 @@ public class TableTests : TestBase
     public void Table_Renders_Header_WhenProvided()
     {
         // Act
-        var cut = RenderComponent<Table>(parameters => parameters
+        var cut = Render<Table>(parameters => parameters
             .Add(p => p.HeaderContent, builder => builder.AddContent(0, "<tr><th>Header</th></tr>"))
             .AddChildContent("<tr><td>Cell</td></tr>"));
 
@@ -52,7 +52,7 @@ public class TableTests : TestBase
     public void Table_Renders_Footer_WhenProvided()
     {
         // Act
-        var cut = RenderComponent<Table>(parameters => parameters
+        var cut = Render<Table>(parameters => parameters
             .Add(p => p.FooterContent, builder => builder.AddContent(0, "<tr><td>Footer</td></tr>"))
             .AddChildContent("<tr><td>Cell</td></tr>"));
 
@@ -65,7 +65,7 @@ public class TableTests : TestBase
     public void Table_Applies_BorderedClass()
     {
         // Act
-        var cut = RenderComponent<Table>(parameters => parameters
+        var cut = Render<Table>(parameters => parameters
             .Add(p => p.Bordered, true)
             .AddChildContent("<tr><td>Cell</td></tr>"));
 
@@ -77,7 +77,7 @@ public class TableTests : TestBase
     public void Table_Applies_StripedClass()
     {
         // Act
-        var cut = RenderComponent<Table>(parameters => parameters
+        var cut = Render<Table>(parameters => parameters
             .Add(p => p.Striped, true)
             .AddChildContent("<tr><td>Cell</td></tr>"));
 
@@ -89,7 +89,7 @@ public class TableTests : TestBase
     public void Table_Applies_CompactClass()
     {
         // Act
-        var cut = RenderComponent<Table>(parameters => parameters
+        var cut = Render<Table>(parameters => parameters
             .Add(p => p.Compact, true)
             .AddChildContent("<tr><td>Cell</td></tr>"));
 
@@ -101,7 +101,7 @@ public class TableTests : TestBase
     public void Table_Applies_HoverClass()
     {
         // Act
-        var cut = RenderComponent<Table>(parameters => parameters
+        var cut = Render<Table>(parameters => parameters
             .Add(p => p.Hover, true)
             .AddChildContent("<tr><td>Cell</td></tr>"));
 
@@ -113,7 +113,7 @@ public class TableTests : TestBase
     public void Table_Renders_ChildContent()
     {
         // Act
-        var cut = RenderComponent<Table>(parameters => parameters
+        var cut = Render<Table>(parameters => parameters
             .AddChildContent("<tr><td class='test-cell'>Test Content</td></tr>"));
 
         // Assert
@@ -125,7 +125,7 @@ public class TableTests : TestBase
     public void Table_Applies_AdditionalAttributes()
     {
         // Act
-        var cut = RenderComponent<Table>(parameters => parameters
+        var cut = Render<Table>(parameters => parameters
             .AddUnmatched("data-test", "table-value")
             .AddChildContent("<tr><td>Cell</td></tr>"));
 

@@ -5,7 +5,7 @@ public class TreeViewNodeTests : TestBase
     [Fact]
     public void TreeViewNode_RendersLeafNode()
     {
-        var cut = RenderComponent<TreeViewNode>(parameters => parameters
+        var cut = Render<TreeViewNode>(parameters => parameters
             .Add(p => p.Item, new TreeView.TreeNode { Id = "leaf", Label = "Leaf" }));
 
         var node = cut.Find(".tree-view-node");
@@ -18,7 +18,7 @@ public class TreeViewNodeTests : TestBase
     [Fact]
     public void TreeViewNode_RendersCollapsedChildren()
     {
-        var cut = RenderComponent<TreeViewNode>(parameters => parameters
+        var cut = Render<TreeViewNode>(parameters => parameters
             .Add(p => p.Item, CreateParentNode()));
 
         cut.Find(".tree-node-toggle").GetAttribute("aria-label").ShouldBe("Expand");
@@ -31,7 +31,7 @@ public class TreeViewNodeTests : TestBase
     [Fact]
     public void TreeViewNode_RendersExpandedChildren()
     {
-        var cut = RenderComponent<TreeViewNode>(parameters => parameters
+        var cut = Render<TreeViewNode>(parameters => parameters
             .Add(p => p.Item, CreateParentNode())
             .Add(p => p.ExpandedNodes, new HashSet<string> { "parent" }));
 
@@ -46,7 +46,7 @@ public class TreeViewNodeTests : TestBase
     {
         TreeView.TreeNode? clicked = null;
         var node = new TreeView.TreeNode { Id = "leaf", Label = "Leaf" };
-        var cut = RenderComponent<TreeViewNode>(parameters => parameters
+        var cut = Render<TreeViewNode>(parameters => parameters
             .Add(p => p.Item, node)
             .Add(p => p.OnNodeClick, EventCallback.Factory.Create<TreeView.TreeNode>(this, value => clicked = value)));
 
@@ -59,7 +59,7 @@ public class TreeViewNodeTests : TestBase
     public void TreeViewNode_DoesNotInvokeClickForDisabledNode()
     {
         var clicked = false;
-        var cut = RenderComponent<TreeViewNode>(parameters => parameters
+        var cut = Render<TreeViewNode>(parameters => parameters
             .Add(p => p.Item, new TreeView.TreeNode { Id = "leaf", Label = "Leaf", IsDisabled = true })
             .Add(p => p.OnNodeClick, EventCallback.Factory.Create<TreeView.TreeNode>(this, _ => clicked = true)));
 
@@ -75,7 +75,7 @@ public class TreeViewNodeTests : TestBase
         TreeView.TreeNode? expanded = null;
         var clicked = false;
         var node = CreateParentNode();
-        var cut = RenderComponent<TreeViewNode>(parameters => parameters
+        var cut = Render<TreeViewNode>(parameters => parameters
             .Add(p => p.Item, node)
             .Add(p => p.OnNodeClick, EventCallback.Factory.Create<TreeView.TreeNode>(this, _ => clicked = true))
             .Add(p => p.OnNodeExpand, EventCallback.Factory.Create<TreeView.TreeNode>(this, value => expanded = value)));
@@ -90,7 +90,7 @@ public class TreeViewNodeTests : TestBase
     public void TreeViewNode_RendersSelectedCheckboxAndIcon()
     {
         RenderFragment icon = builder => builder.AddContent(0, "*");
-        var cut = RenderComponent<TreeViewNode>(parameters => parameters
+        var cut = Render<TreeViewNode>(parameters => parameters
             .Add(p => p.Item, new TreeView.TreeNode { Id = "leaf", Label = "Leaf", Icon = icon })
             .Add(p => p.ShowCheckboxes, true)
             .Add(p => p.SelectedNodes, new HashSet<string> { "leaf" }));

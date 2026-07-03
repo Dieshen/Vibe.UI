@@ -5,7 +5,7 @@ public class DialogTitleTests : TestBase
     [Fact]
     public void DialogTitle_RendersHeadingWithProvidedId()
     {
-        var cut = RenderComponent<DialogTitle>(parameters => parameters
+        var cut = Render<DialogTitle>(parameters => parameters
             .Add(p => p.Id, "dialog-title")
             .AddChildContent("Title"));
 
@@ -17,7 +17,7 @@ public class DialogTitleTests : TestBase
     [Fact]
     public void DialogTitle_GeneratesIdWhenMissing()
     {
-        var cut = RenderComponent<DialogTitle>();
+        var cut = Render<DialogTitle>();
 
         cut.Instance.Id.ShouldNotBeNullOrWhiteSpace();
         cut.Find(".vibe-dialog-title").GetAttribute("id").ShouldBe(cut.Instance.Id);
@@ -26,7 +26,7 @@ public class DialogTitleTests : TestBase
     [Fact]
     public void DialogTitle_RegistersIdWithParentDialog()
     {
-        var cut = RenderComponent<DialogRoot>(parameters => parameters
+        var cut = Render<DialogRoot>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .AddChildContent(builder =>
             {
@@ -42,7 +42,7 @@ public class DialogTitleTests : TestBase
     [Fact]
     public void DialogTitle_PreservesCustomClassAndAttributes()
     {
-        var cut = RenderComponent<DialogTitle>(parameters => parameters
+        var cut = Render<DialogTitle>(parameters => parameters
             .Add(p => p.Class, "dialog-heading")
             .AddUnmatched("data-title", "dialog"));
 

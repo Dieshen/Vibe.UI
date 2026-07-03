@@ -6,7 +6,7 @@ public class BadgeTests : TestBase
     public void Badge_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .AddChildContent("New"));
 
         // Assert
@@ -19,7 +19,7 @@ public class BadgeTests : TestBase
     public void Badge_Applies_Variant_Class()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .Add(p => p.Variant, "success")
             .AddChildContent("Success"));
 
@@ -31,7 +31,7 @@ public class BadgeTests : TestBase
     public void Badge_Applies_Size_Class()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .Add(p => p.Size, "sm")
             .AddChildContent("Small"));
 
@@ -43,7 +43,7 @@ public class BadgeTests : TestBase
     public void Badge_Renders_WithContent()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .AddChildContent("<span>Badge Content</span>"));
 
         // Assert
@@ -56,7 +56,7 @@ public class BadgeTests : TestBase
     public void Badge_DefaultVariant_HasDefaultClass()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .AddChildContent("Default"));
 
         // Assert
@@ -67,7 +67,7 @@ public class BadgeTests : TestBase
     public void Badge_PrimaryVariant_HasPrimaryClass()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .Add(p => p.Variant, "primary")
             .AddChildContent("Primary"));
 
@@ -79,7 +79,7 @@ public class BadgeTests : TestBase
     public void Badge_SecondaryVariant_HasSecondaryClass()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .Add(p => p.Variant, "secondary")
             .AddChildContent("Secondary"));
 
@@ -91,7 +91,7 @@ public class BadgeTests : TestBase
     public void Badge_SuccessVariant_HasSuccessClass()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .Add(p => p.Variant, "success")
             .AddChildContent("Success"));
 
@@ -103,7 +103,7 @@ public class BadgeTests : TestBase
     public void Badge_WarningVariant_HasWarningClass()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .Add(p => p.Variant, "warning")
             .AddChildContent("Warning"));
 
@@ -115,7 +115,7 @@ public class BadgeTests : TestBase
     public void Badge_ErrorVariant_HasErrorClass()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .Add(p => p.Variant, "error")
             .AddChildContent("Error"));
 
@@ -127,7 +127,7 @@ public class BadgeTests : TestBase
     public void Badge_InfoVariant_HasInfoClass()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .Add(p => p.Variant, "info")
             .AddChildContent("Info"));
 
@@ -141,7 +141,7 @@ public class BadgeTests : TestBase
     public void Badge_DefaultSize_HasDefaultClass()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .AddChildContent("Badge"));
 
         // Assert
@@ -152,7 +152,7 @@ public class BadgeTests : TestBase
     public void Badge_SmallSize_HasSmallClass()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .Add(p => p.Size, "sm")
             .AddChildContent("Small"));
 
@@ -164,7 +164,7 @@ public class BadgeTests : TestBase
     public void Badge_MediumSize_HasMediumClass()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .Add(p => p.Size, "md")
             .AddChildContent("Medium"));
 
@@ -176,7 +176,7 @@ public class BadgeTests : TestBase
     public void Badge_LargeSize_HasLargeClass()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .Add(p => p.Size, "lg")
             .AddChildContent("Large"));
 
@@ -190,7 +190,7 @@ public class BadgeTests : TestBase
     public void Badge_EmptyContent_RendersEmpty()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .AddChildContent(string.Empty));
 
         // Assert
@@ -203,7 +203,7 @@ public class BadgeTests : TestBase
     public void Badge_NumericContent_RendersNumber()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .AddChildContent("42"));
 
         // Assert
@@ -217,7 +217,7 @@ public class BadgeTests : TestBase
         var longText = "This is a very long badge text that might overflow";
 
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .AddChildContent(longText));
 
         // Assert
@@ -228,7 +228,7 @@ public class BadgeTests : TestBase
     public void Badge_SpecialCharacters_RendersCorrectly()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .AddChildContent("★ Special ♥"));
 
         // Assert
@@ -239,7 +239,7 @@ public class BadgeTests : TestBase
     public void Badge_HtmlContent_RendersHtml()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .AddChildContent("<strong>Bold</strong>"));
 
         // Assert
@@ -250,7 +250,7 @@ public class BadgeTests : TestBase
     public void Badge_WithIcon_RendersIcon()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .AddChildContent("<svg class=\"icon\">Icon</svg>Text"));
 
         // Assert
@@ -265,7 +265,7 @@ public class BadgeTests : TestBase
     public void Badge_VariantAndSize_AppliesBothClasses()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .Add(p => p.Variant, "success")
             .Add(p => p.Size, "lg")
             .AddChildContent("Success Large"));
@@ -280,7 +280,7 @@ public class BadgeTests : TestBase
     public void Badge_MultipleVariantChanges_UpdatesClass()
     {
         // Arrange
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .Add(p => p.Variant, "default")
             .AddChildContent("Badge"));
 
@@ -288,7 +288,7 @@ public class BadgeTests : TestBase
         badge.ClassList.ShouldContain("vibe-badge-default");
 
         // Act - Update parameters to change variant
-        cut.SetParametersAndRender(parameters => parameters
+        cut.Render(parameters => parameters
             .Add(p => p.Variant, "error")
             .AddChildContent("Badge"));
 
@@ -304,14 +304,14 @@ public class BadgeTests : TestBase
     public void Badge_SizeChange_UpdatesClass()
     {
         // Arrange
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .Add(p => p.Size, "sm")
             .AddChildContent("Badge"));
 
         cut.Find(".vibe-badge").ClassList.ShouldContain("vibe-badge-sm");
 
         // Act
-        cut.SetParametersAndRender(parameters => parameters
+        cut.Render(parameters => parameters
             .Add(p => p.Size, "lg")
             .AddChildContent("Badge"));
 
@@ -325,13 +325,13 @@ public class BadgeTests : TestBase
     public void Badge_ContentUpdate_UpdatesText()
     {
         // Arrange
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .AddChildContent("Initial"));
 
         cut.Find(".vibe-badge").TextContent.ShouldBe("Initial");
 
         // Act
-        cut.SetParametersAndRender(parameters => parameters
+        cut.Render(parameters => parameters
             .AddChildContent("Updated"));
 
         // Assert
@@ -344,7 +344,7 @@ public class BadgeTests : TestBase
     public void Badge_Whitespace_RendersWhitespace()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .AddChildContent("   "));
 
         // Assert
@@ -356,7 +356,7 @@ public class BadgeTests : TestBase
     public void Badge_ZeroCount_RendersZero()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .AddChildContent("0"));
 
         // Assert
@@ -367,7 +367,7 @@ public class BadgeTests : TestBase
     public void Badge_LargeCount_RendersLargeNumber()
     {
         // Act
-        var cut = RenderComponent<Badge>(parameters => parameters
+        var cut = Render<Badge>(parameters => parameters
             .AddChildContent("9999+"));
 
         // Assert

@@ -6,7 +6,7 @@ public class SidebarTests : TestBase
     public void Sidebar_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Sidebar>(parameters => parameters
+        var cut = Render<Sidebar>(parameters => parameters
             .AddChildContent("Sidebar Content"));
 
         // Assert
@@ -17,7 +17,7 @@ public class SidebarTests : TestBase
     public void Sidebar_IsOpen_ByDefault()
     {
         // Act
-        var cut = RenderComponent<Sidebar>(parameters => parameters
+        var cut = Render<Sidebar>(parameters => parameters
             .AddChildContent("Sidebar Content"));
 
         // Assert
@@ -29,7 +29,7 @@ public class SidebarTests : TestBase
     public void Sidebar_Has_AsideElement()
     {
         // Act
-        var cut = RenderComponent<Sidebar>(parameters => parameters
+        var cut = Render<Sidebar>(parameters => parameters
             .AddChildContent("Sidebar Content"));
 
         // Assert
@@ -40,7 +40,7 @@ public class SidebarTests : TestBase
     public void Sidebar_Renders_ChildContent()
     {
         // Act
-        var cut = RenderComponent<Sidebar>(parameters => parameters
+        var cut = Render<Sidebar>(parameters => parameters
             .AddChildContent("<div class='test-content'>Test Content</div>"));
 
         // Assert
@@ -52,7 +52,7 @@ public class SidebarTests : TestBase
     public void Sidebar_Renders_Title_InHeader()
     {
         // Act
-        var cut = RenderComponent<Sidebar>(parameters => parameters
+        var cut = Render<Sidebar>(parameters => parameters
             .Add(p => p.Title, "My Sidebar")
             .AddChildContent("Content"));
 
@@ -65,7 +65,7 @@ public class SidebarTests : TestBase
     public void Sidebar_Renders_CustomHeader()
     {
         // Act
-        var cut = RenderComponent<Sidebar>(parameters => parameters
+        var cut = Render<Sidebar>(parameters => parameters
             .Add(p => p.Header, builder => builder.AddContent(0, "Custom Header"))
             .AddChildContent("Content"));
 
@@ -78,7 +78,7 @@ public class SidebarTests : TestBase
     public void Sidebar_Renders_Footer_WhenProvided()
     {
         // Act
-        var cut = RenderComponent<Sidebar>(parameters => parameters
+        var cut = Render<Sidebar>(parameters => parameters
             .Add(p => p.Footer, builder => builder.AddContent(0, "Footer Content"))
             .AddChildContent("Content"));
 
@@ -91,7 +91,7 @@ public class SidebarTests : TestBase
     public void Sidebar_Shows_ToggleButton_WhenCollapsible()
     {
         // Act
-        var cut = RenderComponent<Sidebar>(parameters => parameters
+        var cut = Render<Sidebar>(parameters => parameters
             .Add(p => p.Collapsible, true)
             .AddChildContent("Content"));
 
@@ -103,7 +103,7 @@ public class SidebarTests : TestBase
     public void Sidebar_Toggles_State()
     {
         // Act
-        var cut = RenderComponent<Sidebar>(parameters => parameters
+        var cut = Render<Sidebar>(parameters => parameters
             .Add(p => p.Collapsible, true)
             .AddChildContent("Content"));
 
@@ -118,7 +118,7 @@ public class SidebarTests : TestBase
     public void Sidebar_Applies_PositionClass()
     {
         // Act
-        var cut = RenderComponent<Sidebar>(parameters => parameters
+        var cut = Render<Sidebar>(parameters => parameters
             .Add(p => p.Position, Sidebar.SidebarPosition.Right)
             .AddChildContent("Content"));
 
@@ -130,7 +130,7 @@ public class SidebarTests : TestBase
     public void Sidebar_Applies_ResizableClass_WhenResizable()
     {
         // Act
-        var cut = RenderComponent<Sidebar>(parameters => parameters
+        var cut = Render<Sidebar>(parameters => parameters
             .Add(p => p.Resizable, true)
             .AddChildContent("Content"));
 
@@ -142,7 +142,7 @@ public class SidebarTests : TestBase
     public void Sidebar_Has_DataState_Attribute()
     {
         // Act
-        var cut = RenderComponent<Sidebar>(parameters => parameters
+        var cut = Render<Sidebar>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .AddChildContent("Content"));
 
@@ -156,7 +156,7 @@ public class SidebarTests : TestBase
     {
         // Arrange
         bool stateChanged = false;
-        var cut = RenderComponent<Sidebar>(parameters => parameters
+        var cut = Render<Sidebar>(parameters => parameters
             .Add(p => p.IsOpenChanged, EventCallback.Factory.Create<bool>(this, value => stateChanged = true))
             .AddChildContent("Content"));
 
@@ -171,7 +171,7 @@ public class SidebarTests : TestBase
     public void Sidebar_Applies_CustomCssClass()
     {
         // Act
-        var cut = RenderComponent<Sidebar>(parameters => parameters
+        var cut = Render<Sidebar>(parameters => parameters
             .Add(p => p.CssClass, "custom-sidebar")
             .AddChildContent("Content"));
 

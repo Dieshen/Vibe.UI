@@ -5,7 +5,7 @@ public class StepperTests : TestBase
     [Fact]
     public void Stepper_RendersProgressNavigationAndSteps()
     {
-        var cut = RenderComponent<Stepper>(parameters => parameters
+        var cut = Render<Stepper>(parameters => parameters
             .Add(p => p.Steps, CreateSteps()));
 
         var nav = cut.Find("nav.vibe-stepper");
@@ -18,7 +18,7 @@ public class StepperTests : TestBase
     [Fact]
     public void Stepper_MarksCompletedActiveAndPendingSteps()
     {
-        var cut = RenderComponent<Stepper>(parameters => parameters
+        var cut = Render<Stepper>(parameters => parameters
             .Add(p => p.Steps, CreateSteps())
             .Add(p => p.CurrentStep, 1));
 
@@ -32,7 +32,7 @@ public class StepperTests : TestBase
     [Fact]
     public void Stepper_UsesExplicitStatusAndIcon()
     {
-        var cut = RenderComponent<Stepper>(parameters => parameters
+        var cut = Render<Stepper>(parameters => parameters
             .Add(p => p.Steps, new List<Stepper.StepItem>
             {
                 new() { Label = "Failed", Status = Stepper.StepStatus.Error },
@@ -50,7 +50,7 @@ public class StepperTests : TestBase
     {
         int? clicked = null;
         int? changed = null;
-        var cut = RenderComponent<Stepper>(parameters => parameters
+        var cut = Render<Stepper>(parameters => parameters
             .Add(p => p.Steps, CreateSteps())
             .Add(p => p.Clickable, true)
             .Add(p => p.OnStepClick, EventCallback.Factory.Create<int>(this, value => clicked = value))
@@ -66,7 +66,7 @@ public class StepperTests : TestBase
     public void Stepper_NonClickableStepDoesNotInvokeCallbacks()
     {
         int? clicked = null;
-        var cut = RenderComponent<Stepper>(parameters => parameters
+        var cut = Render<Stepper>(parameters => parameters
             .Add(p => p.Steps, CreateSteps())
             .Add(p => p.Clickable, false)
             .Add(p => p.OnStepClick, EventCallback.Factory.Create<int>(this, value => clicked = value)));
@@ -80,7 +80,7 @@ public class StepperTests : TestBase
     [Fact]
     public void Stepper_AppliesVerticalOrientationAndAttributes()
     {
-        var cut = RenderComponent<Stepper>(parameters => parameters
+        var cut = Render<Stepper>(parameters => parameters
             .Add(p => p.Steps, CreateSteps())
             .Add(p => p.Orientation, Stepper.StepperOrientation.Vertical)
             .Add(p => p.Class, "setup-steps")

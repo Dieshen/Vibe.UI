@@ -6,7 +6,7 @@ public class CarouselTests : TestBase
     public void Carousel_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Carousel>();
+        var cut = Render<Carousel>();
 
         // Assert
         var carousel = cut.Find(".vibe-carousel");
@@ -17,7 +17,7 @@ public class CarouselTests : TestBase
     public void Carousel_Renders_Viewport()
     {
         // Act
-        var cut = RenderComponent<Carousel>();
+        var cut = Render<Carousel>();
 
         // Assert
         var viewport = cut.Find(".carousel-viewport");
@@ -28,7 +28,7 @@ public class CarouselTests : TestBase
     public void Carousel_Renders_Container()
     {
         // Act
-        var cut = RenderComponent<Carousel>();
+        var cut = Render<Carousel>();
 
         // Assert
         var container = cut.Find(".carousel-container");
@@ -39,7 +39,7 @@ public class CarouselTests : TestBase
     public void Carousel_Shows_NavigationButtons_WhenEnabled()
     {
         // Act
-        var cut = RenderComponent<Carousel>(parameters => parameters
+        var cut = Render<Carousel>(parameters => parameters
             .Add(p => p.ShowNavigation, true));
 
         // Assert
@@ -51,7 +51,7 @@ public class CarouselTests : TestBase
     public void Carousel_Hides_NavigationButtons_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<Carousel>(parameters => parameters
+        var cut = Render<Carousel>(parameters => parameters
             .Add(p => p.ShowNavigation, false));
 
         // Assert
@@ -62,7 +62,7 @@ public class CarouselTests : TestBase
     public void Carousel_Shows_Indicators_WhenEnabled()
     {
         // Act
-        var cut = RenderComponent<Carousel>(parameters => parameters
+        var cut = Render<Carousel>(parameters => parameters
             .Add(p => p.ShowIndicators, true));
 
         // Assert
@@ -73,7 +73,7 @@ public class CarouselTests : TestBase
     public void Carousel_Hides_Indicators_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<Carousel>(parameters => parameters
+        var cut = Render<Carousel>(parameters => parameters
             .Add(p => p.ShowIndicators, false));
 
         // Assert
@@ -84,7 +84,7 @@ public class CarouselTests : TestBase
     public void Carousel_Applies_DefaultActiveIndex()
     {
         // Act
-        var cut = RenderComponent<Carousel>(parameters => parameters
+        var cut = Render<Carousel>(parameters => parameters
             .Add(p => p.ActiveIndex, 0));
 
         // Assert
@@ -96,7 +96,7 @@ public class CarouselTests : TestBase
     public void Carousel_Applies_HorizontalOrientation_ByDefault()
     {
         // Act
-        var cut = RenderComponent<Carousel>();
+        var cut = Render<Carousel>();
 
         // Assert
         var container = cut.Find(".carousel-container");
@@ -108,7 +108,7 @@ public class CarouselTests : TestBase
     public void Carousel_Applies_VerticalOrientation()
     {
         // Act
-        var cut = RenderComponent<Carousel>(parameters => parameters
+        var cut = Render<Carousel>(parameters => parameters
             .Add(p => p.Orientation, Carousel.CarouselOrientation.Vertical));
 
         // Assert

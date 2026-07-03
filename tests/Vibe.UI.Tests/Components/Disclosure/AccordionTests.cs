@@ -5,7 +5,7 @@ public class AccordionTests : TestBase
     [Fact]
     public void Accordion_RendersBaseClassAndChildContent()
     {
-        var cut = RenderComponent<Accordion>(parameters => parameters
+        var cut = Render<Accordion>(parameters => parameters
             .AddChildContent("<div class='accordion-child'>Child</div>"));
 
         var accordion = cut.Find(".vibe-accordion");
@@ -15,7 +15,7 @@ public class AccordionTests : TestBase
     [Fact]
     public void Accordion_PreservesCustomClassAndAttributes()
     {
-        var cut = RenderComponent<Accordion>(parameters => parameters
+        var cut = Render<Accordion>(parameters => parameters
             .Add(p => p.Class, "settings-accordion")
             .AddUnmatched("data-accordion", "settings"));
 
@@ -27,7 +27,7 @@ public class AccordionTests : TestBase
     [Fact]
     public void Accordion_SingleModeCollapsesOtherItems()
     {
-        var cut = RenderComponent<Accordion>(parameters => parameters
+        var cut = Render<Accordion>(parameters => parameters
             .AddChildContent(builder =>
             {
                 builder.OpenComponent<AccordionItem>(0);
@@ -54,7 +54,7 @@ public class AccordionTests : TestBase
     [Fact]
     public void Accordion_MultipleModeKeepsExpandedItems()
     {
-        var cut = RenderComponent<Accordion>(parameters => parameters
+        var cut = Render<Accordion>(parameters => parameters
             .Add(p => p.Type, Accordion.AccordionType.Multiple)
             .AddChildContent(builder =>
             {
@@ -82,7 +82,7 @@ public class AccordionTests : TestBase
     public void Accordion_RaisesStateChangedEvent()
     {
         Accordion.AccordionItemEventArgs? args = null;
-        var cut = RenderComponent<Accordion>(parameters => parameters
+        var cut = Render<Accordion>(parameters => parameters
             .Add(p => p.OnItemStateChanged, EventCallback.Factory.Create<Accordion.AccordionItemEventArgs>(this, value => args = value))
             .AddChildContent(builder =>
             {

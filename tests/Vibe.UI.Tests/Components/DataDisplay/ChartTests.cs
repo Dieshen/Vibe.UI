@@ -5,7 +5,7 @@ public class ChartTests : TestBase
     [Fact]
     public void Chart_RendersContainerCanvasAndHeader()
     {
-        var cut = RenderComponent<Chart>(parameters => parameters
+        var cut = Render<Chart>(parameters => parameters
             .Add(p => p.Data, CreateData())
             .Add(p => p.Title, "Revenue")
             .Add(p => p.Description, "Monthly revenue")
@@ -22,7 +22,7 @@ public class ChartTests : TestBase
     [Fact]
     public void Chart_RendersCustomLegendByDefault()
     {
-        var cut = RenderComponent<Chart>(parameters => parameters
+        var cut = Render<Chart>(parameters => parameters
             .Add(p => p.Data, CreateData()));
 
         var legend = cut.Find(".vibe-chart-legend");
@@ -34,11 +34,11 @@ public class ChartTests : TestBase
     [Fact]
     public void Chart_HidesCustomLegend_WhenDisabledOrBuiltIn()
     {
-        var hidden = RenderComponent<Chart>(parameters => parameters
+        var hidden = Render<Chart>(parameters => parameters
             .Add(p => p.Data, CreateData())
             .Add(p => p.ShowLegend, false));
 
-        var builtIn = RenderComponent<Chart>(parameters => parameters
+        var builtIn = Render<Chart>(parameters => parameters
             .Add(p => p.Data, CreateData())
             .Add(p => p.UseBuiltInLegend, true));
 
@@ -49,7 +49,7 @@ public class ChartTests : TestBase
     [Fact]
     public void Chart_AppliesTypeAndCustomClass()
     {
-        var cut = RenderComponent<Chart>(parameters => parameters
+        var cut = Render<Chart>(parameters => parameters
             .Add(p => p.Data, CreateData())
             .Add(p => p.Type, Chart.ChartType.Bar)
             .Add(p => p.CssClass, "dashboard-chart")
@@ -64,7 +64,7 @@ public class ChartTests : TestBase
     [Fact]
     public void Chart_RendersFooterContent()
     {
-        var cut = RenderComponent<Chart>(parameters => parameters
+        var cut = Render<Chart>(parameters => parameters
             .Add(p => p.Data, CreateData())
             .Add(p => p.FooterContent, builder => builder.AddMarkupContent(0, "<button>Export</button>")));
 
@@ -74,7 +74,7 @@ public class ChartTests : TestBase
     [Fact]
     public async Task Chart_ExportReturnsNull_WhenJsInteropFails()
     {
-        var cut = RenderComponent<Chart>(parameters => parameters
+        var cut = Render<Chart>(parameters => parameters
             .Add(p => p.Data, CreateData()));
 
         var result = await cut.Instance.ExportAsImageAsync();

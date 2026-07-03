@@ -6,7 +6,7 @@ public class CarouselItemTests : TestBase
     public void CarouselItem_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<CarouselItem>();
+        var cut = Render<CarouselItem>();
 
         // Assert
         var item = cut.Find(".carousel-item");
@@ -20,7 +20,7 @@ public class CarouselItemTests : TestBase
         var content = "Carousel Item Content";
 
         // Act
-        var cut = RenderComponent<CarouselItem>(parameters => parameters
+        var cut = Render<CarouselItem>(parameters => parameters
             .Add(p => p.ChildContent, builder => builder.AddContent(0, content)));
 
         // Assert
@@ -32,7 +32,7 @@ public class CarouselItemTests : TestBase
     public void CarouselItem_HasCorrectCssClass()
     {
         // Act
-        var cut = RenderComponent<CarouselItem>();
+        var cut = Render<CarouselItem>();
 
         // Assert
         var item = cut.Find(".carousel-item");

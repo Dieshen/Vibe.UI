@@ -5,7 +5,7 @@ public class BreadcrumbItemTests : TestBase
     [Fact]
     public void BreadcrumbItem_RendersLinkContentAndSeparator()
     {
-        var cut = RenderComponent<BreadcrumbItem>(parameters => parameters
+        var cut = Render<BreadcrumbItem>(parameters => parameters
             .AddChildContent("Home"));
 
         var item = cut.Find("li.vibe-breadcrumb-item");
@@ -17,7 +17,7 @@ public class BreadcrumbItemTests : TestBase
     [Fact]
     public void BreadcrumbItem_RendersHref()
     {
-        var cut = RenderComponent<BreadcrumbItem>(parameters => parameters
+        var cut = Render<BreadcrumbItem>(parameters => parameters
             .Add(p => p.Href, "/docs")
             .AddChildContent("Docs"));
 
@@ -27,7 +27,7 @@ public class BreadcrumbItemTests : TestBase
     [Fact]
     public void BreadcrumbItem_AppliesLastClassAndOmitsSeparator_WhenLast()
     {
-        var cut = RenderComponent<BreadcrumbItem>(parameters => parameters
+        var cut = Render<BreadcrumbItem>(parameters => parameters
             .Add(p => p.IsLast, true)
             .AddChildContent("Current"));
 
@@ -38,7 +38,7 @@ public class BreadcrumbItemTests : TestBase
     [Fact]
     public void BreadcrumbItem_RendersCustomSeparator()
     {
-        var cut = RenderComponent<BreadcrumbItem>(parameters => parameters
+        var cut = Render<BreadcrumbItem>(parameters => parameters
             .Add(p => p.Separator, ">")
             .AddChildContent("Docs"));
 
@@ -48,7 +48,7 @@ public class BreadcrumbItemTests : TestBase
     [Fact]
     public void BreadcrumbItem_RendersSeparatorContentBeforeSeparatorString()
     {
-        var cut = RenderComponent<BreadcrumbItem>(parameters => parameters
+        var cut = Render<BreadcrumbItem>(parameters => parameters
             .Add(p => p.Separator, ">")
             .Add(p => p.SeparatorContent, builder => builder.AddMarkupContent(0, "<span data-testid='slash'>/</span>"))
             .AddChildContent("Docs"));
@@ -60,7 +60,7 @@ public class BreadcrumbItemTests : TestBase
     [Fact]
     public void BreadcrumbItem_OmitsSeparator_WhenSeparatorIsEmpty()
     {
-        var cut = RenderComponent<BreadcrumbItem>(parameters => parameters
+        var cut = Render<BreadcrumbItem>(parameters => parameters
             .Add(p => p.Separator, string.Empty)
             .AddChildContent("Docs"));
 
@@ -71,7 +71,7 @@ public class BreadcrumbItemTests : TestBase
     public void BreadcrumbItem_InvokesOnClick()
     {
         var clicked = false;
-        var cut = RenderComponent<BreadcrumbItem>(parameters => parameters
+        var cut = Render<BreadcrumbItem>(parameters => parameters
             .Add(p => p.OnClick, () => clicked = true)
             .AddChildContent("Docs"));
 
@@ -83,7 +83,7 @@ public class BreadcrumbItemTests : TestBase
     [Fact]
     public void BreadcrumbItem_PreservesAdditionalAttributes()
     {
-        var cut = RenderComponent<BreadcrumbItem>(parameters => parameters
+        var cut = Render<BreadcrumbItem>(parameters => parameters
             .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
             {
                 ["data-testid"] = "breadcrumb-item",
@@ -99,7 +99,7 @@ public class BreadcrumbItemTests : TestBase
     [Fact]
     public void BreadcrumbItem_AppliesCustomClass()
     {
-        var cut = RenderComponent<BreadcrumbItem>(parameters => parameters
+        var cut = Render<BreadcrumbItem>(parameters => parameters
             .Add(p => p.Class, "breadcrumb-node")
             .AddChildContent("Docs"));
 

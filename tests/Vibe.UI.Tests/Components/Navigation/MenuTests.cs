@@ -5,7 +5,7 @@ public class MenuTests : TestBase
     [Fact]
     public void Menu_RendersDefaultTriggerAndBaseClass()
     {
-        var cut = RenderComponent<Menu>();
+        var cut = Render<Menu>();
 
         cut.Find(".vibe-menu").ShouldNotBeNull();
         var trigger = cut.Find(".vibe-menu-trigger");
@@ -21,7 +21,7 @@ public class MenuTests : TestBase
     [Fact]
     public void Menu_RendersCustomTrigger()
     {
-        var cut = RenderComponent<Menu>(parameters => parameters
+        var cut = Render<Menu>(parameters => parameters
             .Add(p => p.Trigger, builder => builder.AddMarkupContent(0, "<button class='custom-trigger'>Actions</button>")));
 
         cut.Find(".custom-trigger").TextContent.ShouldBe("Actions");
@@ -30,7 +30,7 @@ public class MenuTests : TestBase
     [Fact]
     public void Menu_DoesNotRenderContent_WhenClosed()
     {
-        var cut = RenderComponent<Menu>(parameters => parameters
+        var cut = Render<Menu>(parameters => parameters
             .AddChildContent("Menu content"));
 
         cut.FindAll(".vibe-menu-content").ShouldBeEmpty();
@@ -40,7 +40,7 @@ public class MenuTests : TestBase
     [Fact]
     public void Menu_RendersContentAndBackdrop_WhenOpen()
     {
-        var cut = RenderComponent<Menu>(parameters => parameters
+        var cut = Render<Menu>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .AddChildContent("<button>Delete</button>"));
 
@@ -54,7 +54,7 @@ public class MenuTests : TestBase
     public void Menu_ToggleInvokesIsOpenChanged()
     {
         bool? changedValue = null;
-        var cut = RenderComponent<Menu>(parameters => parameters
+        var cut = Render<Menu>(parameters => parameters
             .Add(p => p.IsOpenChanged, value => changedValue = value));
 
         cut.Find(".vibe-menu-trigger").Click();
@@ -67,7 +67,7 @@ public class MenuTests : TestBase
     public void Menu_TogglesWithKeyboardAndClosesWithEscape()
     {
         bool? changedValue = null;
-        var cut = RenderComponent<Menu>(parameters => parameters
+        var cut = Render<Menu>(parameters => parameters
             .Add(p => p.IsOpenChanged, value => changedValue = value)
             .AddChildContent("Menu content"));
 
@@ -84,7 +84,7 @@ public class MenuTests : TestBase
     public void Menu_BackdropClosesAndInvokesIsOpenChanged()
     {
         bool? changedValue = null;
-        var cut = RenderComponent<Menu>(parameters => parameters
+        var cut = Render<Menu>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.IsOpenChanged, value => changedValue = value)
             .AddChildContent("Menu content"));
@@ -98,7 +98,7 @@ public class MenuTests : TestBase
     [Fact]
     public void Menu_OmitsBackdrop_WhenCloseOnClickOutsideIsFalse()
     {
-        var cut = RenderComponent<Menu>(parameters => parameters
+        var cut = Render<Menu>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.CloseOnClickOutside, false)
             .AddChildContent("Menu content"));
@@ -114,7 +114,7 @@ public class MenuTests : TestBase
     [InlineData(Menu.MenuPlacement.TopEnd, "bottom: 100%; right: 0; margin-bottom: 0.25rem;")]
     public void Menu_AppliesPlacementStyle(Menu.MenuPlacement placement, string expectedStyle)
     {
-        var cut = RenderComponent<Menu>(parameters => parameters
+        var cut = Render<Menu>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.Placement, placement)
             .AddChildContent("Menu content"));
@@ -125,7 +125,7 @@ public class MenuTests : TestBase
     [Fact]
     public void Menu_PreservesAdditionalAttributes()
     {
-        var cut = RenderComponent<Menu>(parameters => parameters
+        var cut = Render<Menu>(parameters => parameters
             .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
             {
                 ["data-testid"] = "menu",
@@ -140,7 +140,7 @@ public class MenuTests : TestBase
     [Fact]
     public void Menu_AppliesCustomClass()
     {
-        var cut = RenderComponent<Menu>(parameters => parameters
+        var cut = Render<Menu>(parameters => parameters
             .Add(p => p.Class, "dense-menu"));
 
         cut.Find(".vibe-menu").ClassList.ShouldContain("dense-menu");

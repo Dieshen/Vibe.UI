@@ -6,7 +6,7 @@ public class ToastTests : TestBase
     public void Toast_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Toast>(parameters => parameters
+        var cut = Render<Toast>(parameters => parameters
             .Add(p => p.Description, "Test message"));
 
         // Assert
@@ -22,7 +22,7 @@ public class ToastTests : TestBase
         var title = "Success";
 
         // Act
-        var cut = RenderComponent<Toast>(parameters => parameters
+        var cut = Render<Toast>(parameters => parameters
             .Add(p => p.Title, title)
             .Add(p => p.Description, "Test"));
 
@@ -38,7 +38,7 @@ public class ToastTests : TestBase
         var description = "Operation completed successfully";
 
         // Act
-        var cut = RenderComponent<Toast>(parameters => parameters
+        var cut = Render<Toast>(parameters => parameters
             .Add(p => p.Description, description));
 
         // Assert
@@ -53,7 +53,7 @@ public class ToastTests : TestBase
         var variant = "success";
 
         // Act
-        var cut = RenderComponent<Toast>(parameters => parameters
+        var cut = Render<Toast>(parameters => parameters
             .Add(p => p.Variant, variant)
             .Add(p => p.Description, "Test"));
 
@@ -66,7 +66,7 @@ public class ToastTests : TestBase
     public void Toast_Shows_CloseButton_WhenEnabled()
     {
         // Act
-        var cut = RenderComponent<Toast>(parameters => parameters
+        var cut = Render<Toast>(parameters => parameters
             .Add(p => p.Description, "Test")
             .Add(p => p.ShowCloseButton, true));
 
@@ -79,7 +79,7 @@ public class ToastTests : TestBase
     public void Toast_Hides_CloseButton_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<Toast>(parameters => parameters
+        var cut = Render<Toast>(parameters => parameters
             .Add(p => p.Description, "Test")
             .Add(p => p.ShowCloseButton, false));
 
@@ -91,7 +91,7 @@ public class ToastTests : TestBase
     public void Toast_Shows_ProgressBar_WhenEnabled()
     {
         // Act
-        var cut = RenderComponent<Toast>(parameters => parameters
+        var cut = Render<Toast>(parameters => parameters
             .Add(p => p.Description, "Test")
             .Add(p => p.ShowProgress, true)
             .Add(p => p.Duration, 5000));
@@ -106,7 +106,7 @@ public class ToastTests : TestBase
     {
         // Arrange
         var closeCalled = false;
-        var cut = RenderComponent<Toast>(parameters => parameters
+        var cut = Render<Toast>(parameters => parameters
             .Add(p => p.Description, "Test")
             .Add(p => p.ShowCloseButton, true)
             .Add(p => p.OnClose, () => closeCalled = true));
@@ -123,7 +123,7 @@ public class ToastTests : TestBase
     public void Toast_IsVisible_Initially()
     {
         // Act
-        var cut = RenderComponent<Toast>(parameters => parameters
+        var cut = Render<Toast>(parameters => parameters
             .Add(p => p.Description, "Test"));
 
         // Assert
@@ -138,7 +138,7 @@ public class ToastTests : TestBase
         var icon = "✓";
 
         // Act
-        var cut = RenderComponent<Toast>(parameters => parameters
+        var cut = Render<Toast>(parameters => parameters
             .Add(p => p.Icon, icon)
             .Add(p => p.Description, "Test"));
 

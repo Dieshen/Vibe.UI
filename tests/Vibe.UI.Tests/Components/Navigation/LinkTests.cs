@@ -5,7 +5,7 @@ public class LinkTests : TestBase
     [Fact]
     public void Link_RendersAnchor_WhenHrefProvided()
     {
-        var cut = RenderComponent<Link>(parameters => parameters
+        var cut = Render<Link>(parameters => parameters
             .Add(p => p.Href, "/docs")
             .AddChildContent("Docs"));
 
@@ -17,7 +17,7 @@ public class LinkTests : TestBase
     [Fact]
     public void Link_AddsSafeRel_ForExternalBlankTarget()
     {
-        var cut = RenderComponent<Link>(parameters => parameters
+        var cut = Render<Link>(parameters => parameters
             .Add(p => p.Href, "https://example.com")
             .Add(p => p.Target, "_blank")
             .AddChildContent("External"));
@@ -30,7 +30,7 @@ public class LinkTests : TestBase
     [Fact]
     public void Link_RendersButton_WhenHrefMissing()
     {
-        var cut = RenderComponent<Link>(parameters => parameters
+        var cut = Render<Link>(parameters => parameters
             .AddChildContent("Action"));
 
         var button = cut.Find("button.vibe-link-button");
@@ -41,7 +41,7 @@ public class LinkTests : TestBase
     [Fact]
     public void Link_RendersDisabledSpanAndSuppressesClick()
     {
-        var cut = RenderComponent<Link>(parameters => parameters
+        var cut = Render<Link>(parameters => parameters
             .Add(p => p.Disabled, true)
             .Add(p => p.Href, "/disabled")
             .AddChildContent("Disabled"));
@@ -57,7 +57,7 @@ public class LinkTests : TestBase
     public void Link_InvokesClickCallback_WhenEnabled()
     {
         var clicked = false;
-        var cut = RenderComponent<Link>(parameters => parameters
+        var cut = Render<Link>(parameters => parameters
             .Add(p => p.OnClick, EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, _ => clicked = true))
             .AddChildContent("Click"));
 
@@ -69,7 +69,7 @@ public class LinkTests : TestBase
     [Fact]
     public void Link_AppliesVariantUnderlineClassAndAttributes()
     {
-        var cut = RenderComponent<Link>(parameters => parameters
+        var cut = Render<Link>(parameters => parameters
             .Add(p => p.Href, "/primary")
             .Add(p => p.Variant, Link.LinkVariant.Primary)
             .Add(p => p.Underline, Link.LinkUnderline.Always)

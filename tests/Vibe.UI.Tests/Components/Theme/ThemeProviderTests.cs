@@ -5,7 +5,7 @@ public class ThemeProviderTests : TestBase
     [Fact]
     public void ThemeProvider_RendersStyleElement()
     {
-        var cut = RenderComponent<ThemeProvider>();
+        var cut = Render<ThemeProvider>();
 
         cut.Find("style").ShouldNotBeNull();
     }
@@ -13,7 +13,7 @@ public class ThemeProviderTests : TestBase
     [Fact]
     public void ThemeProvider_RendersGeneratedThemeVariables()
     {
-        var cut = RenderComponent<ThemeProvider>();
+        var cut = Render<ThemeProvider>();
 
         var css = cut.Find("style").TextContent;
         css.ShouldContain(":root");

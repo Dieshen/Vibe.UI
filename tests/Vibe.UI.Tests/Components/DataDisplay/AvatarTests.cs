@@ -6,7 +6,7 @@ public class AvatarTests : TestBase
     public void Avatar_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Avatar>();
+        var cut = Render<Avatar>();
 
         // Assert
         cut.Find(".vibe-avatar").ShouldNotBeNull();
@@ -16,7 +16,7 @@ public class AvatarTests : TestBase
     public void Avatar_Renders_Image_WhenImageUrlProvided()
     {
         // Act
-        var cut = RenderComponent<Avatar>(parameters => parameters
+        var cut = Render<Avatar>(parameters => parameters
             .Add(p => p.ImageUrl, "test.jpg"));
 
         // Assert
@@ -28,7 +28,7 @@ public class AvatarTests : TestBase
     public void Avatar_Shows_Initials_WhenNoImage()
     {
         // Act
-        var cut = RenderComponent<Avatar>(parameters => parameters
+        var cut = Render<Avatar>(parameters => parameters
             .Add(p => p.Initials, "JD"));
 
         // Assert
@@ -40,7 +40,7 @@ public class AvatarTests : TestBase
     public void Avatar_Shows_FallbackIcon_WhenProvided()
     {
         // Act
-        var cut = RenderComponent<Avatar>(parameters => parameters
+        var cut = Render<Avatar>(parameters => parameters
             .Add(p => p.FallbackIcon, "👤"));
 
         // Assert
@@ -52,7 +52,7 @@ public class AvatarTests : TestBase
     public void Avatar_Shows_Fallback_WhenNoContent()
     {
         // Act
-        var cut = RenderComponent<Avatar>();
+        var cut = Render<Avatar>();
 
         // Assert
         cut.Find(".avatar-fallback").ShouldNotBeNull();
@@ -62,7 +62,7 @@ public class AvatarTests : TestBase
     public void Avatar_Has_DefaultSize()
     {
         // Act
-        var cut = RenderComponent<Avatar>();
+        var cut = Render<Avatar>();
 
         // Assert
         cut.Instance.Size.ShouldBe(40);
@@ -72,7 +72,7 @@ public class AvatarTests : TestBase
     public void Avatar_Accepts_CustomSize()
     {
         // Act
-        var cut = RenderComponent<Avatar>(parameters => parameters
+        var cut = Render<Avatar>(parameters => parameters
             .Add(p => p.Size, 80));
 
         // Assert
@@ -85,7 +85,7 @@ public class AvatarTests : TestBase
     public void Avatar_Has_DefaultCircleShape()
     {
         // Act
-        var cut = RenderComponent<Avatar>();
+        var cut = Render<Avatar>();
 
         // Assert
         cut.Instance.Shape.ShouldBe("circle");
@@ -95,7 +95,7 @@ public class AvatarTests : TestBase
     public void Avatar_Accepts_CustomShape()
     {
         // Act
-        var cut = RenderComponent<Avatar>(parameters => parameters
+        var cut = Render<Avatar>(parameters => parameters
             .Add(p => p.Shape, "square"));
 
         // Assert
@@ -106,7 +106,7 @@ public class AvatarTests : TestBase
     public void Avatar_Applies_DelayloadClass_WhenEnabled()
     {
         // Act
-        var cut = RenderComponent<Avatar>(parameters => parameters
+        var cut = Render<Avatar>(parameters => parameters
             .Add(p => p.Delayload, true)
             .Add(p => p.ImageUrl, "test.jpg"));
 
@@ -118,7 +118,7 @@ public class AvatarTests : TestBase
     public void Avatar_Applies_AdditionalAttributes()
     {
         // Act
-        var cut = RenderComponent<Avatar>(parameters => parameters
+        var cut = Render<Avatar>(parameters => parameters
             .AddUnmatched("data-test", "avatar-value"));
 
         // Assert - AdditionalAttributes are captured

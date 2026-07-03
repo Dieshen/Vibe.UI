@@ -5,7 +5,7 @@ public class DialogFooterTests : TestBase
     [Fact]
     public void DialogFooter_RendersContent()
     {
-        var cut = RenderComponent<DialogFooter>(parameters => parameters
+        var cut = Render<DialogFooter>(parameters => parameters
             .AddChildContent("<button>Save</button>"));
 
         var footer = cut.Find(".vibe-dialog-footer");
@@ -15,7 +15,7 @@ public class DialogFooterTests : TestBase
     [Fact]
     public void DialogFooter_PreservesCustomClassAndAttributes()
     {
-        var cut = RenderComponent<DialogFooter>(parameters => parameters
+        var cut = Render<DialogFooter>(parameters => parameters
             .Add(p => p.Class, "dialog-actions")
             .AddUnmatched("data-footer", "dialog"));
 

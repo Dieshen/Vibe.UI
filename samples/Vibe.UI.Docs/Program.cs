@@ -1,4 +1,3 @@
-using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Vibe.UI;
@@ -15,8 +14,5 @@ builder.Services.AddVibeUI(options =>
 {
     options.BaseColor = "Slate";
 });
-
-// Add LocalStorage for general app use
-builder.Services.AddBlazoredLocalStorage();
 
 await builder.Build().RunAsync();

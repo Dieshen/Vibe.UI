@@ -5,7 +5,7 @@ public class DialogContentTests : TestBase
     [Fact]
     public void DialogContent_RendersDocumentRoleAndContent()
     {
-        var cut = RenderComponent<DialogContent>(parameters => parameters
+        var cut = Render<DialogContent>(parameters => parameters
             .AddChildContent("<p>Dialog content</p>"));
 
         var content = cut.Find(".vibe-dialog-content");
@@ -16,7 +16,7 @@ public class DialogContentTests : TestBase
     [Fact]
     public void DialogContent_PreservesCustomClassAndAttributes()
     {
-        var cut = RenderComponent<DialogContent>(parameters => parameters
+        var cut = Render<DialogContent>(parameters => parameters
             .Add(p => p.Class, "content-pane")
             .AddUnmatched("data-content", "dialog"));
 

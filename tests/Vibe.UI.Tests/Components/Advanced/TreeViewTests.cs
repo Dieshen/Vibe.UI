@@ -6,7 +6,7 @@ public class TreeViewTests : TestBase
     public void TreeView_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<TreeView>();
+        var cut = Render<TreeView>();
 
         // Assert
         var tree = cut.Find(".vibe-tree-view");
@@ -25,7 +25,7 @@ public class TreeViewTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<TreeView>(parameters => parameters
+        var cut = Render<TreeView>(parameters => parameters
             .Add(p => p.Items, items));
 
         // Assert
@@ -52,7 +52,7 @@ public class TreeViewTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<TreeView>(parameters => parameters
+        var cut = Render<TreeView>(parameters => parameters
             .Add(p => p.Items, items));
 
         // Assert
@@ -72,7 +72,7 @@ public class TreeViewTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<TreeView>(parameters => parameters
+        var cut = Render<TreeView>(parameters => parameters
             .Add(p => p.Items, items)
             .Add(p => p.MultiSelect, true));
 
@@ -91,7 +91,7 @@ public class TreeViewTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<TreeView>(parameters => parameters
+        var cut = Render<TreeView>(parameters => parameters
             .Add(p => p.Items, items)
             .Add(p => p.ShowCheckboxes, true));
 
@@ -111,7 +111,7 @@ public class TreeViewTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<TreeView>(parameters => parameters
+        var cut = Render<TreeView>(parameters => parameters
             .Add(p => p.Items, items)
             .Add(p => p.SelectedValue, "1"));
 
@@ -124,7 +124,7 @@ public class TreeViewTests : TestBase
     public void TreeView_Applies_CustomCssClass()
     {
         // Act
-        var cut = RenderComponent<TreeView>(parameters => parameters
+        var cut = Render<TreeView>(parameters => parameters
             .Add(p => p.CssClass, "custom-tree"));
 
         // Assert
@@ -136,7 +136,7 @@ public class TreeViewTests : TestBase
     public void TreeView_Handles_EmptyItems()
     {
         // Act
-        var cut = RenderComponent<TreeView>(parameters => parameters
+        var cut = Render<TreeView>(parameters => parameters
             .Add(p => p.Items, new List<TreeView.TreeNode>()));
 
         // Assert

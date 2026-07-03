@@ -6,7 +6,7 @@ public class VirtualScrollTests : TestBase
     public void VirtualScroll_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<VirtualScroll<string>>();
+        var cut = Render<VirtualScroll<string>>();
 
         // Assert
         var scroll = cut.Find(".vibe-virtual-scroll");
@@ -20,7 +20,7 @@ public class VirtualScrollTests : TestBase
         var items = new List<string> { "Item 1", "Item 2", "Item 3" };
 
         // Act
-        var cut = RenderComponent<VirtualScroll<string>>(parameters => parameters
+        var cut = Render<VirtualScroll<string>>(parameters => parameters
             .Add(p => p.Items, items));
 
         // Assert
@@ -35,7 +35,7 @@ public class VirtualScrollTests : TestBase
         var emptyMarkup = "<div>No items</div>";
 
         // Act
-        var cut = RenderComponent<VirtualScroll<string>>(parameters => parameters
+        var cut = Render<VirtualScroll<string>>(parameters => parameters
             .Add(p => p.Items, new List<string>())
             .Add(p => p.EmptyContent, emptyMarkup));
 
@@ -52,7 +52,7 @@ public class VirtualScrollTests : TestBase
         var items = new List<string> { "Item 1" };
 
         // Act
-        var cut = RenderComponent<VirtualScroll<string>>(parameters => parameters
+        var cut = Render<VirtualScroll<string>>(parameters => parameters
             .Add(p => p.Items, items)
             .Add(p => p.ItemTemplate, item => $"<div class='custom-item'>{item}</div>"));
 
@@ -66,7 +66,7 @@ public class VirtualScrollTests : TestBase
     public void VirtualScroll_Applies_CustomHeight()
     {
         // Act
-        var cut = RenderComponent<VirtualScroll<string>>(parameters => parameters
+        var cut = Render<VirtualScroll<string>>(parameters => parameters
             .Add(p => p.Height, 600));
 
         // Assert
@@ -81,7 +81,7 @@ public class VirtualScrollTests : TestBase
         var items = new List<string> { "Item 1", "Item 2", "Item 3" };
 
         // Act
-        var cut = RenderComponent<VirtualScroll<string>>(parameters => parameters
+        var cut = Render<VirtualScroll<string>>(parameters => parameters
             .Add(p => p.Items, items)
             .Add(p => p.ItemHeight, 100));
 
@@ -97,7 +97,7 @@ public class VirtualScrollTests : TestBase
         var items = new List<string> { "Item 1", "Item 2", "Item 3" };
 
         // Act
-        var cut = RenderComponent<VirtualScroll<string>>(parameters => parameters
+        var cut = Render<VirtualScroll<string>>(parameters => parameters
             .Add(p => p.Items, items)
             .Add(p => p.BufferSize, 10));
 
@@ -110,7 +110,7 @@ public class VirtualScrollTests : TestBase
     public void VirtualScroll_Applies_CustomCssClass()
     {
         // Act
-        var cut = RenderComponent<VirtualScroll<string>>(parameters => parameters
+        var cut = Render<VirtualScroll<string>>(parameters => parameters
             .Add(p => p.CssClass, "custom-scroll"));
 
         // Assert
@@ -129,7 +129,7 @@ public class VirtualScrollTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<VirtualScroll<TestItem>>(parameters => parameters
+        var cut = Render<VirtualScroll<TestItem>>(parameters => parameters
             .Add(p => p.Items, items)
             .Add(p => p.KeySelector, item => item.Id.ToString()));
 

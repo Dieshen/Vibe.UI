@@ -5,7 +5,7 @@ public class CommandTests : TestBase
     [Fact]
     public void Command_RendersInputAndListbox()
     {
-        var cut = RenderComponent<Command>();
+        var cut = Render<Command>();
 
         cut.Find(".vibe-command").ShouldNotBeNull();
 
@@ -25,7 +25,7 @@ public class CommandTests : TestBase
     [Fact]
     public void Command_RendersIconAndShortcut()
     {
-        var cut = RenderComponent<Command>(parameters => parameters
+        var cut = Render<Command>(parameters => parameters
             .Add(p => p.Icon, "<svg data-testid=\"search\"></svg>")
             .Add(p => p.Items, CreateItems()));
 
@@ -36,7 +36,7 @@ public class CommandTests : TestBase
     [Fact]
     public void Command_OmitsIcon_WhenIconIsEmpty()
     {
-        var cut = RenderComponent<Command>(parameters => parameters
+        var cut = Render<Command>(parameters => parameters
             .Add(p => p.Icon, string.Empty));
 
         cut.FindAll(".command-input-icon").ShouldBeEmpty();
@@ -45,7 +45,7 @@ public class CommandTests : TestBase
     [Fact]
     public void Command_RendersItemsWithOptionAttributes()
     {
-        var cut = RenderComponent<Command>(parameters => parameters
+        var cut = Render<Command>(parameters => parameters
             .Add(p => p.Items, CreateItems()));
 
         var items = cut.FindAll(".command-item");
@@ -60,7 +60,7 @@ public class CommandTests : TestBase
     [Fact]
     public void Command_SelectsFirstEnabledItem_OnFocus()
     {
-        var cut = RenderComponent<Command>(parameters => parameters
+        var cut = Render<Command>(parameters => parameters
             .Add(p => p.Items, CreateItemsWithDisabledFirst()));
 
         cut.Find("input").Focus();
@@ -74,7 +74,7 @@ public class CommandTests : TestBase
     [Fact]
     public void Command_FiltersItemsByLabel()
     {
-        var cut = RenderComponent<Command>(parameters => parameters
+        var cut = Render<Command>(parameters => parameters
             .Add(p => p.Items, CreateItems()));
 
         cut.Find("input").Input("open");
@@ -87,7 +87,7 @@ public class CommandTests : TestBase
     [Fact]
     public void Command_FiltersItemsByValue()
     {
-        var cut = RenderComponent<Command>(parameters => parameters
+        var cut = Render<Command>(parameters => parameters
             .Add(p => p.Items, CreateItems()));
 
         cut.Find("input").Input("settings");
@@ -100,7 +100,7 @@ public class CommandTests : TestBase
     [Fact]
     public void Command_RendersEmptyState_WhenNoItemsMatch()
     {
-        var cut = RenderComponent<Command>(parameters => parameters
+        var cut = Render<Command>(parameters => parameters
             .Add(p => p.Items, CreateItems()));
 
         cut.Find("input").Input("missing");
@@ -112,7 +112,7 @@ public class CommandTests : TestBase
     [Fact]
     public void Command_ArrowDownSkipsDisabledItems()
     {
-        var cut = RenderComponent<Command>(parameters => parameters
+        var cut = Render<Command>(parameters => parameters
             .Add(p => p.Items, CreateItems()));
 
         cut.Find("input").Focus();
@@ -126,7 +126,7 @@ public class CommandTests : TestBase
     [Fact]
     public void Command_HomeAndEndMoveToEnabledBounds()
     {
-        var cut = RenderComponent<Command>(parameters => parameters
+        var cut = Render<Command>(parameters => parameters
             .Add(p => p.Items, CreateItemsWithDisabledBounds()));
 
         cut.Find("input").Focus();
@@ -145,7 +145,7 @@ public class CommandTests : TestBase
     public void Command_EnterSelectsHighlightedItemAndClearsInput()
     {
         Command.CommandItem? selected = null;
-        var cut = RenderComponent<Command>(parameters => parameters
+        var cut = Render<Command>(parameters => parameters
             .Add(p => p.Items, CreateItems())
             .Add(p => p.ItemSelected, item => selected = item));
 
@@ -162,7 +162,7 @@ public class CommandTests : TestBase
     public void Command_ClickSelectsEnabledItem()
     {
         Command.CommandItem? selected = null;
-        var cut = RenderComponent<Command>(parameters => parameters
+        var cut = Render<Command>(parameters => parameters
             .Add(p => p.Items, CreateItems())
             .Add(p => p.ItemSelected, item => selected = item));
 
@@ -176,7 +176,7 @@ public class CommandTests : TestBase
     public void Command_ClickDoesNotSelectDisabledItem()
     {
         Command.CommandItem? selected = null;
-        var cut = RenderComponent<Command>(parameters => parameters
+        var cut = Render<Command>(parameters => parameters
             .Add(p => p.Items, CreateItems())
             .Add(p => p.ItemSelected, item => selected = item));
 
@@ -188,7 +188,7 @@ public class CommandTests : TestBase
     [Fact]
     public void Command_EscapeClearsInput()
     {
-        var cut = RenderComponent<Command>(parameters => parameters
+        var cut = Render<Command>(parameters => parameters
             .Add(p => p.Items, CreateItems()));
 
         cut.Find("input").Input("open");
@@ -200,7 +200,7 @@ public class CommandTests : TestBase
     [Fact]
     public void Command_PreservesAdditionalAttributes()
     {
-        var cut = RenderComponent<Command>(parameters => parameters
+        var cut = Render<Command>(parameters => parameters
             .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
             {
                 ["data-testid"] = "command",

@@ -6,7 +6,7 @@ public class ResizableTests : TestBase
     public void Resizable_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Resizable>();
+        var cut = Render<Resizable>();
 
         // Assert
         var resizable = cut.Find(".vibe-resizable");
@@ -17,7 +17,7 @@ public class ResizableTests : TestBase
     public void Resizable_Renders_Panel()
     {
         // Act
-        var cut = RenderComponent<Resizable>();
+        var cut = Render<Resizable>();
 
         // Assert
         var panel = cut.Find(".resizable-panel");
@@ -28,7 +28,7 @@ public class ResizableTests : TestBase
     public void Resizable_Renders_Handle()
     {
         // Act
-        var cut = RenderComponent<Resizable>();
+        var cut = Render<Resizable>();
 
         // Assert
         var handle = cut.Find(".resizable-handle");
@@ -39,7 +39,7 @@ public class ResizableTests : TestBase
     public void Resizable_Applies_HorizontalDirection_ByDefault()
     {
         // Act
-        var cut = RenderComponent<Resizable>();
+        var cut = Render<Resizable>();
 
         // Assert
         var handle = cut.Find(".resizable-handle");
@@ -50,7 +50,7 @@ public class ResizableTests : TestBase
     public void Resizable_Applies_VerticalDirection()
     {
         // Act
-        var cut = RenderComponent<Resizable>(parameters => parameters
+        var cut = Render<Resizable>(parameters => parameters
             .Add(p => p.Direction, Resizable.ResizableDirection.Vertical));
 
         // Assert
@@ -65,7 +65,7 @@ public class ResizableTests : TestBase
         var defaultWidth = 400.0;
 
         // Act
-        var cut = RenderComponent<Resizable>(parameters => parameters
+        var cut = Render<Resizable>(parameters => parameters
             .Add(p => p.DefaultWidth, defaultWidth));
 
         // Assert
@@ -80,7 +80,7 @@ public class ResizableTests : TestBase
         var defaultHeight = 300.0;
 
         // Act
-        var cut = RenderComponent<Resizable>(parameters => parameters
+        var cut = Render<Resizable>(parameters => parameters
             .Add(p => p.Direction, Resizable.ResizableDirection.Vertical)
             .Add(p => p.DefaultHeight, defaultHeight));
 
@@ -96,7 +96,7 @@ public class ResizableTests : TestBase
         var content = "Resizable Content";
 
         // Act
-        var cut = RenderComponent<Resizable>(parameters => parameters
+        var cut = Render<Resizable>(parameters => parameters
             .Add(p => p.ChildContent, builder => builder.AddContent(0, content)));
 
         // Assert
@@ -108,7 +108,7 @@ public class ResizableTests : TestBase
     public void Resizable_Renders_HandleBar()
     {
         // Act
-        var cut = RenderComponent<Resizable>();
+        var cut = Render<Resizable>();
 
         // Assert
         var handleBar = cut.Find(".resizable-handle-bar");
@@ -123,7 +123,7 @@ public class ResizableTests : TestBase
         var maxWidth = 600.0;
 
         // Act
-        var cut = RenderComponent<Resizable>(parameters => parameters
+        var cut = Render<Resizable>(parameters => parameters
             .Add(p => p.MinWidth, minWidth)
             .Add(p => p.MaxWidth, maxWidth));
 

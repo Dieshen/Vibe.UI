@@ -5,7 +5,7 @@ public class ContainerTests : TestBase
     [Fact]
     public void Container_RendersDefaultSizeAndContent()
     {
-        var cut = RenderComponent<Container>(parameters => parameters
+        var cut = Render<Container>(parameters => parameters
             .AddChildContent("<span class='inside'>Content</span>"));
 
         var container = cut.Find(".vibe-container");
@@ -16,7 +16,7 @@ public class ContainerTests : TestBase
     [Fact]
     public void Container_AppliesConfiguredSize()
     {
-        var cut = RenderComponent<Container>(parameters => parameters
+        var cut = Render<Container>(parameters => parameters
             .Add(p => p.MaxWidth, Container.ContainerSize.XXLarge));
 
         cut.Find(".vibe-container").ClassList.ShouldContain("vibe-container-2xl");
@@ -25,7 +25,7 @@ public class ContainerTests : TestBase
     [Fact]
     public void Container_FluidOverridesMaxWidth()
     {
-        var cut = RenderComponent<Container>(parameters => parameters
+        var cut = Render<Container>(parameters => parameters
             .Add(p => p.Fluid, true)
             .Add(p => p.MaxWidth, Container.ContainerSize.Small));
 
@@ -37,7 +37,7 @@ public class ContainerTests : TestBase
     [Fact]
     public void Container_AppliesPaddingAndUncenteredStyles()
     {
-        var cut = RenderComponent<Container>(parameters => parameters
+        var cut = Render<Container>(parameters => parameters
             .Add(p => p.Padding, "2rem")
             .Add(p => p.Centered, false));
 
@@ -50,7 +50,7 @@ public class ContainerTests : TestBase
     [Fact]
     public void Container_PreservesCustomClassAndAttributes()
     {
-        var cut = RenderComponent<Container>(parameters => parameters
+        var cut = Render<Container>(parameters => parameters
             .Add(p => p.Class, "dashboard-shell")
             .AddUnmatched("data-testid", "container"));
 

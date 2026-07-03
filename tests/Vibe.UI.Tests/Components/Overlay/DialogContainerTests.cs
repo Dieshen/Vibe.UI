@@ -7,7 +7,7 @@ public class DialogContainerTests : TestBase
     [Fact]
     public void DialogContainer_DoesNotRenderDialogInitially()
     {
-        var cut = RenderComponent<DialogContainer>();
+        var cut = Render<DialogContainer>();
 
         cut.FindAll(".vibe-dialog-host").ShouldBeEmpty();
     }
@@ -16,7 +16,7 @@ public class DialogContainerTests : TestBase
     public void DialogContainer_RendersDialogWhenServiceOpens()
     {
         var service = Services.GetRequiredService<IDialogService>();
-        var cut = RenderComponent<DialogContainer>();
+        var cut = Render<DialogContainer>();
 
         _ = service.ShowCustomAsync("Confirm", builder => builder.AddContent(0, "Confirm body"));
 
@@ -35,7 +35,7 @@ public class DialogContainerTests : TestBase
     public void DialogContainer_CloseButtonClosesServiceDialog()
     {
         var service = Services.GetRequiredService<IDialogService>();
-        var cut = RenderComponent<DialogContainer>();
+        var cut = Render<DialogContainer>();
         var task = service.ShowCustomAsync("Closable", builder => builder.AddContent(0, "Body"));
         cut.WaitForAssertion(() => cut.Find(".vibe-dialog-close").ShouldNotBeNull());
 
@@ -49,7 +49,7 @@ public class DialogContainerTests : TestBase
     public void DialogContainer_BackdropClickHonorsCloseSetting()
     {
         var service = Services.GetRequiredService<IDialogService>();
-        var cut = RenderComponent<DialogContainer>(parameters => parameters
+        var cut = Render<DialogContainer>(parameters => parameters
             .Add(p => p.CloseOnBackdropClick, false));
 
         _ = service.ShowCustomAsync("Sticky", builder => builder.AddContent(0, "Body"));
@@ -64,7 +64,7 @@ public class DialogContainerTests : TestBase
     public void DialogContainer_HidesCloseButtonWhenDisabled()
     {
         var service = Services.GetRequiredService<IDialogService>();
-        var cut = RenderComponent<DialogContainer>(parameters => parameters
+        var cut = Render<DialogContainer>(parameters => parameters
             .Add(p => p.ShowCloseButton, false));
 
         _ = service.ShowCustomAsync("No Close", builder => builder.AddContent(0, "Body"));
@@ -77,7 +77,7 @@ public class DialogContainerTests : TestBase
     public void DialogContainer_PreservesCustomClassAndAttributes()
     {
         var service = Services.GetRequiredService<IDialogService>();
-        var cut = RenderComponent<DialogContainer>(parameters => parameters
+        var cut = Render<DialogContainer>(parameters => parameters
             .Add(p => p.Class, "global-dialog-host")
             .AddUnmatched("data-host", "dialog"));
 

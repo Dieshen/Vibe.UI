@@ -5,7 +5,7 @@ public class ComboboxTests : TestBase
     [Fact]
     public void Combobox_RendersDefaultInputAndBaseClass()
     {
-        var cut = RenderComponent<Combobox>();
+        var cut = Render<Combobox>();
 
         var root = cut.Find(".vibe-combobox");
         root.ShouldNotBeNull();
@@ -18,7 +18,7 @@ public class ComboboxTests : TestBase
     [Fact]
     public void Combobox_AppliesCustomClass()
     {
-        var cut = RenderComponent<Combobox>(parameters => parameters
+        var cut = Render<Combobox>(parameters => parameters
             .Add(p => p.Class, "custom-combobox"));
 
         cut.Find(".vibe-combobox").ClassList.ShouldContain("custom-combobox");
@@ -27,7 +27,7 @@ public class ComboboxTests : TestBase
     [Fact]
     public void Combobox_OpensAndRendersEnabledOptions_OnFocus()
     {
-        var cut = RenderComponent<Combobox>(parameters => parameters
+        var cut = Render<Combobox>(parameters => parameters
             .Add(p => p.Options, CreateOptions()));
 
         cut.Find("input").Focus();
@@ -40,7 +40,7 @@ public class ComboboxTests : TestBase
     [Fact]
     public void Combobox_FiltersOptions_OnInput()
     {
-        var cut = RenderComponent<Combobox>(parameters => parameters
+        var cut = Render<Combobox>(parameters => parameters
             .Add(p => p.Options, CreateOptions()));
 
         cut.Find("input").Focus();
@@ -54,7 +54,7 @@ public class ComboboxTests : TestBase
     [Fact]
     public void Combobox_RendersEmptyState_WhenNoOptionsMatch()
     {
-        var cut = RenderComponent<Combobox>(parameters => parameters
+        var cut = Render<Combobox>(parameters => parameters
             .Add(p => p.Options, CreateOptions()));
 
         cut.Find("input").Focus();
@@ -68,7 +68,7 @@ public class ComboboxTests : TestBase
     public void Combobox_SelectsOptionAndClosesDropdown()
     {
         string? changedValue = null;
-        var cut = RenderComponent<Combobox>(parameters => parameters
+        var cut = Render<Combobox>(parameters => parameters
             .Add(p => p.Options, CreateOptions())
             .Add(p => p.ValueChanged, value => changedValue = value));
 
@@ -83,7 +83,7 @@ public class ComboboxTests : TestBase
     [Fact]
     public void Combobox_InitialValueUsesMatchingOptionLabel()
     {
-        var cut = RenderComponent<Combobox>(parameters => parameters
+        var cut = Render<Combobox>(parameters => parameters
             .Add(p => p.Options, CreateOptions())
             .Add(p => p.Value, "gamma"));
 
@@ -93,7 +93,7 @@ public class ComboboxTests : TestBase
     [Fact]
     public void Combobox_AllowFreeTextUsesUnmatchedValue()
     {
-        var cut = RenderComponent<Combobox>(parameters => parameters
+        var cut = Render<Combobox>(parameters => parameters
             .Add(p => p.Options, CreateOptions())
             .Add(p => p.Value, "Custom")
             .Add(p => p.AllowFreeText, true));
@@ -105,7 +105,7 @@ public class ComboboxTests : TestBase
     public void Combobox_EnterSelectsHighlightedOption()
     {
         string? changedValue = null;
-        var cut = RenderComponent<Combobox>(parameters => parameters
+        var cut = Render<Combobox>(parameters => parameters
             .Add(p => p.Options, CreateOptions())
             .Add(p => p.ValueChanged, value => changedValue = value));
 
@@ -120,7 +120,7 @@ public class ComboboxTests : TestBase
     public void Combobox_EnterSubmitsFreeText_WhenOpenWithoutHighlightedOption()
     {
         string? changedValue = null;
-        var cut = RenderComponent<Combobox>(parameters => parameters
+        var cut = Render<Combobox>(parameters => parameters
             .Add(p => p.Options, CreateOptions())
             .Add(p => p.AllowFreeText, true)
             .Add(p => p.ValueChanged, value => changedValue = value));
@@ -135,7 +135,7 @@ public class ComboboxTests : TestBase
     [Fact]
     public void Combobox_EscapeClosesDropdown()
     {
-        var cut = RenderComponent<Combobox>(parameters => parameters
+        var cut = Render<Combobox>(parameters => parameters
             .Add(p => p.Options, CreateOptions()));
 
         cut.Find("input").Focus();
@@ -149,7 +149,7 @@ public class ComboboxTests : TestBase
     [Fact]
     public void Combobox_BackdropClosesDropdown()
     {
-        var cut = RenderComponent<Combobox>(parameters => parameters
+        var cut = Render<Combobox>(parameters => parameters
             .Add(p => p.Options, CreateOptions()));
 
         cut.Find("input").Focus();

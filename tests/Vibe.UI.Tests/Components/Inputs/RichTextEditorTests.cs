@@ -6,7 +6,7 @@ public class RichTextEditorTests : TestBase
     public void RichTextEditor_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<RichTextEditor>();
+        var cut = Render<RichTextEditor>();
 
         // Assert
         cut.Find(".vibe-richtext").ShouldNotBeNull();
@@ -16,7 +16,7 @@ public class RichTextEditorTests : TestBase
     public void RichTextEditor_Renders_Toolbar_ByDefault()
     {
         // Act
-        var cut = RenderComponent<RichTextEditor>(parameters => parameters
+        var cut = Render<RichTextEditor>(parameters => parameters
             .Add(p => p.ShowToolbar, true));
 
         // Assert
@@ -27,7 +27,7 @@ public class RichTextEditorTests : TestBase
     public void RichTextEditor_Hides_Toolbar_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<RichTextEditor>(parameters => parameters
+        var cut = Render<RichTextEditor>(parameters => parameters
             .Add(p => p.ShowToolbar, false));
 
         // Assert
@@ -38,7 +38,7 @@ public class RichTextEditorTests : TestBase
     public void RichTextEditor_Renders_EditorArea()
     {
         // Act
-        var cut = RenderComponent<RichTextEditor>();
+        var cut = Render<RichTextEditor>();
 
         // Assert
         var editor = cut.Find(".richtext-editor");
@@ -50,7 +50,7 @@ public class RichTextEditorTests : TestBase
     public void RichTextEditor_IsReadOnly_WhenReadOnlyIsTrue()
     {
         // Act
-        var cut = RenderComponent<RichTextEditor>(parameters => parameters
+        var cut = Render<RichTextEditor>(parameters => parameters
             .Add(p => p.ReadOnly, true));
 
         // Assert
@@ -63,7 +63,7 @@ public class RichTextEditorTests : TestBase
     public void RichTextEditor_Renders_ToolbarButtons()
     {
         // Act
-        var cut = RenderComponent<RichTextEditor>(parameters => parameters
+        var cut = Render<RichTextEditor>(parameters => parameters
             .Add(p => p.ShowToolbar, true));
 
         // Assert
@@ -75,7 +75,7 @@ public class RichTextEditorTests : TestBase
     public void RichTextEditor_Allows_Links_ByDefault()
     {
         // Act
-        var cut = RenderComponent<RichTextEditor>();
+        var cut = Render<RichTextEditor>();
 
         // Assert
         cut.Instance.AllowLinks.ShouldBeTrue();
@@ -85,7 +85,7 @@ public class RichTextEditorTests : TestBase
     public void RichTextEditor_Allows_Images_ByDefault()
     {
         // Act
-        var cut = RenderComponent<RichTextEditor>();
+        var cut = Render<RichTextEditor>();
 
         // Assert
         cut.Instance.AllowImages.ShouldBeTrue();
@@ -95,7 +95,7 @@ public class RichTextEditorTests : TestBase
     public void RichTextEditor_Shows_CharCount_WhenEnabled()
     {
         // Act
-        var cut = RenderComponent<RichTextEditor>(parameters => parameters
+        var cut = Render<RichTextEditor>(parameters => parameters
             .Add(p => p.ShowCharCount, true));
 
         // Assert
@@ -107,7 +107,7 @@ public class RichTextEditorTests : TestBase
     public void RichTextEditor_Hides_CharCount_ByDefault()
     {
         // Act
-        var cut = RenderComponent<RichTextEditor>(parameters => parameters
+        var cut = Render<RichTextEditor>(parameters => parameters
             .Add(p => p.ShowCharCount, false));
 
         // Assert
@@ -118,7 +118,7 @@ public class RichTextEditorTests : TestBase
     public void RichTextEditor_Has_AriaLabel()
     {
         // Act
-        var cut = RenderComponent<RichTextEditor>(parameters => parameters
+        var cut = Render<RichTextEditor>(parameters => parameters
             .Add(p => p.AriaLabel, "Document editor"));
 
         // Assert
@@ -130,7 +130,7 @@ public class RichTextEditorTests : TestBase
     public void RichTextEditor_Applies_CustomCssClass()
     {
         // Act
-        var cut = RenderComponent<RichTextEditor>(parameters => parameters
+        var cut = Render<RichTextEditor>(parameters => parameters
             .Add(p => p.CssClass, "custom-editor"));
 
         // Assert

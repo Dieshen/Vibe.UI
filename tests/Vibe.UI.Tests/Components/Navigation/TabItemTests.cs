@@ -5,7 +5,7 @@ public class TabItemTests : TestBase
     [Fact]
     public void TabItem_RendersTabPanelWithProvidedId()
     {
-        var cut = RenderComponent<TabItem>(parameters => parameters
+        var cut = Render<TabItem>(parameters => parameters
             .Add(p => p.Id, "overview")
             .AddChildContent("Overview content"));
 
@@ -19,7 +19,7 @@ public class TabItemTests : TestBase
     [Fact]
     public void TabItem_GeneratesId_WhenMissing()
     {
-        var cut = RenderComponent<TabItem>();
+        var cut = Render<TabItem>();
 
         cut.Instance.Id.ShouldNotBeNullOrWhiteSpace();
         cut.Find(".vibe-tab-item").GetAttribute("id").ShouldBe($"tabpanel-{cut.Instance.Id}");
@@ -30,7 +30,7 @@ public class TabItemTests : TestBase
     [InlineData(false, "display: none")]
     public void TabItem_UsesDisplayStyleForActiveState(bool isActive, string expectedStyle)
     {
-        var cut = RenderComponent<TabItem>(parameters => parameters
+        var cut = Render<TabItem>(parameters => parameters
             .Add(p => p.Id, "details")
             .Add(p => p.IsActive, isActive));
 
@@ -40,7 +40,7 @@ public class TabItemTests : TestBase
     [Fact]
     public void TabItem_PreservesMetadataAndAttributes()
     {
-        var cut = RenderComponent<TabItem>(parameters => parameters
+        var cut = Render<TabItem>(parameters => parameters
             .Add(p => p.Id, "settings")
             .Add(p => p.Header, "Settings")
             .Add(p => p.Icon, "gear")

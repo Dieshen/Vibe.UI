@@ -5,7 +5,7 @@ public class NavigationMenuTests : TestBase
     [Fact]
     public void NavigationMenu_RendersBaseStructure()
     {
-        var cut = RenderComponent<NavigationMenu>();
+        var cut = Render<NavigationMenu>();
 
         cut.Find("nav.vibe-navigation-menu").ShouldNotBeNull();
         cut.Find(".navigation-menu-list").ShouldNotBeNull();
@@ -14,7 +14,7 @@ public class NavigationMenuTests : TestBase
     [Fact]
     public void NavigationMenu_RendersChildContent()
     {
-        var cut = RenderComponent<NavigationMenu>(parameters => parameters
+        var cut = Render<NavigationMenu>(parameters => parameters
             .AddChildContent("<button>Products</button>"));
 
         cut.Find(".navigation-menu-list button").TextContent.ShouldBe("Products");
@@ -23,7 +23,7 @@ public class NavigationMenuTests : TestBase
     [Fact]
     public void NavigationMenu_RendersViewportContent()
     {
-        var cut = RenderComponent<NavigationMenu>(parameters => parameters
+        var cut = Render<NavigationMenu>(parameters => parameters
             .Add(p => p.ViewportContent, builder => builder.AddMarkupContent(0, "<section>Viewport</section>")));
 
         cut.Find(".navigation-menu-viewport").TextContent.ShouldContain("Viewport");
@@ -32,7 +32,7 @@ public class NavigationMenuTests : TestBase
     [Fact]
     public void NavigationMenu_DoesNotRenderViewport_WhenContentIsNull()
     {
-        var cut = RenderComponent<NavigationMenu>();
+        var cut = Render<NavigationMenu>();
 
         cut.FindAll(".navigation-menu-viewport").ShouldBeEmpty();
     }
@@ -40,7 +40,7 @@ public class NavigationMenuTests : TestBase
     [Fact]
     public async Task NavigationMenu_RendersViewportIndicator_ForRegisteredActiveItem()
     {
-        var cut = RenderComponent<NavigationMenu>();
+        var cut = Render<NavigationMenu>();
 
         await cut.InvokeAsync(() =>
         {
@@ -55,7 +55,7 @@ public class NavigationMenuTests : TestBase
     [Fact]
     public async Task NavigationMenu_DoesNotRenderViewportIndicator_ForUnregisteredActiveItem()
     {
-        var cut = RenderComponent<NavigationMenu>();
+        var cut = Render<NavigationMenu>();
 
         await cut.InvokeAsync(() => cut.Instance.ActivateItem("missing"));
 
@@ -65,7 +65,7 @@ public class NavigationMenuTests : TestBase
     [Fact]
     public async Task NavigationMenu_DeactivateItemHidesViewportIndicator()
     {
-        var cut = RenderComponent<NavigationMenu>();
+        var cut = Render<NavigationMenu>();
 
         await cut.InvokeAsync(() =>
         {
@@ -80,7 +80,7 @@ public class NavigationMenuTests : TestBase
     [Fact]
     public void NavigationMenu_AppliesCustomClass()
     {
-        var cut = RenderComponent<NavigationMenu>(parameters => parameters
+        var cut = Render<NavigationMenu>(parameters => parameters
             .Add(p => p.Class, "main-navigation"));
 
         cut.Find(".vibe-navigation-menu").ClassList.ShouldContain("main-navigation");

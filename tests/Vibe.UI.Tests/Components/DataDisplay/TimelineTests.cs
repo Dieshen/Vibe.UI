@@ -6,7 +6,7 @@ public class TimelineTests : TestBase
     public void Timeline_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Timeline>();
+        var cut = Render<Timeline>();
 
         // Assert
         cut.Find(".vibe-timeline").ShouldNotBeNull();
@@ -16,7 +16,7 @@ public class TimelineTests : TestBase
     public void Timeline_Has_DefaultLeftPosition()
     {
         // Act
-        var cut = RenderComponent<Timeline>();
+        var cut = Render<Timeline>();
 
         // Assert
         cut.Find(".vibe-timeline").ClassList.ShouldContain("timeline-left");
@@ -26,7 +26,7 @@ public class TimelineTests : TestBase
     public void Timeline_Applies_PositionClass()
     {
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.Position, Timeline.TimelinePosition.Right));
 
         // Assert
@@ -37,7 +37,7 @@ public class TimelineTests : TestBase
     public void Timeline_Renders_NoItems_WhenListIsNull()
     {
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.Items, (List<Timeline.TimelineItem>?)null));
 
         // Assert
@@ -55,7 +55,7 @@ public class TimelineTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.Items, items));
 
         // Assert
@@ -73,7 +73,7 @@ public class TimelineTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.Items, items));
 
         // Assert
@@ -91,7 +91,7 @@ public class TimelineTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.Items, items));
 
         // Assert
@@ -109,7 +109,7 @@ public class TimelineTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.Items, items));
 
         // Assert
@@ -129,7 +129,7 @@ public class TimelineTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.Items, items));
 
         // Assert
@@ -148,7 +148,7 @@ public class TimelineTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.Items, items));
 
         // Assert
@@ -166,7 +166,7 @@ public class TimelineTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.Items, items));
 
         // Assert
@@ -179,7 +179,7 @@ public class TimelineTests : TestBase
     public void Timeline_Applies_CustomCssClass()
     {
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.CssClass, "custom-timeline"));
 
         // Assert

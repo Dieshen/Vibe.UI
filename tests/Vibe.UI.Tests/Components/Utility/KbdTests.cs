@@ -5,7 +5,7 @@ public class KbdTests : TestBase
     [Fact]
     public void Kbd_RendersKeyboardElementWithDefaultSize()
     {
-        var cut = RenderComponent<Kbd>(parameters => parameters
+        var cut = Render<Kbd>(parameters => parameters
             .AddChildContent("Ctrl"));
 
         var kbd = cut.Find("kbd.vibe-kbd");
@@ -18,7 +18,7 @@ public class KbdTests : TestBase
     [InlineData(Kbd.KbdSize.Large, "kbd-large")]
     public void Kbd_AppliesConfiguredSize(Kbd.KbdSize size, string expectedClass)
     {
-        var cut = RenderComponent<Kbd>(parameters => parameters
+        var cut = Render<Kbd>(parameters => parameters
             .Add(p => p.Size, size));
 
         cut.Find(".vibe-kbd").ClassList.ShouldContain(expectedClass);
@@ -27,7 +27,7 @@ public class KbdTests : TestBase
     [Fact]
     public void Kbd_AppliesCustomCssClassAndAttributes()
     {
-        var cut = RenderComponent<Kbd>(parameters => parameters
+        var cut = Render<Kbd>(parameters => parameters
             .Add(p => p.CssClass, "shortcut-key")
             .AddUnmatched("aria-label", "Control key")
             .AddChildContent("Ctrl"));

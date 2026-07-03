@@ -6,7 +6,7 @@ public class RatingTests : TestBase
     public void Rating_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Rating>();
+        var cut = Render<Rating>();
 
         // Assert
         var rating = cut.Find(".vibe-rating");
@@ -18,7 +18,7 @@ public class RatingTests : TestBase
     public void Rating_Renders_DefaultFiveStars()
     {
         // Act
-        var cut = RenderComponent<Rating>();
+        var cut = Render<Rating>();
 
         // Assert
         var stars = cut.FindAll(".rating-star");
@@ -29,7 +29,7 @@ public class RatingTests : TestBase
     public void Rating_Renders_CustomMaxRating()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.MaxRating, 10));
 
         // Assert
@@ -41,7 +41,7 @@ public class RatingTests : TestBase
     public void Rating_Displays_CurrentValue()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Value, 3)
             .Add(p => p.MaxRating, 5));
 
@@ -54,7 +54,7 @@ public class RatingTests : TestBase
     public void Rating_ShowsValue_WhenShowValueIsTrue()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Value, 4.5)
             .Add(p => p.MaxRating, 5)
             .Add(p => p.ShowValue, true));
@@ -69,7 +69,7 @@ public class RatingTests : TestBase
     public void Rating_HidesValue_WhenShowValueIsFalse()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Value, 3)
             .Add(p => p.ShowValue, false));
 
@@ -81,7 +81,7 @@ public class RatingTests : TestBase
     public void Rating_Applies_SizeClass()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Size, Rating.RatingSize.Large));
 
         // Assert
@@ -92,7 +92,7 @@ public class RatingTests : TestBase
     public void Rating_Applies_DisabledState()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Disabled, true));
 
         // Assert
@@ -108,7 +108,7 @@ public class RatingTests : TestBase
     public void Rating_Applies_ReadOnlyState()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.ReadOnly, true));
 
         // Assert
@@ -125,7 +125,7 @@ public class RatingTests : TestBase
     {
         // Arrange
         double newValue = 0;
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Value, 0)
             .Add(p => p.ValueChanged, value => newValue = value));
 
@@ -141,7 +141,7 @@ public class RatingTests : TestBase
     public void Rating_SupportsHalfStars_WhenAllowHalfIsTrue()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Value, 2.5)
             .Add(p => p.AllowHalf, true));
 
@@ -154,7 +154,7 @@ public class RatingTests : TestBase
     public void Rating_HasAccessibilityLabel()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.AriaLabel, "Product Rating"));
 
         // Assert
@@ -167,7 +167,7 @@ public class RatingTests : TestBase
     {
         // Arrange
         double newValue = 0;
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Disabled, true)
             .Add(p => p.ValueChanged, value => newValue = value));
 
@@ -183,7 +183,7 @@ public class RatingTests : TestBase
     public void Rating_Value0_AllStarsEmpty()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Value, 0));
 
         // Assert
@@ -195,7 +195,7 @@ public class RatingTests : TestBase
     public void Rating_ValueEqualToMax_AllStarsFilled()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Value, 5)
             .Add(p => p.MaxRating, 5));
 
@@ -208,7 +208,7 @@ public class RatingTests : TestBase
     public void Rating_NegativeValue_ShowsEmpty()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Value, -1));
 
         // Assert
@@ -220,7 +220,7 @@ public class RatingTests : TestBase
     public void Rating_ValueAboveMax_ShowsAllFilled()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Value, 10)
             .Add(p => p.MaxRating, 5));
 
@@ -233,7 +233,7 @@ public class RatingTests : TestBase
     public void Rating_HalfRating_RendersHalfStar()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Value, 2.5)
             .Add(p => p.AllowHalf, true));
 
@@ -249,7 +249,7 @@ public class RatingTests : TestBase
     {
         // Arrange
         double newValue = 0;
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Value, 3)
             .Add(p => p.AllowHalf, true)
             .Add(p => p.ValueChanged, value => newValue = value));
@@ -266,7 +266,7 @@ public class RatingTests : TestBase
     public void Rating_AllowHalf_False_NoHalfStars()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Value, 2.5)
             .Add(p => p.AllowHalf, false));
 
@@ -280,7 +280,7 @@ public class RatingTests : TestBase
     {
         // Arrange
         double newValue = 0;
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Value, 2)
             .Add(p => p.ReadOnly, true)
             .Add(p => p.ValueChanged, value => newValue = value));
@@ -297,7 +297,7 @@ public class RatingTests : TestBase
     public void Rating_CustomMaxRating10_Renders10Stars()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.MaxRating, 10));
 
         // Assert
@@ -309,7 +309,7 @@ public class RatingTests : TestBase
     public void Rating_CustomMaxRating1_RendersSingleStar()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.MaxRating, 1));
 
         // Assert
@@ -321,7 +321,7 @@ public class RatingTests : TestBase
     public void Rating_ShowValue_DisplaysCurrentAndMax()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Value, 3.5)
             .Add(p => p.MaxRating, 10)
             .Add(p => p.ShowValue, true));
@@ -336,7 +336,7 @@ public class RatingTests : TestBase
     public void Rating_SizeSmall_HasSmallClass()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Size, Rating.RatingSize.Small));
 
         // Assert
@@ -347,7 +347,7 @@ public class RatingTests : TestBase
     public void Rating_SizeLarge_HasLargeClass()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Size, Rating.RatingSize.Large));
 
         // Assert
@@ -358,7 +358,7 @@ public class RatingTests : TestBase
     public void Rating_SizeDefault_HasDefaultClass()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.Size, Rating.RatingSize.Default));
 
         // Assert
@@ -369,7 +369,7 @@ public class RatingTests : TestBase
     public void Rating_DefaultAriaLabel_IsRating()
     {
         // Act
-        var cut = RenderComponent<Rating>();
+        var cut = Render<Rating>();
 
         // Assert
         var rating = cut.Find(".vibe-rating");
@@ -380,7 +380,7 @@ public class RatingTests : TestBase
     public void Rating_StarButtons_HaveAriaLabels()
     {
         // Act
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.MaxRating, 3));
 
         // Assert
@@ -395,7 +395,7 @@ public class RatingTests : TestBase
     {
         // Arrange
         double newValue = 0;
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.ValueChanged, value => newValue = value));
 
         // Act
@@ -411,7 +411,7 @@ public class RatingTests : TestBase
     {
         // Arrange
         double newValue = 0;
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.MaxRating, 7)
             .Add(p => p.ValueChanged, value => newValue = value));
 
@@ -428,7 +428,7 @@ public class RatingTests : TestBase
     {
         // Arrange
         double newValue = 0;
-        var cut = RenderComponent<Rating>(parameters => parameters
+        var cut = Render<Rating>(parameters => parameters
             .Add(p => p.ReadOnly, true)
             .Add(p => p.ValueChanged, value => newValue = value));
 
@@ -444,7 +444,7 @@ public class RatingTests : TestBase
     public void Rating_AllStarsHaveButtonType()
     {
         // Act
-        var cut = RenderComponent<Rating>();
+        var cut = Render<Rating>();
 
         // Assert
         var stars = cut.FindAll(".rating-star");

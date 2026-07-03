@@ -172,7 +172,7 @@ function Validate-CliToolPackage {
     Set-Content -LiteralPath (Join-Path $cliProject "CliConsumer.csproj") -Encoding utf8NoBOM -Value @"
 <Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
@@ -220,18 +220,18 @@ $requiredEntries = @{
         "README.css.md",
         "icon.png",
         "buildTransitive/Vibe.UI.CSS.targets",
-        "tools/net9.0/Vibe.UI.CSS.dll"
+        "tools/net10.0/Vibe.UI.CSS.dll"
     )
     "Vibe.UI" = @(
         "README.nuget.md",
         "icon.png",
-        "lib/net9.0/Vibe.UI.dll",
+        "lib/net10.0/Vibe.UI.dll",
         "staticwebassets/css/vibe-base.css"
     )
     "Vibe.UI.CLI" = @(
         "README.cli.md",
         "icon.png",
-        "tools/net9.0/any/Vibe.UI.CLI.dll",
+        "tools/net10.0/any/Vibe.UI.CLI.dll",
         "Templates/Infrastructure/ServiceCollectionExtensions.cs"
     )
 }

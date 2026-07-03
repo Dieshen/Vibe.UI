@@ -6,7 +6,7 @@ public class DatePickerTests : TestBase
     public void DatePicker_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<DatePicker>();
+        var cut = Render<DatePicker>();
 
         // Assert
         var datePicker = cut.Find(".vibe-datepicker");
@@ -20,7 +20,7 @@ public class DatePickerTests : TestBase
         var placeholder = "Select a date";
 
         // Act
-        var cut = RenderComponent<DatePicker>(parameters => parameters
+        var cut = Render<DatePicker>(parameters => parameters
             .Add(p => p.Placeholder, placeholder));
 
         // Assert - Find the actual input element within the Input component
@@ -35,7 +35,7 @@ public class DatePickerTests : TestBase
         var date = new System.DateTime(2024, 6, 15);
 
         // Act
-        var cut = RenderComponent<DatePicker>(parameters => parameters
+        var cut = Render<DatePicker>(parameters => parameters
             .Add(p => p.Date, date)
             .Add(p => p.Format, "MM/dd/yyyy"));
 
@@ -48,7 +48,7 @@ public class DatePickerTests : TestBase
     public void DatePicker_OpensCalendar_WhenInputClicked()
     {
         // Act
-        var cut = RenderComponent<DatePicker>();
+        var cut = Render<DatePicker>();
         // Click on the date-icon which has a proper click handler
         var icon = cut.Find(".date-icon");
         icon.Click();
@@ -62,7 +62,7 @@ public class DatePickerTests : TestBase
     public void DatePicker_OpensCalendar_WhenIconClicked()
     {
         // Act
-        var cut = RenderComponent<DatePicker>();
+        var cut = Render<DatePicker>();
         var icon = cut.Find(".date-icon");
         icon.Click();
 
@@ -75,7 +75,7 @@ public class DatePickerTests : TestBase
     public void DatePicker_ClosesCalendar_WhenBackdropClicked()
     {
         // Act
-        var cut = RenderComponent<DatePicker>();
+        var cut = Render<DatePicker>();
         var icon = cut.Find(".date-icon");
         icon.Click();
 
@@ -91,7 +91,7 @@ public class DatePickerTests : TestBase
     {
         // Arrange
         System.DateTime? selectedDate = null;
-        var cut = RenderComponent<DatePicker>(parameters => parameters
+        var cut = Render<DatePicker>(parameters => parameters
             .Add(p => p.OnChange, date => selectedDate = date));
 
         // Act - Use date-icon to open calendar
@@ -110,7 +110,7 @@ public class DatePickerTests : TestBase
     {
         // Arrange
         System.DateTime? selectedDate = null;
-        var cut = RenderComponent<DatePicker>(parameters => parameters
+        var cut = Render<DatePicker>(parameters => parameters
             .Add(p => p.OnChange, date => selectedDate = date));
 
         // Act - Use date-icon to open calendar
@@ -129,7 +129,7 @@ public class DatePickerTests : TestBase
     public void DatePicker_DisablesInput_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<DatePicker>(parameters => parameters
+        var cut = Render<DatePicker>(parameters => parameters
             .Add(p => p.Disabled, true));
 
         // Assert - Find the actual input element within the Input component
@@ -141,7 +141,7 @@ public class DatePickerTests : TestBase
     public void DatePicker_NavigatesBetweenMonths()
     {
         // Act
-        var cut = RenderComponent<DatePicker>();
+        var cut = Render<DatePicker>();
         var icon = cut.Find(".date-icon");
         icon.Click();
 

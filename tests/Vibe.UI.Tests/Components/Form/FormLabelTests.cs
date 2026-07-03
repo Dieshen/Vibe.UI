@@ -5,7 +5,7 @@ public class FormLabelTests : TestBase
     [Fact]
     public void FormLabel_RendersChildContentAndBaseClass()
     {
-        var cut = RenderComponent<FormLabel>(parameters => parameters
+        var cut = Render<FormLabel>(parameters => parameters
             .AddChildContent("Email"));
 
         var label = cut.Find("label");
@@ -16,7 +16,7 @@ public class FormLabelTests : TestBase
     [Fact]
     public void FormLabel_AssociatesWithControl_WhenForProvided()
     {
-        var cut = RenderComponent<FormLabel>(parameters => parameters
+        var cut = Render<FormLabel>(parameters => parameters
             .Add(p => p.For, "email-input")
             .AddChildContent("Email"));
 
@@ -26,7 +26,7 @@ public class FormLabelTests : TestBase
     [Fact]
     public void FormLabel_OmitsForAttribute_WhenForIsNull()
     {
-        var cut = RenderComponent<FormLabel>(parameters => parameters
+        var cut = Render<FormLabel>(parameters => parameters
             .Add(p => p.For, null)
             .AddChildContent("Email"));
 
@@ -36,7 +36,7 @@ public class FormLabelTests : TestBase
     [Fact]
     public void FormLabel_RendersRequiredIndicator_WhenRequired()
     {
-        var cut = RenderComponent<FormLabel>(parameters => parameters
+        var cut = Render<FormLabel>(parameters => parameters
             .Add(p => p.Required, true)
             .AddChildContent("Email"));
 
@@ -48,7 +48,7 @@ public class FormLabelTests : TestBase
     [Fact]
     public void FormLabel_ForwardsAdditionalAttributes()
     {
-        var cut = RenderComponent<FormLabel>(parameters => parameters
+        var cut = Render<FormLabel>(parameters => parameters
             .AddUnmatched("data-testid", "email-label")
             .AddChildContent("Email"));
 

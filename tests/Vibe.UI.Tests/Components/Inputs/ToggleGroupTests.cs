@@ -6,7 +6,7 @@ public class ToggleGroupTests : TestBase
     public void ToggleGroup_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<ToggleGroup>(parameters => parameters
+        var cut = Render<ToggleGroup>(parameters => parameters
             .AddChildContent("<div>Items</div>"));
 
         // Assert
@@ -17,7 +17,7 @@ public class ToggleGroupTests : TestBase
     public void ToggleGroup_Has_GroupRole()
     {
         // Act
-        var cut = RenderComponent<ToggleGroup>(parameters => parameters
+        var cut = Render<ToggleGroup>(parameters => parameters
             .AddChildContent("<div>Items</div>"));
 
         // Assert
@@ -29,7 +29,7 @@ public class ToggleGroupTests : TestBase
     public void ToggleGroup_Has_SingleType_ByDefault()
     {
         // Act
-        var cut = RenderComponent<ToggleGroup>(parameters => parameters
+        var cut = Render<ToggleGroup>(parameters => parameters
             .AddChildContent("<div>Items</div>"));
 
         // Assert
@@ -40,7 +40,7 @@ public class ToggleGroupTests : TestBase
     public void ToggleGroup_Accepts_MultipleType()
     {
         // Act
-        var cut = RenderComponent<ToggleGroup>(parameters => parameters
+        var cut = Render<ToggleGroup>(parameters => parameters
             .Add(p => p.Type, ToggleGroup.ToggleGroupType.Multiple)
             .AddChildContent("<div>Items</div>"));
 
@@ -52,7 +52,7 @@ public class ToggleGroupTests : TestBase
     public void ToggleGroup_Has_HorizontalOrientation_ByDefault()
     {
         // Act
-        var cut = RenderComponent<ToggleGroup>(parameters => parameters
+        var cut = Render<ToggleGroup>(parameters => parameters
             .AddChildContent("<div>Items</div>"));
 
         // Assert
@@ -63,7 +63,7 @@ public class ToggleGroupTests : TestBase
     public void ToggleGroup_Applies_VerticalOrientation()
     {
         // Act
-        var cut = RenderComponent<ToggleGroup>(parameters => parameters
+        var cut = Render<ToggleGroup>(parameters => parameters
             .Add(p => p.Orientation, ToggleGroup.ToggleGroupOrientation.Vertical)
             .AddChildContent("<div>Items</div>"));
 
@@ -75,7 +75,7 @@ public class ToggleGroupTests : TestBase
     public void ToggleGroup_Applies_SizeClass()
     {
         // Act
-        var cut = RenderComponent<ToggleGroup>(parameters => parameters
+        var cut = Render<ToggleGroup>(parameters => parameters
             .Add(p => p.Size, ToggleGroup.ToggleGroupSize.Large)
             .AddChildContent("<div>Items</div>"));
 
@@ -87,7 +87,7 @@ public class ToggleGroupTests : TestBase
     public void ToggleGroup_Applies_DisabledClass()
     {
         // Act
-        var cut = RenderComponent<ToggleGroup>(parameters => parameters
+        var cut = Render<ToggleGroup>(parameters => parameters
             .Add(p => p.Disabled, true)
             .AddChildContent("<div>Items</div>"));
 
@@ -99,7 +99,7 @@ public class ToggleGroupTests : TestBase
     public void ToggleGroup_Has_AriaLabel()
     {
         // Act
-        var cut = RenderComponent<ToggleGroup>(parameters => parameters
+        var cut = Render<ToggleGroup>(parameters => parameters
             .Add(p => p.AriaLabel, "Toggle options")
             .AddChildContent("<div>Items</div>"));
 
@@ -112,7 +112,7 @@ public class ToggleGroupTests : TestBase
     public void ToggleGroup_Accepts_Value_InSingleMode()
     {
         // Arrange & Act
-        var cut = RenderComponent<ToggleGroup>(parameters => parameters
+        var cut = Render<ToggleGroup>(parameters => parameters
             .Add(p => p.Type, ToggleGroup.ToggleGroupType.Single)
             .Add(p => p.Value, "item1")
             .AddChildContent("<div>Items</div>"));
@@ -128,7 +128,7 @@ public class ToggleGroupTests : TestBase
         var values = new List<string> { "item1", "item2" };
 
         // Act
-        var cut = RenderComponent<ToggleGroup>(parameters => parameters
+        var cut = Render<ToggleGroup>(parameters => parameters
             .Add(p => p.Type, ToggleGroup.ToggleGroupType.Multiple)
             .Add(p => p.Values, values)
             .AddChildContent("<div>Items</div>"));
@@ -142,7 +142,7 @@ public class ToggleGroupTests : TestBase
     public void ToggleGroup_Applies_CustomCssClass()
     {
         // Act
-        var cut = RenderComponent<ToggleGroup>(parameters => parameters
+        var cut = Render<ToggleGroup>(parameters => parameters
             .Add(p => p.CssClass, "custom-toggle-group")
             .AddChildContent("<div>Items</div>"));
 

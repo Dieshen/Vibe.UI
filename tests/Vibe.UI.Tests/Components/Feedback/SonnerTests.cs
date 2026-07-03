@@ -6,7 +6,7 @@ public class SonnerTests : TestBase
     public void Sonner_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Sonner>();
+        var cut = Render<Sonner>();
 
         // Assert
         var sonner = cut.Find(".sonner-container");
@@ -17,7 +17,7 @@ public class SonnerTests : TestBase
     public void Sonner_Applies_PositionClass()
     {
         // Act
-        var cut = RenderComponent<Sonner>(parameters => parameters
+        var cut = Render<Sonner>(parameters => parameters
             .Add(p => p.Position, Sonner.SonnerPosition.TopRight));
 
         // Assert
@@ -29,7 +29,7 @@ public class SonnerTests : TestBase
     public void Sonner_Applies_RichColorsClass_WhenEnabled()
     {
         // Act
-        var cut = RenderComponent<Sonner>(parameters => parameters
+        var cut = Render<Sonner>(parameters => parameters
             .Add(p => p.RichColors, true));
 
         // Assert
@@ -41,7 +41,7 @@ public class SonnerTests : TestBase
     public void Sonner_DoesNotApply_RichColorsClass_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<Sonner>(parameters => parameters
+        var cut = Render<Sonner>(parameters => parameters
             .Add(p => p.RichColors, false));
 
         // Assert
@@ -53,7 +53,7 @@ public class SonnerTests : TestBase
     public void Sonner_InitiallyEmpty()
     {
         // Act
-        var cut = RenderComponent<Sonner>();
+        var cut = Render<Sonner>();
 
         // Assert
         var toasts = cut.FindAll(".sonner-toast");
@@ -64,7 +64,7 @@ public class SonnerTests : TestBase
     public void Sonner_ShowsToast_AfterToastMethodCalled()
     {
         // Act
-        var cut = RenderComponent<Sonner>();
+        var cut = Render<Sonner>();
         cut.Instance.Toast("Test message");
         cut.Render();
 
@@ -77,7 +77,7 @@ public class SonnerTests : TestBase
     public void Sonner_ShowsSuccessToast()
     {
         // Act
-        var cut = RenderComponent<Sonner>();
+        var cut = Render<Sonner>();
         cut.Instance.Success("Success message");
         cut.Render();
 
@@ -90,7 +90,7 @@ public class SonnerTests : TestBase
     public void Sonner_ShowsErrorToast()
     {
         // Act
-        var cut = RenderComponent<Sonner>();
+        var cut = Render<Sonner>();
         cut.Instance.Error("Error message");
         cut.Render();
 
@@ -103,7 +103,7 @@ public class SonnerTests : TestBase
     public void Sonner_ShowsWarningToast()
     {
         // Act
-        var cut = RenderComponent<Sonner>();
+        var cut = Render<Sonner>();
         cut.Instance.Warning("Warning message");
         cut.Render();
 
@@ -116,7 +116,7 @@ public class SonnerTests : TestBase
     public void Sonner_ShowsInfoToast()
     {
         // Act
-        var cut = RenderComponent<Sonner>();
+        var cut = Render<Sonner>();
         cut.Instance.Info("Info message");
         cut.Render();
 
@@ -129,7 +129,7 @@ public class SonnerTests : TestBase
     public void Sonner_ShowsLoadingToast()
     {
         // Act
-        var cut = RenderComponent<Sonner>();
+        var cut = Render<Sonner>();
         cut.Instance.Loading("Loading...");
         cut.Render();
 
@@ -145,7 +145,7 @@ public class SonnerTests : TestBase
         var maxToasts = 3;
 
         // Act
-        var cut = RenderComponent<Sonner>(parameters => parameters
+        var cut = Render<Sonner>(parameters => parameters
             .Add(p => p.MaxToasts, maxToasts));
 
         for (int i = 0; i < 5; i++)

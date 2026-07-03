@@ -6,7 +6,7 @@ public class SkeletonTests : TestBase
     public void Skeleton_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Skeleton>();
+        var cut = Render<Skeleton>();
 
         // Assert
         var skeleton = cut.Find(".vibe-skeleton");
@@ -20,7 +20,7 @@ public class SkeletonTests : TestBase
         var width = "200px";
 
         // Act
-        var cut = RenderComponent<Skeleton>(parameters => parameters
+        var cut = Render<Skeleton>(parameters => parameters
             .Add(p => p.Width, width));
 
         // Assert
@@ -35,7 +35,7 @@ public class SkeletonTests : TestBase
         var height = "50px";
 
         // Act
-        var cut = RenderComponent<Skeleton>(parameters => parameters
+        var cut = Render<Skeleton>(parameters => parameters
             .Add(p => p.Height, height));
 
         // Assert
@@ -47,7 +47,7 @@ public class SkeletonTests : TestBase
     public void Skeleton_Applies_RoundedClass()
     {
         // Act
-        var cut = RenderComponent<Skeleton>(parameters => parameters
+        var cut = Render<Skeleton>(parameters => parameters
             .Add(p => p.Rounded, true));
 
         // Assert
@@ -59,7 +59,7 @@ public class SkeletonTests : TestBase
     public void Skeleton_Applies_CircleClass()
     {
         // Act
-        var cut = RenderComponent<Skeleton>(parameters => parameters
+        var cut = Render<Skeleton>(parameters => parameters
             .Add(p => p.Circle, true));
 
         // Assert
@@ -71,7 +71,7 @@ public class SkeletonTests : TestBase
     public void Skeleton_DoesNotApply_RoundedClass_WhenFalse()
     {
         // Act
-        var cut = RenderComponent<Skeleton>(parameters => parameters
+        var cut = Render<Skeleton>(parameters => parameters
             .Add(p => p.Rounded, false));
 
         // Assert
@@ -83,7 +83,7 @@ public class SkeletonTests : TestBase
     public void Skeleton_Applies_DefaultDimensions()
     {
         // Act
-        var cut = RenderComponent<Skeleton>();
+        var cut = Render<Skeleton>();
 
         // Assert
         var skeleton = cut.Find(".vibe-skeleton");
@@ -96,7 +96,7 @@ public class SkeletonTests : TestBase
     public void Skeleton_Applies_BothRoundedAndCircle()
     {
         // Act
-        var cut = RenderComponent<Skeleton>(parameters => parameters
+        var cut = Render<Skeleton>(parameters => parameters
             .Add(p => p.Rounded, true)
             .Add(p => p.Circle, true));
 

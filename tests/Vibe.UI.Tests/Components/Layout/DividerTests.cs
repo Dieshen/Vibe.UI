@@ -5,7 +5,7 @@ public class DividerTests : TestBase
     [Fact]
     public void Divider_RendersHorizontalRuleByDefault()
     {
-        var cut = RenderComponent<Divider>();
+        var cut = Render<Divider>();
 
         var divider = cut.Find("hr.vibe-divider");
         divider.ClassList.ShouldContain("vibe-divider-horizontal");
@@ -14,7 +14,7 @@ public class DividerTests : TestBase
     [Fact]
     public void Divider_AppliesVerticalAndDottedClasses()
     {
-        var cut = RenderComponent<Divider>(parameters => parameters
+        var cut = Render<Divider>(parameters => parameters
             .Add(p => p.Orientation, Divider.DividerOrientation.Vertical)
             .Add(p => p.LineStyle, Divider.DividerLineStyle.Dotted));
 
@@ -26,7 +26,7 @@ public class DividerTests : TestBase
     [Fact]
     public void Divider_AppliesThicknessStyle_WhenGreaterThanOne()
     {
-        var cut = RenderComponent<Divider>(parameters => parameters
+        var cut = Render<Divider>(parameters => parameters
             .Add(p => p.Thickness, 3));
 
         cut.Find(".vibe-divider").GetAttribute("style").ShouldBe("border-width: 3px");
@@ -35,7 +35,7 @@ public class DividerTests : TestBase
     [Fact]
     public void Divider_RendersLabelInsteadOfHr_WhenLabelProvided()
     {
-        var cut = RenderComponent<Divider>(parameters => parameters
+        var cut = Render<Divider>(parameters => parameters
             .Add(p => p.Label, "Details")
             .Add(p => p.LabelPosition, Divider.DividerLabelPosition.Left));
 
@@ -48,7 +48,7 @@ public class DividerTests : TestBase
     [Fact]
     public void Divider_PreservesCustomClassAndAttributes()
     {
-        var cut = RenderComponent<Divider>(parameters => parameters
+        var cut = Render<Divider>(parameters => parameters
             .Add(p => p.Class, "section-rule")
             .AddUnmatched("aria-hidden", "true"));
 

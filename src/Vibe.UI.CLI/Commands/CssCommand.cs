@@ -53,7 +53,10 @@ public class CssCommand : AsyncCommand<CssCommand.Settings>
         public string Patterns { get; init; } = "*.razor,*.cshtml,*.html";
     }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    public Task<int> ExecuteAsync(CommandContext context, Settings settings) =>
+        ExecuteAsync(context, settings, CancellationToken.None);
+
+    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         var projectPath = Path.GetFullPath(settings.ProjectPath);
 

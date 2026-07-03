@@ -6,7 +6,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>();
+        var cut = Render<ValidatedInput<string>>();
 
         // Assert
         var input = cut.Find(".vibe-validated-input");
@@ -17,7 +17,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_Renders_Label()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Label, "Email"));
 
         // Assert
@@ -29,7 +29,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_Shows_RequiredIndicator()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Label, "Email")
             .Add(p => p.Required, true));
 
@@ -42,7 +42,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_Applies_Placeholder()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Placeholder, "Enter your email"));
 
         // Assert
@@ -54,7 +54,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_Applies_Disabled()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Disabled, true));
 
         // Assert
@@ -67,7 +67,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_Applies_ReadOnly()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.ReadOnly, true));
 
         // Assert
@@ -79,7 +79,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_Shows_HelperText()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.HelperText, "We'll never share your email"));
 
         // Assert
@@ -91,7 +91,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_Shows_ErrorMessage()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.ErrorMessage, "Email is required"));
 
         // Assert
@@ -103,7 +103,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_Hides_HelperText_WhenErrorExists()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.HelperText, "Help text")
             .Add(p => p.ErrorMessage, "Error text"));
 
@@ -116,7 +116,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_Supports_InputTypes()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.InputType, "email"));
 
         // Assert
@@ -128,7 +128,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_Applies_CustomCssClass()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.CssClass, "custom-input"));
 
         // Assert
@@ -140,7 +140,7 @@ public class ValidatedInputTests : TestBase
     {
         // Arrange
         string? newValue = null;
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.ValueChanged, value => newValue = value));
 
         // Act
@@ -157,7 +157,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_RequiredValidation_ShowsError_WhenEmpty()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Label, "Email")
             .Add(p => p.Required, true)
             .Add(p => p.ValidateOnBlur, true));
@@ -175,7 +175,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_RequiredValidation_ShowsError_WithNullValue()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Label, "Name")
             .Add(p => p.Required, true)
             .Add(p => p.Value, null)
@@ -192,7 +192,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_RequiredValidation_ShowsError_WithWhitespaceOnly()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Label, "Username")
             .Add(p => p.Required, true)
             .Add(p => p.ValidateOnInput, true));
@@ -211,7 +211,7 @@ public class ValidatedInputTests : TestBase
         Func<string?, string?> validator = value =>
             value?.Length < 5 ? "Must be at least 5 characters" : null;
 
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Validator, validator)
             .Add(p => p.ValidateOnInput, true));
 
@@ -231,7 +231,7 @@ public class ValidatedInputTests : TestBase
         Func<string?, string?> validator = value =>
             value?.Length < 5 ? "Must be at least 5 characters" : null;
 
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Validator, validator)
             .Add(p => p.ValidateOnInput, true));
 
@@ -251,7 +251,7 @@ public class ValidatedInputTests : TestBase
         Func<string?, string?> validator = value =>
             value?.Contains("@") == false ? "Must contain @" : null;
 
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Label, "Email")
             .Add(p => p.Required, true)
             .Add(p => p.Validator, validator)
@@ -273,7 +273,7 @@ public class ValidatedInputTests : TestBase
         Func<string?, string?> validator = value =>
             value?.Contains("@") == false ? "Must contain @" : null;
 
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Required, true)
             .Add(p => p.Validator, validator)
             .Add(p => p.ValidateOnInput, true));
@@ -298,7 +298,7 @@ public class ValidatedInputTests : TestBase
         var longString = new string('a', 10000);
         string? capturedValue = null;
 
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.ValueChanged, value => capturedValue = value));
 
         // Act
@@ -316,7 +316,7 @@ public class ValidatedInputTests : TestBase
         var specialChars = "!@#$%^&*()_+-={}[]|\\:;\"'<>,.?/~`";
         string? capturedValue = null;
 
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.ValueChanged, value => capturedValue = value));
 
         // Act
@@ -334,7 +334,7 @@ public class ValidatedInputTests : TestBase
         var unicode = "Hello 世界 🌍 Привет مرحبا";
         string? capturedValue = null;
 
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.ValueChanged, value => capturedValue = value));
 
         // Act
@@ -351,7 +351,7 @@ public class ValidatedInputTests : TestBase
         // Arrange
         string? capturedValue = "initial";
 
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Value, "initial")
             .Add(p => p.ValueChanged, value => capturedValue = value));
 
@@ -369,7 +369,7 @@ public class ValidatedInputTests : TestBase
         // Arrange
         int? capturedValue = null;
 
-        var cut = RenderComponent<ValidatedInput<int>>(parameters => parameters
+        var cut = Render<ValidatedInput<int>>(parameters => parameters
             .Add(p => p.InputType, "number")
             .Add(p => p.ValueChanged, value => capturedValue = value));
 
@@ -387,7 +387,7 @@ public class ValidatedInputTests : TestBase
         // Arrange
         int? capturedValue = 10;
 
-        var cut = RenderComponent<ValidatedInput<int>>(parameters => parameters
+        var cut = Render<ValidatedInput<int>>(parameters => parameters
             .Add(p => p.InputType, "number")
             .Add(p => p.Value, 10)
             .Add(p => p.ValueChanged, value => capturedValue = value));
@@ -408,7 +408,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_TouchedState_UpdatesOnBlur()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.ValidateOnBlur, true));
 
         var input = cut.Find(".validated-input-field");
@@ -427,7 +427,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_ValidateOnInput_TriggersImmediately()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Required, true)
             .Add(p => p.ValidateOnInput, true));
 
@@ -442,7 +442,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_ValidateOnBlur_DoesNotTriggerOnInput()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Required, true)
             .Add(p => p.ValidateOnBlur, true)
             .Add(p => p.ValidateOnInput, false));
@@ -458,7 +458,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_ForceValidation_TriggersValidation()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Label, "Email")
             .Add(p => p.Required, true)
             .Add(p => p.ValidateOnBlur, false)
@@ -478,7 +478,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_IsValidField_ReturnsCorrectState()
     {
         // Arrange
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Required, true)
             .Add(p => p.Value, "valid value"));
 
@@ -493,7 +493,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_IsValidField_ReturnsFalse_WhenInvalid()
     {
         // Arrange
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Required, true)
             .Add(p => p.Value, null));
 
@@ -512,7 +512,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_ShowsValidationIcon_WhenValid()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Required, true)
             .Add(p => p.Value, "valid")
             .Add(p => p.ShowValidationIcon, true)
@@ -530,7 +530,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_ShowsValidationIcon_WhenInvalid()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Required, true)
             .Add(p => p.ShowValidationIcon, true)
             .Add(p => p.ValidateOnBlur, true));
@@ -547,7 +547,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_HidesValidationIcon_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.ShowValidationIcon, false)
             .Add(p => p.Required, true)
             .Add(p => p.ValidateOnBlur, true));
@@ -563,7 +563,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_NoValidationIcon_BeforeTouched()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Required, true)
             .Add(p => p.ShowValidationIcon, true)
             .Add(p => p.ValidateOnBlur, true));
@@ -580,7 +580,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_ErrorMessage_TakesPriority_OverHelperText()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.HelperText, "This is helper text")
             .Add(p => p.ErrorMessage, "This is an error"));
 
@@ -593,7 +593,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_HelperText_Shown_WhenNoError()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.HelperText, "This is helper text")
             .Add(p => p.ErrorMessage, null));
 
@@ -610,7 +610,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_DisabledInput_DoesNotTriggerValidation()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Required, true)
             .Add(p => p.Disabled, true)
             .Add(p => p.ValidateOnBlur, true));
@@ -626,7 +626,7 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_ReadOnlyInput_HasAttribute()
     {
         // Act
-        var cut = RenderComponent<ValidatedInput<string>>(parameters => parameters
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.ReadOnly, true));
 
         // Assert

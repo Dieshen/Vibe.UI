@@ -5,7 +5,7 @@ public class MenuSeparatorTests : TestBase
     [Fact]
     public void MenuSeparator_RendersBaseClass()
     {
-        var cut = RenderComponent<MenuSeparator>();
+        var cut = Render<MenuSeparator>();
 
         cut.Find(".vibe-menu-separator").ShouldNotBeNull();
     }
@@ -13,7 +13,7 @@ public class MenuSeparatorTests : TestBase
     [Fact]
     public void MenuSeparator_AppliesCustomClass()
     {
-        var cut = RenderComponent<MenuSeparator>(parameters => parameters
+        var cut = Render<MenuSeparator>(parameters => parameters
             .Add(p => p.Class, "menu-divider"));
 
         cut.Find(".vibe-menu-separator").ClassList.ShouldContain("menu-divider");
@@ -22,7 +22,7 @@ public class MenuSeparatorTests : TestBase
     [Fact]
     public void MenuSeparator_PreservesAdditionalAttributes()
     {
-        var cut = RenderComponent<MenuSeparator>(parameters => parameters
+        var cut = Render<MenuSeparator>(parameters => parameters
             .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
             {
                 ["data-testid"] = "menu-separator",

@@ -20,7 +20,7 @@ public class ComponentRegistryValidationTests
         _componentService = new ComponentService();
 
         // Navigate from test directory to project root
-        // The test runs in: tests/Vibe.UI.CLI.Tests/bin/Debug/net9.0
+        // The test runs in: tests/Vibe.UI.CLI.Tests/bin/Debug/net10.0
         // We need to go up to project root: ../../../../..
         var testDirectory = Directory.GetCurrentDirectory();
         _projectRoot = Path.GetFullPath(Path.Combine(testDirectory, "..", "..", "..", "..", ".."));

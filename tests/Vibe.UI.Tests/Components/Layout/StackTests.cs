@@ -5,7 +5,7 @@ public class StackTests : TestBase
     [Fact]
     public void Stack_RendersVerticalByDefault()
     {
-        var cut = RenderComponent<Stack>(parameters => parameters
+        var cut = Render<Stack>(parameters => parameters
             .AddChildContent("<span>Item</span>"));
 
         var stack = cut.Find(".vibe-stack");
@@ -16,7 +16,7 @@ public class StackTests : TestBase
     [Fact]
     public void Stack_AppliesHorizontalAndWrapClasses()
     {
-        var cut = RenderComponent<Stack>(parameters => parameters
+        var cut = Render<Stack>(parameters => parameters
             .Add(p => p.Direction, Stack.StackDirection.Horizontal)
             .Add(p => p.Wrap, true));
 
@@ -28,7 +28,7 @@ public class StackTests : TestBase
     [Fact]
     public void Stack_AppliesSpacingAlignAndJustifyStyles()
     {
-        var cut = RenderComponent<Stack>(parameters => parameters
+        var cut = Render<Stack>(parameters => parameters
             .Add(p => p.Spacing, "24px")
             .Add(p => p.Align, Stack.StackAlign.Center)
             .Add(p => p.Justify, Stack.StackJustify.SpaceBetween));
@@ -42,7 +42,7 @@ public class StackTests : TestBase
     [Fact]
     public void Stack_UsesStretchAndStartDefaults()
     {
-        var cut = RenderComponent<Stack>();
+        var cut = Render<Stack>();
 
         var style = cut.Find(".vibe-stack").GetAttribute("style")!;
         style.ShouldContain("align-items: stretch");
@@ -52,7 +52,7 @@ public class StackTests : TestBase
     [Fact]
     public void Stack_PreservesCustomClassAndAttributes()
     {
-        var cut = RenderComponent<Stack>(parameters => parameters
+        var cut = Render<Stack>(parameters => parameters
             .Add(p => p.Class, "toolbar-stack")
             .AddUnmatched("data-stack", "toolbar"));
 

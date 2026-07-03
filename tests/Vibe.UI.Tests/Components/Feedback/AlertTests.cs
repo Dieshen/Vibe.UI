@@ -6,7 +6,7 @@ public class AlertTests : TestBase
     public void Alert_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .AddChildContent("Test alert"));
 
         // Assert
@@ -19,7 +19,7 @@ public class AlertTests : TestBase
     public void Alert_Applies_Variant_Class()
     {
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .Add(p => p.Variant, AlertVariant.Success)
             .AddChildContent("Success"));
 
@@ -31,7 +31,7 @@ public class AlertTests : TestBase
     public void Alert_Renders_Dismissible_WithCloseButton()
     {
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .Add(p => p.Dismissible, true)
             .AddChildContent("Dismissible alert"));
 
@@ -43,7 +43,7 @@ public class AlertTests : TestBase
     public void Alert_HasCloseButton_WhenDismissible()
     {
         // Arrange
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .Add(p => p.Dismissible, true)
             .AddChildContent("Alert"));
 
@@ -58,7 +58,7 @@ public class AlertTests : TestBase
     public void Alert_DefaultVariant_HasDefaultClass()
     {
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .Add(p => p.Variant, AlertVariant.Default)
             .AddChildContent("Default alert"));
 
@@ -70,7 +70,7 @@ public class AlertTests : TestBase
     public void Alert_SuccessVariant_HasSuccessClass()
     {
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .Add(p => p.Variant, AlertVariant.Success)
             .AddChildContent("Success alert"));
 
@@ -82,7 +82,7 @@ public class AlertTests : TestBase
     public void Alert_InfoVariant_HasInfoClass()
     {
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .Add(p => p.Variant, AlertVariant.Info)
             .AddChildContent("Info alert"));
 
@@ -94,7 +94,7 @@ public class AlertTests : TestBase
     public void Alert_WarningVariant_HasWarningClass()
     {
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .Add(p => p.Variant, AlertVariant.Warning)
             .AddChildContent("Warning alert"));
 
@@ -106,7 +106,7 @@ public class AlertTests : TestBase
     public void Alert_DestructiveVariant_HasDestructiveClass()
     {
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .Add(p => p.Variant, AlertVariant.Destructive)
             .AddChildContent("Destructive alert"));
 
@@ -120,7 +120,7 @@ public class AlertTests : TestBase
     public void Alert_WithTitle_RendersTitleElement()
     {
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .Add(p => p.Title, "Important Notice")
             .AddChildContent("Alert content"));
 
@@ -134,7 +134,7 @@ public class AlertTests : TestBase
     public void Alert_WithoutTitle_NoTitleElement()
     {
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .AddChildContent("Alert content"));
 
         // Assert
@@ -145,7 +145,7 @@ public class AlertTests : TestBase
     public void Alert_WithTitleAndContent_RendersBothSections()
     {
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .Add(p => p.Title, "Alert Title")
             .AddChildContent("Alert Description"));
 
@@ -163,7 +163,7 @@ public class AlertTests : TestBase
     public void Alert_WithIcon_RendersIconContent()
     {
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .Add(p => p.Icon, builder => builder.AddMarkupContent(0, "<span class='test-icon'>!</span>"))
             .AddChildContent("Alert with icon"));
 
@@ -177,7 +177,7 @@ public class AlertTests : TestBase
     public void Alert_WithoutIcon_NoIconElement()
     {
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .AddChildContent("Alert without icon"));
 
         // Assert
@@ -190,7 +190,7 @@ public class AlertTests : TestBase
     public void Alert_NonDismissible_NoCloseButton()
     {
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .Add(p => p.Dismissible, false)
             .AddChildContent("Non-dismissible alert"));
 
@@ -203,7 +203,7 @@ public class AlertTests : TestBase
     {
         // Arrange
         var dismissCalled = false;
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .Add(p => p.Dismissible, true)
             .Add(p => p.OnDismiss, EventCallback.Factory.Create(this, () => dismissCalled = true))
             .AddChildContent("Dismissible alert"));
@@ -220,7 +220,7 @@ public class AlertTests : TestBase
     public void Alert_CloseButtonHasAriaLabel()
     {
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .Add(p => p.Dismissible, true)
             .AddChildContent("Alert"));
 
@@ -235,7 +235,7 @@ public class AlertTests : TestBase
     public void Alert_HasCorrectAriaRole()
     {
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .AddChildContent("Accessible alert"));
 
         // Assert
@@ -249,7 +249,7 @@ public class AlertTests : TestBase
     public void Alert_WithEmptyContent_Renders()
     {
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .AddChildContent(""));
 
         // Assert
@@ -264,7 +264,7 @@ public class AlertTests : TestBase
         var longContent = new string('a', 500);
 
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .AddChildContent(longContent));
 
         // Assert
@@ -276,7 +276,7 @@ public class AlertTests : TestBase
     public void Alert_ContentSection_RendersInDescriptionDiv()
     {
         // Act
-        var cut = RenderComponent<Alert>(parameters => parameters
+        var cut = Render<Alert>(parameters => parameters
             .AddChildContent("Test content"));
 
         // Assert

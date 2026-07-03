@@ -6,7 +6,7 @@ public class CalendarTests : TestBase
     public void Calendar_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Calendar>();
+        var cut = Render<Calendar>();
 
         // Assert
         var calendar = cut.Find(".vibe-calendar");
@@ -20,7 +20,7 @@ public class CalendarTests : TestBase
         var currentDate = System.DateTime.Today;
 
         // Act
-        var cut = RenderComponent<Calendar>();
+        var cut = Render<Calendar>();
 
         // Assert
         var monthYear = cut.Find(".calendar-month-year");
@@ -31,7 +31,7 @@ public class CalendarTests : TestBase
     public void Calendar_Displays_DayNames()
     {
         // Act
-        var cut = RenderComponent<Calendar>();
+        var cut = Render<Calendar>();
 
         // Assert
         var dayNames = cut.FindAll(".calendar-weekday");
@@ -48,7 +48,7 @@ public class CalendarTests : TestBase
         var daysInMonth = System.DateTime.DaysInMonth(today.Year, today.Month);
 
         // Act
-        var cut = RenderComponent<Calendar>();
+        var cut = Render<Calendar>();
 
         // Assert
         var days = cut.FindAll(".calendar-day:not(.empty)");
@@ -62,7 +62,7 @@ public class CalendarTests : TestBase
         var selectedDate = new System.DateTime(2024, 6, 15);
 
         // Act
-        var cut = RenderComponent<Calendar>(parameters => parameters
+        var cut = Render<Calendar>(parameters => parameters
             .Add(p => p.SelectedDate, selectedDate));
 
         // Assert
@@ -78,7 +78,7 @@ public class CalendarTests : TestBase
         var today = System.DateTime.Today;
 
         // Act
-        var cut = RenderComponent<Calendar>();
+        var cut = Render<Calendar>();
 
         // Assert
         var todayElement = cut.Find(".calendar-day.today");
@@ -90,7 +90,7 @@ public class CalendarTests : TestBase
     {
         // Arrange
         System.DateTime? selectedDate = null;
-        var cut = RenderComponent<Calendar>(parameters => parameters
+        var cut = Render<Calendar>(parameters => parameters
             .Add(p => p.DateSelected, date => selectedDate = date));
 
         // Act
@@ -106,7 +106,7 @@ public class CalendarTests : TestBase
     {
         // Arrange
         var initialDate = new System.DateTime(2024, 6, 15);
-        var cut = RenderComponent<Calendar>(parameters => parameters
+        var cut = Render<Calendar>(parameters => parameters
             .Add(p => p.SelectedDate, initialDate));
 
         // Act
@@ -123,7 +123,7 @@ public class CalendarTests : TestBase
     {
         // Arrange
         var initialDate = new System.DateTime(2024, 6, 15);
-        var cut = RenderComponent<Calendar>(parameters => parameters
+        var cut = Render<Calendar>(parameters => parameters
             .Add(p => p.SelectedDate, initialDate));
 
         // Act
@@ -143,7 +143,7 @@ public class CalendarTests : TestBase
         var maxDate = new System.DateTime(2024, 6, 20);
 
         // Act
-        var cut = RenderComponent<Calendar>(parameters => parameters
+        var cut = Render<Calendar>(parameters => parameters
             .Add(p => p.SelectedDate, new System.DateTime(2024, 6, 15))
             .Add(p => p.MinDate, minDate)
             .Add(p => p.MaxDate, maxDate));

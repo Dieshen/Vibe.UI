@@ -5,7 +5,7 @@ public class DialogDescriptionTests : TestBase
     [Fact]
     public void DialogDescription_RendersParagraphWithProvidedId()
     {
-        var cut = RenderComponent<DialogDescription>(parameters => parameters
+        var cut = Render<DialogDescription>(parameters => parameters
             .Add(p => p.Id, "dialog-description")
             .AddChildContent("Description"));
 
@@ -17,7 +17,7 @@ public class DialogDescriptionTests : TestBase
     [Fact]
     public void DialogDescription_GeneratesIdWhenMissing()
     {
-        var cut = RenderComponent<DialogDescription>();
+        var cut = Render<DialogDescription>();
 
         cut.Instance.Id.ShouldNotBeNullOrWhiteSpace();
         cut.Find(".vibe-dialog-description").GetAttribute("id").ShouldBe(cut.Instance.Id);
@@ -26,7 +26,7 @@ public class DialogDescriptionTests : TestBase
     [Fact]
     public void DialogDescription_RegistersIdWithParentDialog()
     {
-        var cut = RenderComponent<DialogRoot>(parameters => parameters
+        var cut = Render<DialogRoot>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .AddChildContent(builder =>
             {
@@ -42,7 +42,7 @@ public class DialogDescriptionTests : TestBase
     [Fact]
     public void DialogDescription_PreservesCustomClassAndAttributes()
     {
-        var cut = RenderComponent<DialogDescription>(parameters => parameters
+        var cut = Render<DialogDescription>(parameters => parameters
             .Add(p => p.Class, "dialog-copy")
             .AddUnmatched("data-description", "dialog"));
 

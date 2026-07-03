@@ -243,10 +243,10 @@ public class InitCommandTests : IDisposable
         var csprojPath = Path.Combine(_testProjectPath, "Test.csproj");
         await File.WriteAllTextAsync(csprojPath, @"<Project Sdk=""Microsoft.NET.Sdk.Web"">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include=""Microsoft.AspNetCore.Components.Web"" Version=""9.0.0"" />
+    <PackageReference Include=""Microsoft.AspNetCore.Components.Web"" Version=""10.0.0"" />
   </ItemGroup>
 </Project>");
 
@@ -300,7 +300,7 @@ public class InitCommandTests : IDisposable
         var csprojPath = Path.Combine(_testProjectPath, "Test.csproj");
         await File.WriteAllTextAsync(csprojPath, @"<Project Sdk=""Microsoft.NET.Sdk.Web"">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
 </Project>");
 
@@ -346,10 +346,10 @@ public class InitCommandTests : IDisposable
         var csprojPath = Path.Combine(_testProjectPath, "Test.csproj");
         await File.WriteAllTextAsync(csprojPath, @"<Project Sdk=""Microsoft.NET.Sdk.Web"">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include=""Microsoft.AspNetCore.Components.Web"" Version=""9.0.0"" />
+    <PackageReference Include=""Microsoft.AspNetCore.Components.Web"" Version=""10.0.0"" />
   </ItemGroup>
 </Project>");
 
@@ -390,7 +390,7 @@ public class InitCommandTests : IDisposable
         var csprojPath = Path.Combine(_testProjectPath, "Test.csproj");
         await File.WriteAllTextAsync(csprojPath, @"<Project Sdk=""Microsoft.NET.Sdk.Web"">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
   <PropertyGroup>
     <VibeCssEnabled>true</VibeCssEnabled>

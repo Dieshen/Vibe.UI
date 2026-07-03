@@ -6,7 +6,7 @@ public class QRCodeTests : TestBase
     public void QRCode_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<QRCode>(parameters => parameters
+        var cut = Render<QRCode>(parameters => parameters
             .Add(p => p.Value, "https://example.com"));
 
         // Assert
@@ -18,7 +18,7 @@ public class QRCodeTests : TestBase
     public void QRCode_Displays_QRContainer()
     {
         // Act
-        var cut = RenderComponent<QRCode>(parameters => parameters
+        var cut = Render<QRCode>(parameters => parameters
             .Add(p => p.Value, "test"));
 
         // Assert
@@ -30,7 +30,7 @@ public class QRCodeTests : TestBase
     public void QRCode_Applies_CustomSize()
     {
         // Act
-        var cut = RenderComponent<QRCode>(parameters => parameters
+        var cut = Render<QRCode>(parameters => parameters
             .Add(p => p.Value, "test")
             .Add(p => p.Size, 300));
 
@@ -44,7 +44,7 @@ public class QRCodeTests : TestBase
     public void QRCode_Shows_Value_WhenEnabled()
     {
         // Act
-        var cut = RenderComponent<QRCode>(parameters => parameters
+        var cut = Render<QRCode>(parameters => parameters
             .Add(p => p.Value, "https://example.com")
             .Add(p => p.ShowValue, true));
 
@@ -57,7 +57,7 @@ public class QRCodeTests : TestBase
     public void QRCode_Hides_Value_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<QRCode>(parameters => parameters
+        var cut = Render<QRCode>(parameters => parameters
             .Add(p => p.Value, "https://example.com")
             .Add(p => p.ShowValue, false));
 
@@ -69,7 +69,7 @@ public class QRCodeTests : TestBase
     public void QRCode_Shows_DownloadButton_WhenAllowed()
     {
         // Act
-        var cut = RenderComponent<QRCode>(parameters => parameters
+        var cut = Render<QRCode>(parameters => parameters
             .Add(p => p.Value, "test")
             .Add(p => p.AllowDownload, true));
 
@@ -82,7 +82,7 @@ public class QRCodeTests : TestBase
     public void QRCode_Hides_DownloadButton_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<QRCode>(parameters => parameters
+        var cut = Render<QRCode>(parameters => parameters
             .Add(p => p.Value, "test")
             .Add(p => p.AllowDownload, false));
 
@@ -97,7 +97,7 @@ public class QRCodeTests : TestBase
         var emptyMarkup = "<div class='empty'>No QR code</div>";
 
         // Act
-        var cut = RenderComponent<QRCode>(parameters => parameters
+        var cut = Render<QRCode>(parameters => parameters
             .Add(p => p.Value, string.Empty)
             .Add(p => p.EmptyContent, emptyMarkup));
 
@@ -111,7 +111,7 @@ public class QRCodeTests : TestBase
     public void QRCode_Applies_CustomCssClass()
     {
         // Act
-        var cut = RenderComponent<QRCode>(parameters => parameters
+        var cut = Render<QRCode>(parameters => parameters
             .Add(p => p.Value, "test")
             .Add(p => p.CssClass, "custom-qr"));
 

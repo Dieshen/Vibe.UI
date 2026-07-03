@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 
@@ -15,7 +15,7 @@
     <VibeCssScanPatterns Condition="'$(VibeCssScanPatterns)' == ''">*.razor,*.cshtml,*.html,*.cs</VibeCssScanPatterns>
 
     <_VibeCssProjectPath>$(MSBuildProjectDirectory)\..\..\src\Vibe.UI.CSS\Vibe.UI.CSS.csproj</_VibeCssProjectPath>
-    <_VibeCssAssemblyPath>$(MSBuildProjectDirectory)\..\..\src\Vibe.UI.CSS\bin\$(Configuration)\net9.0\Vibe.UI.CSS.dll</_VibeCssAssemblyPath>
+    <_VibeCssAssemblyPath>$(MSBuildProjectDirectory)\..\..\src\Vibe.UI.CSS\bin\$(Configuration)\net10.0\Vibe.UI.CSS.dll</_VibeCssAssemblyPath>
     <_VibeCssAssetsPath>$(MSBuildProjectDirectory)\..\..\src\Vibe.UI.CSS\obj\project.assets.json</_VibeCssAssetsPath>
 
     <!-- MSBuild doesn't always populate $(DotNetExe) depending on invocation context -->
@@ -23,9 +23,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.8" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.8" PrivateAssets="all" />
-    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.9" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

@@ -6,7 +6,7 @@ public class ImageCropperTests : TestBase
     public void ImageCropper_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<ImageCropper>(parameters => parameters
+        var cut = Render<ImageCropper>(parameters => parameters
             .Add(p => p.ImageSource, "test.jpg"));
 
         // Assert
@@ -17,7 +17,7 @@ public class ImageCropperTests : TestBase
     public void ImageCropper_Shows_EmptyContent_WhenNoImage()
     {
         // Act
-        var cut = RenderComponent<ImageCropper>(parameters => parameters
+        var cut = Render<ImageCropper>(parameters => parameters
             .Add(p => p.EmptyContent, builder => builder.AddContent(0, "No image")));
 
         // Assert
@@ -29,7 +29,7 @@ public class ImageCropperTests : TestBase
     public void ImageCropper_Renders_Image_WhenProvided()
     {
         // Act
-        var cut = RenderComponent<ImageCropper>(parameters => parameters
+        var cut = Render<ImageCropper>(parameters => parameters
             .Add(p => p.ImageSource, "test.jpg"));
 
         // Assert
@@ -41,7 +41,7 @@ public class ImageCropperTests : TestBase
     public void ImageCropper_Shows_Controls_ByDefault()
     {
         // Act
-        var cut = RenderComponent<ImageCropper>(parameters => parameters
+        var cut = Render<ImageCropper>(parameters => parameters
             .Add(p => p.ImageSource, "test.jpg")
             .Add(p => p.ShowControls, true));
 
@@ -53,7 +53,7 @@ public class ImageCropperTests : TestBase
     public void ImageCropper_Hides_Controls_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<ImageCropper>(parameters => parameters
+        var cut = Render<ImageCropper>(parameters => parameters
             .Add(p => p.ImageSource, "test.jpg")
             .Add(p => p.ShowControls, false));
 
@@ -65,7 +65,7 @@ public class ImageCropperTests : TestBase
     public void ImageCropper_Renders_CropBox()
     {
         // Act
-        var cut = RenderComponent<ImageCropper>(parameters => parameters
+        var cut = Render<ImageCropper>(parameters => parameters
             .Add(p => p.ImageSource, "test.jpg"));
 
         // Assert
@@ -76,7 +76,7 @@ public class ImageCropperTests : TestBase
     public void ImageCropper_Has_DefaultAspectRatioOptions()
     {
         // Act
-        var cut = RenderComponent<ImageCropper>(parameters => parameters
+        var cut = Render<ImageCropper>(parameters => parameters
             .Add(p => p.ImageSource, "test.jpg"));
 
         // Assert
@@ -89,7 +89,7 @@ public class ImageCropperTests : TestBase
     {
         // Arrange
         ImageCropper.CroppedImageData? croppedData = null;
-        var cut = RenderComponent<ImageCropper>(parameters => parameters
+        var cut = Render<ImageCropper>(parameters => parameters
             .Add(p => p.ImageSource, "test.jpg")
             .Add(p => p.OnCropped, EventCallback.Factory.Create<ImageCropper.CroppedImageData>(this, data => croppedData = data)));
 
@@ -105,7 +105,7 @@ public class ImageCropperTests : TestBase
     public void ImageCropper_Renders_RotateButtons()
     {
         // Act
-        var cut = RenderComponent<ImageCropper>(parameters => parameters
+        var cut = Render<ImageCropper>(parameters => parameters
             .Add(p => p.ImageSource, "test.jpg")
             .Add(p => p.ShowControls, true));
 
@@ -118,7 +118,7 @@ public class ImageCropperTests : TestBase
     public void ImageCropper_Applies_CustomCssClass()
     {
         // Act
-        var cut = RenderComponent<ImageCropper>(parameters => parameters
+        var cut = Render<ImageCropper>(parameters => parameters
             .Add(p => p.ImageSource, "test.jpg")
             .Add(p => p.CssClass, "custom-cropper"));
 

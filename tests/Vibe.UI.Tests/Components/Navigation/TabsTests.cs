@@ -6,7 +6,7 @@ public class TabsTests : TestBase
     public void Tabs_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Tabs>();
+        var cut = Render<Tabs>();
 
         // Assert
         var tabs = cut.Find(".vibe-tabs");
@@ -19,7 +19,7 @@ public class TabsTests : TestBase
     public void Tabs_Renders_TabList_WithRole()
     {
         // Act
-        var cut = RenderComponent<Tabs>();
+        var cut = Render<Tabs>();
 
         // Assert
         var tabList = cut.Find(".vibe-tabs-list");
@@ -31,7 +31,7 @@ public class TabsTests : TestBase
     {
         // Arrange
         string? activatedTabId = null;
-        var cut = RenderComponent<Tabs>(parameters => parameters
+        var cut = Render<Tabs>(parameters => parameters
             .Add(p => p.ActiveTabId, "tab1")
             .Add(p => p.ActiveTabIdChanged, EventCallback.Factory.Create<string?>(this, id => activatedTabId = id)));
 
@@ -44,7 +44,7 @@ public class TabsTests : TestBase
     {
         // Arrange
         Tabs.TabActivatedEventArgs? eventArgs = null;
-        var cut = RenderComponent<Tabs>(parameters => parameters
+        var cut = Render<Tabs>(parameters => parameters
             .Add(p => p.OnTabActivated, EventCallback.Factory.Create<Tabs.TabActivatedEventArgs>(this, args => eventArgs = args)));
 
         // Assert - callback can be set
@@ -55,7 +55,7 @@ public class TabsTests : TestBase
     public void Tabs_Applies_AdditionalAttributes()
     {
         // Act
-        var cut = RenderComponent<Tabs>(parameters => parameters
+        var cut = Render<Tabs>(parameters => parameters
             .AddUnmatched("data-test", "tabs-value"));
 
         // Assert - AdditionalAttributes are captured

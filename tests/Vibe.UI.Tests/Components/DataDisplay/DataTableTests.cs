@@ -6,7 +6,7 @@ public class DataTableTests : TestBase
     public void DataTable_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<DataTable<string>>();
+        var cut = Render<DataTable<string>>();
 
         // Assert
         cut.Find(".vibe-datatable").ShouldNotBeNull();
@@ -16,7 +16,7 @@ public class DataTableTests : TestBase
     public void DataTable_Renders_Toolbar_ByDefault()
     {
         // Act
-        var cut = RenderComponent<DataTable<string>>(parameters => parameters
+        var cut = Render<DataTable<string>>(parameters => parameters
             .Add(p => p.ShowToolbar, true));
 
         // Assert
@@ -27,7 +27,7 @@ public class DataTableTests : TestBase
     public void DataTable_Hides_Toolbar_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<DataTable<string>>(parameters => parameters
+        var cut = Render<DataTable<string>>(parameters => parameters
             .Add(p => p.ShowToolbar, false));
 
         // Assert
@@ -38,7 +38,7 @@ public class DataTableTests : TestBase
     public void DataTable_Shows_Search_ByDefault()
     {
         // Act
-        var cut = RenderComponent<DataTable<string>>(parameters => parameters
+        var cut = Render<DataTable<string>>(parameters => parameters
             .Add(p => p.ShowToolbar, true)
             .Add(p => p.ShowSearch, true));
 
@@ -50,7 +50,7 @@ public class DataTableTests : TestBase
     public void DataTable_Has_DefaultSearchPlaceholder()
     {
         // Act
-        var cut = RenderComponent<DataTable<string>>(parameters => parameters
+        var cut = Render<DataTable<string>>(parameters => parameters
             .Add(p => p.ShowToolbar, true)
             .Add(p => p.ShowSearch, true));
 
@@ -70,7 +70,7 @@ public class DataTableTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<DataTable<string>>(parameters => parameters
+        var cut = Render<DataTable<string>>(parameters => parameters
             .Add(p => p.Items, items)
             .Add(p => p.Columns, columns)
             .Add(p => p.ShowPagination, true));
@@ -83,7 +83,7 @@ public class DataTableTests : TestBase
     public void DataTable_Has_DefaultPageSize()
     {
         // Act
-        var cut = RenderComponent<DataTable<string>>();
+        var cut = Render<DataTable<string>>();
 
         // Assert
         cut.Instance.PageSize.ShouldBe(10);
@@ -99,7 +99,7 @@ public class DataTableTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<DataTable<string>>(parameters => parameters
+        var cut = Render<DataTable<string>>(parameters => parameters
             .Add(p => p.Items, new List<string>())
             .Add(p => p.Columns, columns)
             .Add(p => p.EmptyMessage, "No data"));
@@ -120,7 +120,7 @@ public class DataTableTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<DataTable<string>>(parameters => parameters
+        var cut = Render<DataTable<string>>(parameters => parameters
             .Add(p => p.Columns, columns));
 
         // Assert
@@ -139,7 +139,7 @@ public class DataTableTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<DataTable<string>>(parameters => parameters
+        var cut = Render<DataTable<string>>(parameters => parameters
             .Add(p => p.Columns, columns));
 
         // Assert
@@ -158,7 +158,7 @@ public class DataTableTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<DataTable<string>>(parameters => parameters
+        var cut = Render<DataTable<string>>(parameters => parameters
             .Add(p => p.Items, items)
             .Add(p => p.Columns, columns));
 
@@ -171,7 +171,7 @@ public class DataTableTests : TestBase
     public void DataTable_Applies_AdditionalAttributes()
     {
         // Act
-        var cut = RenderComponent<DataTable<string>>(parameters => parameters
+        var cut = Render<DataTable<string>>(parameters => parameters
             .AddUnmatched("data-test", "datatable-value"));
 
         // Assert - AdditionalAttributes are captured

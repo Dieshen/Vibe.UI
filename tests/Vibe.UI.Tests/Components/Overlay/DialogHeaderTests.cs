@@ -5,7 +5,7 @@ public class DialogHeaderTests : TestBase
     [Fact]
     public void DialogHeader_RendersContent()
     {
-        var cut = RenderComponent<DialogHeader>(parameters => parameters
+        var cut = Render<DialogHeader>(parameters => parameters
             .AddChildContent("<h2>Heading</h2>"));
 
         var header = cut.Find(".vibe-dialog-header");
@@ -15,7 +15,7 @@ public class DialogHeaderTests : TestBase
     [Fact]
     public void DialogHeader_PreservesCustomClassAndAttributes()
     {
-        var cut = RenderComponent<DialogHeader>(parameters => parameters
+        var cut = Render<DialogHeader>(parameters => parameters
             .Add(p => p.Class, "dialog-top")
             .AddUnmatched("data-header", "dialog"));
 

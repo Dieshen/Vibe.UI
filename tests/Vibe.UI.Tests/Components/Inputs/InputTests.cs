@@ -6,7 +6,7 @@ public class InputTests : TestBase
     public void Input_Renders_WithDefaultProps()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>();
+        IRenderedComponent<Input> cut = Render<Input>();
 
         // Assert
         AngleSharp.Dom.IElement input = cut.Find("input[type='text']");
@@ -17,7 +17,7 @@ public class InputTests : TestBase
     public void Input_Renders_WithLabel()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Label, "Username"));
 
         // Assert
@@ -29,7 +29,7 @@ public class InputTests : TestBase
     public void Input_Renders_WithPlaceholder()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Placeholder, "Enter username"));
 
         // Assert
@@ -41,7 +41,7 @@ public class InputTests : TestBase
     public void Input_Renders_WithValue()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Value, "John Doe"));
 
         // Assert
@@ -53,7 +53,7 @@ public class InputTests : TestBase
     public void Input_Applies_Disabled_Attribute()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Disabled, true));
 
         // Assert
@@ -66,7 +66,7 @@ public class InputTests : TestBase
     public void Input_Applies_ReadOnly_Attribute()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.ReadOnly, true));
 
         // Assert
@@ -78,7 +78,7 @@ public class InputTests : TestBase
     public void Input_Shows_ErrorMessage()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.ErrorMessage, "This field is required"));
 
         // Assert
@@ -90,7 +90,7 @@ public class InputTests : TestBase
     public void Input_Shows_HelperText()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.HelperText, "Enter your email address"));
 
         // Assert
@@ -102,7 +102,7 @@ public class InputTests : TestBase
     public void Input_Applies_CustomType()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Type, "email"));
 
         // Assert
@@ -114,7 +114,7 @@ public class InputTests : TestBase
     public void Input_Applies_Size_Class()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Size, ComponentSize.Large));
 
         // Assert
@@ -126,7 +126,7 @@ public class InputTests : TestBase
     public void Input_Applies_Variant_Class()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Variant, InputVariant.Filled));
 
         // Assert
@@ -139,7 +139,7 @@ public class InputTests : TestBase
     {
         // Arrange
         string? newValue = null;
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.ValueChanged, value => newValue = value));
 
         // Act
@@ -155,7 +155,7 @@ public class InputTests : TestBase
     public void Input_WithNullValue_RendersEmpty()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Value, null));
 
         // Assert - When Value is null, component has Value = string.Empty (default), so attribute is empty
@@ -168,7 +168,7 @@ public class InputTests : TestBase
     public void Input_WithEmptyValue_RendersEmpty()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Value, string.Empty));
 
         // Assert
@@ -183,7 +183,7 @@ public class InputTests : TestBase
         string longValue = new('A', 1000);
 
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Value, longValue));
 
         // Assert
@@ -197,7 +197,7 @@ public class InputTests : TestBase
         string specialChars = "<>&\"'`\n\t";  // Removed \r due to platform normalization
 
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Value, specialChars));
 
         // Assert
@@ -211,7 +211,7 @@ public class InputTests : TestBase
         string unicode = "Hello 世界 🚀 emoji";
 
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Value, unicode));
 
         // Assert
@@ -232,7 +232,7 @@ public class InputTests : TestBase
     public void Input_WithVariousTypes_RendersCorrectType(string inputType)
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Type, inputType));
 
         // Assert
@@ -245,7 +245,7 @@ public class InputTests : TestBase
     public void Input_WithLeadingIcon_RendersIcon()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.LeadingIcon, "<svg>icon</svg>"));
 
         // Assert
@@ -259,7 +259,7 @@ public class InputTests : TestBase
     public void Input_WithTrailingIcon_RendersIcon()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.TrailingIcon, "<svg>icon</svg>"));
 
         // Assert
@@ -273,7 +273,7 @@ public class InputTests : TestBase
     public void Input_WithBothIcons_RendersBothIcons()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.LeadingIcon, "<svg>leading</svg>")
             .Add(p => p.TrailingIcon, "<svg>trailing</svg>"));
 
@@ -289,7 +289,7 @@ public class InputTests : TestBase
     public void Input_WithEmptyLeadingIcon_DoesNotRenderIcon()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.LeadingIcon, string.Empty));
 
         // Assert
@@ -300,7 +300,7 @@ public class InputTests : TestBase
     public void Input_WithNullTrailingIcon_DoesNotRenderIcon()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.TrailingIcon, null));
 
         // Assert
@@ -313,7 +313,7 @@ public class InputTests : TestBase
     public void Input_WithErrorMessage_AppliesErrorClass()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.ErrorMessage, "This field is required"));
 
         // Assert
@@ -324,7 +324,7 @@ public class InputTests : TestBase
     public void Input_WithErrorMessage_HidesHelperText()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.ErrorMessage, "Error")
             .Add(p => p.HelperText, "Helper"));
 
@@ -337,7 +337,7 @@ public class InputTests : TestBase
     public void Input_WithEmptyErrorMessage_DoesNotShowError()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.ErrorMessage, string.Empty));
 
         // Assert
@@ -351,7 +351,7 @@ public class InputTests : TestBase
     {
         // Arrange
         string? newValue = null;
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.ValueChanged, value => newValue = value));
 
         // Act
@@ -366,7 +366,7 @@ public class InputTests : TestBase
     {
         // Arrange
         string capturedValue = "initial";
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.ValueChanged, value => capturedValue = value));
 
         // Act - Pass ChangeEventArgs with null Value instead of null directly
@@ -380,7 +380,7 @@ public class InputTests : TestBase
     public void Input_WithNoValueChangedDelegate_DoesNotThrow()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>();
+        IRenderedComponent<Input> cut = Render<Input>();
 
         // Act & Assert - Should not throw
         cut.Find("input").Change("New Value");
@@ -393,7 +393,7 @@ public class InputTests : TestBase
     public void Input_WithEmptyLabel_DoesNotRenderLabel()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Label, string.Empty));
 
         // Assert - Label element should not be rendered when Label is empty
@@ -404,7 +404,7 @@ public class InputTests : TestBase
     public void Input_WithNullLabel_DoesNotRenderLabel()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Label, null));
 
         // Assert - Label element should not be rendered when Label is null
@@ -420,7 +420,7 @@ public class InputTests : TestBase
     public void Input_WithSize_AppliesCorrectClass(ComponentSize size, string expectedClass)
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Size, size));
 
         // Assert
@@ -436,7 +436,7 @@ public class InputTests : TestBase
     public void Input_WithVariant_AppliesCorrectClass(InputVariant variant, string expectedClass)
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Variant, variant));
 
         // Assert
@@ -449,7 +449,7 @@ public class InputTests : TestBase
     public void Input_BothDisabledAndReadOnly_AppliesBothStates()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Disabled, true)
             .Add(p => p.ReadOnly, true));
 
@@ -466,8 +466,8 @@ public class InputTests : TestBase
     public void Input_WithoutId_GeneratesUniqueId()
     {
         // Act
-        IRenderedComponent<Input> cut1 = RenderComponent<Input>();
-        IRenderedComponent<Input> cut2 = RenderComponent<Input>();
+        IRenderedComponent<Input> cut1 = Render<Input>();
+        IRenderedComponent<Input> cut2 = Render<Input>();
 
         // Assert
         string? id1 = cut1.Find("input").GetAttribute("id");
@@ -482,7 +482,7 @@ public class InputTests : TestBase
     public void Input_WithCustomId_UsesCustomId()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Id, "custom-input-id"));
 
         // Assert
@@ -495,7 +495,7 @@ public class InputTests : TestBase
     public void Input_WithEmptyPlaceholder_RendersEmptyPlaceholder()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Placeholder, string.Empty));
 
         // Assert
@@ -506,7 +506,7 @@ public class InputTests : TestBase
     public void Input_WithNullPlaceholder_RendersEmptyPlaceholder()
     {
         // Act
-        IRenderedComponent<Input> cut = RenderComponent<Input>(parameters => parameters
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
             .Add(p => p.Placeholder, null));
 
         // Assert - GetAttribute returns null when attribute value is empty string

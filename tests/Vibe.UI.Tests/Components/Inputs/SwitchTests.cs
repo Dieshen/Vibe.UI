@@ -6,7 +6,7 @@ public class SwitchTests : TestBase
     public void Switch_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Switch>();
+        var cut = Render<Switch>();
 
         // Assert
         var switchInput = cut.Find("input[type='checkbox']");
@@ -18,7 +18,7 @@ public class SwitchTests : TestBase
     public void Switch_Renders_AsChecked()
     {
         // Act
-        var cut = RenderComponent<Switch>(parameters => parameters
+        var cut = Render<Switch>(parameters => parameters
             .Add(p => p.Checked, true));
 
         // Assert
@@ -30,7 +30,7 @@ public class SwitchTests : TestBase
     public void Switch_Applies_Disabled_Attribute()
     {
         // Act
-        var cut = RenderComponent<Switch>(parameters => parameters
+        var cut = Render<Switch>(parameters => parameters
             .Add(p => p.Disabled, true));
 
         // Assert
@@ -44,7 +44,7 @@ public class SwitchTests : TestBase
     {
         // Arrange
         var checkedValue = false;
-        var cut = RenderComponent<Switch>(parameters => parameters
+        var cut = Render<Switch>(parameters => parameters
             .Add(p => p.CheckedChanged, newValue => checkedValue = newValue));
 
         // Act
@@ -59,7 +59,7 @@ public class SwitchTests : TestBase
     {
         // Arrange
         var checkedValue = false;
-        var cut = RenderComponent<Switch>(parameters => parameters
+        var cut = Render<Switch>(parameters => parameters
             .Add(p => p.Disabled, true)
             .Add(p => p.CheckedChanged, newValue => checkedValue = newValue));
 

@@ -6,7 +6,7 @@ public class LabelTests : TestBase
     public void Label_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .AddChildContent("Username"));
 
         // Assert
@@ -19,7 +19,7 @@ public class LabelTests : TestBase
     public void Label_Applies_For_Attribute()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .Add(p => p.For, "username-input")
             .AddChildContent("Username"));
 
@@ -32,7 +32,7 @@ public class LabelTests : TestBase
     public void Label_Applies_Required_Class()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .Add(p => p.Required, true)
             .AddChildContent("Email"));
 
@@ -45,7 +45,7 @@ public class LabelTests : TestBase
     public void Label_Applies_Disabled_Class()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .Add(p => p.Disabled, true)
             .AddChildContent("Disabled Field"));
 
@@ -58,7 +58,7 @@ public class LabelTests : TestBase
     public void Label_Applies_CustomCssClass()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .Add(p => p.CssClass, "custom-label")
             .AddChildContent("Custom"));
 
@@ -71,7 +71,7 @@ public class LabelTests : TestBase
     public void Label_Renders_ChildContent()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .AddChildContent("<strong>Bold Label</strong>"));
 
         // Assert
@@ -85,7 +85,7 @@ public class LabelTests : TestBase
     public void Label_Applies_RequiredAndDisabled_Together()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .Add(p => p.Required, true)
             .Add(p => p.Disabled, true)
             .AddChildContent("Field"));
@@ -100,7 +100,7 @@ public class LabelTests : TestBase
     public void Label_Applies_AllStates_Together()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .Add(p => p.Required, true)
             .Add(p => p.Disabled, true)
             .Add(p => p.CssClass, "custom")
@@ -124,7 +124,7 @@ public class LabelTests : TestBase
     public void Label_HandlesEmptyFor_Attribute()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .Add(p => p.For, "")
             .AddChildContent("Label"));
 
@@ -137,7 +137,7 @@ public class LabelTests : TestBase
     public void Label_HandlesNullFor_Attribute()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .Add(p => p.For, null)
             .AddChildContent("Label"));
 
@@ -153,7 +153,7 @@ public class LabelTests : TestBase
         var longText = new string('a', 1000);
 
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .AddChildContent(longText));
 
         // Assert
@@ -165,7 +165,7 @@ public class LabelTests : TestBase
     public void Label_HandlesSpecialCharacters()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .AddChildContent("Label with special chars: !@#$%^&*()"));
 
         // Assert
@@ -177,7 +177,7 @@ public class LabelTests : TestBase
     public void Label_HandlesUnicodeCharacters()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .AddChildContent("Unicode: 你好 🌍 مرحبا"));
 
         // Assert
@@ -190,7 +190,7 @@ public class LabelTests : TestBase
     public void Label_HandlesNestedElements()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .AddChildContent("<span class='icon'>*</span><span>Required Field</span>"));
 
         // Assert
@@ -207,7 +207,7 @@ public class LabelTests : TestBase
     public void Label_CombinesMultipleClasses_Correctly()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .Add(p => p.CssClass, "class1 class2")
             .Add(p => p.Required, true)
             .AddChildContent("Label"));
@@ -224,7 +224,7 @@ public class LabelTests : TestBase
     public void Label_HandlesNullCssClass()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .Add(p => p.CssClass, null)
             .AddChildContent("Label"));
 
@@ -237,7 +237,7 @@ public class LabelTests : TestBase
     public void Label_HandlesEmptyCssClass()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .Add(p => p.CssClass, "")
             .AddChildContent("Label"));
 
@@ -254,7 +254,7 @@ public class LabelTests : TestBase
     public void Label_Required_DefaultsToFalse()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .AddChildContent("Label"));
 
         // Assert
@@ -266,7 +266,7 @@ public class LabelTests : TestBase
     public void Label_Disabled_DefaultsToFalse()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .AddChildContent("Label"));
 
         // Assert
@@ -282,7 +282,7 @@ public class LabelTests : TestBase
     public void Label_AlwaysRendersAsLabelElement()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .AddChildContent("Accessible Label"));
 
         // Assert
@@ -295,7 +295,7 @@ public class LabelTests : TestBase
     public void Label_WithFor_CreatesAccessibleConnection()
     {
         // Act
-        var cut = RenderComponent<Label>(parameters => parameters
+        var cut = Render<Label>(parameters => parameters
             .Add(p => p.For, "input-123")
             .AddChildContent("Email Address"));
 

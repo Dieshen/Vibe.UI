@@ -6,7 +6,7 @@ public class EmptyStateTests : TestBase
     public void EmptyState_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<EmptyState>();
+        var cut = Render<EmptyState>();
 
         // Assert
         var emptyState = cut.Find(".vibe-empty-state");
@@ -20,7 +20,7 @@ public class EmptyStateTests : TestBase
         var title = "No results found";
 
         // Act
-        var cut = RenderComponent<EmptyState>(parameters => parameters
+        var cut = Render<EmptyState>(parameters => parameters
             .Add(p => p.Title, title));
 
         // Assert
@@ -35,7 +35,7 @@ public class EmptyStateTests : TestBase
         var description = "Try adjusting your search or filter criteria";
 
         // Act
-        var cut = RenderComponent<EmptyState>(parameters => parameters
+        var cut = Render<EmptyState>(parameters => parameters
             .Add(p => p.Description, description));
 
         // Assert
@@ -47,7 +47,7 @@ public class EmptyStateTests : TestBase
     public void EmptyState_Displays_Icon()
     {
         // Act
-        var cut = RenderComponent<EmptyState>(parameters => parameters
+        var cut = Render<EmptyState>(parameters => parameters
             .Add(p => p.Icon, builder => builder.AddContent(0, "📭")));
 
         // Assert
@@ -62,7 +62,7 @@ public class EmptyStateTests : TestBase
         var content = "Custom content";
 
         // Act
-        var cut = RenderComponent<EmptyState>(parameters => parameters
+        var cut = Render<EmptyState>(parameters => parameters
             .Add(p => p.ChildContent, builder => builder.AddContent(0, content)));
 
         // Assert
@@ -74,7 +74,7 @@ public class EmptyStateTests : TestBase
     public void EmptyState_Displays_Action()
     {
         // Act
-        var cut = RenderComponent<EmptyState>(parameters => parameters
+        var cut = Render<EmptyState>(parameters => parameters
             .Add(p => p.Action, builder => builder.AddContent(0, "Add Item")));
 
         // Assert
@@ -86,7 +86,7 @@ public class EmptyStateTests : TestBase
     public void EmptyState_HidesTitle_WhenNotProvided()
     {
         // Act
-        var cut = RenderComponent<EmptyState>();
+        var cut = Render<EmptyState>();
 
         // Assert
         cut.FindAll(".empty-state-title").ShouldBeEmpty();
@@ -96,7 +96,7 @@ public class EmptyStateTests : TestBase
     public void EmptyState_HidesDescription_WhenNotProvided()
     {
         // Act
-        var cut = RenderComponent<EmptyState>();
+        var cut = Render<EmptyState>();
 
         // Assert
         cut.FindAll(".empty-state-description").ShouldBeEmpty();
@@ -106,7 +106,7 @@ public class EmptyStateTests : TestBase
     public void EmptyState_HidesIcon_WhenNotProvided()
     {
         // Act
-        var cut = RenderComponent<EmptyState>();
+        var cut = Render<EmptyState>();
 
         // Assert
         cut.FindAll(".empty-state-icon").ShouldBeEmpty();
@@ -116,7 +116,7 @@ public class EmptyStateTests : TestBase
     public void EmptyState_HidesAction_WhenNotProvided()
     {
         // Act
-        var cut = RenderComponent<EmptyState>();
+        var cut = Render<EmptyState>();
 
         // Assert
         cut.FindAll(".empty-state-action").ShouldBeEmpty();

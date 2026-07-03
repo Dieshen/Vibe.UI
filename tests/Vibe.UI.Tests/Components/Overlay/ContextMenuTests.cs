@@ -6,7 +6,7 @@ public class ContextMenuTests : TestBase
     public void ContextMenu_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<ContextMenu>();
+        var cut = Render<ContextMenu>();
 
         // Assert
         var contextMenu = cut.Find(".vibe-context-menu");
@@ -17,7 +17,7 @@ public class ContextMenuTests : TestBase
     public void ContextMenu_Renders_Trigger()
     {
         // Act
-        var cut = RenderComponent<ContextMenu>(parameters => parameters
+        var cut = Render<ContextMenu>(parameters => parameters
             .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Right click me")));
 
         // Assert
@@ -30,7 +30,7 @@ public class ContextMenuTests : TestBase
     public void ContextMenu_DoesNotShow_ContentInitially()
     {
         // Act
-        var cut = RenderComponent<ContextMenu>();
+        var cut = Render<ContextMenu>();
 
         // Assert
         cut.FindAll(".context-content").ShouldBeEmpty();
@@ -40,7 +40,7 @@ public class ContextMenuTests : TestBase
     public void ContextMenu_Renders_Content_WhenProvided()
     {
         // Act
-        var cut = RenderComponent<ContextMenu>(parameters => parameters
+        var cut = Render<ContextMenu>(parameters => parameters
             .Add(p => p.Content, builder => builder.AddContent(0, "Menu Content")));
 
         // Assert
@@ -52,7 +52,7 @@ public class ContextMenuTests : TestBase
     public void ContextMenu_DoesNotOpen_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<ContextMenu>(parameters => parameters
+        var cut = Render<ContextMenu>(parameters => parameters
             .Add(p => p.Disabled, true));
 
         // Assert
@@ -63,7 +63,7 @@ public class ContextMenuTests : TestBase
     public void ContextMenu_HasCorrectCssClass()
     {
         // Act
-        var cut = RenderComponent<ContextMenu>();
+        var cut = Render<ContextMenu>();
 
         // Assert
         var contextMenu = cut.Find(".vibe-context-menu");

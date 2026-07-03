@@ -6,7 +6,7 @@ public class HoverCardTests : TestBase
     public void HoverCard_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<HoverCard>();
+        var cut = Render<HoverCard>();
 
         // Assert
         var hoverCard = cut.Find(".vibe-hovercard");
@@ -17,7 +17,7 @@ public class HoverCardTests : TestBase
     public void HoverCard_Renders_Trigger()
     {
         // Act
-        var cut = RenderComponent<HoverCard>(parameters => parameters
+        var cut = Render<HoverCard>(parameters => parameters
             .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Hover me")));
 
         // Assert
@@ -30,7 +30,7 @@ public class HoverCardTests : TestBase
     public void HoverCard_DoesNotShow_ContentInitially()
     {
         // Act
-        var cut = RenderComponent<HoverCard>(parameters => parameters
+        var cut = Render<HoverCard>(parameters => parameters
             .Add(p => p.Content, builder => builder.AddContent(0, "Content")));
 
         // Assert
@@ -44,7 +44,7 @@ public class HoverCardTests : TestBase
         var position = "top";
 
         // Act
-        var cut = RenderComponent<HoverCard>(parameters => parameters
+        var cut = Render<HoverCard>(parameters => parameters
             .Add(p => p.Position, position)
             .Add(p => p.Content, builder => builder.AddContent(0, "Content")));
 
@@ -57,7 +57,7 @@ public class HoverCardTests : TestBase
     public void HoverCard_Applies_DefaultPosition()
     {
         // Act
-        var cut = RenderComponent<HoverCard>();
+        var cut = Render<HoverCard>();
 
         // Assert
         var hoverCard = cut.Find(".vibe-hovercard");
@@ -68,7 +68,7 @@ public class HoverCardTests : TestBase
     public void HoverCard_HasDefaultOpenDelay()
     {
         // Act
-        var cut = RenderComponent<HoverCard>();
+        var cut = Render<HoverCard>();
 
         // Assert
         cut.Instance.OpenDelay.ShouldBe(300);
@@ -78,7 +78,7 @@ public class HoverCardTests : TestBase
     public void HoverCard_HasDefaultCloseDelay()
     {
         // Act
-        var cut = RenderComponent<HoverCard>();
+        var cut = Render<HoverCard>();
 
         // Assert
         cut.Instance.CloseDelay.ShouldBe(200);
@@ -91,7 +91,7 @@ public class HoverCardTests : TestBase
         var openDelay = 500;
 
         // Act
-        var cut = RenderComponent<HoverCard>(parameters => parameters
+        var cut = Render<HoverCard>(parameters => parameters
             .Add(p => p.OpenDelay, openDelay));
 
         // Assert
@@ -105,7 +105,7 @@ public class HoverCardTests : TestBase
         var closeDelay = 100;
 
         // Act
-        var cut = RenderComponent<HoverCard>(parameters => parameters
+        var cut = Render<HoverCard>(parameters => parameters
             .Add(p => p.CloseDelay, closeDelay));
 
         // Assert

@@ -24,7 +24,10 @@ public class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
         public string ProjectPath { get; init; } = ".";
     }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    public Task<int> ExecuteAsync(CommandContext context, Settings settings) =>
+        ExecuteAsync(context, settings, CancellationToken.None);
+
+    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         var configService = new ConfigService();
         var componentService = new ComponentService();

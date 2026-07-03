@@ -5,7 +5,7 @@ public class DialogRootTests : TestBase
     [Fact]
     public void DialogRoot_RendersTriggerContent_WhenClosed()
     {
-        var cut = RenderComponent<DialogRoot>(parameters => parameters
+        var cut = Render<DialogRoot>(parameters => parameters
             .AddChildContent("<span class='closed-content'>Open dialog</span>"));
 
         cut.FindAll(".vibe-dialog").ShouldBeEmpty();
@@ -15,7 +15,7 @@ public class DialogRootTests : TestBase
     [Fact]
     public void DialogRoot_RendersDialog_WhenOpen()
     {
-        var cut = RenderComponent<DialogRoot>(parameters => parameters
+        var cut = Render<DialogRoot>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .AddChildContent("Dialog body"));
 
@@ -29,7 +29,7 @@ public class DialogRootTests : TestBase
     [Fact]
     public void DialogRoot_WiresTitleAndDescriptionIds()
     {
-        var cut = RenderComponent<DialogRoot>(parameters => parameters
+        var cut = Render<DialogRoot>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .AddChildContent(builder =>
             {
@@ -52,7 +52,7 @@ public class DialogRootTests : TestBase
     public void DialogRoot_BackdropClickClosesWhenEnabled()
     {
         var changedTo = true;
-        var cut = RenderComponent<DialogRoot>(parameters => parameters
+        var cut = Render<DialogRoot>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.IsOpenChanged, EventCallback.Factory.Create<bool>(this, value => changedTo = value))
             .AddChildContent("Dialog body"));
@@ -67,7 +67,7 @@ public class DialogRootTests : TestBase
     public void DialogRoot_BackdropClickDoesNotCloseWhenDisabled()
     {
         var changed = false;
-        var cut = RenderComponent<DialogRoot>(parameters => parameters
+        var cut = Render<DialogRoot>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.CloseOnOutsideClick, false)
             .Add(p => p.IsOpenChanged, EventCallback.Factory.Create<bool>(this, _ => changed = true))

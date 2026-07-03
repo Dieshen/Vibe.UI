@@ -358,7 +358,7 @@ public class ComponentService
             // 2. Packaged with CLI in Templates folder (adjacent to tools folder)
             Path.Combine(assemblyLocation, "Templates", "Components", category, $"{componentName}.razor"),
 
-            // 3. Dotnet global tool: Templates folder in package root (../../.. from tools/net9.0/any)
+            // 3. Dotnet global tool: Templates folder in package root (../../.. from tools/net10.0/any)
             Path.GetFullPath(Path.Combine(assemblyLocation, "..", "..", "..", "Templates", "Components", category, $"{componentName}.razor")),
 
             // 4. Current directory structure (if running from repo root)

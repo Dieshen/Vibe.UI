@@ -5,7 +5,7 @@ public class BreadcrumbTests : TestBase
     [Fact]
     public void Breadcrumb_RendersNavAndList()
     {
-        var cut = RenderComponent<Breadcrumb>();
+        var cut = Render<Breadcrumb>();
 
         var nav = cut.Find("nav.vibe-breadcrumb");
         nav.GetAttribute("aria-label").ShouldBe("Breadcrumb");
@@ -15,7 +15,7 @@ public class BreadcrumbTests : TestBase
     [Fact]
     public void Breadcrumb_RendersChildContent()
     {
-        var cut = RenderComponent<Breadcrumb>(parameters => parameters
+        var cut = Render<Breadcrumb>(parameters => parameters
             .AddChildContent("<li>Home</li><li>Docs</li>"));
 
         var items = cut.FindAll("li");
@@ -27,7 +27,7 @@ public class BreadcrumbTests : TestBase
     [Fact]
     public void Breadcrumb_AppliesCustomClass()
     {
-        var cut = RenderComponent<Breadcrumb>(parameters => parameters
+        var cut = Render<Breadcrumb>(parameters => parameters
             .Add(p => p.Class, "compact-breadcrumb"));
 
         cut.Find(".vibe-breadcrumb").ClassList.ShouldContain("compact-breadcrumb");
@@ -36,7 +36,7 @@ public class BreadcrumbTests : TestBase
     [Fact]
     public void Breadcrumb_ExposesSeparatorParameter()
     {
-        var cut = RenderComponent<Breadcrumb>(parameters => parameters
+        var cut = Render<Breadcrumb>(parameters => parameters
             .Add(p => p.Separator, ">"));
 
         cut.Instance.Separator.ShouldBe(">");

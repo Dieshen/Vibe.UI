@@ -78,7 +78,7 @@ describe('vibe-chart', () => {
       document.body.appendChild(canvas);
 
       // Make Chart constructor throw
-      MockChart.mockImplementationOnce(() => {
+      MockChart.mockImplementationOnce(function () {
         throw new Error('Chart creation failed');
       });
 

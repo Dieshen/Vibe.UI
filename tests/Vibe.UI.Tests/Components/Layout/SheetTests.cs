@@ -6,7 +6,7 @@ public class SheetTests : TestBase
     public void Sheet_DoesNotRender_WhenClosed()
     {
         // Act
-        var cut = RenderComponent<Sheet>(parameters => parameters
+        var cut = Render<Sheet>(parameters => parameters
             .Add(p => p.IsOpen, false));
 
         // Assert
@@ -17,7 +17,7 @@ public class SheetTests : TestBase
     public void Sheet_Renders_WhenOpen()
     {
         // Act
-        var cut = RenderComponent<Sheet>(parameters => parameters
+        var cut = Render<Sheet>(parameters => parameters
             .Add(p => p.IsOpen, true));
 
         // Assert
@@ -32,7 +32,7 @@ public class SheetTests : TestBase
         var title = "Sheet Title";
 
         // Act
-        var cut = RenderComponent<Sheet>(parameters => parameters
+        var cut = Render<Sheet>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.Title, title));
 
@@ -48,7 +48,7 @@ public class SheetTests : TestBase
         var description = "Sheet Description";
 
         // Act
-        var cut = RenderComponent<Sheet>(parameters => parameters
+        var cut = Render<Sheet>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.Description, description));
 
@@ -61,7 +61,7 @@ public class SheetTests : TestBase
     public void Sheet_Applies_SideClass()
     {
         // Act
-        var cut = RenderComponent<Sheet>(parameters => parameters
+        var cut = Render<Sheet>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.Side, Sheet.SheetSide.Left));
 
@@ -74,7 +74,7 @@ public class SheetTests : TestBase
     public void Sheet_Shows_CloseButton_WhenEnabled()
     {
         // Act
-        var cut = RenderComponent<Sheet>(parameters => parameters
+        var cut = Render<Sheet>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.ShowCloseButton, true));
 
@@ -87,7 +87,7 @@ public class SheetTests : TestBase
     public void Sheet_Hides_CloseButton_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<Sheet>(parameters => parameters
+        var cut = Render<Sheet>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.ShowCloseButton, false));
 
@@ -102,7 +102,7 @@ public class SheetTests : TestBase
         var content = "Sheet Content";
 
         // Act
-        var cut = RenderComponent<Sheet>(parameters => parameters
+        var cut = Render<Sheet>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.ChildContent, builder => builder.AddContent(0, content)));
 
@@ -115,7 +115,7 @@ public class SheetTests : TestBase
     public void Sheet_Displays_Footer_WhenProvided()
     {
         // Act
-        var cut = RenderComponent<Sheet>(parameters => parameters
+        var cut = Render<Sheet>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.Footer, builder => builder.AddContent(0, "Footer")));
 
@@ -128,7 +128,7 @@ public class SheetTests : TestBase
     public void Sheet_Applies_SizeStyle()
     {
         // Act
-        var cut = RenderComponent<Sheet>(parameters => parameters
+        var cut = Render<Sheet>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.Size, Sheet.SheetSize.Large));
 

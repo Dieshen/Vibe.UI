@@ -6,7 +6,7 @@ public class DateRangePickerTests : TestBase
     public void DateRangePicker_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<DateRangePicker>();
+        var cut = Render<DateRangePicker>();
 
         // Assert
         var dateRangePicker = cut.Find(".vibe-daterange-picker");
@@ -17,7 +17,7 @@ public class DateRangePickerTests : TestBase
     public void DateRangePicker_Displays_TwoInputs()
     {
         // Act
-        var cut = RenderComponent<DateRangePicker>();
+        var cut = Render<DateRangePicker>();
 
         // Assert - Find the actual input elements within the Input component wrappers
         var inputs = cut.FindAll(".daterange-inputs input");
@@ -32,7 +32,7 @@ public class DateRangePickerTests : TestBase
         var endPlaceholder = "End Date";
 
         // Act
-        var cut = RenderComponent<DateRangePicker>(parameters => parameters
+        var cut = Render<DateRangePicker>(parameters => parameters
             .Add(p => p.StartDatePlaceholder, startPlaceholder)
             .Add(p => p.EndDatePlaceholder, endPlaceholder));
 
@@ -50,7 +50,7 @@ public class DateRangePickerTests : TestBase
         var endDate = new System.DateTime(2024, 6, 30);
 
         // Act
-        var cut = RenderComponent<DateRangePicker>(parameters => parameters
+        var cut = Render<DateRangePicker>(parameters => parameters
             .Add(p => p.StartDate, startDate)
             .Add(p => p.EndDate, endDate)
             .Add(p => p.Format, "MM/dd/yyyy"));
@@ -65,7 +65,7 @@ public class DateRangePickerTests : TestBase
     public void DateRangePicker_OpensCalendar_WhenStartInputClicked()
     {
         // Act
-        var cut = RenderComponent<DateRangePicker>();
+        var cut = Render<DateRangePicker>();
         // Use daterange-icon which has a proper click handler
         var icon = cut.Find(".daterange-icon");
         icon.Click();
@@ -79,7 +79,7 @@ public class DateRangePickerTests : TestBase
     public void DateRangePicker_OpensCalendar_WhenEndInputClicked()
     {
         // Act
-        var cut = RenderComponent<DateRangePicker>();
+        var cut = Render<DateRangePicker>();
         // Use daterange-icon which has a proper click handler
         var icon = cut.Find(".daterange-icon");
         icon.Click();
@@ -93,7 +93,7 @@ public class DateRangePickerTests : TestBase
     public void DateRangePicker_DisplaysTwoCalendars()
     {
         // Act
-        var cut = RenderComponent<DateRangePicker>();
+        var cut = Render<DateRangePicker>();
         var icon = cut.Find(".daterange-icon");
         icon.Click();
 
@@ -108,7 +108,7 @@ public class DateRangePickerTests : TestBase
         // Arrange
         System.DateTime? selectedStart = null;
         System.DateTime? selectedEnd = null;
-        var cut = RenderComponent<DateRangePicker>(parameters => parameters
+        var cut = Render<DateRangePicker>(parameters => parameters
             .Add(p => p.OnChange, dates =>
             {
                 selectedStart = dates.StartDate;
@@ -130,7 +130,7 @@ public class DateRangePickerTests : TestBase
     public void DateRangePicker_SelectsToday_WhenTodayPresetClicked()
     {
         // Act
-        var cut = RenderComponent<DateRangePicker>();
+        var cut = Render<DateRangePicker>();
         var icon = cut.Find(".daterange-icon");
         icon.Click();
 
@@ -145,7 +145,7 @@ public class DateRangePickerTests : TestBase
     public void DateRangePicker_ClosesCalendar_WhenBackdropClicked()
     {
         // Act
-        var cut = RenderComponent<DateRangePicker>();
+        var cut = Render<DateRangePicker>();
         var icon = cut.Find(".daterange-icon");
         icon.Click();
 
@@ -160,7 +160,7 @@ public class DateRangePickerTests : TestBase
     public void DateRangePicker_DisablesInputs_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<DateRangePicker>(parameters => parameters
+        var cut = Render<DateRangePicker>(parameters => parameters
             .Add(p => p.Disabled, true));
 
         // Assert - Find the actual input elements within the Input component wrappers

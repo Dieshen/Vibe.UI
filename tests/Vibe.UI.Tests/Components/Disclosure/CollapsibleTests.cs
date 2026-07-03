@@ -6,7 +6,7 @@ public class CollapsibleTests : TestBase
     public void Collapsible_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Collapsible>(parameters => parameters
+        var cut = Render<Collapsible>(parameters => parameters
             .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
             .AddChildContent("Collapsible Content"));
 
@@ -22,7 +22,7 @@ public class CollapsibleTests : TestBase
     public void Collapsible_IsClosed_ByDefault()
     {
         // Act
-        var cut = RenderComponent<Collapsible>(parameters => parameters
+        var cut = Render<Collapsible>(parameters => parameters
             .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
             .AddChildContent("Collapsible Content"));
 
@@ -34,7 +34,7 @@ public class CollapsibleTests : TestBase
     public void Collapsible_Renders_TriggerContent()
     {
         // Act
-        var cut = RenderComponent<Collapsible>(parameters => parameters
+        var cut = Render<Collapsible>(parameters => parameters
             .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle Me"))
             .AddChildContent("Collapsible Content"));
 
@@ -46,7 +46,7 @@ public class CollapsibleTests : TestBase
     public void Collapsible_Renders_ChildContent()
     {
         // Act
-        var cut = RenderComponent<Collapsible>(parameters => parameters
+        var cut = Render<Collapsible>(parameters => parameters
             .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
             .AddChildContent("<span class='test-content'>Test Content</span>"));
 
@@ -59,7 +59,7 @@ public class CollapsibleTests : TestBase
     public void Collapsible_Content_NotExpanded_Initially()
     {
         // Act
-        var cut = RenderComponent<Collapsible>(parameters => parameters
+        var cut = Render<Collapsible>(parameters => parameters
             .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
             .AddChildContent("Collapsible Content"));
 
@@ -72,7 +72,7 @@ public class CollapsibleTests : TestBase
     public void Collapsible_Content_Expanded_WhenOpen()
     {
         // Act
-        var cut = RenderComponent<Collapsible>(parameters => parameters
+        var cut = Render<Collapsible>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
             .AddChildContent("Collapsible Content"));
@@ -88,7 +88,7 @@ public class CollapsibleTests : TestBase
     {
         // Arrange
         bool stateChanged = false;
-        var cut = RenderComponent<Collapsible>(parameters => parameters
+        var cut = Render<Collapsible>(parameters => parameters
             .Add(p => p.IsOpenChanged, EventCallback.Factory.Create<bool>(this, value => stateChanged = true))
             .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
             .AddChildContent("Collapsible Content"));
@@ -104,7 +104,7 @@ public class CollapsibleTests : TestBase
     public void Collapsible_Toggles_State()
     {
         // Act
-        var cut = RenderComponent<Collapsible>(parameters => parameters
+        var cut = Render<Collapsible>(parameters => parameters
             .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
             .AddChildContent("Collapsible Content"));
 
@@ -118,7 +118,7 @@ public class CollapsibleTests : TestBase
     [Fact]
     public void Collapsible_Toggles_WithKeyboard()
     {
-        var cut = RenderComponent<Collapsible>(parameters => parameters
+        var cut = Render<Collapsible>(parameters => parameters
             .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
             .AddChildContent("Collapsible Content"));
 
@@ -132,7 +132,7 @@ public class CollapsibleTests : TestBase
     public void Collapsible_Passes_IsOpenState_ToTrigger()
     {
         // Act
-        var cut = RenderComponent<Collapsible>(parameters => parameters
+        var cut = Render<Collapsible>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.TriggerContent, (isOpen) => builder =>
                 builder.AddContent(0, isOpen ? "Close" : "Open"))
@@ -146,7 +146,7 @@ public class CollapsibleTests : TestBase
     public void Collapsible_Applies_AdditionalAttributes()
     {
         // Act
-        var cut = RenderComponent<Collapsible>(parameters => parameters
+        var cut = Render<Collapsible>(parameters => parameters
             .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
             .AddUnmatched("data-test", "collapsible-value")
             .AddChildContent("Collapsible Content"));

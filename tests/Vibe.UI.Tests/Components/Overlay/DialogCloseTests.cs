@@ -5,7 +5,7 @@ public class DialogCloseTests : TestBase
     [Fact]
     public void DialogClose_RendersDefaultAccessibleButton()
     {
-        var cut = RenderComponent<DialogClose>();
+        var cut = Render<DialogClose>();
 
         var button = cut.Find("button.vibe-dialog-close");
         button.GetAttribute("type").ShouldBe("button");
@@ -16,7 +16,7 @@ public class DialogCloseTests : TestBase
     [Fact]
     public void DialogClose_RendersCustomContentAndAttributes()
     {
-        var cut = RenderComponent<DialogClose>(parameters => parameters
+        var cut = Render<DialogClose>(parameters => parameters
             .Add(p => p.Class, "close-button")
             .AddUnmatched("data-close", "dialog")
             .AddChildContent("Dismiss"));
@@ -31,7 +31,7 @@ public class DialogCloseTests : TestBase
     public void DialogClose_InvokesClickCallback()
     {
         var clicked = false;
-        var cut = RenderComponent<DialogClose>(parameters => parameters
+        var cut = Render<DialogClose>(parameters => parameters
             .Add(p => p.OnClick, EventCallback.Factory.Create(this, () => clicked = true)));
 
         cut.Find(".vibe-dialog-close").Click();
@@ -43,7 +43,7 @@ public class DialogCloseTests : TestBase
     public void DialogClose_ClosesParentDialog()
     {
         bool? changed = null;
-        var cut = RenderComponent<DialogRoot>(parameters => parameters
+        var cut = Render<DialogRoot>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.IsOpenChanged, EventCallback.Factory.Create<bool>(this, value => changed = value))
             .AddChildContent(builder =>

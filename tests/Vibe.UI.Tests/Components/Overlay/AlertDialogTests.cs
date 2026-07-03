@@ -5,7 +5,7 @@ public class AlertDialogTests : TestBase
     [Fact]
     public void AlertDialog_DoesNotRender_WhenClosed()
     {
-        var cut = RenderComponent<AlertDialog>(parameters => parameters
+        var cut = Render<AlertDialog>(parameters => parameters
             .Add(p => p.IsOpen, false)
             .AddChildContent("Delete item?"));
 
@@ -15,7 +15,7 @@ public class AlertDialogTests : TestBase
     [Fact]
     public void AlertDialog_RendersModalAttributes_WhenOpen()
     {
-        var cut = RenderComponent<AlertDialog>(parameters => parameters
+        var cut = Render<AlertDialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.Title, "Delete item")
             .Add(p => p.Description, "This action cannot be undone.")
@@ -37,7 +37,7 @@ public class AlertDialogTests : TestBase
     [Fact]
     public void AlertDialog_RendersBodyAndFooterContent()
     {
-        var cut = RenderComponent<AlertDialog>(parameters => parameters
+        var cut = Render<AlertDialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.Footer, builder => builder.AddMarkupContent(0, "<button>Confirm</button>"))
             .AddChildContent("<p class='dialog-body-copy'>Delete item?</p>"));
@@ -49,7 +49,7 @@ public class AlertDialogTests : TestBase
     [Fact]
     public void AlertDialog_OmitsHeader_WhenTitleIsEmpty()
     {
-        var cut = RenderComponent<AlertDialog>(parameters => parameters
+        var cut = Render<AlertDialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.Title, string.Empty)
             .AddChildContent("Delete item?"));
@@ -60,7 +60,7 @@ public class AlertDialogTests : TestBase
     [Fact]
     public void AlertDialog_OmitsDescription_WhenDescriptionIsEmpty()
     {
-        var cut = RenderComponent<AlertDialog>(parameters => parameters
+        var cut = Render<AlertDialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.Title, "Delete item")
             .Add(p => p.Description, string.Empty)
@@ -74,7 +74,7 @@ public class AlertDialogTests : TestBase
     public void AlertDialog_CloseButtonInvokesIsOpenChanged()
     {
         bool? changedValue = null;
-        var cut = RenderComponent<AlertDialog>(parameters => parameters
+        var cut = Render<AlertDialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.IsOpenChanged, value => changedValue = value)
             .AddChildContent("Delete item?"));
@@ -88,7 +88,7 @@ public class AlertDialogTests : TestBase
     public void AlertDialog_BackdropInvokesIsOpenChanged_WhenEnabled()
     {
         bool? changedValue = null;
-        var cut = RenderComponent<AlertDialog>(parameters => parameters
+        var cut = Render<AlertDialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.CloseOnBackdropClick, true)
             .Add(p => p.IsOpenChanged, value => changedValue = value)
@@ -103,7 +103,7 @@ public class AlertDialogTests : TestBase
     public void AlertDialog_BackdropDoesNotClose_WhenDisabled()
     {
         bool callbackInvoked = false;
-        var cut = RenderComponent<AlertDialog>(parameters => parameters
+        var cut = Render<AlertDialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.CloseOnBackdropClick, false)
             .Add(p => p.IsOpenChanged, _ => callbackInvoked = true)
@@ -118,7 +118,7 @@ public class AlertDialogTests : TestBase
     public void AlertDialog_EscapeInvokesIsOpenChanged_WhenEnabled()
     {
         bool? changedValue = null;
-        var cut = RenderComponent<AlertDialog>(parameters => parameters
+        var cut = Render<AlertDialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.CloseOnEscape, true)
             .Add(p => p.IsOpenChanged, value => changedValue = value)
@@ -133,7 +133,7 @@ public class AlertDialogTests : TestBase
     public void AlertDialog_EscapeDoesNotClose_WhenDisabled()
     {
         bool callbackInvoked = false;
-        var cut = RenderComponent<AlertDialog>(parameters => parameters
+        var cut = Render<AlertDialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.CloseOnEscape, false)
             .Add(p => p.IsOpenChanged, _ => callbackInvoked = true)
@@ -147,7 +147,7 @@ public class AlertDialogTests : TestBase
     [Fact]
     public void AlertDialog_OmitsCloseButton_WhenAllCloseControlsAreDisabled()
     {
-        var cut = RenderComponent<AlertDialog>(parameters => parameters
+        var cut = Render<AlertDialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.CloseOnBackdropClick, false)
             .Add(p => p.ShowCloseButton, false)
@@ -159,7 +159,7 @@ public class AlertDialogTests : TestBase
     [Fact]
     public void AlertDialog_PreservesAdditionalAttributes()
     {
-        var cut = RenderComponent<AlertDialog>(parameters => parameters
+        var cut = Render<AlertDialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
             {
@@ -176,7 +176,7 @@ public class AlertDialogTests : TestBase
     [Fact]
     public void AlertDialog_AppliesCustomClass()
     {
-        var cut = RenderComponent<AlertDialog>(parameters => parameters
+        var cut = Render<AlertDialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
             .Add(p => p.Class, "danger-dialog")
             .AddChildContent("Delete item?"));

@@ -7,7 +7,7 @@ public class ToastContainerTests : TestBase
     [Fact]
     public void ToastContainer_RendersBaseClassAndPosition()
     {
-        var cut = RenderComponent<ToastContainer>();
+        var cut = Render<ToastContainer>();
 
         var container = cut.Find(".vibe-toast-container");
         container.ClassList.ShouldContain("bottom-right");
@@ -16,7 +16,7 @@ public class ToastContainerTests : TestBase
     [Fact]
     public void ToastContainer_AppliesCustomPosition()
     {
-        var cut = RenderComponent<ToastContainer>(parameters => parameters
+        var cut = Render<ToastContainer>(parameters => parameters
             .Add(p => p.Position, "top-left"));
 
         cut.Find(".vibe-toast-container").ClassList.ShouldContain("top-left");
@@ -25,7 +25,7 @@ public class ToastContainerTests : TestBase
     [Fact]
     public void ToastContainer_PreservesAdditionalAttributes()
     {
-        var cut = RenderComponent<ToastContainer>(parameters => parameters
+        var cut = Render<ToastContainer>(parameters => parameters
             .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
             {
                 ["data-testid"] = "toast-container",
@@ -42,7 +42,7 @@ public class ToastContainerTests : TestBase
     {
         var service = new FakeToastService();
         Services.AddSingleton<IToastService>(service);
-        var cut = RenderComponent<ToastContainer>();
+        var cut = Render<ToastContainer>();
 
         service.RaiseAdded(new ToastEventArgs
         {
@@ -69,7 +69,7 @@ public class ToastContainerTests : TestBase
     {
         var service = new FakeToastService();
         Services.AddSingleton<IToastService>(service);
-        var cut = RenderComponent<ToastContainer>(parameters => parameters
+        var cut = Render<ToastContainer>(parameters => parameters
             .Add(p => p.MaxToasts, 2));
 
         service.RaiseAdded(CreateToast("toast-1", "One"));
@@ -88,7 +88,7 @@ public class ToastContainerTests : TestBase
     {
         var service = new FakeToastService();
         Services.AddSingleton<IToastService>(service);
-        var cut = RenderComponent<ToastContainer>();
+        var cut = Render<ToastContainer>();
 
         service.RaiseAdded(CreateToast("toast-1", "Saved"));
         cut.WaitForAssertion(() => cut.FindAll(".vibe-toast").Count.ShouldBe(1));
@@ -103,7 +103,7 @@ public class ToastContainerTests : TestBase
     {
         var service = new FakeToastService();
         Services.AddSingleton<IToastService>(service);
-        var cut = RenderComponent<ToastContainer>();
+        var cut = Render<ToastContainer>();
 
         service.RaiseAdded(CreateToast("toast-1", "Saved"));
         cut.WaitForAssertion(() => cut.Find(".toast-close").ShouldNotBeNull());
@@ -118,7 +118,7 @@ public class ToastContainerTests : TestBase
     {
         var service = new FakeToastService();
         Services.AddSingleton<IToastService>(service);
-        var cut = RenderComponent<ToastContainer>();
+        var cut = Render<ToastContainer>();
 
         service.AddedSubscribers.ShouldBe(1);
         service.RemovedSubscribers.ShouldBe(1);
@@ -132,7 +132,7 @@ public class ToastContainerTests : TestBase
     [Fact]
     public void ToastContainer_AppliesCustomClass()
     {
-        var cut = RenderComponent<ToastContainer>(parameters => parameters
+        var cut = Render<ToastContainer>(parameters => parameters
             .Add(p => p.Class, "toast-stack"));
 
         cut.Find(".vibe-toast-container").ClassList.ShouldContain("toast-stack");

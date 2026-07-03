@@ -11,9 +11,9 @@
     <VibeCssFailOnMissingTool Condition="'$(VibeCssFailOnMissingTool)' == ''">false</VibeCssFailOnMissingTool>
 
     <!-- Tool assembly path resolution (package-relative) -->
-    <_VibeCssToolFromTools>$(MSBuildThisFileDirectory)..\tools\net9.0\Vibe.UI.CSS.dll</_VibeCssToolFromTools>
-    <_VibeCssToolFromToolsAny>$(MSBuildThisFileDirectory)..\tools\net9.0\any\Vibe.UI.CSS.dll</_VibeCssToolFromToolsAny>
-    <_VibeCssToolFromLib>$(MSBuildThisFileDirectory)..\lib\net9.0\Vibe.UI.CSS.dll</_VibeCssToolFromLib>
+    <_VibeCssToolFromTools>$(MSBuildThisFileDirectory)..\tools\net10.0\Vibe.UI.CSS.dll</_VibeCssToolFromTools>
+    <_VibeCssToolFromToolsAny>$(MSBuildThisFileDirectory)..\tools\net10.0\any\Vibe.UI.CSS.dll</_VibeCssToolFromToolsAny>
+    <_VibeCssToolFromLib>$(MSBuildThisFileDirectory)..\lib\net10.0\Vibe.UI.CSS.dll</_VibeCssToolFromLib>
 
     <VibeCssToolPath Condition="'$(VibeCssToolPath)' == '' and Exists('$(_VibeCssToolFromTools)')">$(_VibeCssToolFromTools)</VibeCssToolPath>
     <VibeCssToolPath Condition="'$(VibeCssToolPath)' == '' and Exists('$(_VibeCssToolFromToolsAny)')">$(_VibeCssToolFromToolsAny)</VibeCssToolPath>

@@ -6,7 +6,7 @@ public class MasonryGridTests : TestBase
     public void MasonryGrid_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<MasonryGrid>();
+        var cut = Render<MasonryGrid>();
 
         // Assert
         var grid = cut.Find(".vibe-masonry");
@@ -17,7 +17,7 @@ public class MasonryGridTests : TestBase
     public void MasonryGrid_Applies_DefaultColumns()
     {
         // Act
-        var cut = RenderComponent<MasonryGrid>();
+        var cut = Render<MasonryGrid>();
 
         // Assert
         var columns = cut.FindAll(".masonry-column");
@@ -31,7 +31,7 @@ public class MasonryGridTests : TestBase
         var columnCount = 5;
 
         // Act
-        var cut = RenderComponent<MasonryGrid>(parameters => parameters
+        var cut = Render<MasonryGrid>(parameters => parameters
             .Add(p => p.Columns, columnCount));
 
         // Assert
@@ -46,7 +46,7 @@ public class MasonryGridTests : TestBase
         var gap = 20;
 
         // Act
-        var cut = RenderComponent<MasonryGrid>(parameters => parameters
+        var cut = Render<MasonryGrid>(parameters => parameters
             .Add(p => p.Gap, gap));
 
         // Assert
@@ -66,7 +66,7 @@ public class MasonryGridTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<MasonryGrid>(parameters => parameters
+        var cut = Render<MasonryGrid>(parameters => parameters
             .Add(p => p.Items, items));
 
         // Assert
@@ -78,7 +78,7 @@ public class MasonryGridTests : TestBase
     public void MasonryGrid_Shows_EmptyContent_WhenNoItems()
     {
         // Act
-        var cut = RenderComponent<MasonryGrid>(parameters => parameters
+        var cut = Render<MasonryGrid>(parameters => parameters
             .Add(p => p.EmptyContent, builder => builder.AddContent(0, "No items")));
 
         // Assert
@@ -100,7 +100,7 @@ public class MasonryGridTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<MasonryGrid>(parameters => parameters
+        var cut = Render<MasonryGrid>(parameters => parameters
             .Add(p => p.Items, items)
             .Add(p => p.Columns, 2));
 
@@ -119,7 +119,7 @@ public class MasonryGridTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<MasonryGrid>(parameters => parameters
+        var cut = Render<MasonryGrid>(parameters => parameters
             .Add(p => p.Items, items)
             .Add(p => p.ItemTemplate, item => builder => builder.AddContent(0, item.Data?.ToString())));
 
@@ -132,7 +132,7 @@ public class MasonryGridTests : TestBase
     public void MasonryGrid_HandlesEmptyItems()
     {
         // Act
-        var cut = RenderComponent<MasonryGrid>(parameters => parameters
+        var cut = Render<MasonryGrid>(parameters => parameters
             .Add(p => p.Items, new List<MasonryGrid.MasonryItem>()));
 
         // Assert

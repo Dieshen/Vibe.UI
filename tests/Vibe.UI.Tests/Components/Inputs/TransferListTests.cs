@@ -6,7 +6,7 @@ public class TransferListTests : TestBase
     public void TransferList_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<TransferList<string>>();
+        var cut = Render<TransferList<string>>();
 
         // Assert
         cut.Find(".vibe-transfer").ShouldNotBeNull();
@@ -16,7 +16,7 @@ public class TransferListTests : TestBase
     public void TransferList_Renders_TwoPanels()
     {
         // Act
-        var cut = RenderComponent<TransferList<string>>();
+        var cut = Render<TransferList<string>>();
 
         // Assert
         var panels = cut.FindAll(".transfer-panel");
@@ -27,7 +27,7 @@ public class TransferListTests : TestBase
     public void TransferList_Renders_Controls()
     {
         // Act
-        var cut = RenderComponent<TransferList<string>>();
+        var cut = Render<TransferList<string>>();
 
         // Assert
         cut.Find(".transfer-controls").ShouldNotBeNull();
@@ -39,7 +39,7 @@ public class TransferListTests : TestBase
     public void TransferList_Has_DefaultSourceTitle()
     {
         // Act
-        var cut = RenderComponent<TransferList<string>>();
+        var cut = Render<TransferList<string>>();
 
         // Assert
         var panels = cut.FindAll(".panel-title");
@@ -50,7 +50,7 @@ public class TransferListTests : TestBase
     public void TransferList_Has_DefaultTargetTitle()
     {
         // Act
-        var cut = RenderComponent<TransferList<string>>();
+        var cut = Render<TransferList<string>>();
 
         // Assert
         var panels = cut.FindAll(".panel-title");
@@ -61,7 +61,7 @@ public class TransferListTests : TestBase
     public void TransferList_Accepts_CustomTitles()
     {
         // Act
-        var cut = RenderComponent<TransferList<string>>(parameters => parameters
+        var cut = Render<TransferList<string>>(parameters => parameters
             .Add(p => p.SourceTitle, "Source Items")
             .Add(p => p.TargetTitle, "Target Items"));
 
@@ -75,7 +75,7 @@ public class TransferListTests : TestBase
     public void TransferList_Shows_Search_ByDefault()
     {
         // Act
-        var cut = RenderComponent<TransferList<string>>(parameters => parameters
+        var cut = Render<TransferList<string>>(parameters => parameters
             .Add(p => p.ShowSearch, true));
 
         // Assert
@@ -87,7 +87,7 @@ public class TransferListTests : TestBase
     public void TransferList_Hides_Search_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<TransferList<string>>(parameters => parameters
+        var cut = Render<TransferList<string>>(parameters => parameters
             .Add(p => p.ShowSearch, false));
 
         // Assert
@@ -101,7 +101,7 @@ public class TransferListTests : TestBase
         var sourceItems = new List<string> { "Item 1", "Item 2" };
 
         // Act
-        var cut = RenderComponent<TransferList<string>>(parameters => parameters
+        var cut = Render<TransferList<string>>(parameters => parameters
             .Add(p => p.SourceItems, sourceItems)
             .Add(p => p.ShowCheckboxes, true));
 
@@ -116,7 +116,7 @@ public class TransferListTests : TestBase
         var sourceItems = new List<string> { "Item 1", "Item 2", "Item 3" };
 
         // Act
-        var cut = RenderComponent<TransferList<string>>(parameters => parameters
+        var cut = Render<TransferList<string>>(parameters => parameters
             .Add(p => p.SourceItems, sourceItems));
 
         // Assert
@@ -131,7 +131,7 @@ public class TransferListTests : TestBase
         var sourceItems = new List<string> { "Item 1", "Item 2" };
 
         // Act
-        var cut = RenderComponent<TransferList<string>>(parameters => parameters
+        var cut = Render<TransferList<string>>(parameters => parameters
             .Add(p => p.SourceItems, sourceItems));
 
         // Assert
@@ -143,7 +143,7 @@ public class TransferListTests : TestBase
     public void TransferList_Applies_CustomCssClass()
     {
         // Act
-        var cut = RenderComponent<TransferList<string>>(parameters => parameters
+        var cut = Render<TransferList<string>>(parameters => parameters
             .Add(p => p.CssClass, "custom-transfer"));
 
         // Assert

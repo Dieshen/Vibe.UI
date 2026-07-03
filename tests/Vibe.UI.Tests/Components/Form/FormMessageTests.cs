@@ -5,7 +5,7 @@ public class FormMessageTests : TestBase
     [Fact]
     public void FormMessage_RendersChildContentAndDefaultVariant()
     {
-        var cut = RenderComponent<FormMessage>(parameters => parameters
+        var cut = Render<FormMessage>(parameters => parameters
             .AddChildContent("Saved successfully"));
 
         var message = cut.Find("p");
@@ -21,7 +21,7 @@ public class FormMessageTests : TestBase
     [InlineData("info", "form-message-info")]
     public void FormMessage_AppliesVariantClass(string variant, string expectedClass)
     {
-        var cut = RenderComponent<FormMessage>(parameters => parameters
+        var cut = Render<FormMessage>(parameters => parameters
             .Add(p => p.Variant, variant)
             .AddChildContent("Message"));
 
@@ -31,7 +31,7 @@ public class FormMessageTests : TestBase
     [Fact]
     public void FormMessage_RendersIconMarkup_WhenIconProvided()
     {
-        var cut = RenderComponent<FormMessage>(parameters => parameters
+        var cut = Render<FormMessage>(parameters => parameters
             .Add(p => p.Icon, "<svg aria-hidden=\"true\"></svg>")
             .AddChildContent("Error"));
 
@@ -43,10 +43,10 @@ public class FormMessageTests : TestBase
     [Fact]
     public void FormMessage_OmitsIcon_WhenIconIsNullOrEmpty()
     {
-        var withoutIcon = RenderComponent<FormMessage>(parameters => parameters
+        var withoutIcon = Render<FormMessage>(parameters => parameters
             .Add(p => p.Icon, null)
             .AddChildContent("Message"));
-        var withEmptyIcon = RenderComponent<FormMessage>(parameters => parameters
+        var withEmptyIcon = Render<FormMessage>(parameters => parameters
             .Add(p => p.Icon, "")
             .AddChildContent("Message"));
 
@@ -57,7 +57,7 @@ public class FormMessageTests : TestBase
     [Fact]
     public void FormMessage_ForwardsAdditionalAttributes()
     {
-        var cut = RenderComponent<FormMessage>(parameters => parameters
+        var cut = Render<FormMessage>(parameters => parameters
             .AddUnmatched("role", "alert")
             .AddChildContent("Error"));
 

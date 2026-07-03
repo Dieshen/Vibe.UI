@@ -6,7 +6,7 @@ public class IconTests : TestBase
     public void Icon_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Icon>(parameters => parameters
+        var cut = Render<Icon>(parameters => parameters
             .Add(p => p.Name, "heart"));
 
         // Assert
@@ -19,7 +19,7 @@ public class IconTests : TestBase
     public void Icon_Applies_DefaultSize()
     {
         // Act
-        var cut = RenderComponent<Icon>(parameters => parameters
+        var cut = Render<Icon>(parameters => parameters
             .Add(p => p.Name, "star"));
 
         // Assert
@@ -32,7 +32,7 @@ public class IconTests : TestBase
     public void Icon_Applies_CustomSize()
     {
         // Act
-        var cut = RenderComponent<Icon>(parameters => parameters
+        var cut = Render<Icon>(parameters => parameters
             .Add(p => p.Name, "heart")
             .Add(p => p.Size, 32));
 
@@ -46,7 +46,7 @@ public class IconTests : TestBase
     public void Icon_Applies_CustomWidth()
     {
         // Act
-        var cut = RenderComponent<Icon>(parameters => parameters
+        var cut = Render<Icon>(parameters => parameters
             .Add(p => p.Name, "heart")
             .Add(p => p.Width, 48));
 
@@ -59,7 +59,7 @@ public class IconTests : TestBase
     public void Icon_Applies_CustomHeight()
     {
         // Act
-        var cut = RenderComponent<Icon>(parameters => parameters
+        var cut = Render<Icon>(parameters => parameters
             .Add(p => p.Name, "heart")
             .Add(p => p.Height, 64));
 
@@ -72,7 +72,7 @@ public class IconTests : TestBase
     public void Icon_Applies_CustomColor()
     {
         // Act
-        var cut = RenderComponent<Icon>(parameters => parameters
+        var cut = Render<Icon>(parameters => parameters
             .Add(p => p.Name, "heart")
             .Add(p => p.Color, "#ff0000"));
 
@@ -85,7 +85,7 @@ public class IconTests : TestBase
     public void Icon_Applies_CustomFill()
     {
         // Act
-        var cut = RenderComponent<Icon>(parameters => parameters
+        var cut = Render<Icon>(parameters => parameters
             .Add(p => p.Name, "heart")
             .Add(p => p.Fill, "red"));
 
@@ -98,7 +98,7 @@ public class IconTests : TestBase
     public void Icon_Applies_CustomStroke()
     {
         // Act
-        var cut = RenderComponent<Icon>(parameters => parameters
+        var cut = Render<Icon>(parameters => parameters
             .Add(p => p.Name, "heart")
             .Add(p => p.Stroke, "blue"));
 
@@ -111,7 +111,7 @@ public class IconTests : TestBase
     public void Icon_Applies_CustomStrokeWidth()
     {
         // Act
-        var cut = RenderComponent<Icon>(parameters => parameters
+        var cut = Render<Icon>(parameters => parameters
             .Add(p => p.Name, "heart")
             .Add(p => p.StrokeWidth, 3));
 
@@ -124,7 +124,7 @@ public class IconTests : TestBase
     public void Icon_Applies_CustomCssClass()
     {
         // Act
-        var cut = RenderComponent<Icon>(parameters => parameters
+        var cut = Render<Icon>(parameters => parameters
             .Add(p => p.Name, "heart")
             .Add(p => p.CssClass, "custom-icon"));
 
@@ -140,7 +140,7 @@ public class IconTests : TestBase
         var customSvg = "<svg class='custom'><circle r='10'/></svg>";
 
         // Act
-        var cut = RenderComponent<Icon>(parameters => parameters
+        var cut = Render<Icon>(parameters => parameters
             .Add(p => p.CustomSvg, customSvg));
 
         // Assert

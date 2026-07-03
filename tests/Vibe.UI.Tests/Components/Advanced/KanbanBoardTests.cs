@@ -6,7 +6,7 @@ public class KanbanBoardTests : TestBase
     public void KanbanBoard_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<KanbanBoard>();
+        var cut = Render<KanbanBoard>();
 
         // Assert
         var kanban = cut.Find(".vibe-kanban");
@@ -20,7 +20,7 @@ public class KanbanBoardTests : TestBase
         var emptyMarkup = "<div>No columns</div>";
 
         // Act
-        var cut = RenderComponent<KanbanBoard>(parameters => parameters
+        var cut = Render<KanbanBoard>(parameters => parameters
             .Add(p => p.EmptyContent, emptyMarkup));
 
         // Assert
@@ -40,7 +40,7 @@ public class KanbanBoardTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<KanbanBoard>(parameters => parameters
+        var cut = Render<KanbanBoard>(parameters => parameters
             .Add(p => p.Columns, columns));
 
         // Assert
@@ -69,7 +69,7 @@ public class KanbanBoardTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<KanbanBoard>(parameters => parameters
+        var cut = Render<KanbanBoard>(parameters => parameters
             .Add(p => p.Columns, columns));
 
         // Assert
@@ -97,7 +97,7 @@ public class KanbanBoardTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<KanbanBoard>(parameters => parameters
+        var cut = Render<KanbanBoard>(parameters => parameters
             .Add(p => p.Columns, columns));
 
         // Assert
@@ -127,7 +127,7 @@ public class KanbanBoardTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<KanbanBoard>(parameters => parameters
+        var cut = Render<KanbanBoard>(parameters => parameters
             .Add(p => p.Columns, columns));
 
         // Assert
@@ -145,7 +145,7 @@ public class KanbanBoardTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<KanbanBoard>(parameters => parameters
+        var cut = Render<KanbanBoard>(parameters => parameters
             .Add(p => p.Columns, columns)
             .Add(p => p.AllowAddCard, true));
 
@@ -165,7 +165,7 @@ public class KanbanBoardTests : TestBase
             new() { Id = "1", Title = "To Do", Cards = new() { card } }
         };
 
-        var cut = RenderComponent<KanbanBoard>(parameters => parameters
+        var cut = Render<KanbanBoard>(parameters => parameters
             .Add(p => p.Columns, columns)
             .Add(p => p.OnCardClicked, EventCallback.Factory.Create<KanbanBoard.KanbanCard>(
                 this, c => clickedCard = c)));
@@ -183,7 +183,7 @@ public class KanbanBoardTests : TestBase
     public void KanbanBoard_Applies_CustomCssClass()
     {
         // Act
-        var cut = RenderComponent<KanbanBoard>(parameters => parameters
+        var cut = Render<KanbanBoard>(parameters => parameters
             .Add(p => p.CssClass, "custom-kanban"));
 
         // Assert

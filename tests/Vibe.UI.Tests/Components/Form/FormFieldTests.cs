@@ -5,7 +5,7 @@ public class FormFieldTests : TestBase
     [Fact]
     public void FormField_RendersChildContentAndBaseClass()
     {
-        var cut = RenderComponent<FormField<string>>(parameters => parameters
+        var cut = Render<FormField<string>>(parameters => parameters
             .AddChildContent("<input id=\"email\" />"));
 
         cut.Find(".vibe-form-field").ShouldNotBeNull();
@@ -15,7 +15,7 @@ public class FormFieldTests : TestBase
     [Fact]
     public void FormField_RendersLabelAndDescription_WhenProvided()
     {
-        var cut = RenderComponent<FormField<string>>(parameters => parameters
+        var cut = Render<FormField<string>>(parameters => parameters
             .Add(p => p.Id, "email")
             .Add(p => p.Label, "Email")
             .Add(p => p.Description, "Use your work email")
@@ -30,7 +30,7 @@ public class FormFieldTests : TestBase
     [Fact]
     public void FormField_GeneratesId_WhenIdIsMissing()
     {
-        var cut = RenderComponent<FormField<string>>(parameters => parameters
+        var cut = Render<FormField<string>>(parameters => parameters
             .Add(p => p.Label, "Email")
             .AddChildContent("<input />"));
 
@@ -42,7 +42,7 @@ public class FormFieldTests : TestBase
     [Fact]
     public void FormField_OmitsOptionalLabelAndDescription_WhenNotProvided()
     {
-        var cut = RenderComponent<FormField<string>>(parameters => parameters
+        var cut = Render<FormField<string>>(parameters => parameters
             .AddChildContent("<input />"));
 
         cut.FindAll(".form-field-label").ShouldBeEmpty();
@@ -52,7 +52,7 @@ public class FormFieldTests : TestBase
     [Fact]
     public void FormField_AppliesHasErrorClass_WhenHasError()
     {
-        var cut = RenderComponent<FormField<string>>(parameters => parameters
+        var cut = Render<FormField<string>>(parameters => parameters
             .Add(p => p.HasError, true)
             .AddChildContent("<input />"));
 
