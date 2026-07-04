@@ -1,36 +1,41 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
+@using System.Globalization
 
-<div class="@CombinedClass">
+<div class="@CombinedClass" role="group" aria-label="@AriaLabel" @attributes="AdditionalAttributes">
     <div class="calendar-header">
-        <button type="button" class="calendar-nav-button" @onclick="PreviousMonth">
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <button type="button" class="calendar-nav-button" @onclick="PreviousMonth" disabled="@IsPreviousMonthDisabled"
+            aria-label="@PreviousMonthLabel">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true" focusable="false">
                 <path
                     d="M8.84182 3.13514C9.04327 3.32401 9.05348 3.64042 8.86462 3.84188L5.43521 7.49991L8.86462 11.1579C9.05348 11.3594 9.04327 11.6758 8.84182 11.8647C8.64036 12.0535 8.32394 12.0433 8.13508 11.8419L4.38508 7.84188C4.20477 7.64955 4.20477 7.35027 4.38508 7.15794L8.13508 3.15794C8.32394 2.95648 8.64036 2.94628 8.84182 3.13514Z"
                     fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path>
             </svg>
         </button>
-        <div class="calendar-month-year">
+        <div id="@MonthYearId" class="calendar-month-year" aria-live="polite">
             @CurrentMonthYear
         </div>
-        <button type="button" class="calendar-nav-button" @onclick="NextMonth">
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <button type="button" class="calendar-nav-button" @onclick="NextMonth" disabled="@IsNextMonthDisabled"
+            aria-label="@NextMonthLabel">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true" focusable="false">
                 <path
                     d="M6.1584 3.13508C6.35985 2.94621 6.67627 2.95642 6.86514 3.15788L10.6151 7.15788C10.7954 7.3502 10.7954 7.64949 10.6151 7.84182L6.86514 11.8418C6.67627 12.0433 6.35985 12.0535 6.1584 11.8646C5.95694 11.6757 5.94673 11.3593 6.1356 11.1579L9.565 7.49985L6.1356 3.84182C5.94673 3.64036 5.95694 3.32394 6.1584 3.13508Z"
                     fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path>
             </svg>
         </button>
     </div>
-    <div class="calendar-weekdays">
-        @foreach (var day in DayNames)
+    <div class="calendar-weekdays" role="row">
+        @for (var weekdayIndex = 0; weekdayIndex < DayNames.Length; weekdayIndex++)
         {
-            <div class="calendar-weekday">@day</div>
+            <div class="calendar-weekday" role="columnheader" aria-label="@FullDayNames[weekdayIndex]">@DayNames[weekdayIndex]</div>
         }
     </div>
-    <div class="calendar-days">
+    <div class="calendar-days" role="grid" aria-labelledby="@MonthYearId">
         @for (var i = 0; i < FirstDayOfMonth; i++)
         {
-            <div class="calendar-day empty"></div>
+            <div class="calendar-day empty" role="presentation" aria-hidden="true"></div>
         }
         @for (var day = 1; day <= DaysInMonth; day++)
         {
@@ -41,7 +46,14 @@
 
             <button type="button"
                 class="calendar-day @(isSelected ? "selected" : "") @(isToday ? "today" : "") @(isOutsideRange ? "disabled" : "")"
-                @onclick="() => OnDateSelected(currentDate)" disabled="@isOutsideRange">
+                role="gridcell"
+                aria-label="@GetDayAriaLabel(currentDate, isSelected, isToday, isOutsideRange)"
+                aria-selected="@AriaBool(isSelected)"
+                aria-current="@GetAriaCurrent(isToday)"
+                aria-disabled="@AriaBool(isOutsideRange)"
+                @onclick="() => OnDateSelected(currentDate)"
+                @onkeydown="e => OnDayKeyDown(e, currentDate)"
+                disabled="@isOutsideRange">
                 @day
             </button>
         }
@@ -80,6 +92,12 @@
     public EventCallback<DateTime?> SelectedDateChanged { get; set; }
 
     /// <summary>
+    /// Gets or sets the accessible label for the calendar.
+    /// </summary>
+    [Parameter]
+    public string AriaLabel { get; set; } = "Calendar";
+
+    /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
     protected override string ComponentClass => "vibe-calendar";
@@ -87,12 +105,27 @@
     /// <summary>
     /// The current date displayed in the calendar.
     /// </summary>
-    private DateTime CurrentDate { get; set; } = DateTime.Today;
+    private DateTime CurrentDate { get; set; } = new(DateTime.Today.Year, DateTime.Today.Month, 1);
+
+    private DateTime? _previousSelectedDate;
+
+    private readonly string MonthYearId = $"vibe-calendar-month-{Guid.NewGuid():N}";
 
     /// <summary>
     /// The days of the week.
     /// </summary>
     private string[] DayNames { get; } = { "Su", "Mo", "Tu", "We", "Th", "Fr", "Sa" };
+
+    private string[] FullDayNames { get; } =
+    {
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+    };
 
     /// <summary>
     /// Gets the first day of the month (0-6, where 0 is Sunday).
@@ -109,16 +142,58 @@
     /// </summary>
     private string CurrentMonthYear => CurrentDate.ToString("MMMM yyyy");
 
-    /// <summary>
-    /// Initializes the component.
-    /// </summary>
-    protected override void OnInitialized()
+    private string PreviousMonthLabel => $"Previous month, {CurrentDate.AddMonths(-1).ToString("MMMM yyyy", CultureInfo.CurrentCulture)}";
+
+    private string NextMonthLabel => $"Next month, {CurrentDate.AddMonths(1).ToString("MMMM yyyy", CultureInfo.CurrentCulture)}";
+
+    private bool IsPreviousMonthDisabled
     {
-        base.OnInitialized();
-        if (SelectedDate.HasValue)
+        get
         {
-            CurrentDate = new DateTime(SelectedDate.Value.Year, SelectedDate.Value.Month, 1);
+            if (!MinDate.HasValue)
+            {
+                return false;
+            }
+
+            var previousMonth = CurrentDate.AddMonths(-1);
+            var previousMonthLastDay = new DateTime(
+                previousMonth.Year,
+                previousMonth.Month,
+                DateTime.DaysInMonth(previousMonth.Year, previousMonth.Month));
+
+            return previousMonthLastDay < MinDate.Value.Date;
         }
+    }
+
+    private bool IsNextMonthDisabled
+    {
+        get
+        {
+            if (!MaxDate.HasValue)
+            {
+                return false;
+            }
+
+            var nextMonth = CurrentDate.AddMonths(1);
+            var nextMonthFirstDay = new DateTime(nextMonth.Year, nextMonth.Month, 1);
+
+            return nextMonthFirstDay > MaxDate.Value.Date;
+        }
+    }
+
+    /// <summary>
+    /// Updates the displayed month when the selected date changes externally.
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        var selectedDate = SelectedDate?.Date;
+
+        if (selectedDate.HasValue && selectedDate != _previousSelectedDate)
+        {
+            CurrentDate = new DateTime(selectedDate.Value.Year, selectedDate.Value.Month, 1);
+        }
+
+        _previousSelectedDate = selectedDate;
     }
 
     /// <summary>
@@ -126,6 +201,11 @@
     /// </summary>
     private void PreviousMonth()
     {
+        if (IsPreviousMonthDisabled)
+        {
+            return;
+        }
+
         CurrentDate = CurrentDate.AddMonths(-1);
     }
 
@@ -134,7 +214,20 @@
     /// </summary>
     private void NextMonth()
     {
+        if (IsNextMonthDisabled)
+        {
+            return;
+        }
+
         CurrentDate = CurrentDate.AddMonths(1);
+    }
+
+    private async Task OnDayKeyDown(KeyboardEventArgs e, DateTime date)
+    {
+        if (e.Key is "Enter" or " ")
+        {
+            await OnDateSelected(date);
+        }
     }
 
     /// <summary>
@@ -178,5 +271,37 @@
     private bool IsOutsideRange(DateTime date)
     {
         return (MinDate.HasValue && date < MinDate.Value.Date) || (MaxDate.HasValue && date > MaxDate.Value.Date);
+    }
+
+    private static string GetDayAriaLabel(DateTime date, bool isSelected, bool isToday, bool isOutsideRange)
+    {
+        var label = date.ToString("D", CultureInfo.CurrentCulture);
+
+        if (isToday)
+        {
+            label += ", today";
+        }
+
+        if (isSelected)
+        {
+            label += ", selected";
+        }
+
+        if (isOutsideRange)
+        {
+            label += ", unavailable";
+        }
+
+        return label;
+    }
+
+    private static string? GetAriaCurrent(bool isToday)
+    {
+        return isToday ? "date" : null;
+    }
+
+    private static string AriaBool(bool value)
+    {
+        return value ? "true" : "false";
     }
 }

@@ -37,6 +37,32 @@ The 80% direct component unit-test target is complete at 110 of 110 components.
 
 Post-target hardening can continue with deeper browser coverage for JS-heavy components, accessibility-focused interaction checks, and docs parity for top-level component routes.
 
+## Depth-Hardening Progress
+
+Direct test-file coverage is complete, but production hardening is tracked separately. A depth-hardened component has focused assertions for meaningful behavior, accessibility semantics, disabled/read-only states, callback contracts, null/edge inputs, and browser or JS boundaries where applicable.
+
+Depth-hardened components completed on the beta-readiness branch:
+
+- DateTime: Calendar, DatePicker, DateRangePicker.
+- DataDisplay: DataTable, Tag.
+- Disclosure: AccordionItem.
+- Inputs: ColorPicker, FileUpload, Mentions, RadioGroupItem, RichTextEditor, TransferList.
+- Layout: Sheet.
+- Navigation: BreadcrumbItem, Link, Stepper, TabItem, Tabs.
+- Overlay: AlertDialog, ContextMenuItem.
+- Utility: Command, DropdownMenu, Icon.
+
+Current depth-hardened count on this branch: 23 components.
+
+Next priority depth candidates:
+
+- Advanced: KanbanBoard, TreeView, TreeViewNode.
+- Inputs: ImageCropper, InputOTP.
+- Navigation: Menu, NavigationMenuItem, Sidebar.
+- Overlay: ContextMenu.
+- Feedback: NotificationCenter, Sonner, Toast.
+- Disclosure: Carousel.
+
 ## Mutation-Style Quality Checks
 
 For each new component test file, prefer assertions that would catch these breakages:

@@ -12,6 +12,14 @@
     width: 100%;
 }
 
+.vibe-stepper-list {
+    display: flex;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
 /* Horizontal Layout (Default) */
 .vibe-stepper-horizontal {
     flex-direction: row;
@@ -19,8 +27,19 @@
     gap: 0;
 }
 
+.vibe-stepper-horizontal .vibe-stepper-list {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0;
+}
+
 /* Vertical Layout */
 .vibe-stepper-vertical {
+    flex-direction: column;
+    gap: 0;
+}
+
+.vibe-stepper-vertical .vibe-stepper-list {
     flex-direction: column;
     gap: 0;
 }
@@ -123,6 +142,11 @@
     background-color: var(--vibe-destructive);
     color: var(--vibe-destructive-foreground);
     border-color: var(--vibe-destructive);
+}
+
+.vibe-stepper-item-disabled .vibe-stepper-label,
+.vibe-stepper-item-disabled .vibe-stepper-description {
+    opacity: 0.65;
 }
 
 /* Clickable/Hover States */

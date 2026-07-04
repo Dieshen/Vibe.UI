@@ -1,67 +1,80 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
 
-<nav class="@CombinedClass @OrientationClass" aria-label="Progress" @attributes="AdditionalAttributes">
+<nav class="@CombinedClass @OrientationClass" aria-label="@AriaLabel" aria-orientation="@OrientationAttribute" @attributes="AdditionalAttributes">
     @if (Steps != null && Steps.Any())
     {
-        @for (int i = 0; i < Steps.Count; i++)
-        {
-            var step = Steps[i];
-            var index = i;
-            var status = GetStepStatus(i);
-            var statusClass = status switch
+        <ol class="vibe-stepper-list" role="list">
+            @for (int i = 0; i < Steps.Count; i++)
             {
-                StepStatus.Completed => "vibe-stepper-item-completed",
-                StepStatus.Active => "vibe-stepper-item-active",
-                StepStatus.Error => "vibe-stepper-item-error",
-                _ => ""
-            };
-
-            <div class="vibe-stepper-item @statusClass">
-                @if (Orientation == StepperOrientation.Horizontal && i > 0)
+                var step = Steps[i];
+                var index = i;
+                var status = GetStepStatus(i);
+                var isStepDisabled = IsStepDisabled(step);
+                var statusClass = status switch
                 {
-                    <div class="vibe-stepper-connector"></div>
-                }
+                    StepStatus.Completed => "vibe-stepper-item-completed",
+                    StepStatus.Active => "vibe-stepper-item-active",
+                    StepStatus.Error => "vibe-stepper-item-error",
+                    _ => ""
+                };
 
-                <div class="vibe-stepper-indicator-wrapper">
-                    <button type="button"
-                            class="vibe-stepper-indicator"
-                            disabled="@(!Clickable)"
-                            @onclick="() => HandleStepClick(index)"
-                            style="@(Clickable ? "cursor: pointer;" : "")">
-                        @if (!string.IsNullOrEmpty(step.Icon))
-                        {
-                            <span>@step.Icon</span>
-                        }
-                        else if (status == StepStatus.Completed)
-                        {
-                            <span>✓</span>
-                        }
-                        else if (status == StepStatus.Error)
-                        {
-                            <span>!</span>
-                        }
-                        else
-                        {
-                            <span>@(index + 1)</span>
-                        }
-                    </button>
+                <li class="vibe-stepper-item @statusClass @(isStepDisabled ? "vibe-stepper-item-disabled" : "")"
+                    role="listitem"
+                    aria-current="@GetAriaCurrent(status)"
+                    aria-invalid="@GetAriaInvalid(status)"
+                    aria-disabled="@GetAriaDisabled(isStepDisabled)"
+                    aria-posinset="@(index + 1)"
+                    aria-setsize="@Steps.Count">
+                    @if (Orientation == StepperOrientation.Horizontal && i > 0)
+                    {
+                        <div class="vibe-stepper-connector" aria-hidden="true"></div>
+                    }
 
-                    <div class="vibe-stepper-content">
-                        <div class="vibe-stepper-label">@step.Label</div>
-                        @if (!string.IsNullOrEmpty(step.Description))
-                        {
-                            <div class="vibe-stepper-description">@step.Description</div>
-                        }
+                    <div class="vibe-stepper-indicator-wrapper">
+                        <button type="button"
+                                class="vibe-stepper-indicator"
+                                disabled="@(!CanActivateStep(step))"
+                                aria-label="@GetStepAriaLabel(step, index, status)"
+                                aria-describedby="@GetDescriptionId(index, step)"
+                                aria-disabled="@AriaBool(!CanActivateStep(step))"
+                                @onclick="() => HandleStepClick(index)"
+                                @onkeydown="e => HandleStepKeyDown(e, index)"
+                                style="@(CanActivateStep(step) ? "cursor: pointer;" : "")">
+                            @if (!string.IsNullOrEmpty(step.Icon))
+                            {
+                                <span aria-hidden="true">@step.Icon</span>
+                            }
+                            else if (status == StepStatus.Completed)
+                            {
+                                <span aria-hidden="true">✓</span>
+                            }
+                            else if (status == StepStatus.Error)
+                            {
+                                <span aria-hidden="true">!</span>
+                            }
+                            else
+                            {
+                                <span aria-hidden="true">@(index + 1)</span>
+                            }
+                        </button>
+
+                        <div class="vibe-stepper-content">
+                            <div class="vibe-stepper-label" id="@GetLabelId(index)">@step.Label</div>
+                            @if (!string.IsNullOrEmpty(step.Description))
+                            {
+                                <div class="vibe-stepper-description" id="@GetDescriptionId(index, step)">@step.Description</div>
+                            }
+                        </div>
                     </div>
-                </div>
 
-                @if (Orientation == StepperOrientation.Vertical && i < Steps.Count - 1)
-                {
-                    <div class="vibe-stepper-connector"></div>
-                }
-            </div>
-        }
+                    @if (Orientation == StepperOrientation.Vertical && i < Steps.Count - 1)
+                    {
+                        <div class="vibe-stepper-connector" aria-hidden="true"></div>
+                    }
+                </li>
+            }
+        </ol>
     }
 </nav>
 
@@ -102,8 +115,16 @@
     [Parameter]
     public EventCallback<int> OnStepClick { get; set; }
 
+    /// <summary>
+    /// Gets or sets the accessible label for the progress navigation.
+    /// </summary>
+    [Parameter]
+    public string AriaLabel { get; set; } = "Progress";
+
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-stepper";
+
+    private readonly string _componentId = $"vibe-stepper-{Guid.NewGuid():N}";
 
     private string OrientationClass => Orientation switch
     {
@@ -111,6 +132,8 @@
         StepperOrientation.Horizontal => "vibe-stepper-horizontal",
         _ => "vibe-stepper-horizontal"
     };
+
+    private string OrientationAttribute => Orientation == StepperOrientation.Vertical ? "vertical" : "horizontal";
 
     private StepStatus GetStepStatus(int index)
     {
@@ -134,7 +157,7 @@
 
     private async Task HandleStepClick(int stepIndex)
     {
-        if (!Clickable)
+        if (Steps == null || stepIndex < 0 || stepIndex >= Steps.Count || !CanActivateStep(Steps[stepIndex]))
             return;
 
         if (OnStepClick.HasDelegate)
@@ -150,6 +173,71 @@
         {
             CurrentStep = stepIndex;
         }
+    }
+
+    private async Task HandleStepKeyDown(KeyboardEventArgs e, int stepIndex)
+    {
+        if (e.Key is "Enter" or " ")
+        {
+            await HandleStepClick(stepIndex);
+        }
+    }
+
+    private bool CanActivateStep(StepItem step)
+    {
+        return Clickable && !IsStepDisabled(step);
+    }
+
+    private static bool IsStepDisabled(StepItem step)
+    {
+        return step.Disabled;
+    }
+
+    private string GetStepAriaLabel(StepItem step, int index, StepStatus status)
+    {
+        var label = string.IsNullOrWhiteSpace(step.Label) ? $"Step {index + 1}" : step.Label;
+        return $"{label}, step {index + 1} of {Steps?.Count ?? 0}, {GetStatusText(status)}";
+    }
+
+    private static string GetStatusText(StepStatus status)
+    {
+        return status switch
+        {
+            StepStatus.Active => "current",
+            StepStatus.Completed => "completed",
+            StepStatus.Error => "error",
+            _ => "pending"
+        };
+    }
+
+    private static string? GetAriaCurrent(StepStatus status)
+    {
+        return status == StepStatus.Active ? "step" : null;
+    }
+
+    private static string? GetAriaInvalid(StepStatus status)
+    {
+        return status == StepStatus.Error ? "true" : null;
+    }
+
+    private static string? GetAriaDisabled(bool disabled)
+    {
+        return disabled ? "true" : null;
+    }
+
+    private static string AriaBool(bool value)
+    {
+        return value ? "true" : "false";
+    }
+
+    private string GetLabelId(int index)
+    {
+        return $"{_componentId}-label-{index}";
+    }
+
+    private string? GetDescriptionId(int index, StepItem step)
+    {
+        return string.IsNullOrEmpty(step.Description) ? null : $"{_componentId}-description-{index}";
     }
 
     public enum StepperOrientation
@@ -173,5 +261,6 @@
         public string? Description { get; set; }
         public string? Icon { get; set; }
         public StepStatus Status { get; set; } = StepStatus.Auto;
+        public bool Disabled { get; set; }
     }
 }

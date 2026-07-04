@@ -7,9 +7,13 @@
         {
             if (item.IsMention)
             {
-                <span class="mention-tag" @key="item.Text">
-                    @MentionPrefix@item.Text
-                    <button type="button" class="mention-remove" @onclick="() => RemoveMention(item.Text)">×</button>
+                <span class="mention-tag" @key="item.Key">
+                    @GetPrefix(item.Type)@item.Text
+                    @if (IsInteractive)
+                    {
+                        <button type="button" class="mention-remove" @onclick="() => RemoveMention(item.Index)"
+                            aria-label="@($"Remove {item.Text}")">×</button>
+                    }
                 </span>
             }
             else
@@ -18,17 +22,26 @@
             }
         }
 
-        <input type="text" class="mentions-input" @bind="_inputValue" @bind:event="oninput" @onkeydown="HandleKeyDown"
-            placeholder="@Placeholder" disabled="@Disabled" aria-label="@AriaLabel" />
+        <input type="text" class="mentions-input" value="@_inputValue" @oninput="HandleInput"
+            @onkeydown="HandleKeyDown" @onfocus="HandleFocus" placeholder="@Placeholder" disabled="@Disabled"
+            readonly="@ReadOnly" aria-label="@EffectiveAriaLabel" aria-autocomplete="list" aria-haspopup="listbox"
+            aria-controls="@_suggestionsId" aria-expanded="@(_showSuggestions ? "true" : "false")"
+            aria-activedescendant="@ActiveSuggestionId" aria-readonly="@(ReadOnly ? "true" : null)"
+            autocomplete="off" role="combobox" />
     </div>
 
-    @if (_showSuggestions && FilteredSuggestions.Any())
+    @if (_showSuggestions && VisibleSuggestions.Any())
     {
-        <div class="mentions-suggestions">
-            @foreach (var suggestion in FilteredSuggestions.Take(MaxSuggestions))
+        var suggestions = VisibleSuggestions;
+        <div class="mentions-suggestions" id="@_suggestionsId" role="listbox"
+            aria-label="@($"{EffectiveAriaLabel} suggestions")">
+            @for (var i = 0; i < suggestions.Count; i++)
             {
-                <button type="button" class="mention-suggestion" @onclick="() => SelectSuggestion(suggestion)"
-                    @key="suggestion.Id">
+                var suggestion = suggestions[i];
+                var isActive = i == _activeSuggestionIndex;
+                <button type="button" class="mention-suggestion @(isActive ? "active" : "")" id="@GetSuggestionId(i)"
+                    role="option" aria-selected="@(isActive ? "true" : "false")" tabindex="-1"
+                    @onclick="() => SelectSuggestion(suggestion)" @key="GetSuggestionKey(suggestion, i)">
                     @if (suggestion.Avatar != null)
                     {
                         <div class="suggestion-avatar">@suggestion.Avatar</div>
@@ -51,6 +64,14 @@
     private bool _showSuggestions;
     private List<DisplayItem> _displayItems = new();
     private string _searchQuery = string.Empty;
+    private readonly string _instanceId = Guid.NewGuid().ToString("N");
+    private readonly List<MentionItem> _items = new();
+    private List<MentionItem>? _lastItemsReference;
+    private string _lastItemsSignature = string.Empty;
+    private bool _itemsInitialized;
+    private int _activeSuggestionIndex = -1;
+    private MentionType _activeMentionType = MentionType.User;
+    private string _suggestionsId => $"vibe-mentions-suggestions-{_instanceId}";
 
     [Parameter]
     public List<MentionItem> Items { get; set; } = new();
@@ -77,6 +98,9 @@
     public bool Disabled { get; set; }
 
     [Parameter]
+    public bool ReadOnly { get; set; }
+
+    [Parameter]
     public int MaxSuggestions { get; set; } = 5;
 
     [Parameter]
@@ -94,70 +118,265 @@
     private string CombinedCssClass => CombineClasses(
     "vibe-mentions",
     Disabled ? "mentions-disabled" : null,
-    CssClass
+    ReadOnly ? "mentions-readonly" : null,
+    CssClass,
+    Class
     );
 
     protected override string ComponentClass => CombinedCssClass;
 
-    private List<MentionSuggestion> FilteredSuggestions => string.IsNullOrWhiteSpace(_searchQuery)
-    ? Suggestions
-    : Suggestions.Where(s => s.Name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase)).ToList();
+    private bool IsInteractive => !Disabled && !ReadOnly;
 
-    private async Task HandleKeyDown(KeyboardEventArgs e)
+    private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel) ? "Mention input" : AriaLabel;
+
+    private List<MentionSuggestion> FilteredSuggestions => string.IsNullOrWhiteSpace(_searchQuery)
+    ? (Suggestions ?? new List<MentionSuggestion>()).ToList()
+    : (Suggestions ?? new List<MentionSuggestion>())
+        .Where(s => s.Name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase))
+        .ToList();
+
+    private List<MentionSuggestion> VisibleSuggestions => MaxSuggestions <= 0
+    ? new List<MentionSuggestion>()
+    : FilteredSuggestions.Take(MaxSuggestions).ToList();
+
+    private string? ActiveSuggestionId =>
+    _showSuggestions && _activeSuggestionIndex >= 0 && _activeSuggestionIndex < VisibleSuggestions.Count
+    ? GetSuggestionId(_activeSuggestionIndex)
+    : null;
+
+    protected override void OnParametersSet()
     {
-        if (e.Key == "Backspace" && string.IsNullOrEmpty(_inputValue) && Items.Any())
+        var currentItems = Items ?? new List<MentionItem>();
+        var currentItemsSignature = GetItemsSignature(currentItems);
+        if (!_itemsInitialized || !ReferenceEquals(Items, _lastItemsReference) ||
+            currentItemsSignature != _lastItemsSignature)
         {
-            await RemoveMention(Items.Last().Name);
+            _items.Clear();
+            _items.AddRange(currentItems);
+            _lastItemsReference = Items;
+            _lastItemsSignature = currentItemsSignature;
+            _itemsInitialized = true;
+            UpdateDisplayItems();
         }
-        else if (_inputValue.StartsWith(MentionPrefix) || (AllowHashtags && _inputValue.StartsWith(HashtagPrefix)))
+
+        if (!IsInteractive)
         {
-            _searchQuery = _inputValue.TrimStart(MentionPrefix[0], HashtagPrefix[0]);
-            _showSuggestions = true;
+            CloseSuggestions();
         }
         else
         {
-            _showSuggestions = false;
+            UpdateSuggestionState(resetActiveIndex: false);
+        }
+    }
+
+    private void HandleInput(ChangeEventArgs e)
+    {
+        if (!IsInteractive)
+        {
+            return;
+        }
+
+        _inputValue = e.Value?.ToString() ?? string.Empty;
+        UpdateSuggestionState(resetActiveIndex: true);
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (!IsInteractive)
+        {
+            return;
+        }
+
+        switch (e.Key)
+        {
+            case "Backspace" when string.IsNullOrEmpty(_inputValue) && _items.Any():
+                await RemoveMention(_items.Count - 1);
+                break;
+
+            case "ArrowDown":
+                MoveActiveSuggestion(forward: true);
+                break;
+
+            case "ArrowUp":
+                MoveActiveSuggestion(forward: false);
+                break;
+
+            case "Enter":
+                if (_showSuggestions && _activeSuggestionIndex >= 0 && _activeSuggestionIndex < VisibleSuggestions.Count)
+                {
+                    await SelectSuggestion(VisibleSuggestions[_activeSuggestionIndex]);
+                }
+                break;
+
+            case "Escape":
+                CloseSuggestions();
+                break;
+        }
+    }
+
+    private void HandleFocus()
+    {
+        if (IsInteractive)
+        {
+            UpdateSuggestionState(resetActiveIndex: false);
         }
     }
 
     private async Task SelectSuggestion(MentionSuggestion suggestion)
     {
+        if (!IsInteractive)
+        {
+            return;
+        }
+
         var mention = new MentionItem
         {
             Id = suggestion.Id,
             Name = suggestion.Name,
-            Type = _inputValue.StartsWith(MentionPrefix) ? MentionType.User : MentionType.Hashtag
+            Type = _activeMentionType
         };
 
-        Items.Add(mention);
-        await ItemsChanged.InvokeAsync(Items);
+        var updatedItems = _items.Append(mention).ToList();
+        SetItems(updatedItems);
+
+        await ItemsChanged.InvokeAsync(updatedItems);
         await OnMentionAdded.InvokeAsync(mention);
 
         _inputValue = string.Empty;
-        _showSuggestions = false;
-        UpdateDisplayItems();
+        CloseSuggestions();
     }
 
-    private async Task RemoveMention(string name)
+    private async Task RemoveMention(int index)
     {
-        var mention = Items.FirstOrDefault(m => m.Name == name);
-        if (mention != null)
+        if (!IsInteractive || index < 0 || index >= _items.Count)
         {
-            Items.Remove(mention);
-            await ItemsChanged.InvokeAsync(Items);
-            await OnMentionRemoved.InvokeAsync(mention);
-            UpdateDisplayItems();
+            return;
         }
+
+        var updatedItems = _items.ToList();
+        var mention = updatedItems[index];
+        updatedItems.RemoveAt(index);
+        SetItems(updatedItems);
+
+        await ItemsChanged.InvokeAsync(updatedItems);
+        await OnMentionRemoved.InvokeAsync(mention);
     }
 
     private void UpdateDisplayItems()
     {
-        _displayItems = Items.Select(m => new DisplayItem { Text = m.Name, IsMention = true }).ToList();
+        _displayItems = _items.Select((m, index) => new DisplayItem
+        {
+            Text = m.Name,
+            Type = m.Type,
+            IsMention = true,
+            Index = index,
+            Key = $"{m.Id}:{index}"
+        }).ToList();
+    }
+
+    private void SetItems(List<MentionItem> items)
+    {
+        _items.Clear();
+        _items.AddRange(items);
+        UpdateDisplayItems();
+    }
+
+    private void UpdateSuggestionState(bool resetActiveIndex)
+    {
+        if (!TryGetSearchQuery(_inputValue, out var query, out var mentionType))
+        {
+            CloseSuggestions();
+            return;
+        }
+
+        _searchQuery = query;
+        _activeMentionType = mentionType;
+        var suggestions = VisibleSuggestions;
+        _showSuggestions = suggestions.Any();
+
+        if (!_showSuggestions)
+        {
+            _activeSuggestionIndex = -1;
+            return;
+        }
+
+        if (resetActiveIndex || _activeSuggestionIndex < 0 || _activeSuggestionIndex >= suggestions.Count)
+        {
+            _activeSuggestionIndex = 0;
+        }
+    }
+
+    private void MoveActiveSuggestion(bool forward)
+    {
+        if (!TryGetSearchQuery(_inputValue, out var query, out var mentionType))
+        {
+            CloseSuggestions();
+            return;
+        }
+
+        _searchQuery = query;
+        _activeMentionType = mentionType;
+        var suggestions = VisibleSuggestions;
+        if (!suggestions.Any())
+        {
+            CloseSuggestions();
+            return;
+        }
+
+        _showSuggestions = true;
+        _activeSuggestionIndex = _activeSuggestionIndex < 0
+        ? (forward ? 0 : suggestions.Count - 1)
+        : (forward
+            ? (_activeSuggestionIndex + 1) % suggestions.Count
+            : (_activeSuggestionIndex - 1 + suggestions.Count) % suggestions.Count);
+    }
+
+    private void CloseSuggestions()
+    {
+        _showSuggestions = false;
+        _searchQuery = string.Empty;
+        _activeSuggestionIndex = -1;
+    }
+
+    private bool TryGetSearchQuery(string value, out string query, out MentionType mentionType)
+    {
+        query = string.Empty;
+        mentionType = MentionType.User;
+
+        if (!string.IsNullOrEmpty(MentionPrefix) && value.StartsWith(MentionPrefix, StringComparison.Ordinal))
+        {
+            query = value[MentionPrefix.Length..];
+            return true;
+        }
+
+        if (AllowHashtags && !string.IsNullOrEmpty(HashtagPrefix) &&
+            value.StartsWith(HashtagPrefix, StringComparison.Ordinal))
+        {
+            query = value[HashtagPrefix.Length..];
+            mentionType = MentionType.Hashtag;
+            return true;
+        }
+
+        return false;
+    }
+
+    private string GetPrefix(MentionType type) => type == MentionType.Hashtag ? HashtagPrefix : MentionPrefix;
+
+    private string GetSuggestionId(int index) => $"vibe-mentions-suggestion-{_instanceId}-{index}";
+
+    private static string GetSuggestionKey(MentionSuggestion suggestion, int index) => $"{suggestion.Id}:{index}";
+
+    private static string GetItemsSignature(List<MentionItem> items)
+    {
+        return string.Join("|", items.Select(item => $"{item.Id}:{item.Name}:{item.Type}"));
     }
 
     private class DisplayItem
     {
+        public string Key { get; set; } = string.Empty;
         public string Text { get; set; } = string.Empty;
+        public MentionType Type { get; set; }
+        public int Index { get; set; }
         public bool IsMention { get; set; }
     }
 

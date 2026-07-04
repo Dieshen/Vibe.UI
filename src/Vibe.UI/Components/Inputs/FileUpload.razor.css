@@ -4,6 +4,7 @@
 
 /* ==================== Container ==================== */
 .vibe-file-upload {
+    position: relative;
     border: 2px dashed var(--vibe-border);
     border-radius: var(--vibe-radius, 0.5rem);
     background-color: var(--vibe-background);
@@ -22,6 +23,7 @@
 
 /* ==================== Empty State (Dropzone) ==================== */
 .file-upload-empty {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -30,6 +32,24 @@
     cursor: pointer;
     text-align: center;
     transition: opacity 0.2s ease;
+}
+
+.file-upload-input {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.file-upload-input:disabled {
+    cursor: not-allowed;
+}
+
+.file-upload-empty-content {
+    pointer-events: none;
 }
 
 .file-upload-empty:hover {
@@ -76,12 +96,12 @@
     transition: all 0.2s ease;
 }
 
-.file-upload-button:hover {
+.file-upload-empty:hover .file-upload-button {
     opacity: 0.9;
     transform: translateY(-1px);
 }
 
-.file-upload-button:active {
+.file-upload-empty:active .file-upload-button {
     transform: translateY(0);
 }
 
@@ -164,9 +184,17 @@
     transform: scale(0.95);
 }
 
-/* ==================== Add More Button ==================== */
+.file-upload-add-wrapper {
+    position: relative;
+}
+
+/* ==================== Add More Control ==================== */
 .file-upload-add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
+    box-sizing: border-box;
     padding: 0.75rem;
     font-size: 0.875rem;
     font-weight: 500;
@@ -187,58 +215,17 @@
     transform: scale(0.99);
 }
 
-/* ==================== Progress Indicator ==================== */
-.file-upload-item.file-item-uploading {
-    position: relative;
-    overflow: hidden;
-}
-
-.file-upload-item.file-item-uploading::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: var(--vibe-primary);
-    animation: upload-progress 1.5s ease-in-out infinite;
-}
-
-@keyframes upload-progress {
-    0% {
-        transform: translateX(-100%);
-    }
-    100% {
-        transform: translateX(100%);
-    }
-}
-
-.file-item-progress {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 2px;
-    background-color: var(--vibe-primary);
-    transition: width 0.3s ease;
+.file-upload-limit {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--vibe-muted-foreground);
+    text-align: center;
 }
 
 /* ==================== Error State ==================== */
 .vibe-file-upload.file-upload-error {
     border-color: var(--vibe-destructive);
     background-color: color-mix(in srgb, var(--vibe-destructive) 3%, var(--vibe-background));
-}
-
-.file-upload-item.file-item-error {
-    background-color: color-mix(in srgb, var(--vibe-destructive) 10%, var(--vibe-background));
-    border: 1px solid color-mix(in srgb, var(--vibe-destructive) 30%, transparent);
-}
-
-.file-upload-item.file-item-error .file-item-icon {
-    color: var(--vibe-destructive);
-}
-
-.file-upload-item.file-item-error .file-item-name {
-    color: var(--vibe-destructive);
 }
 
 .file-upload-error-message {
@@ -249,16 +236,6 @@
     background-color: color-mix(in srgb, var(--vibe-destructive) 10%, var(--vibe-background));
     border-left: 2px solid var(--vibe-destructive);
     border-radius: 0.25rem;
-}
-
-/* ==================== Success State ==================== */
-.file-upload-item.file-item-success {
-    background-color: color-mix(in srgb, var(--vibe-success, #10b981) 10%, var(--vibe-background));
-    border: 1px solid color-mix(in srgb, var(--vibe-success, #10b981) 30%, transparent);
-}
-
-.file-upload-item.file-item-success .file-item-icon {
-    color: var(--vibe-success, #10b981);
 }
 
 /* ==================== Disabled State ==================== */
@@ -275,20 +252,6 @@
 .vibe-file-upload.vibe-file-upload-disabled .file-upload-button {
     cursor: not-allowed;
     opacity: 0.6;
-}
-
-/* ==================== Loading State ==================== */
-.file-upload-item.file-item-loading .file-item-icon {
-    animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
 }
 
 /* ==================== Size Variants ==================== */
@@ -379,8 +342,8 @@
     outline-offset: 2px;
 }
 
-.file-upload-button:focus-visible,
-.file-upload-add:focus-visible,
+.file-upload-input:focus-visible + .file-upload-empty-content .file-upload-button,
+.file-upload-add-wrapper:focus-within .file-upload-add,
 .file-item-remove:focus-visible {
     outline: 2px solid var(--vibe-ring);
     outline-offset: 2px;
@@ -410,6 +373,7 @@
     .file-upload-icon,
     .file-upload-button,
     .file-upload-item,
+    .file-upload-input,
     .file-upload-add,
     .file-item-remove {
         animation: none;
