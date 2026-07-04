@@ -1,26 +1,28 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="group" aria-label="@AriaLabel">
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="group" aria-label="@AriaLabel"
+    aria-disabled="@DisabledAriaValue">
     @for (int i = 0; i < _length; i++)
     {
         var index = i;
-        <input type="@(Pattern == OTPPattern.Numeric ? "tel" : "text")" @ref="_inputs[index]" class="input-otp-slot"
-            maxlength="1" value="@GetCharAt(index)" @oninput="@(e => HandleInput(index, e))"
-            @onkeydown="@(e => HandleKeyDown(index, e))" @onpaste="@HandlePaste" disabled="@Disabled"
-            inputmode="@(Pattern == OTPPattern.Numeric ? "numeric" : "text")" autocomplete="one-time-code"
-            aria-label="@($"Character {index + 1}")" />
+        <input @key="index" type="@InputType" @ref="_inputs[index]" class="@GetSlotClass(index)" maxlength="1"
+            value="@GetCharAt(index)" @oninput="@(e => HandleInput(index, e))"
+            @onkeydown="@(e => HandleKeyDown(index, e))" disabled="@Disabled" readonly="@ReadOnly"
+            inputmode="@InputMode" autocomplete="one-time-code" aria-label="@GetSlotAriaLabel(index)" />
 
         @if (ShouldRenderSeparator(index))
         {
-            <span class="input-otp-separator">@Separator</span>
+            <span class="input-otp-separator" aria-hidden="true">@Separator</span>
         }
     }
 </div>
 
 @code {
     private ElementReference[] _inputs = [];
+    private char?[] _slots = [];
     private string _currentValue = string.Empty;
+    private string? _lastCompletedValue;
     private int _length;
 
     [Parameter]
@@ -39,13 +41,16 @@
     public bool Disabled { get; set; }
 
     [Parameter]
+    public bool ReadOnly { get; set; }
+
+    [Parameter]
     public string? AriaLabel { get; set; } = "One-time password input";
 
     [Parameter]
     public string Separator { get; set; } = "-";
 
     [Parameter]
-    public List<int> SeparatorIndices { get; set; } = new();
+    public List<int>? SeparatorIndices { get; set; } = new();
 
     [Parameter]
     public EventCallback<string> OnComplete { get; set; }
@@ -53,10 +58,21 @@
     [Parameter]
     public string? CssClass { get; set; }
 
+    private string InputType => Pattern == OTPPattern.Numeric ? "tel" : "text";
+
+    private string InputMode => Pattern == OTPPattern.Numeric ? "numeric" : "text";
+
+    private string? DisabledAriaValue => Disabled ? "true" : null;
+
+    private bool IsComplete => _length > 0 && _slots.Length == _length && _slots.All(slot => slot.HasValue);
+
     private string CombinedCssClass => CombineClasses(
     "input-otp",
+    IsComplete ? "input-otp-complete" : null,
     Disabled ? "input-otp-disabled" : null,
-    CssClass
+    ReadOnly ? "input-otp-readonly" : null,
+    CssClass,
+    Class
     );
 
     protected override string ComponentClass => CombinedCssClass;
@@ -69,110 +85,261 @@
             _inputs = new ElementReference[_length];
         }
 
-        _currentValue = Value ?? string.Empty;
+        if (_slots.Length != _length)
+        {
+            _slots = new char?[_length];
+        }
+
+        ApplyValue(Value);
+        _lastCompletedValue = IsComplete ? BuildCompletedValue() : null;
     }
 
     private string GetCharAt(int index)
     {
-        return index < _currentValue.Length ? _currentValue[index].ToString() : string.Empty;
+        return IsValidIndex(index) && _slots[index].HasValue
+            ? _slots[index]!.Value.ToString()
+            : string.Empty;
+    }
+
+    private string GetSlotClass(int index)
+    {
+        return CombineClasses(
+        "input-otp-slot",
+        !string.IsNullOrEmpty(GetCharAt(index)) ? "input-otp-slot-filled" : null
+        );
+    }
+
+    private string GetSlotAriaLabel(int index)
+    {
+        var label = Pattern == OTPPattern.Numeric ? "Digit" : "Character";
+        return $"{label} {index + 1} of {_length}";
     }
 
     private bool ShouldRenderSeparator(int index)
     {
-        if (index >= _length - 1)
+        if (index >= _length - 1 || string.IsNullOrEmpty(Separator))
         {
             return false;
         }
 
-        if (SeparatorIndices.Count == 0 && _length > 3)
+        if ((SeparatorIndices is null || SeparatorIndices.Count == 0) && _length > 3)
         {
             return index == (_length / 2) - 1;
         }
 
-        return SeparatorIndices.Contains(index);
+        return SeparatorIndices?.Contains(index) == true;
     }
 
     private async Task HandleInput(int index, ChangeEventArgs e)
     {
+        if (Disabled || ReadOnly || !IsValidIndex(index))
+        {
+            return;
+        }
+
         var inputValue = e.Value?.ToString() ?? string.Empty;
 
         if (string.IsNullOrEmpty(inputValue))
         {
+            if (_slots[index].HasValue)
+            {
+                _slots[index] = null;
+                await CommitSlotsAsync();
+            }
+
             return;
         }
 
-        // Validate pattern
-        if (!IsValidChar(inputValue[^1]))
+        var nextIndex = index;
+        var acceptedInput = false;
+
+        foreach (var character in inputValue)
+        {
+            if (nextIndex >= _length)
+            {
+                break;
+            }
+
+            if (!IsValidChar(character))
+            {
+                continue;
+            }
+
+            _slots[nextIndex] = character;
+            nextIndex++;
+            acceptedInput = true;
+        }
+
+        if (!acceptedInput)
+        {
+            StateHasChanged();
+            return;
+        }
+
+        await CommitSlotsAsync();
+
+        if (nextIndex < _length)
+        {
+            await FocusInput(nextIndex);
+        }
+    }
+
+    private async Task HandleKeyDown(int index, KeyboardEventArgs e)
+    {
+        if (Disabled || !IsValidIndex(index))
         {
             return;
         }
 
-        // Update value
-        var chars = _currentValue.PadRight(_length).ToCharArray();
-        chars[index] = inputValue[^1];
-        _currentValue = new string(chars).TrimEnd();
+        if (e.Key == "ArrowLeft" && index > 0)
+        {
+            await FocusInput(index - 1);
+            return;
+        }
 
-        await ValueChanged.InvokeAsync(_currentValue);
-
-        // Auto-focus next input
-        if (index < _length - 1 && !string.IsNullOrEmpty(inputValue))
+        if (e.Key == "ArrowRight" && index < _length - 1)
         {
             await FocusInput(index + 1);
+            return;
         }
 
-        // Check if complete
-        if (_currentValue.Length == _length)
+        if (e.Key == "Home")
         {
-            await OnComplete.InvokeAsync(_currentValue);
+            await FocusInput(0);
+            return;
+        }
+
+        if (e.Key == "End")
+        {
+            await FocusInput(_length - 1);
+            return;
+        }
+
+        if (ReadOnly)
+        {
+            return;
+        }
+
+        if (e.Key is "Backspace" or "Delete")
+        {
+            if (_slots[index].HasValue)
+            {
+                _slots[index] = null;
+                await CommitSlotsAsync();
+            }
+            else if (e.Key == "Backspace" && index > 0)
+            {
+                await FocusInput(index - 1);
+            }
+        }
+    }
+
+    private async Task FocusInput(int index)
+    {
+        if (Disabled || !IsValidIndex(index))
+        {
+            return;
+        }
+
+        await _inputs[index].FocusAsync();
+    }
+
+    private void ApplyValue(string? value)
+    {
+        Array.Clear(_slots);
+
+        if (_length == 0 || string.IsNullOrEmpty(value))
+        {
+            _currentValue = string.Empty;
+            return;
+        }
+
+        var count = Math.Min(value.Length, _length);
+        for (var i = 0; i < count; i++)
+        {
+            var character = value[i];
+            if (IsEmptySlotValue(character))
+            {
+                continue;
+            }
+
+            if (IsValidChar(character))
+            {
+                _slots[i] = character;
+            }
+        }
+
+        _currentValue = BuildValue();
+    }
+
+    private async Task CommitSlotsAsync()
+    {
+        var newValue = BuildValue();
+        if (string.Equals(newValue, _currentValue, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _currentValue = newValue;
+        await ValueChanged.InvokeAsync(newValue);
+
+        if (IsComplete)
+        {
+            var completedValue = BuildCompletedValue();
+            if (!string.Equals(_lastCompletedValue, completedValue, StringComparison.Ordinal))
+            {
+                _lastCompletedValue = completedValue;
+                await OnComplete.InvokeAsync(completedValue);
+            }
+        }
+        else
+        {
+            _lastCompletedValue = null;
         }
 
         StateHasChanged();
     }
 
-    private async Task HandleKeyDown(int index, KeyboardEventArgs e)
+    private string BuildValue()
     {
-        if (e.Key == "Backspace")
+        if (_length == 0)
         {
-            if (string.IsNullOrEmpty(GetCharAt(index)) && index > 0)
-            {
-                // Move to previous input
-                await FocusInput(index - 1);
-            }
-            else
-            {
-                // Clear current
-                var chars = _currentValue.PadRight(_length).ToCharArray();
-                chars[index] = ' ';
-                _currentValue = new string(chars).TrimEnd();
-                await ValueChanged.InvokeAsync(_currentValue);
-                StateHasChanged();
-            }
+            return string.Empty;
         }
-        else if (e.Key == "ArrowLeft" && index > 0)
+
+        // Preserve positional gaps for callbacks without rendering literal spaces in empty slots.
+        var characters = new char[_length];
+        for (var i = 0; i < _length; i++)
         {
-            await FocusInput(index - 1);
+            characters[i] = _slots[i] ?? ' ';
         }
-        else if (e.Key == "ArrowRight" && index < _length - 1)
-        {
-            await FocusInput(index + 1);
-        }
+
+        return new string(characters).TrimEnd();
     }
 
-    private async Task HandlePaste(ClipboardEventArgs e)
+    private string BuildCompletedValue()
     {
-        // Note: ClipboardEventArgs doesn't provide clipboard data in Blazor
-        // This would need JS interop to fully implement
-        await Task.CompletedTask;
+        var characters = new char[_length];
+        for (var i = 0; i < _length; i++)
+        {
+            characters[i] = _slots[i]!.Value;
+        }
+
+        return new string(characters);
     }
 
-    private async Task FocusInput(int index)
+    private bool IsValidIndex(int index)
     {
-        // Would need JS interop to actually focus
-        await Task.CompletedTask;
+        return index >= 0 && index < _length;
     }
 
     private bool IsValidChar(char c)
     {
+        if (IsEmptySlotValue(c) || char.IsControl(c))
+        {
+            return false;
+        }
+
         return Pattern switch
         {
             OTPPattern.Numeric => char.IsDigit(c),
@@ -180,6 +347,11 @@
             OTPPattern.Alpha => char.IsLetter(c),
             _ => true
         };
+    }
+
+    private static bool IsEmptySlotValue(char c)
+    {
+        return char.IsWhiteSpace(c);
     }
 
     public enum OTPPattern

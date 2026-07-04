@@ -1,17 +1,54 @@
 /* InputOTP baseline styles */
 
-:global(.vibe-input-otp) {
+:global(.input-otp) {
   display: inline-flex;
+  align-items: center;
   gap: 0.5rem;
 }
 
-:global(.vibe-input-otp input) {
+:global(.input-otp-slot) {
   width: 2.5rem;
   height: 2.75rem;
-  text-align: center;
+  box-sizing: border-box;
   border: 1px solid var(--vibe-border);
   border-radius: var(--vibe-radius-sm);
   background: var(--vibe-background);
   color: var(--vibe-foreground);
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  text-align: center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+:global(.input-otp-slot:focus-visible) {
+  outline: 2px solid var(--vibe-ring);
+  outline-offset: 2px;
+  border-color: var(--vibe-ring);
+}
+
+:global(.input-otp-slot-filled) {
+  border-color: color-mix(in srgb, var(--vibe-border) 55%, var(--vibe-foreground));
+}
+
+:global(.input-otp-separator) {
+  color: var(--vibe-muted-foreground);
+  font-size: 1rem;
+  line-height: 1;
+  user-select: none;
+}
+
+:global(.input-otp-disabled),
+:global(.input-otp-readonly) {
+  opacity: 0.7;
+}
+
+:global(.input-otp-disabled .input-otp-slot) {
+  cursor: not-allowed;
+  background: var(--vibe-muted);
+}
+
+:global(.input-otp-readonly .input-otp-slot) {
+  background: var(--vibe-muted);
 }
 

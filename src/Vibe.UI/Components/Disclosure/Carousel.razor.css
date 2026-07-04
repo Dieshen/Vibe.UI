@@ -3,10 +3,14 @@
    ======================================== */
 
 /* Main carousel container */
-::deep .vibe-carousel {
+.vibe-carousel {
     position: relative;
     width: 100%;
     overflow: hidden;
+}
+
+.vibe-carousel-disabled {
+    opacity: 0.65;
 }
 
 /* Carousel viewport - contains the visible area */
@@ -19,7 +23,12 @@
     cursor: grab;
 }
 
-.carousel-viewport:active {
+.vibe-carousel-disabled .carousel-viewport {
+    cursor: default;
+}
+
+.carousel-viewport:active,
+.vibe-carousel-dragging .carousel-viewport {
     cursor: grabbing;
 }
 

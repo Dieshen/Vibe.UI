@@ -312,7 +312,12 @@
 
     private static string NormalizeFileName(string fileName)
     {
-        var normalizedFileName = Path.GetFileName(fileName);
+        var trimmedFileName = fileName.Trim();
+        var separatorIndex = trimmedFileName.LastIndexOfAny(['\\', '/']);
+        var normalizedFileName = separatorIndex >= 0
+            ? trimmedFileName[(separatorIndex + 1)..]
+            : trimmedFileName;
+
         return string.IsNullOrWhiteSpace(normalizedFileName) ? "unnamed" : normalizedFileName;
     }
 

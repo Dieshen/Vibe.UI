@@ -1,24 +1,49 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
-@inject IJSRuntime JSRuntime
 
-<div class="@CombinedClass" @oncontextmenu="OnContextMenu" @oncontextmenu:preventDefault
-    @onmousedown="OnTriggerMouseDown">
-    <div class="context-trigger">
+<div class="@CombinedClass" data-state="@CurrentState" @attributes="AdditionalAttributes">
+    <div class="context-trigger"
+         role="button"
+         tabindex="@TriggerTabIndex"
+         aria-haspopup="menu"
+         aria-expanded="@AriaExpanded"
+         aria-controls="@_contentId"
+         aria-disabled="@AriaDisabled"
+         data-state="@CurrentState"
+         @oncontextmenu="HandleContextMenu"
+         @oncontextmenu:preventDefault="@(!Disabled)"
+         @onmousedown="HandleTriggerMouseDown"
+         @onkeydown="HandleTriggerKeyDown">
         @TriggerContent
     </div>
 
-    @if (IsOpen)
+    @if (_isOpen)
     {
-        <div class="context-content" style="left: @PositionX; top: @PositionY;">
+        <div id="@_contentId"
+             class="context-content"
+             style="@ContentStyle"
+             role="menu"
+             tabindex="-1"
+             aria-label="@MenuAriaLabel"
+             data-state="open"
+             @onkeydown="HandleMenuKeyDown">
             @Content
         </div>
 
-        <div class="context-backdrop" @onclick="CloseMenu"></div>
+        @if (CloseOnClickOutside)
+        {
+            <div class="context-backdrop" aria-hidden="true" @onclick="CloseMenu"></div>
+        }
     }
 </div>
 
 @code {
+    private readonly string _contentId = $"vibe-context-menu-content-{Guid.NewGuid():N}";
+
+    private bool _isOpen;
+    private string _positionX = "0px";
+    private string _positionY = "0px";
+
     /// <summary>
     /// Gets or sets the trigger content.
     /// </summary>
@@ -38,6 +63,18 @@
     public bool Disabled { get; set; }
 
     /// <summary>
+    /// Gets or sets whether the context menu closes when the backdrop is clicked.
+    /// </summary>
+    [Parameter]
+    public bool CloseOnClickOutside { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the accessible label for the menu content.
+    /// </summary>
+    [Parameter]
+    public string MenuAriaLabel { get; set; } = "Context menu";
+
+    /// <summary>
     /// Gets or sets the callback when the context menu opens.
     /// </summary>
     [Parameter]
@@ -55,72 +92,141 @@
     protected override string ComponentClass => "vibe-context-menu";
 
     /// <summary>
-    /// Flag to track if the context menu is open.
+    /// Gets the combined CSS class including state classes.
     /// </summary>
-    private bool IsOpen = false;
-
-    /// <summary>
-    /// The X position of the context menu.
-    /// </summary>
-    private string PositionX = "0px";
-
-    /// <summary>
-    /// The Y position of the context menu.
-    /// </summary>
-    private string PositionY = "0px";
-
-    /// <summary>
-    /// Handles the context menu event.
-    /// </summary>
-    /// <param name="e">The mouse event args.</param>
-    private async Task OnContextMenu(MouseEventArgs e)
+    protected override string GetCombinedClass()
     {
-        if (Disabled)
-            return;
-
-        // Calculate position, ensuring the menu stays within viewport bounds
-        PositionX = $"{e.ClientX}px";
-        PositionY = $"{e.ClientY}px";
-        IsOpen = true;
-
-        await OnOpen.InvokeAsync(e);
+        return CombineClasses(
+            ComponentClass,
+            _isOpen ? "context-open" : null,
+            Disabled ? "context-disabled" : null,
+            Class);
     }
 
     /// <summary>
-    /// Handles the mouse down event on the trigger.
+    /// Gets the ARIA expanded value for the trigger.
     /// </summary>
-    private void OnTriggerMouseDown(MouseEventArgs e)
+    private string AriaExpanded => _isOpen ? "true" : "false";
+
+    /// <summary>
+    /// Gets the ARIA disabled value for the trigger.
+    /// </summary>
+    private string AriaDisabled => Disabled ? "true" : "false";
+
+    /// <summary>
+    /// Gets the current open state value for data attributes.
+    /// </summary>
+    private string CurrentState => _isOpen ? "open" : "closed";
+
+    /// <summary>
+    /// Gets the trigger tab index.
+    /// </summary>
+    private string TriggerTabIndex => Disabled ? "-1" : "0";
+
+    /// <summary>
+    /// Gets the inline positioning style for the menu.
+    /// </summary>
+    private string ContentStyle => $"left: {_positionX}; top: {_positionY};";
+
+    /// <summary>
+    /// Handles the browser context menu event.
+    /// </summary>
+    /// <param name="e">The mouse event args.</param>
+    private async Task HandleContextMenu(MouseEventArgs e)
     {
-        // Handle only if it's not a right click to prevent duplicate openings
-        if (e.Button != 2 && IsOpen)
+        if (Disabled)
         {
-            _ = CloseMenu(); // Fire-and-forget: sync event handler
+            return;
+        }
+
+        _positionX = FormatPixelValue(e.ClientX);
+        _positionY = FormatPixelValue(e.ClientY);
+        await OpenMenu(e);
+    }
+
+    /// <summary>
+    /// Handles mouse down on the trigger.
+    /// </summary>
+    /// <param name="e">The mouse event args.</param>
+    private async Task HandleTriggerMouseDown(MouseEventArgs e)
+    {
+        if (e.Button != 2)
+        {
+            await CloseMenu();
         }
     }
 
     /// <summary>
-    /// Closes the context menu.
+    /// Handles keyboard interaction on the trigger.
+    /// </summary>
+    /// <param name="e">The keyboard event args.</param>
+    private async Task HandleTriggerKeyDown(KeyboardEventArgs e)
+    {
+        if (Disabled)
+        {
+            return;
+        }
+
+        if (e.Key is "Enter" or " " or "Spacebar" or "ContextMenu" || e.Key == "F10" && e.ShiftKey)
+        {
+            _positionX = "0px";
+            _positionY = "0px";
+            await OpenMenu(new MouseEventArgs());
+        }
+        else if (e.Key == "Escape")
+        {
+            await CloseMenu();
+        }
+    }
+
+    /// <summary>
+    /// Handles keyboard interaction while focus is inside the menu.
+    /// </summary>
+    /// <param name="e">The keyboard event args.</param>
+    private async Task HandleMenuKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            await CloseMenu();
+        }
+    }
+
+    /// <summary>
+    /// Opens the context menu and invokes callbacks only on a closed-to-open transition.
+    /// </summary>
+    /// <param name="e">The mouse event args associated with the open action.</param>
+    private async Task OpenMenu(MouseEventArgs e)
+    {
+        var wasOpen = _isOpen;
+        _isOpen = true;
+
+        if (!wasOpen)
+        {
+            await OnOpen.InvokeAsync(e);
+        }
+    }
+
+    /// <summary>
+    /// Closes the context menu and invokes callbacks only on an open-to-closed transition.
     /// </summary>
     private async Task CloseMenu()
     {
-        if (IsOpen)
+        if (!_isOpen)
         {
-            IsOpen = false;
-            await OnClose.InvokeAsync();
+            return;
         }
+
+        _isOpen = false;
+        await OnClose.InvokeAsync();
     }
 
-    /// <summary>
-    /// Set up global event handlers when component is initialized.
-    /// </summary>
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private static string FormatPixelValue(double value)
     {
-        await base.OnAfterRenderAsync(firstRender);
-
-        if (firstRender)
+        if (double.IsNaN(value) || double.IsInfinity(value) || value < 0)
         {
-            // In a real implementation, you would set up a JS interop to handle
-            // clicks outside the context menu to close it and to handle viewport boundaries
+            return "0px";
         }
+
+        return string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{value:0.##}px");
     }
 }
