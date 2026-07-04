@@ -313,7 +313,7 @@
     private static string NormalizeFileName(string fileName)
     {
         var trimmedFileName = fileName.Trim();
-        var separatorIndex = trimmedFileName.LastIndexOfAny(['\\', '/']);
+        var separatorIndex = trimmedFileName.LastIndexOfAny(new[] { (char)92, '/' });
         var normalizedFileName = separatorIndex >= 0
             ? trimmedFileName[(separatorIndex + 1)..]
             : trimmedFileName;
