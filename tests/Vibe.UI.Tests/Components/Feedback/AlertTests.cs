@@ -229,6 +229,41 @@ public class AlertTests : TestBase
         closeButton.GetAttribute("aria-label")!.ShouldBe("Close");
     }
 
+    [Fact]
+    public void Alert_CloseButton_UsesCustomAriaLabel()
+    {
+        // Act
+        var cut = Render<Alert>(parameters => parameters
+            .Add(p => p.Dismissible, true)
+            .Add(p => p.CloseButtonAriaLabel, "Dismiss notification")
+            .AddChildContent("Alert"));
+
+        // Assert
+        cut.Find("button").GetAttribute("aria-label")!.ShouldBe("Dismiss notification");
+    }
+
+    [Fact]
+    public void Alert_DisabledDismiss_DoesNotInvokeOnDismiss()
+    {
+        // Arrange
+        var dismissCalled = false;
+        var cut = Render<Alert>(parameters => parameters
+            .Add(p => p.Dismissible, true)
+            .Add(p => p.Disabled, true)
+            .Add(p => p.OnDismiss, EventCallback.Factory.Create(this, () => dismissCalled = true))
+            .AddChildContent("Disabled dismiss"));
+
+        // Act
+        var closeButton = cut.Find("button");
+        closeButton.Click();
+
+        // Assert
+        dismissCalled.ShouldBeFalse();
+        closeButton.HasAttribute("disabled").ShouldBeTrue();
+        closeButton.GetAttribute("aria-disabled")!.ShouldBe("true");
+        cut.Find(".vibe-alert").ClassList.ShouldContain("vibe-alert-disabled");
+    }
+
     // ===== Accessibility Tests =====
 
     [Fact]
@@ -243,6 +278,79 @@ public class AlertTests : TestBase
         alert.GetAttribute("role")!.ShouldBe("alert");
     }
 
+    [Fact]
+    public void Alert_HasLiveRegionAttributes()
+    {
+        // Act
+        var cut = Render<Alert>(parameters => parameters
+            .AddChildContent("Accessible alert"));
+
+        // Assert
+        var alert = cut.Find(".vibe-alert");
+        alert.GetAttribute("aria-live")!.ShouldBe("assertive");
+        alert.GetAttribute("aria-atomic")!.ShouldBe("true");
+        alert.GetAttribute("aria-disabled")!.ShouldBe("false");
+    }
+
+    [Fact]
+    public void Alert_CustomAccessibilityAttributes_AreApplied()
+    {
+        // Act
+        var cut = Render<Alert>(parameters => parameters
+            .Add(p => p.Role, "status")
+            .Add(p => p.AriaLive, "polite")
+            .Add(p => p.AriaAtomic, false)
+            .Add(p => p.AriaLabel, "Sync status")
+            .AddChildContent("Saved"));
+
+        // Assert
+        var alert = cut.Find(".vibe-alert");
+        alert.GetAttribute("role")!.ShouldBe("status");
+        alert.GetAttribute("aria-live")!.ShouldBe("polite");
+        alert.GetAttribute("aria-atomic")!.ShouldBe("false");
+        alert.GetAttribute("aria-label")!.ShouldBe("Sync status");
+    }
+
+    [Fact]
+    public void Alert_Icon_IsHiddenFromAssistiveTechnologyByDefault()
+    {
+        // Act
+        var cut = Render<Alert>(parameters => parameters
+            .Add(p => p.Icon, builder => builder.AddMarkupContent(0, "<span>!</span>"))
+            .AddChildContent("Alert with icon"));
+
+        // Assert
+        cut.Find(".vibe-alert-icon").GetAttribute("aria-hidden")!.ShouldBe("true");
+    }
+
+    [Fact]
+    public void Alert_IconAriaHiddenFalse_ExposesIcon()
+    {
+        // Act
+        var cut = Render<Alert>(parameters => parameters
+            .Add(p => p.IconAriaHidden, false)
+            .Add(p => p.Icon, builder => builder.AddMarkupContent(0, "<span>!</span>"))
+            .AddChildContent("Alert with icon"));
+
+        // Assert
+        cut.Find(".vibe-alert-icon").GetAttribute("aria-hidden")!.ShouldBe("false");
+    }
+
+    [Fact]
+    public void Alert_AppliesCustomClassAndAdditionalAttributes()
+    {
+        // Act
+        var cut = Render<Alert>(parameters => parameters
+            .Add(p => p.Class, "custom-alert")
+            .AddUnmatched("data-testid", "alert-root")
+            .AddChildContent("Custom alert"));
+
+        // Assert
+        var alert = cut.Find(".vibe-alert");
+        alert.ClassList.ShouldContain("custom-alert");
+        alert.GetAttribute("data-testid")!.ShouldBe("alert-root");
+    }
+
     // ===== Edge Case Tests =====
 
     [Fact]
@@ -255,6 +363,18 @@ public class AlertTests : TestBase
         // Assert
         var alert = cut.Find(".vibe-alert");
         alert.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Alert_WithWhitespaceTitle_DoesNotRenderTitleElement()
+    {
+        // Act
+        var cut = Render<Alert>(parameters => parameters
+            .Add(p => p.Title, "   ")
+            .AddChildContent("Alert content"));
+
+        // Assert
+        cut.FindAll(".vibe-alert-title").ShouldBeEmpty();
     }
 
     [Fact]

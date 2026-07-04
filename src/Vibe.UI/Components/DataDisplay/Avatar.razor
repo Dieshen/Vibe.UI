@@ -1,22 +1,31 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<div class="@CombinedClass @(Delayload ? "delayload" : string.Empty)" style="@AvatarStyle">
-    @if (!string.IsNullOrEmpty(ImageUrl) && !HasImageError)
+<div class="@CombinedClass"
+     style="@AvatarStyle"
+     role="@RootRole"
+     aria-label="@RootAriaLabel"
+     @attributes="AdditionalAttributes">
+    @if (ShouldRenderImage)
     {
-        <img src="@ImageUrl" class="avatar-image" @onerror="HandleImageError" />
+        <img src="@NormalizedImageUrl"
+             alt=""
+             aria-hidden="true"
+             loading="@ImageLoading"
+             class="avatar-image"
+             @onerror="HandleImageError" />
     }
-    else if (!string.IsNullOrEmpty(Initials))
+    else if (NormalizedInitials is not null)
     {
-        <div class="avatar-initials">@Initials</div>
+        <div class="avatar-initials" aria-hidden="true">@NormalizedInitials</div>
     }
-    else if (!string.IsNullOrEmpty(FallbackIcon))
+    else if (NormalizedFallbackIcon is not null)
     {
-        <div class="avatar-icon">@FallbackIcon</div>
+        <div class="avatar-icon" aria-hidden="true">@NormalizedFallbackIcon</div>
     }
     else
     {
-        <div class="avatar-fallback"></div>
+        <div class="avatar-fallback" aria-hidden="true"></div>
     }
 </div>
 
@@ -26,6 +35,12 @@
     /// </summary>
     [Parameter]
     public string? ImageUrl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the accessible text for the avatar.
+    /// </summary>
+    [Parameter]
+    public string? Alt { get; set; }
 
     /// <summary>
     /// Gets or sets the initials to display when no image is available.
@@ -52,6 +67,12 @@
     public bool Delayload { get; set; }
 
     /// <summary>
+    /// Callback invoked when the avatar image fails to load.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string?> OnImageError { get; set; }
+
+    /// <summary>
     /// Gets or sets the shape of the avatar (circle or square).
     /// </summary>
     [Parameter]
@@ -60,24 +81,72 @@
     /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
-    protected override string ComponentClass => "vibe-avatar";
+    protected override string ComponentClass => new ClassBuilder()
+        .Add("vibe-avatar")
+        .AddIf("square", IsSquare)
+        .AddIf("delayload", Delayload)
+        .Build();
 
     /// <summary>
     /// Flag to track if the image has an error.
     /// </summary>
     private bool HasImageError { get; set; }
 
+    private string? _lastImageUrl;
+
     /// <summary>
     /// Gets the inline style for the avatar.
     /// </summary>
-    private string AvatarStyle => $"width: {Size}px; height: {Size}px;";
+    private string AvatarStyle => $"width: {EffectiveSize}px; height: {EffectiveSize}px;";
+
+    private int EffectiveSize => Size > 0 ? Size : 40;
+
+    private string? NormalizedImageUrl => string.IsNullOrWhiteSpace(ImageUrl) ? null : ImageUrl.Trim();
+
+    private string? NormalizedInitials => string.IsNullOrWhiteSpace(Initials) ? null : Initials.Trim();
+
+    private string? NormalizedFallbackIcon => string.IsNullOrWhiteSpace(FallbackIcon) ? null : FallbackIcon.Trim();
+
+    private bool ShouldRenderImage => NormalizedImageUrl is not null && !HasImageError;
+
+    private bool IsSquare => string.Equals(Shape?.Trim(), "square", StringComparison.OrdinalIgnoreCase);
+
+    private string? ImageLoading => Delayload ? "lazy" : null;
+
+    private string? RootRole => HasAdditionalAttribute("role") ? null : "img";
+
+    private string? RootAriaLabel =>
+        HasAdditionalAttribute("aria-label") || HasAdditionalAttribute("aria-labelledby")
+            ? null
+            : AccessibleLabel;
+
+    private string AccessibleLabel =>
+        !string.IsNullOrWhiteSpace(Alt)
+            ? Alt.Trim()
+            : NormalizedInitials ?? "Avatar";
+
+    protected override void OnParametersSet()
+    {
+        var imageUrl = NormalizedImageUrl;
+        if (!string.Equals(_lastImageUrl, imageUrl, StringComparison.Ordinal))
+        {
+            HasImageError = false;
+            _lastImageUrl = imageUrl;
+        }
+    }
 
     /// <summary>
     /// Handles errors when loading the avatar image.
     /// </summary>
-    private void HandleImageError()
+    private async Task HandleImageError()
     {
         HasImageError = true;
-        StateHasChanged();
+        if (OnImageError.HasDelegate)
+        {
+            await OnImageError.InvokeAsync(NormalizedImageUrl);
+        }
     }
+
+    private bool HasAdditionalAttribute(string attributeName) =>
+        AdditionalAttributes?.Keys.Any(key => string.Equals(key, attributeName, StringComparison.OrdinalIgnoreCase)) == true;
 }

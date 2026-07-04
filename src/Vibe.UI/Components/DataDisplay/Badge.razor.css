@@ -28,6 +28,12 @@
     color: var(--vibe-primary-foreground);
 }
 
+/* Primary Variant */
+.vibe-badge-primary {
+    background-color: var(--vibe-primary);
+    color: var(--vibe-primary-foreground);
+}
+
 /* Secondary Variant */
 .vibe-badge-secondary {
     background-color: var(--vibe-secondary);
@@ -38,6 +44,30 @@
 .vibe-badge-destructive {
     background-color: var(--vibe-destructive);
     color: var(--vibe-destructive-foreground);
+}
+
+/* Success Variant */
+.vibe-badge-success {
+    background-color: var(--vibe-success);
+    color: var(--vibe-success-foreground);
+}
+
+/* Warning Variant */
+.vibe-badge-warning {
+    background-color: var(--vibe-warning);
+    color: var(--vibe-warning-foreground);
+}
+
+/* Error Variant */
+.vibe-badge-error {
+    background-color: var(--vibe-destructive);
+    color: var(--vibe-destructive-foreground);
+}
+
+/* Info Variant */
+.vibe-badge-info {
+    background-color: var(--vibe-info);
+    color: var(--vibe-info-foreground);
 }
 
 /* Outline Variant */

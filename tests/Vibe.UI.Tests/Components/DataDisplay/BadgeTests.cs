@@ -40,6 +40,21 @@ public class BadgeTests : TestBase
     }
 
     [Fact]
+    public void Badge_Applies_CustomClass_AndAdditionalAttributes()
+    {
+        // Act
+        var cut = Render<Badge>(parameters => parameters
+            .Add(p => p.Class, "custom-badge")
+            .AddUnmatched("data-testid", "status-badge")
+            .AddChildContent("Status"));
+
+        // Assert
+        var badge = cut.Find(".vibe-badge");
+        badge.ClassList.ShouldContain("custom-badge");
+        badge.GetAttribute("data-testid")!.ShouldBe("status-badge");
+    }
+
+    [Fact]
     public void Badge_Renders_WithContent()
     {
         // Act
@@ -184,6 +199,21 @@ public class BadgeTests : TestBase
         cut.Find(".vibe-badge").ClassList.ShouldContain("vibe-badge-lg");
     }
 
+    [Fact]
+    public void Badge_TrimsAndNormalizes_ModifierClasses()
+    {
+        // Act
+        var cut = Render<Badge>(parameters => parameters
+            .Add(p => p.Variant, "  Success  ")
+            .Add(p => p.Size, "  LG  ")
+            .AddChildContent("Success"));
+
+        // Assert
+        var badge = cut.Find(".vibe-badge");
+        badge.ClassList.ShouldContain("vibe-badge-success");
+        badge.ClassList.ShouldContain("vibe-badge-lg");
+    }
+
     // === Content Tests ===
 
     [Fact]
@@ -197,6 +227,63 @@ public class BadgeTests : TestBase
         var badge = cut.Find(".vibe-badge");
         badge.ShouldNotBeNull();
         badge.TextContent.ShouldBe(string.Empty);
+    }
+
+    [Fact]
+    public void Badge_NullOrWhitespaceModifiers_FallBackToDefault()
+    {
+        // Act
+        var cut = Render<Badge>(parameters => parameters
+            .Add(p => p.Variant, null!)
+            .Add(p => p.Size, "   ")
+            .AddChildContent("Badge"));
+
+        // Assert
+        var classList = cut.Find(".vibe-badge").ClassList;
+        classList.ShouldContain("vibe-badge-default");
+        classList.ShouldNotContain("vibe-badge-");
+    }
+
+    [Fact]
+    public void Badge_InvalidModifiers_DoNotInjectExtraClasses()
+    {
+        // Act
+        var cut = Render<Badge>(parameters => parameters
+            .Add(p => p.Variant, "success injected")
+            .Add(p => p.Size, "lg injected")
+            .AddChildContent("Badge"));
+
+        // Assert
+        var classList = cut.Find(".vibe-badge").ClassList;
+        classList.ShouldContain("vibe-badge-default");
+        classList.ShouldNotContain("vibe-badge-success");
+        classList.ShouldNotContain("vibe-badge-lg");
+        classList.ShouldNotContain("injected");
+    }
+
+    [Fact]
+    public void Badge_Applies_AriaLabel_WhenProvided()
+    {
+        // Act
+        var cut = Render<Badge>(parameters => parameters
+            .Add(p => p.AriaLabel, "3 unread notifications")
+            .AddChildContent("3"));
+
+        // Assert
+        cut.Find(".vibe-badge").GetAttribute("aria-label")!.ShouldBe("3 unread notifications");
+    }
+
+    [Fact]
+    public void Badge_DoesNotOverride_ProvidedAriaLabel()
+    {
+        // Act
+        var cut = Render<Badge>(parameters => parameters
+            .Add(p => p.AriaLabel, "Internal label")
+            .AddUnmatched("aria-label", "Provided label")
+            .AddChildContent("3"));
+
+        // Assert
+        cut.Find(".vibe-badge").GetAttribute("aria-label")!.ShouldBe("Provided label");
     }
 
     [Fact]

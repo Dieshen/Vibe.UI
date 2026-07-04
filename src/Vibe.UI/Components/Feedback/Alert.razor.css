@@ -15,6 +15,14 @@
     animation: vibe-slideIn 0.2s ease-in-out;
 }
 
+.vibe-alert-dismissible {
+    padding-right: calc(var(--vibe-spacing-4) + 2rem);
+}
+
+.vibe-alert-disabled {
+    opacity: 0.7;
+}
+
 /* Alert Variants
    ========================================================================== */
 
@@ -57,6 +65,7 @@
 
 .vibe-alert-content {
     flex: 1;
+    min-width: 0;
 }
 
 .vibe-alert-title {
@@ -72,6 +81,7 @@
     color: var(--vibe-foreground);
     line-height: 1.5;
     margin: 0;
+    overflow-wrap: anywhere;
 }
 
 /* Close Button
@@ -98,6 +108,23 @@
 .vibe-alert-close:hover {
     background-color: var(--vibe-muted);
     color: var(--vibe-foreground);
+}
+
+.vibe-alert-close:focus-visible {
+    outline: 2px solid var(--vibe-ring);
+    outline-offset: 2px;
+}
+
+.vibe-alert-close:disabled,
+.vibe-alert-close[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.vibe-alert-close:disabled:hover,
+.vibe-alert-close[aria-disabled="true"]:hover {
+    background: transparent;
+    color: var(--vibe-muted-foreground);
 }
 
 /* Close Icon (X)
@@ -140,5 +167,15 @@
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vibe-alert {
+        animation: none;
+    }
+
+    .vibe-alert-close {
+        transition: none;
     }
 }

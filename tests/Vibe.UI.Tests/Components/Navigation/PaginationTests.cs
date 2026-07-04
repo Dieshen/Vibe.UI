@@ -15,6 +15,19 @@ public class PaginationTests : TestBase
     }
 
     [Fact]
+    public void Pagination_RendersListSemanticsAndAccessibleDefaults()
+    {
+        var cut = Render<Pagination>();
+
+        cut.Find("nav.vibe-pagination").GetAttribute("aria-label").ShouldBe("pagination");
+        cut.Find(".pagination-list").GetAttribute("role").ShouldBe("list");
+        cut.Find(".pagination-prev").GetAttribute("type").ShouldBe("button");
+        cut.Find(".pagination-prev").GetAttribute("aria-label").ShouldBe("Go to previous page");
+        cut.Find(".pagination-next").GetAttribute("aria-label").ShouldBe("Go to next page");
+        cut.FindAll(".pagination-icon").ShouldAllBe(icon => icon.GetAttribute("aria-hidden") == "true");
+    }
+
+    [Fact]
     public void Pagination_Renders_CorrectNumberOfPages()
     {
         // Act
@@ -38,6 +51,20 @@ public class PaginationTests : TestBase
         // Assert
         var activeButton = cut.Find(".pagination-link.active");
         activeButton.TextContent.Trim().ShouldBe("3");
+        activeButton.GetAttribute("aria-current").ShouldBe("page");
+        activeButton.GetAttribute("aria-label").ShouldBe("Page 3, current page");
+    }
+
+    [Fact]
+    public void Pagination_LabelsInactivePagesWithoutCurrentState()
+    {
+        var cut = Render<Pagination>(parameters => parameters
+            .Add(p => p.TotalPages, 5)
+            .Add(p => p.CurrentPage, 3));
+
+        var inactiveButton = cut.FindAll(".pagination-link").First(button => button.TextContent.Trim() == "4");
+        inactiveButton.GetAttribute("aria-current").ShouldBeNull();
+        inactiveButton.GetAttribute("aria-label").ShouldBe("Go to page 4");
     }
 
     [Fact]
@@ -51,6 +78,7 @@ public class PaginationTests : TestBase
         // Assert
         var prevButton = cut.Find(".pagination-prev");
         prevButton.HasAttribute("disabled").ShouldBeTrue();
+        prevButton.GetAttribute("aria-disabled").ShouldBe("true");
     }
 
     [Fact]
@@ -64,6 +92,7 @@ public class PaginationTests : TestBase
         // Assert
         var nextButton = cut.Find(".pagination-next");
         nextButton.HasAttribute("disabled").ShouldBeTrue();
+        nextButton.GetAttribute("aria-disabled").ShouldBe("true");
     }
 
     [Fact]
@@ -209,6 +238,8 @@ public class PaginationTests : TestBase
         var firstButton = cut.Find(".pagination-first");
         firstButton.HasAttribute("disabled").ShouldBeTrue();
         firstButton.ClassList.ShouldContain("disabled");
+        firstButton.GetAttribute("aria-disabled").ShouldBe("true");
+        firstButton.GetAttribute("aria-label").ShouldBe("Go to first page");
     }
 
     [Fact]
@@ -224,6 +255,8 @@ public class PaginationTests : TestBase
         var lastButton = cut.Find(".pagination-last");
         lastButton.HasAttribute("disabled").ShouldBeTrue();
         lastButton.ClassList.ShouldContain("disabled");
+        lastButton.GetAttribute("aria-disabled").ShouldBe("true");
+        lastButton.GetAttribute("aria-label").ShouldBe("Go to last page");
     }
 
     [Fact]
@@ -250,6 +283,9 @@ public class PaginationTests : TestBase
         // Assert - should render without errors
         var pagination = cut.Find(".vibe-pagination");
         pagination.ShouldNotBeNull();
+        cut.Find(".pagination-link.active").TextContent.Trim().ShouldBe("1");
+        cut.Find(".pagination-prev").HasAttribute("disabled").ShouldBeTrue();
+        cut.Find(".pagination-next").HasAttribute("disabled").ShouldBeTrue();
     }
 
     [Fact]
@@ -404,6 +440,20 @@ public class PaginationTests : TestBase
     }
 
     [Fact]
+    public void Pagination_WithMaxVisiblePagesBelowMinimum_RendersFirstCurrentLast()
+    {
+        var cut = Render<Pagination>(parameters => parameters
+            .Add(p => p.TotalPages, 20)
+            .Add(p => p.CurrentPage, 10)
+            .Add(p => p.MaxVisiblePages, 0));
+
+        cut.FindAll(".pagination-link")
+            .Select(button => button.TextContent.Trim())
+            .ShouldBe(["1", "10", "20"]);
+        cut.FindAll(".pagination-ellipsis").Count.ShouldBe(2);
+    }
+
+    [Fact]
     public void Pagination_AriaLabel_SetCorrectly()
     {
         // Act
@@ -414,6 +464,20 @@ public class PaginationTests : TestBase
         // Assert
         var nav = cut.Find("nav");
         nav.GetAttribute("aria-label")!.ShouldBe("pagination");
+    }
+
+    [Fact]
+    public void Pagination_CustomAriaLabelClassAndAdditionalAttributes_AreApplied()
+    {
+        var cut = Render<Pagination>(parameters => parameters
+            .Add(p => p.AriaLabel, " Search results pages ")
+            .Add(p => p.Class, "compact-pages")
+            .AddUnmatched("data-testid", "pager"));
+
+        var nav = cut.Find(".vibe-pagination");
+        nav.ClassList.ShouldContain("compact-pages");
+        nav.GetAttribute("aria-label").ShouldBe("Search results pages");
+        nav.GetAttribute("data-testid").ShouldBe("pager");
     }
 
     [Fact]
@@ -488,6 +552,54 @@ public class PaginationTests : TestBase
 
         // Assert
         selectedPage.ShouldBe(10);
+    }
+
+    [Fact]
+    public void Pagination_ClampsCurrentPageAboveTotal_ForRenderingAndPreviousCallback()
+    {
+        var selectedPage = 0;
+        var cut = Render<Pagination>(parameters => parameters
+            .Add(p => p.TotalPages, 5)
+            .Add(p => p.CurrentPage, 10)
+            .Add(p => p.PageChanged, page => selectedPage = page));
+
+        cut.Find(".pagination-link.active").TextContent.Trim().ShouldBe("5");
+        cut.Find(".pagination-next").HasAttribute("disabled").ShouldBeTrue();
+
+        cut.Find(".pagination-prev").Click();
+
+        selectedPage.ShouldBe(4);
+    }
+
+    [Fact]
+    public void Pagination_ClampsCurrentPageBelowOne_ForRenderingAndNextCallback()
+    {
+        var selectedPage = 0;
+        var cut = Render<Pagination>(parameters => parameters
+            .Add(p => p.TotalPages, 5)
+            .Add(p => p.CurrentPage, -3)
+            .Add(p => p.PageChanged, page => selectedPage = page));
+
+        cut.Find(".pagination-link.active").TextContent.Trim().ShouldBe("1");
+        cut.Find(".pagination-prev").HasAttribute("disabled").ShouldBeTrue();
+
+        cut.Find(".pagination-next").Click();
+
+        selectedPage.ShouldBe(2);
+    }
+
+    [Fact]
+    public void Pagination_ClickingClampedCurrentPage_DoesNotInvokeCallback()
+    {
+        var selectedPage = 0;
+        var cut = Render<Pagination>(parameters => parameters
+            .Add(p => p.TotalPages, 5)
+            .Add(p => p.CurrentPage, -3)
+            .Add(p => p.PageChanged, page => selectedPage = page));
+
+        cut.Find(".pagination-link.active").Click();
+
+        selectedPage.ShouldBe(0);
     }
 
     [Fact]

@@ -1,14 +1,18 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<nav class="@CombinedClass" role="navigation" aria-label="pagination">
-    <ul class="pagination-list">
+<nav class="@CombinedClass" role="navigation" aria-label="@EffectiveAriaLabel" @attributes="AdditionalAttributes">
+    <ul class="pagination-list" role="list">
         @if (ShowFirstLast)
         {
             <li class="pagination-item">
-                <button class="pagination-button pagination-first @(CurrentPage == 1 ? "disabled" : "")"
-                    @onclick="() => OnPageChange(1)" disabled="@(CurrentPage == 1)">
-                    <span class="pagination-icon">
+                <button type="button"
+                    class="pagination-button pagination-first @(IsFirstPage ? "disabled" : "")"
+                    @onclick="() => OnPageChange(1)"
+                    disabled="@IsFirstPage"
+                    aria-disabled="@AriaBool(IsFirstPage)"
+                    aria-label="Go to first page">
+                    <span class="pagination-icon" aria-hidden="true">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="m11 17-5-5 5-5" />
@@ -20,9 +24,13 @@
         }
 
         <li class="pagination-item">
-            <button class="pagination-button pagination-prev @(CurrentPage == 1 ? "disabled" : "")"
-                @onclick="() => OnPageChange(CurrentPage - 1)" disabled="@(CurrentPage == 1)">
-                <span class="pagination-icon">
+            <button type="button"
+                class="pagination-button pagination-prev @(IsFirstPage ? "disabled" : "")"
+                @onclick="() => OnPageChange(EffectiveCurrentPage - 1)"
+                disabled="@IsFirstPage"
+                aria-disabled="@AriaBool(IsFirstPage)"
+                aria-label="Go to previous page">
+                <span class="pagination-icon" aria-hidden="true">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m15 18-6-6 6-6" />
@@ -36,14 +44,17 @@
             if (page == -1)
             {
                 <li class="pagination-item">
-                    <span class="pagination-ellipsis">...</span>
+                    <span class="pagination-ellipsis" aria-hidden="true">...</span>
                 </li>
             }
             else
             {
                 <li class="pagination-item">
-                    <button class="pagination-button pagination-link @(page == CurrentPage ? "active" : "")"
-                        @onclick="() => OnPageChange(page)">
+                    <button type="button"
+                        class="pagination-button pagination-link @(page == EffectiveCurrentPage ? "active" : "")"
+                        @onclick="() => OnPageChange(page)"
+                        aria-current="@GetPageAriaCurrent(page)"
+                        aria-label="@GetPageAriaLabel(page)">
                         @(page)
                     </button>
                 </li>
@@ -51,9 +62,13 @@
         }
 
         <li class="pagination-item">
-            <button class="pagination-button pagination-next @(CurrentPage == TotalPages ? "disabled" : "")"
-                @onclick="() => OnPageChange(CurrentPage + 1)" disabled="@(CurrentPage == TotalPages)">
-                <span class="pagination-icon">
+            <button type="button"
+                class="pagination-button pagination-next @(IsLastPage ? "disabled" : "")"
+                @onclick="() => OnPageChange(EffectiveCurrentPage + 1)"
+                disabled="@IsLastPage"
+                aria-disabled="@AriaBool(IsLastPage)"
+                aria-label="Go to next page">
+                <span class="pagination-icon" aria-hidden="true">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m9 18 6-6-6-6" />
@@ -65,9 +80,13 @@
         @if (ShowFirstLast)
         {
             <li class="pagination-item">
-                <button class="pagination-button pagination-last @(CurrentPage == TotalPages ? "disabled" : "")"
-                    @onclick="() => OnPageChange(TotalPages)" disabled="@(CurrentPage == TotalPages)">
-                    <span class="pagination-icon">
+                <button type="button"
+                    class="pagination-button pagination-last @(IsLastPage ? "disabled" : "")"
+                    @onclick="() => OnPageChange(EffectiveTotalPages)"
+                    disabled="@IsLastPage"
+                    aria-disabled="@AriaBool(IsLastPage)"
+                    aria-label="Go to last page">
+                    <span class="pagination-icon" aria-hidden="true">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="m13 17 5-5-5-5" />
@@ -106,6 +125,12 @@
     public bool ShowFirstLast { get; set; } = false;
 
     /// <summary>
+    /// Gets or sets the accessible label for the pagination navigation.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; } = "pagination";
+
+    /// <summary>
     /// Gets or sets the callback when the page changes.
     /// </summary>
     [Parameter]
@@ -116,6 +141,20 @@
     /// </summary>
     protected override string ComponentClass => "vibe-pagination";
 
+    private int EffectiveTotalPages => Math.Max(1, TotalPages);
+
+    private int EffectiveCurrentPage => NormalizePage(CurrentPage);
+
+    private int EffectiveMaxVisiblePages => Math.Max(3, MaxVisiblePages);
+
+    private bool IsFirstPage => EffectiveCurrentPage == 1;
+
+    private bool IsLastPage => EffectiveCurrentPage == EffectiveTotalPages;
+
+    private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel)
+        ? "pagination"
+        : AriaLabel.Trim();
+
     /// <summary>
     /// Calculates which page numbers to display.
     /// </summary>
@@ -123,26 +162,64 @@
     private List<int> GetPageNumbers()
     {
         var pages = new List<int>();
+        var totalPages = EffectiveTotalPages;
+        var currentPage = EffectiveCurrentPage;
+        var maxVisiblePages = Math.Min(EffectiveMaxVisiblePages, totalPages);
 
-        if (TotalPages <= MaxVisiblePages)
+        if (totalPages <= maxVisiblePages)
         {
-            // If total pages is less than or equal to max visible pages, show all
-            for (int i = 1; i <= TotalPages; i++)
+            for (int i = 1; i <= totalPages; i++)
             {
                 pages.Add(i);
             }
         }
-        else
+        else if (maxVisiblePages == 3)
         {
-            // Always show first page
             pages.Add(1);
 
-            int leftSide = Math.Max(2, CurrentPage - (MaxVisiblePages - 3) / 2);
-            int rightSide = Math.Min(TotalPages - 1, leftSide + MaxVisiblePages - 4);
+            if (currentPage > 2)
+            {
+                pages.Add(-1);
+            }
+
+            if (currentPage != 1 && currentPage != totalPages)
+            {
+                pages.Add(currentPage);
+            }
+
+            if (currentPage < totalPages - 1)
+            {
+                pages.Add(-1);
+            }
+
+            pages.Add(totalPages);
+        }
+        else
+        {
+            pages.Add(1);
+
+            var middleSlots = maxVisiblePages - 2;
+            var leftSide = currentPage - (middleSlots / 2);
+            var rightSide = currentPage + ((middleSlots - 1) / 2);
+
+            if (leftSide < 2)
+            {
+                rightSide += 2 - leftSide;
+                leftSide = 2;
+            }
+
+            if (rightSide > totalPages - 1)
+            {
+                leftSide -= rightSide - (totalPages - 1);
+                rightSide = totalPages - 1;
+            }
+
+            leftSide = Math.Max(2, leftSide);
+            rightSide = Math.Min(totalPages - 1, rightSide);
 
             if (leftSide > 2)
             {
-                pages.Add(-1); // Add ellipsis
+                pages.Add(-1);
             }
 
             for (int i = leftSide; i <= rightSide; i++)
@@ -150,13 +227,12 @@
                 pages.Add(i);
             }
 
-            if (rightSide < TotalPages - 1)
+            if (rightSide < totalPages - 1)
             {
-                pages.Add(-1); // Add ellipsis
+                pages.Add(-1);
             }
 
-            // Always show last page
-            pages.Add(TotalPages);
+            pages.Add(totalPages);
         }
 
         return pages;
@@ -168,10 +244,34 @@
     /// <param name="page">The selected page number.</param>
     private async Task OnPageChange(int page)
     {
-        if (page >= 1 && page <= TotalPages && page != CurrentPage)
+        var targetPage = NormalizePage(page);
+
+        if (targetPage != EffectiveCurrentPage)
         {
-            CurrentPage = page;
-            await PageChanged.InvokeAsync(page);
+            CurrentPage = targetPage;
+            await PageChanged.InvokeAsync(targetPage);
         }
+    }
+
+    private int NormalizePage(int page)
+    {
+        return Math.Clamp(page, 1, EffectiveTotalPages);
+    }
+
+    private string? GetPageAriaCurrent(int page)
+    {
+        return page == EffectiveCurrentPage ? "page" : null;
+    }
+
+    private string GetPageAriaLabel(int page)
+    {
+        return page == EffectiveCurrentPage
+            ? $"Page {page}, current page"
+            : $"Go to page {page}";
+    }
+
+    private static string AriaBool(bool value)
+    {
+        return value ? "true" : "false";
     }
 }

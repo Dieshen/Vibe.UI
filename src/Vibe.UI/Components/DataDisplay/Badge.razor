@@ -1,7 +1,7 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<span class="@CombinedClass @VariantClass @SizeClass">
+<span class="@CombinedClass" aria-label="@EffectiveAriaLabel" @attributes="AdditionalAttributes">
     @ChildContent
 </span>
 
@@ -25,17 +25,55 @@
     public string Size { get; set; } = "default";
 
     /// <summary>
+    /// Gets or sets the accessible label for badges whose visible content is not descriptive.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
-    protected override string ComponentClass => "vibe-badge";
+    protected override string ComponentClass => new ClassBuilder()
+        .Add("vibe-badge")
+        .Add($"vibe-badge-{NormalizedVariant}")
+        .AddIf($"vibe-badge-{NormalizedSize}", ShouldRenderSizeClass)
+        .Build();
 
-    /// <summary>
-    /// Gets the CSS class for the variant.
-    /// </summary>
-    private string VariantClass => $"vibe-badge-{Variant}";
+    private string NormalizedVariant => NormalizeModifier(Variant, "default");
 
-    /// <summary>
-    /// Gets the CSS class for the size.
-    /// </summary>
-    private string SizeClass => $"vibe-badge-{Size}";
+    private string NormalizedSize => NormalizeModifier(Size, "default");
+
+    private bool ShouldRenderSizeClass => !string.Equals(NormalizedSize, "default", StringComparison.Ordinal);
+
+    private string? EffectiveAriaLabel =>
+        HasAdditionalAttribute("aria-label") || HasAdditionalAttribute("aria-labelledby") || string.IsNullOrWhiteSpace(AriaLabel)
+            ? null
+            : AriaLabel.Trim();
+
+    private static string NormalizeModifier(string? value, string fallback)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return fallback;
+        }
+
+        var trimmed = value.Trim();
+        return IsValidModifier(trimmed) ? trimmed.ToLowerInvariant() : fallback;
+    }
+
+    private static bool IsValidModifier(string value)
+    {
+        foreach (var character in value)
+        {
+            if (!char.IsLetterOrDigit(character) && character is not '-' and not '_')
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool HasAdditionalAttribute(string attributeName) =>
+        AdditionalAttributes?.Keys.Any(key => string.Equals(key, attributeName, StringComparison.OrdinalIgnoreCase)) == true;
 }

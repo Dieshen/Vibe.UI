@@ -7,8 +7,10 @@ public class NavigationMenuTests : TestBase
     {
         var cut = Render<NavigationMenu>();
 
-        cut.Find("nav.vibe-navigation-menu").ShouldNotBeNull();
-        cut.Find(".navigation-menu-list").ShouldNotBeNull();
+        var nav = cut.Find("nav.vibe-navigation-menu");
+        nav.GetAttribute("aria-label").ShouldBe("Navigation menu");
+
+        cut.Find(".navigation-menu-list").GetAttribute("role").ShouldBe("list");
     }
 
     [Fact]
@@ -24,9 +26,13 @@ public class NavigationMenuTests : TestBase
     public void NavigationMenu_RendersViewportContent()
     {
         var cut = Render<NavigationMenu>(parameters => parameters
+            .Add(p => p.ViewportAriaLabel, " Product navigation viewport ")
             .Add(p => p.ViewportContent, builder => builder.AddMarkupContent(0, "<section>Viewport</section>")));
 
-        cut.Find(".navigation-menu-viewport").TextContent.ShouldContain("Viewport");
+        var viewport = cut.Find(".navigation-menu-viewport");
+        viewport.GetAttribute("role").ShouldBe("region");
+        viewport.GetAttribute("aria-label").ShouldBe("Product navigation viewport");
+        viewport.TextContent.ShouldContain("Viewport");
     }
 
     [Fact]
@@ -53,11 +59,62 @@ public class NavigationMenuTests : TestBase
     }
 
     [Fact]
+    public async Task NavigationMenu_TrimsIdsAndClampsNegativeIndicatorPosition()
+    {
+        var cut = Render<NavigationMenu>();
+
+        await cut.InvokeAsync(() =>
+        {
+            cut.Instance.RegisterItem(" products ", -12, 64.5);
+            cut.Instance.ActivateItem(" products ");
+        });
+
+        cut.Find(".navigation-menu-viewport-indicator")
+            .GetAttribute("style")
+            .ShouldBe("left: 0px; width: 64.5px");
+    }
+
+    [Fact]
     public async Task NavigationMenu_DoesNotRenderViewportIndicator_ForUnregisteredActiveItem()
     {
         var cut = Render<NavigationMenu>();
 
         await cut.InvokeAsync(() => cut.Instance.ActivateItem("missing"));
+
+        cut.FindAll(".navigation-menu-viewport-indicator").ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task NavigationMenu_IgnoresBlankItemIds(string id)
+    {
+        var cut = Render<NavigationMenu>();
+
+        await cut.InvokeAsync(() =>
+        {
+            cut.Instance.RegisterItem(id, 12, 64);
+            cut.Instance.ActivateItem(id);
+        });
+
+        cut.FindAll(".navigation-menu-viewport-indicator").ShouldBeEmpty();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(double.NaN)]
+    [InlineData(double.PositiveInfinity)]
+    public async Task NavigationMenu_RemovesViewportIndicator_ForInvalidRegisteredWidth(double width)
+    {
+        var cut = Render<NavigationMenu>();
+
+        await cut.InvokeAsync(() =>
+        {
+            cut.Instance.RegisterItem("products", 12, 64);
+            cut.Instance.ActivateItem("products");
+            cut.Instance.RegisterItem("products", 12, width);
+        });
 
         cut.FindAll(".navigation-menu-viewport-indicator").ShouldBeEmpty();
     }
@@ -84,5 +141,27 @@ public class NavigationMenuTests : TestBase
             .Add(p => p.Class, "main-navigation"));
 
         cut.Find(".vibe-navigation-menu").ClassList.ShouldContain("main-navigation");
+    }
+
+    [Fact]
+    public void NavigationMenu_PreservesAdditionalAttributesAndCustomAriaLabel()
+    {
+        var cut = Render<NavigationMenu>(parameters => parameters
+            .Add(p => p.AriaLabel, " Product navigation ")
+            .AddUnmatched("data-testid", "product-nav"));
+
+        var nav = cut.Find(".vibe-navigation-menu");
+        nav.GetAttribute("aria-label").ShouldBe("Product navigation");
+        nav.GetAttribute("data-testid").ShouldBe("product-nav");
+    }
+
+    [Fact]
+    public void NavigationMenu_RendersEmptyList_WhenChildContentIsNull()
+    {
+        var cut = Render<NavigationMenu>();
+
+        cut.Find(".navigation-menu-list").TextContent.Trim().ShouldBeEmpty();
+        cut.FindAll(".navigation-menu-viewport").ShouldBeEmpty();
+        cut.FindAll(".navigation-menu-viewport-indicator").ShouldBeEmpty();
     }
 }
