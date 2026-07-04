@@ -1,83 +1,152 @@
 @namespace Vibe.UI.Components
+@using System.Globalization
 @inherits VibeComponent
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
-    @if (!string.IsNullOrEmpty(ImageSource))
+<div @attributes="AdditionalAttributes"
+     class="@CombinedCssClass"
+     role="group"
+     aria-label="@EffectiveAriaLabel"
+     aria-describedby="@RootDescribedBy"
+     aria-disabled="@AriaBool(Disabled)">
+    @if (HasImage)
     {
         <div class="cropper-container">
-            <div class="cropper-canvas" @ref="_canvasRef">
-                <img src="@ImageSource" alt="Image to crop" class="cropper-image" style="@ImageStyle" />
+            <div class="cropper-canvas" role="group" aria-label="Image crop canvas" aria-describedby="@CanvasDescribedBy">
+                <img src="@EffectiveImageSource" alt="@EffectiveImageAlt" class="cropper-image" style="@ImageStyle" draggable="false" />
 
-                <div class="crop-overlay"></div>
+                <div class="crop-overlay" aria-hidden="true"></div>
 
-                <div class="crop-box" style="@CropBoxStyle">
-                    <div class="crop-box-border"></div>
-                    <div class="crop-grid">
+                <div class="@CropBoxCssClass"
+                     style="@CropBoxStyle"
+                     role="group"
+                     tabindex="@CropBoxTabIndex"
+                     aria-label="@CropBoxAriaLabel"
+                     aria-describedby="@CropBoxDescribedBy"
+                     @onkeydown="HandleCropBoxKeyDown">
+                    <div class="crop-box-border" aria-hidden="true"></div>
+                    <div class="crop-grid" aria-hidden="true">
                         <div class="grid-line grid-line-h"></div>
                         <div class="grid-line grid-line-h"></div>
                         <div class="grid-line grid-line-v"></div>
                         <div class="grid-line grid-line-v"></div>
                     </div>
-                    <div class="crop-handle crop-handle-nw"></div>
-                    <div class="crop-handle crop-handle-ne"></div>
-                    <div class="crop-handle crop-handle-sw"></div>
-                    <div class="crop-handle crop-handle-se"></div>
-                    <div class="crop-handle crop-handle-n"></div>
-                    <div class="crop-handle crop-handle-s"></div>
-                    <div class="crop-handle crop-handle-w"></div>
-                    <div class="crop-handle crop-handle-e"></div>
+                    <div class="crop-handle crop-handle-nw" aria-hidden="true"></div>
+                    <div class="crop-handle crop-handle-ne" aria-hidden="true"></div>
+                    <div class="crop-handle crop-handle-sw" aria-hidden="true"></div>
+                    <div class="crop-handle crop-handle-se" aria-hidden="true"></div>
+                    <div class="crop-handle crop-handle-n" aria-hidden="true"></div>
+                    <div class="crop-handle crop-handle-s" aria-hidden="true"></div>
+                    <div class="crop-handle crop-handle-w" aria-hidden="true"></div>
+                    <div class="crop-handle crop-handle-e" aria-hidden="true"></div>
                 </div>
+
+                <p id="@_keyboardInstructionsId" class="cropper-sr-only">
+                    Use arrow keys to move the crop area. Hold Shift with arrow keys to resize it. Use plus or minus to zoom and R to reset.
+                </p>
+                <p id="@_cropStatusId" class="cropper-sr-only" aria-live="polite">@CropStatusText</p>
             </div>
 
             @if (ShowControls)
             {
-                <div class="cropper-controls">
-                    <div class="control-group">
-                        <button type="button" class="control-btn" @onclick="() => Rotate(-90)" title="Rotate left">
-                            ↶
+                <div class="cropper-controls" role="toolbar" aria-label="Image crop controls">
+                    <div class="control-group" role="group" aria-label="Transform image">
+                        <button type="button"
+                                class="control-btn"
+                                disabled="@ControlsDisabled"
+                                @onclick="() => Rotate(-90)"
+                                aria-label="Rotate left"
+                                title="Rotate left">
+                            <span aria-hidden="true">↶</span>
                         </button>
-                        <button type="button" class="control-btn" @onclick="() => Rotate(90)" title="Rotate right">
-                            ↷
+                        <button type="button"
+                                class="control-btn"
+                                disabled="@ControlsDisabled"
+                                @onclick="() => Rotate(90)"
+                                aria-label="Rotate right"
+                                title="Rotate right">
+                            <span aria-hidden="true">↷</span>
                         </button>
-                        <button type="button" class="control-btn" @onclick="FlipHorizontal" title="Flip horizontal">
-                            ⇄
+                        <button type="button"
+                                class="control-btn"
+                                disabled="@ControlsDisabled"
+                                @onclick="FlipHorizontal"
+                                aria-label="Flip horizontally"
+                                title="Flip horizontally">
+                            <span aria-hidden="true">⇄</span>
                         </button>
-                        <button type="button" class="control-btn" @onclick="FlipVertical" title="Flip vertical">
-                            ⇅
+                        <button type="button"
+                                class="control-btn"
+                                disabled="@ControlsDisabled"
+                                @onclick="FlipVertical"
+                                aria-label="Flip vertically"
+                                title="Flip vertically">
+                            <span aria-hidden="true">⇅</span>
                         </button>
                     </div>
 
-                    <div class="control-group">
-                        <label class="control-label">Zoom:</label>
-                        <button type="button" class="control-btn" @onclick="() => Zoom(-0.1)" title="Zoom out">
-                            −
+                    <div class="control-group" role="group" aria-labelledby="@_zoomLabelId">
+                        <label id="@_zoomLabelId" class="control-label" for="@_zoomInputId">Zoom</label>
+                        <button type="button"
+                                class="control-btn"
+                                disabled="@ControlsDisabled"
+                                @onclick="() => Zoom(-ZoomStep)"
+                                aria-label="Zoom out"
+                                title="Zoom out">
+                            <span aria-hidden="true">−</span>
                         </button>
-                        <input type="range" class="zoom-slider" min="0.1" max="3" step="0.1" @bind="_zoom"
-                            @bind:event="oninput" />
-                        <button type="button" class="control-btn" @onclick="() => Zoom(0.1)" title="Zoom in">
-                            +
+                        <input id="@_zoomInputId"
+                               type="range"
+                               class="zoom-slider"
+                               min="@MinZoomValue"
+                               max="@MaxZoomValue"
+                               step="@ZoomStepValue"
+                               value="@ZoomValue"
+                               disabled="@ControlsDisabled"
+                               @oninput="HandleZoomInput" />
+                        <button type="button"
+                                class="control-btn"
+                                disabled="@ControlsDisabled"
+                                @onclick="() => Zoom(ZoomStep)"
+                                aria-label="Zoom in"
+                                title="Zoom in">
+                            <span aria-hidden="true">+</span>
                         </button>
                     </div>
 
-                    @if (AspectRatioOptions.Any())
+                    @if (ValidAspectRatioOptions.Count > 0)
                     {
-                        <div class="control-group">
-                            <label class="control-label">Aspect:</label>
-                            @foreach (var option in AspectRatioOptions)
+                        <div class="control-group" role="group" aria-label="Aspect ratio">
+                            <span class="control-label">Aspect</span>
+                            @foreach (var option in ValidAspectRatioOptions)
                             {
-                                <button type="button" class="control-btn @(AspectRatio == option.Ratio ? "active" : "")"
-                                    @onclick="() => SetAspectRatio(option.Ratio)">
+                                <button @key="option"
+                                        type="button"
+                                        class="control-btn @(IsSelectedAspectRatio(option.Ratio) ? "active" : null)"
+                                        disabled="@ControlsDisabled"
+                                        aria-pressed="@AriaBool(IsSelectedAspectRatio(option.Ratio))"
+                                        aria-label="@GetAspectRatioAriaLabel(option)"
+                                        @onclick="() => SetAspectRatio(option.Ratio)">
                                     @option.Label
                                 </button>
                             }
                         </div>
                     }
 
-                    <div class="control-group">
-                        <button type="button" class="control-btn" @onclick="Reset" title="Reset">
+                    <div class="control-group" role="group" aria-label="Crop actions">
+                        <button type="button"
+                                class="control-btn"
+                                disabled="@ControlsDisabled"
+                                @onclick="Reset"
+                                aria-label="Reset cropper"
+                                title="Reset">
                             Reset
                         </button>
-                        <button type="button" class="control-btn control-btn-primary" @onclick="Crop" title="Crop">
+                        <button type="button"
+                                class="control-btn control-btn-primary"
+                                disabled="@ControlsDisabled"
+                                @onclick="Crop"
+                                aria-label="Crop image"
+                                title="Crop">
                             Crop
                         </button>
                     </div>
@@ -85,39 +154,83 @@
             }
         </div>
     }
-    else if (EmptyContent != null)
+    else
     {
-        <div class="cropper-empty">
-            @EmptyContent
+        <div id="@_emptyStateId" class="cropper-empty" role="status">
+            @if (EmptyContent != null)
+            {
+                @EmptyContent
+            }
+            else
+            {
+                <span>@EmptyText</span>
+            }
         </div>
     }
 </div>
 
 @code {
-    private ElementReference _canvasRef;
+    private const double MinZoom = 0.1;
+    private const double MaxZoom = 3;
+    private const double ZoomStep = 0.1;
+    private const double KeyboardStep = 1;
+    private const double KeyboardLargeStep = 5;
+    private const double MinCropSize = 5;
+    private const double DefaultCropX = 10;
+    private const double DefaultCropY = 10;
+    private const double DefaultCropWidth = 80;
+    private const double DefaultCropHeight = 80;
+
+    private readonly string _keyboardInstructionsId = $"vibe-image-cropper-instructions-{Guid.NewGuid():N}";
+    private readonly string _cropStatusId = $"vibe-image-cropper-status-{Guid.NewGuid():N}";
+    private readonly string _emptyStateId = $"vibe-image-cropper-empty-{Guid.NewGuid():N}";
+    private readonly string _zoomInputId = $"vibe-image-cropper-zoom-{Guid.NewGuid():N}";
+    private readonly string _zoomLabelId = $"vibe-image-cropper-zoom-label-{Guid.NewGuid():N}";
+
     private double _zoom = 1;
-    private int _rotation = 0;
-    private bool _flipH = false;
-    private bool _flipV = false;
-    private CropArea _cropArea = new() { X = 10, Y = 10, Width = 80, Height = 80 };
+    private int _rotation;
+    private bool _flipH;
+    private bool _flipV;
+    private double _selectedAspectRatio;
+    private double _lastParameterAspectRatio;
+    private bool _hasAppliedAspectRatio;
+    private CropArea _cropArea = CreateDefaultCropArea();
 
     [Parameter]
     public string ImageSource { get; set; } = string.Empty;
 
     [Parameter]
-    public double AspectRatio { get; set; } = 0; // 0 = free
+    public string ImageAlt { get; set; } = "Image to crop";
+
+    [Parameter]
+    public double AspectRatio { get; set; } = 0;
+
+    [Parameter]
+    public EventCallback<double> AspectRatioChanged { get; set; }
 
     [Parameter]
     public List<AspectRatioOption> AspectRatioOptions { get; set; } = new()
-{
-new() { Label = "Free", Ratio = 0 },
-new() { Label = "1:1", Ratio = 1 },
-new() { Label = "16:9", Ratio = 16.0 / 9.0 },
-new() { Label = "4:3", Ratio = 4.0 / 3.0 }
-};
+    {
+        new() { Label = "Free", Ratio = 0 },
+        new() { Label = "1:1", Ratio = 1 },
+        new() { Label = "16:9", Ratio = 16.0 / 9.0 },
+        new() { Label = "4:3", Ratio = 4.0 / 3.0 }
+    };
 
     [Parameter]
     public bool ShowControls { get; set; } = true;
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    [Parameter]
+    public string AriaLabel { get; set; } = "Image cropper";
+
+    [Parameter]
+    public string EmptyText { get; set; } = "No image selected";
 
     [Parameter]
     public EventCallback<CroppedImageData> OnCropped { get; set; }
@@ -129,74 +242,396 @@ new() { Label = "4:3", Ratio = 4.0 / 3.0 }
     public string? CssClass { get; set; }
 
     private string CombinedCssClass => CombineClasses(
-    "vibe-image-cropper",
-    CssClass
+        "vibe-image-cropper",
+        HasImage ? "vibe-image-cropper-with-image" : "vibe-image-cropper-empty",
+        Disabled ? "vibe-image-cropper-disabled" : null,
+        ReadOnly ? "vibe-image-cropper-readonly" : null,
+        CssClass,
+        Class
     );
 
     protected override string ComponentClass => CombinedCssClass;
 
-    private string ImageStyle => $"transform: scale({_zoom}) rotate({_rotation}deg) scaleX({(_flipH ? -1 : 1)}) scaleY({(_flipV ? -1 : 1)});";
+    private bool HasImage => !string.IsNullOrWhiteSpace(ImageSource);
+    private string? EffectiveImageSource => HasImage ? ImageSource.Trim() : null;
+    private string EffectiveImageAlt => string.IsNullOrWhiteSpace(ImageAlt) ? "Image to crop" : ImageAlt.Trim();
+    private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel) ? "Image cropper" : AriaLabel.Trim();
+    private bool ControlsDisabled => Disabled || ReadOnly;
+    private string CropBoxTabIndex => ControlsDisabled ? "-1" : "0";
+    private string? RootDescribedBy => HasImage ? CanvasDescribedBy : _emptyStateId;
+    private string CanvasDescribedBy => CombineIds(_keyboardInstructionsId, _cropStatusId);
+    private string CropBoxDescribedBy => CombineIds(_keyboardInstructionsId, _cropStatusId);
+    private string CropBoxAriaLabel => $"Crop area, {CropStatusText}";
+    private string CropBoxCssClass => CombineClasses(
+        "crop-box",
+        ControlsDisabled ? "crop-box-disabled" : null
+    );
 
-    private string CropBoxStyle => $"left: {_cropArea.X}%; top: {_cropArea.Y}%; width: {_cropArea.Width}%; height: {_cropArea.Height}%;";
+    private IReadOnlyList<AspectRatioOption> ValidAspectRatioOptions =>
+        (AspectRatioOptions ?? new List<AspectRatioOption>())
+            .Where(IsValidAspectRatioOption)
+            .ToList();
+
+    private string ImageStyle => FormattableString.Invariant($"transform: scale({_zoom:0.###}) rotate({_rotation}deg) scaleX({(_flipH ? -1 : 1)}) scaleY({(_flipV ? -1 : 1)});");
+
+    private string CropBoxStyle => FormattableString.Invariant($"left: {_cropArea.X:0.###}%; top: {_cropArea.Y:0.###}%; width: {_cropArea.Width:0.###}%; height: {_cropArea.Height:0.###}%;");
+
+    private string CropStatusText =>
+        $"left {FormatPercent(_cropArea.X)}, top {FormatPercent(_cropArea.Y)}, width {FormatPercent(_cropArea.Width)}, height {FormatPercent(_cropArea.Height)}, zoom {FormatNumber(_zoom)}x, rotation {_rotation} degrees";
+
+    private string ZoomValue => FormatNumber(_zoom);
+    private string MinZoomValue => FormatNumber(MinZoom);
+    private string MaxZoomValue => FormatNumber(MaxZoom);
+    private string ZoomStepValue => FormatNumber(ZoomStep);
+
+    protected override void OnParametersSet()
+    {
+        var normalizedAspectRatio = NormalizeAspectRatio(AspectRatio);
+
+        if (!_hasAppliedAspectRatio || !AreEquivalentAspectRatios(normalizedAspectRatio, _lastParameterAspectRatio))
+        {
+            _selectedAspectRatio = normalizedAspectRatio;
+            _lastParameterAspectRatio = normalizedAspectRatio;
+            _hasAppliedAspectRatio = true;
+            ApplyAspectRatioToCropArea(_selectedAspectRatio);
+        }
+
+        NormalizeCropArea();
+    }
+
+    private void HandleZoomInput(ChangeEventArgs e)
+    {
+        if (ControlsDisabled || !TryParseDouble(e.Value?.ToString(), out var zoom))
+        {
+            return;
+        }
+
+        SetZoom(zoom);
+    }
+
+    private void HandleCropBoxKeyDown(KeyboardEventArgs e)
+    {
+        if (ControlsDisabled)
+        {
+            return;
+        }
+
+        var step = e.CtrlKey ? KeyboardLargeStep : KeyboardStep;
+
+        switch (e.Key)
+        {
+            case "ArrowLeft":
+                if (e.ShiftKey)
+                {
+                    ResizeCropArea(-step, 0);
+                }
+                else
+                {
+                    MoveCropArea(-step, 0);
+                }
+                break;
+            case "ArrowRight":
+                if (e.ShiftKey)
+                {
+                    ResizeCropArea(step, 0);
+                }
+                else
+                {
+                    MoveCropArea(step, 0);
+                }
+                break;
+            case "ArrowUp":
+                if (e.ShiftKey)
+                {
+                    ResizeCropArea(0, -step);
+                }
+                else
+                {
+                    MoveCropArea(0, -step);
+                }
+                break;
+            case "ArrowDown":
+                if (e.ShiftKey)
+                {
+                    ResizeCropArea(0, step);
+                }
+                else
+                {
+                    MoveCropArea(0, step);
+                }
+                break;
+            case "+":
+            case "=":
+                Zoom(ZoomStep);
+                break;
+            case "-":
+            case "_":
+                Zoom(-ZoomStep);
+                break;
+            case "r":
+            case "R":
+                Reset();
+                break;
+        }
+    }
 
     private void Zoom(double delta)
     {
-        _zoom = Math.Clamp(_zoom + delta, 0.1, 3);
+        if (ControlsDisabled)
+        {
+            return;
+        }
+
+        SetZoom(_zoom + delta);
     }
 
     private void Rotate(int degrees)
     {
-        _rotation = (_rotation + degrees) % 360;
+        if (ControlsDisabled)
+        {
+            return;
+        }
+
+        _rotation = NormalizeRotation(_rotation + degrees);
     }
 
     private void FlipHorizontal()
     {
-        _flipH = !_flipH;
+        if (!ControlsDisabled)
+        {
+            _flipH = !_flipH;
+        }
     }
 
     private void FlipVertical()
     {
-        _flipV = !_flipV;
+        if (!ControlsDisabled)
+        {
+            _flipV = !_flipV;
+        }
     }
 
-    private void SetAspectRatio(double ratio)
+    private async Task SetAspectRatio(double ratio)
     {
-        AspectRatio = ratio;
-        if (ratio > 0)
+        if (ControlsDisabled)
         {
-            _cropArea.Height = _cropArea.Width / ratio;
+            return;
+        }
+
+        var normalizedRatio = NormalizeAspectRatio(ratio);
+        _selectedAspectRatio = normalizedRatio;
+        ApplyAspectRatioToCropArea(normalizedRatio);
+
+        if (AspectRatioChanged.HasDelegate)
+        {
+            await AspectRatioChanged.InvokeAsync(normalizedRatio);
         }
     }
 
     private void Reset()
     {
+        if (ControlsDisabled)
+        {
+            return;
+        }
+
         _zoom = 1;
         _rotation = 0;
         _flipH = false;
         _flipV = false;
-        _cropArea = new CropArea { X = 10, Y = 10, Width = 80, Height = 80 };
+        _cropArea = CreateDefaultCropArea();
+        ApplyAspectRatioToCropArea(_selectedAspectRatio);
     }
 
     private async Task Crop()
     {
-        // In a real implementation, this would use JS interop to:
-        // 1. Get the canvas context
-        // 2. Draw the cropped portion
-        // 3. Convert to base64 or blob
-        // 4. Return the cropped image data
+        if (ControlsDisabled || !HasImage)
+        {
+            return;
+        }
+
+        NormalizeCropArea();
 
         var croppedData = new CroppedImageData
         {
-            CropArea = _cropArea,
+            ImageSource = EffectiveImageSource,
+            CropArea = CloneCropArea(_cropArea),
+            AspectRatio = _selectedAspectRatio,
             Zoom = _zoom,
             Rotation = _rotation,
             FlipHorizontal = _flipH,
             FlipVertical = _flipV
-            // ImageData would contain the actual cropped image
         };
 
         await OnCropped.InvokeAsync(croppedData);
     }
+
+    private void SetZoom(double value)
+    {
+        if (!IsFinite(value))
+        {
+            return;
+        }
+
+        _zoom = Math.Clamp(value, MinZoom, MaxZoom);
+    }
+
+    private void MoveCropArea(double xDelta, double yDelta)
+    {
+        _cropArea.X = Math.Clamp(_cropArea.X + xDelta, 0, 100 - _cropArea.Width);
+        _cropArea.Y = Math.Clamp(_cropArea.Y + yDelta, 0, 100 - _cropArea.Height);
+    }
+
+    private void ResizeCropArea(double widthDelta, double heightDelta)
+    {
+        if (_selectedAspectRatio > 0)
+        {
+            ResizeCropAreaWithAspectRatio(widthDelta, heightDelta);
+        }
+        else
+        {
+            _cropArea.Width = Math.Clamp(_cropArea.Width + widthDelta, MinCropSize, 100 - _cropArea.X);
+            _cropArea.Height = Math.Clamp(_cropArea.Height + heightDelta, MinCropSize, 100 - _cropArea.Y);
+        }
+
+        NormalizeCropArea();
+    }
+
+    private void ResizeCropAreaWithAspectRatio(double widthDelta, double heightDelta)
+    {
+        if (Math.Abs(heightDelta) > Math.Abs(widthDelta))
+        {
+            var height = Math.Clamp(_cropArea.Height + heightDelta, MinCropSize, 100 - _cropArea.Y);
+            var width = height * _selectedAspectRatio;
+
+            if (width > 100 - _cropArea.X)
+            {
+                width = 100 - _cropArea.X;
+                height = width / _selectedAspectRatio;
+            }
+
+            _cropArea.Width = width;
+            _cropArea.Height = height;
+        }
+        else
+        {
+            var width = Math.Clamp(_cropArea.Width + widthDelta, MinCropSize, 100 - _cropArea.X);
+            var height = width / _selectedAspectRatio;
+
+            if (height > 100 - _cropArea.Y)
+            {
+                height = 100 - _cropArea.Y;
+                width = height * _selectedAspectRatio;
+            }
+
+            _cropArea.Width = width;
+            _cropArea.Height = height;
+        }
+    }
+
+    private void ApplyAspectRatioToCropArea(double ratio)
+    {
+        if (ratio <= 0)
+        {
+            NormalizeCropArea();
+            return;
+        }
+
+        var width = Math.Clamp(_cropArea.Width, MinCropSize, 100 - _cropArea.X);
+        var height = width / ratio;
+
+        if (height > 100 - _cropArea.Y)
+        {
+            height = 100 - _cropArea.Y;
+            width = height * ratio;
+        }
+
+        _cropArea.Width = width;
+        _cropArea.Height = height;
+        NormalizeCropArea();
+    }
+
+    private void NormalizeCropArea()
+    {
+        var width = Math.Clamp(CoerceFinite(_cropArea.Width, DefaultCropWidth), MinCropSize, 100);
+        var height = Math.Clamp(CoerceFinite(_cropArea.Height, DefaultCropHeight), MinCropSize, 100);
+        var x = Math.Clamp(CoerceFinite(_cropArea.X, DefaultCropX), 0, 100 - width);
+        var y = Math.Clamp(CoerceFinite(_cropArea.Y, DefaultCropY), 0, 100 - height);
+
+        _cropArea = new CropArea
+        {
+            X = x,
+            Y = y,
+            Width = width,
+            Height = height
+        };
+    }
+
+    private bool IsSelectedAspectRatio(double ratio) =>
+        AreEquivalentAspectRatios(_selectedAspectRatio, NormalizeAspectRatio(ratio));
+
+    private static bool IsValidAspectRatioOption(AspectRatioOption option) =>
+        option is not null &&
+        !string.IsNullOrWhiteSpace(option.Label) &&
+        IsValidAspectRatio(option.Ratio);
+
+    private static bool IsValidAspectRatio(double ratio) =>
+        ratio == 0 || (IsFinite(ratio) && ratio > 0);
+
+    private static double NormalizeAspectRatio(double ratio) =>
+        IsValidAspectRatio(ratio) ? ratio : 0;
+
+    private static bool AreEquivalentAspectRatios(double left, double right) =>
+        Math.Abs(left - right) < 0.000001;
+
+    private static int NormalizeRotation(int degrees)
+    {
+        var normalized = degrees % 360;
+        return normalized < 0 ? normalized + 360 : normalized;
+    }
+
+    private static CropArea CreateDefaultCropArea() => new()
+    {
+        X = DefaultCropX,
+        Y = DefaultCropY,
+        Width = DefaultCropWidth,
+        Height = DefaultCropHeight
+    };
+
+    private static CropArea CloneCropArea(CropArea cropArea) => new()
+    {
+        X = cropArea.X,
+        Y = cropArea.Y,
+        Width = cropArea.Width,
+        Height = cropArea.Height
+    };
+
+    private static double CoerceFinite(double value, double fallback) =>
+        IsFinite(value) ? value : fallback;
+
+    private static bool IsFinite(double value) =>
+        !double.IsNaN(value) && !double.IsInfinity(value);
+
+    private static bool TryParseDouble(string? value, out double result) =>
+        double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out result);
+
+    private static string FormatNumber(double value) =>
+        value.ToString("0.###", CultureInfo.InvariantCulture);
+
+    private static string FormatPercent(double value) =>
+        $"{value.ToString("0.#", CultureInfo.InvariantCulture)}%";
+
+    private static string AriaBool(bool value) =>
+        value ? "true" : "false";
+
+    private static string CombineIds(params string?[] ids)
+    {
+        var renderedIds = ids.Where(id => !string.IsNullOrWhiteSpace(id)).ToList();
+        return renderedIds.Count == 0 ? string.Empty : string.Join(" ", renderedIds);
+    }
+
+    private static string GetAspectRatioAriaLabel(AspectRatioOption option) =>
+        $"Set aspect ratio {option.Label}";
 
     public class AspectRatioOption
     {
@@ -214,7 +649,9 @@ new() { Label = "4:3", Ratio = 4.0 / 3.0 }
 
     public class CroppedImageData
     {
+        public string? ImageSource { get; set; }
         public CropArea CropArea { get; set; } = new();
+        public double AspectRatio { get; set; }
         public double Zoom { get; set; }
         public int Rotation { get; set; }
         public bool FlipHorizontal { get; set; }

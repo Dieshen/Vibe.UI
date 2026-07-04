@@ -7,15 +7,21 @@ public class MenuTests : TestBase
     {
         var cut = Render<Menu>();
 
-        cut.Find(".vibe-menu").ShouldNotBeNull();
+        var root = cut.Find(".vibe-menu");
+        root.GetAttribute("data-state").ShouldBe("closed");
+
         var trigger = cut.Find(".vibe-menu-trigger");
         trigger.GetAttribute("role").ShouldBe("button");
         trigger.GetAttribute("tabindex").ShouldBe("0");
         trigger.GetAttribute("aria-haspopup").ShouldBe("menu");
         trigger.GetAttribute("aria-expanded").ShouldBe("false");
-        var button = cut.Find(".vibe-menu-trigger button");
-        button.GetAttribute("type").ShouldBe("button");
-        button.TextContent.Trim().ShouldBe("Menu");
+        trigger.GetAttribute("aria-disabled").ShouldBe("false");
+        trigger.GetAttribute("aria-controls").ShouldNotBeNullOrWhiteSpace();
+        trigger.GetAttribute("data-state").ShouldBe("closed");
+
+        var defaultTrigger = cut.Find(".vibe-menu-default-trigger");
+        defaultTrigger.TextContent.Trim().ShouldBe("Menu");
+        cut.FindAll(".vibe-menu-trigger button").ShouldBeEmpty();
     }
 
     [Fact]
@@ -42,42 +48,112 @@ public class MenuTests : TestBase
     {
         var cut = Render<Menu>(parameters => parameters
             .Add(p => p.IsOpen, true)
+            .Add(p => p.MenuAriaLabel, "Actions")
             .AddChildContent("<button>Delete</button>"));
+
+        var root = cut.Find(".vibe-menu");
+        root.ClassList.ShouldContain("vibe-menu-open");
+        root.GetAttribute("data-state").ShouldBe("open");
+
+        var trigger = cut.Find(".vibe-menu-trigger");
+        trigger.GetAttribute("aria-expanded").ShouldBe("true");
+        trigger.GetAttribute("data-state").ShouldBe("open");
 
         cut.Find(".vibe-menu-content").TextContent.ShouldContain("Delete");
         cut.Find(".vibe-menu-content").GetAttribute("role").ShouldBe("menu");
-        cut.Find(".vibe-menu-trigger").GetAttribute("aria-expanded").ShouldBe("true");
-        cut.Find(".menu-backdrop").ShouldNotBeNull();
+        cut.Find(".vibe-menu-content").GetAttribute("id").ShouldBe(trigger.GetAttribute("aria-controls"));
+        cut.Find(".vibe-menu-content").GetAttribute("tabindex").ShouldBe("-1");
+        cut.Find(".vibe-menu-content").GetAttribute("aria-label").ShouldBe("Actions");
+        cut.Find(".vibe-menu-content").GetAttribute("aria-orientation").ShouldBe("vertical");
+        cut.Find(".vibe-menu-content").GetAttribute("data-state").ShouldBe("open");
+        cut.Find(".menu-backdrop").GetAttribute("aria-hidden").ShouldBe("true");
     }
 
     [Fact]
-    public void Menu_ToggleInvokesIsOpenChanged()
+    public void Menu_ToggleInvokesIsOpenChangedOnTransitions()
     {
-        bool? changedValue = null;
+        var changedValues = new List<bool>();
         var cut = Render<Menu>(parameters => parameters
-            .Add(p => p.IsOpenChanged, value => changedValue = value));
+            .Add(p => p.IsOpenChanged, value => changedValues.Add(value))
+            .AddChildContent("Menu content"));
 
         cut.Find(".vibe-menu-trigger").Click();
 
-        changedValue.ShouldBe(true);
+        changedValues.ShouldBe([true]);
+        cut.Find(".vibe-menu-content").ShouldNotBeNull();
+
+        cut.Find(".vibe-menu-trigger").Click();
+
+        changedValues.ShouldBe([true, false]);
+        cut.FindAll(".vibe-menu-content").ShouldBeEmpty();
+        cut.Find(".vibe-menu").GetAttribute("data-state").ShouldBe("closed");
+    }
+
+    [Fact]
+    public void Menu_TogglesWithEnterAndSpacebarAndClosesWithEscape()
+    {
+        var changedValues = new List<bool>();
+        var cut = Render<Menu>(parameters => parameters
+            .Add(p => p.IsOpenChanged, value => changedValues.Add(value))
+            .AddChildContent("Menu content"));
+
+        cut.Find(".vibe-menu-trigger").KeyDown("Enter");
+        changedValues.ShouldBe([true]);
+        cut.Find(".vibe-menu-content").ShouldNotBeNull();
+
+        cut.Find(".vibe-menu-content").KeyDown("Escape");
+        changedValues.ShouldBe([true, false]);
+        cut.FindAll(".vibe-menu-content").ShouldBeEmpty();
+
+        cut.Find(".vibe-menu-trigger").KeyDown("Spacebar");
+        changedValues.ShouldBe([true, false, true]);
+        cut.Find(".vibe-menu-content").ShouldNotBeNull();
+
+        cut.Find(".vibe-menu-trigger").KeyDown(" ");
+        changedValues.ShouldBe([true, false, true, false]);
+        cut.FindAll(".vibe-menu-content").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Menu_ArrowKeysOpenMenuWithoutRepeatingCallback_WhenAlreadyOpen()
+    {
+        var changedValues = new List<bool>();
+        var cut = Render<Menu>(parameters => parameters
+            .Add(p => p.IsOpenChanged, value => changedValues.Add(value))
+            .AddChildContent("Menu content"));
+
+        cut.Find(".vibe-menu-trigger").KeyDown("ArrowDown");
+
+        changedValues.ShouldBe([true]);
+        cut.Find(".vibe-menu-content").ShouldNotBeNull();
+
+        cut.Find(".vibe-menu-trigger").KeyDown("ArrowDown");
+
+        changedValues.ShouldBe([true]);
+
+        cut.Find(".vibe-menu-content").KeyDown("Escape");
+        cut.Find(".vibe-menu-trigger").KeyDown("ArrowUp");
+
+        changedValues.ShouldBe([true, false, true]);
         cut.Find(".vibe-menu-content").ShouldNotBeNull();
     }
 
     [Fact]
-    public void Menu_TogglesWithKeyboardAndClosesWithEscape()
+    public void Menu_EscapeDoesNotInvokeCallback_WhenAlreadyClosed()
     {
-        bool? changedValue = null;
+        var closeCount = 0;
         var cut = Render<Menu>(parameters => parameters
-            .Add(p => p.IsOpenChanged, value => changedValue = value)
-            .AddChildContent("Menu content"));
-
-        cut.Find(".vibe-menu-trigger").KeyDown("Enter");
-        changedValue.ShouldBe(true);
-        cut.Find(".vibe-menu-content").ShouldNotBeNull();
+            .Add(p => p.IsOpenChanged, value =>
+            {
+                if (!value)
+                {
+                    closeCount++;
+                }
+            }));
 
         cut.Find(".vibe-menu-trigger").KeyDown("Escape");
-        changedValue.ShouldBe(false);
-        cut.FindAll(".vibe-menu-content").ShouldBeEmpty();
+
+        closeCount.ShouldBe(0);
     }
 
     [Fact]
@@ -96,6 +172,42 @@ public class MenuTests : TestBase
     }
 
     [Fact]
+    public void Menu_CloseOnSelectClosesAfterMenuItemClick()
+    {
+        var itemClickCount = 0;
+        var changedValues = new List<bool>();
+        var cut = Render<Menu>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.IsOpenChanged, value => changedValues.Add(value))
+            .AddChildContent<MenuItem>(item => item
+                .Add(p => p.OnClick, _ => itemClickCount++)
+                .AddChildContent("Save")));
+
+        cut.Find(".vibe-menu-item").Click();
+
+        itemClickCount.ShouldBe(1);
+        changedValues.ShouldBe([false]);
+        cut.FindAll(".vibe-menu-content").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Menu_CloseOnSelectFalseKeepsMenuOpenAfterContentClick()
+    {
+        var changedValues = new List<bool>();
+        var cut = Render<Menu>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.CloseOnSelect, false)
+            .Add(p => p.IsOpenChanged, value => changedValues.Add(value))
+            .AddChildContent(builder => builder.AddMarkupContent(0, "<button class='inner-action'>Save</button>")));
+
+        cut.Find(".inner-action").Click();
+
+        changedValues.ShouldBeEmpty();
+        cut.Find(".vibe-menu-content").ShouldNotBeNull();
+        cut.Find(".vibe-menu-trigger").GetAttribute("aria-expanded").ShouldBe("true");
+    }
+
+    [Fact]
     public void Menu_OmitsBackdrop_WhenCloseOnClickOutsideIsFalse()
     {
         var cut = Render<Menu>(parameters => parameters
@@ -105,6 +217,61 @@ public class MenuTests : TestBase
 
         cut.Find(".vibe-menu-content").ShouldNotBeNull();
         cut.FindAll(".menu-backdrop").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Menu_DisabledStatePreventsPointerAndKeyboardOpen()
+    {
+        var changedValues = new List<bool>();
+        var cut = Render<Menu>(parameters => parameters
+            .Add(p => p.Disabled, true)
+            .Add(p => p.IsOpenChanged, value => changedValues.Add(value))
+            .AddChildContent("Menu content"));
+
+        var root = cut.Find(".vibe-menu");
+        root.ClassList.ShouldContain("vibe-menu-disabled");
+        root.GetAttribute("data-state").ShouldBe("closed");
+
+        var trigger = cut.Find(".vibe-menu-trigger");
+        trigger.ClassList.ShouldContain("vibe-menu-trigger-disabled");
+        trigger.GetAttribute("tabindex").ShouldBe("-1");
+        trigger.GetAttribute("aria-disabled").ShouldBe("true");
+        trigger.GetAttribute("aria-expanded").ShouldBe("false");
+
+        trigger.Click();
+        trigger.KeyDown("Enter");
+        trigger.KeyDown("ArrowDown");
+
+        changedValues.ShouldBeEmpty();
+        cut.FindAll(".vibe-menu-content").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Menu_DisabledStateClosesInitiallyOpenMenuWithoutCallback()
+    {
+        var changedValues = new List<bool>();
+        var cut = Render<Menu>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.Disabled, true)
+            .Add(p => p.IsOpenChanged, value => changedValues.Add(value))
+            .AddChildContent("Menu content"));
+
+        cut.Find(".vibe-menu").GetAttribute("data-state").ShouldBe("closed");
+        cut.Find(".vibe-menu-trigger").GetAttribute("aria-expanded").ShouldBe("false");
+        cut.FindAll(".vibe-menu-content").ShouldBeEmpty();
+        changedValues.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Menu_RendersEmptyMenuAndFallbackAriaLabel_WhenContentAndLabelAreNull()
+    {
+        var cut = Render<Menu>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.MenuAriaLabel, (string?)null));
+
+        var content = cut.Find(".vibe-menu-content");
+        content.TextContent.ShouldBe(string.Empty);
+        content.GetAttribute("aria-label").ShouldBe("Menu");
     }
 
     [Theory]
