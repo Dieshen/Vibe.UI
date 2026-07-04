@@ -43,23 +43,24 @@ Direct test-file coverage is complete, but production hardening is tracked separ
 
 Depth-hardened components completed on the beta-readiness branch:
 
+- Advanced: KanbanBoard, TreeView, TreeViewNode.
 - DateTime: Calendar, DatePicker, DateRangePicker.
 - DataDisplay: DataTable, Tag.
 - Disclosure: AccordionItem, Carousel.
-- Feedback: NotificationCenter, Toast.
+- Feedback: NotificationCenter, Sonner, Toast.
 - Inputs: ColorPicker, FileUpload, ImageCropper, InputOTP, Mentions, RadioGroupItem, RichTextEditor, TransferList.
 - Layout: Sheet.
-- Navigation: BreadcrumbItem, Link, Menu, Sidebar, Stepper, TabItem, Tabs.
+- Navigation: BreadcrumbItem, Link, Menu, NavigationMenuItem, Sidebar, Stepper, TabItem, Tabs.
 - Overlay: AlertDialog, ContextMenu, ContextMenuItem.
 - Utility: Command, DropdownMenu, Icon.
 
-Current depth-hardened count on this branch: 31 components.
+Current depth-hardened count on this branch: 36 components.
 
 Next priority depth candidates:
 
-- Advanced: KanbanBoard, TreeView, TreeViewNode.
-- Navigation: NavigationMenuItem.
-- Feedback: Sonner.
+- DataDisplay: Avatar, Badge, Card.
+- Feedback: Alert, Progress, Skeleton, Spinner.
+- Navigation: NavigationMenu, Pagination.
 
 ## Mutation-Style Quality Checks
 

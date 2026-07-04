@@ -68,6 +68,11 @@
     transition: all 0.2s ease;
 }
 
+.sonner-toast:focus-within {
+    outline: 2px solid var(--vibe-ring, var(--vibe-primary));
+    outline-offset: 2px;
+}
+
 @keyframes sonner-slide-in {
     from {
         opacity: 0;
@@ -127,6 +132,18 @@
     background-color: var(--vibe-muted);
 }
 
+.sonner-action:disabled,
+.sonner-close:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.sonner-action:disabled:hover,
+.sonner-close:disabled:hover {
+    color: var(--vibe-muted-foreground);
+    background-color: transparent;
+}
+
 /* Close Button */
 .sonner-close {
     flex-shrink: 0;
@@ -148,6 +165,11 @@
 .sonner-close:hover {
     color: var(--vibe-foreground);
     background-color: var(--vibe-muted);
+}
+
+.sonner-disabled .sonner-toast,
+.sonner-readonly .sonner-toast {
+    cursor: default;
 }
 
 /* Rich Colors Variants */

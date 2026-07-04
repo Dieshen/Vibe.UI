@@ -1,26 +1,34 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="tree">
-    @if (Items != null)
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="tree" aria-multiselectable="@AriaBool(MultiSelect)">
+    @if (RootItems.Count > 0)
     {
-        @foreach (var item in Items)
+        @for (var index = 0; index < RootItems.Count; index++)
         {
-            <TreeViewNode Item="item"
-                          SelectedValue="@SelectedValue"
+            var item = RootItems[index];
+
+            <TreeViewNode @key="item"
+                          Item="item"
+                          SelectedValue="@_currentSelectedValue"
                           OnNodeClick="@HandleNodeClick"
                           OnNodeExpand="@HandleNodeExpand"
                           ShowCheckboxes="@ShowCheckboxes"
                           MultiSelect="@MultiSelect"
                           ExpandedNodes="@_expandedNodes"
-                          SelectedNodes="@_selectedNodes" />
+                          SelectedNodes="@_selectedNodes"
+                          Level="1"
+                          PositionInSet="@(index + 1)"
+                          SetSize="@RootItems.Count" />
         }
     }
 </div>
 
 @code {
-    private HashSet<string> _expandedNodes = new();
-    private HashSet<string> _selectedNodes = new();
+    private static readonly IReadOnlyList<TreeNode> EmptyNodes = Array.Empty<TreeNode>();
+    private readonly HashSet<string> _expandedNodes = new();
+    private readonly HashSet<string> _selectedNodes = new();
+    private string? _currentSelectedValue;
 
     [Parameter]
     public List<TreeNode>? Items { get; set; }
@@ -53,18 +61,32 @@
 
     protected override string ComponentClass => CombinedCssClass;
 
+    private IReadOnlyList<TreeNode> RootItems => Items ?? EmptyNodes;
+
+    protected override void OnParametersSet()
+    {
+        _currentSelectedValue = SelectedValue;
+    }
+
     private async Task HandleNodeClick(TreeNode node)
     {
+        if (node.IsDisabled)
+            return;
+
         if (MultiSelect)
         {
             if (_selectedNodes.Contains(node.Id))
+            {
                 _selectedNodes.Remove(node.Id);
+            }
             else
+            {
                 _selectedNodes.Add(node.Id);
+            }
         }
         else
         {
-            SelectedValue = node.Id;
+            _currentSelectedValue = node.Id;
             await SelectedValueChanged.InvokeAsync(node.Id);
         }
 
@@ -73,13 +95,22 @@
 
     private async Task HandleNodeExpand(TreeNode node)
     {
+        if (node.IsDisabled || node.Children is not { Count: > 0 })
+            return;
+
         if (_expandedNodes.Contains(node.Id))
+        {
             _expandedNodes.Remove(node.Id);
+        }
         else
+        {
             _expandedNodes.Add(node.Id);
+        }
 
         await OnNodeExpand.InvokeAsync(node);
     }
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
 
     public class TreeNode
     {
