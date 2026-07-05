@@ -1,7 +1,11 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<div class="@CombinedClass" style="padding-bottom: @AspectRatioPadding;">
+<div class="@RootClass"
+     style="@RootStyle"
+     role="@EffectiveRole"
+     aria-label="@EffectiveAriaLabel"
+     @attributes="RootAttributes">
     <div class="aspect-ratio-content">
         @ChildContent
     </div>
@@ -21,12 +25,124 @@
     public double Ratio { get; set; } = 16.0 / 9.0;
 
     /// <summary>
+    /// Gets or sets the accessible label for the aspect ratio group when the wrapper needs a name.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the ARIA role for the wrapper. Defaults to group only when an accessible name is provided.
+    /// </summary>
+    [Parameter]
+    public string? Role { get; set; }
+
+    /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
     protected override string ComponentClass => "vibe-aspect-ratio";
 
+    private const double DefaultRatio = 16.0 / 9.0;
+    private const double MinimumRatio = 0.01;
+    private const double MaximumRatio = 100.0;
+
+    private string RootClass => CombineClasses(ComponentClass, Class?.Trim(), AdditionalClass);
+
+    private string RootStyle => CombineStyles(AdditionalStyle, $"padding-bottom: {AspectRatioPadding}")!;
+
+    private Dictionary<string, object>? RootAttributes => GetUnhandledAttributes();
+
+    private double EffectiveRatio
+    {
+        get
+        {
+            if (!double.IsFinite(Ratio) || Ratio <= 0)
+            {
+                return DefaultRatio;
+            }
+
+            return Math.Clamp(Ratio, MinimumRatio, MaximumRatio);
+        }
+    }
+
     /// <summary>
     /// Calculates the padding bottom percentage based on the aspect ratio.
     /// </summary>
-    private string AspectRatioPadding => $"{(100 / Ratio):0.##}%";
+    private string AspectRatioPadding => FormattableString.Invariant($"{100 / EffectiveRatio:0.##}%");
+
+    private string? EffectiveRole =>
+        GetAdditionalAttributeValue("role")
+        ?? NormalizeAttributeValue(Role)
+        ?? (HasAccessibleName ? "group" : null);
+
+    private string? EffectiveAriaLabel =>
+        GetAdditionalAttributeValue("aria-label")
+        ?? (HasAdditionalAttribute("aria-labelledby") ? null : NormalizeAttributeValue(AriaLabel));
+
+    private bool HasAccessibleName =>
+        !string.IsNullOrWhiteSpace(AriaLabel)
+        || HasAdditionalAttribute("aria-label")
+        || HasAdditionalAttribute("aria-labelledby");
+
+    private string? AdditionalClass => GetAdditionalAttributeValue("class");
+
+    private string? AdditionalStyle => GetAdditionalAttributeValue("style");
+
+    private Dictionary<string, object>? GetUnhandledAttributes()
+    {
+        if (AdditionalAttributes is null || AdditionalAttributes.Count == 0)
+        {
+            return null;
+        }
+
+        var attributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (IsHandledRootAttribute(attribute.Key))
+            {
+                continue;
+            }
+
+            attributes[attribute.Key] = attribute.Value;
+        }
+
+        return attributes.Count == 0 ? null : attributes;
+    }
+
+    private static bool IsHandledRootAttribute(string attributeName) =>
+        string.Equals(attributeName, "class", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(attributeName, "style", StringComparison.OrdinalIgnoreCase);
+
+    private string? GetAdditionalAttributeValue(string attributeName)
+    {
+        if (AdditionalAttributes is null)
+        {
+            return null;
+        }
+
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (string.Equals(attribute.Key, attributeName, StringComparison.OrdinalIgnoreCase))
+            {
+                return NormalizeAttributeValue(attribute.Value?.ToString());
+            }
+        }
+
+        return null;
+    }
+
+    private bool HasAdditionalAttribute(string attributeName) =>
+        AdditionalAttributes?.Keys.Any(key => string.Equals(key, attributeName, StringComparison.OrdinalIgnoreCase)) == true;
+
+    private static string? NormalizeAttributeValue(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string? CombineStyles(params string?[] styles)
+    {
+        var normalizedStyles = styles
+            .Select(style => NormalizeAttributeValue(style)?.TrimEnd(';'))
+            .Where(style => !string.IsNullOrWhiteSpace(style))
+            .ToArray();
+
+        return normalizedStyles.Length == 0 ? null : string.Join("; ", normalizedStyles);
+    }
 }

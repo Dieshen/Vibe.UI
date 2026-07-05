@@ -11,6 +11,48 @@ public class ToastContainerTests : TestBase
 
         var container = cut.Find(".vibe-toast-container");
         container.ClassList.ShouldContain("bottom-right");
+        container.GetAttribute("data-position").ShouldBe("bottom-right");
+        container.GetAttribute("data-state").ShouldBe("empty");
+        container.GetAttribute("data-toast-count").ShouldBe("0");
+    }
+
+    [Fact]
+    public void ToastContainer_RendersAccessibleRegionByDefault()
+    {
+        var cut = Render<ToastContainer>();
+
+        var container = cut.Find(".vibe-toast-container");
+        container.GetAttribute("role").ShouldBe("region");
+        container.GetAttribute("aria-live").ShouldBe("polite");
+        container.GetAttribute("aria-atomic").ShouldBe("false");
+        container.GetAttribute("aria-label").ShouldBe("Notifications");
+        container.GetAttribute("aria-disabled").ShouldBe("false");
+    }
+
+    [Fact]
+    public void ToastContainer_UsesCustomAccessibilityAttributesAndNormalizesInvalidValues()
+    {
+        var cut = Render<ToastContainer>(parameters => parameters
+            .Add(p => p.Role, "status")
+            .Add(p => p.AriaLive, "assertive")
+            .Add(p => p.AriaAtomic, true)
+            .Add(p => p.AriaLabel, "Sync notifications"));
+
+        var container = cut.Find(".vibe-toast-container");
+        container.GetAttribute("role").ShouldBe("status");
+        container.GetAttribute("aria-live").ShouldBe("assertive");
+        container.GetAttribute("aria-atomic").ShouldBe("true");
+        container.GetAttribute("aria-label").ShouldBe("Sync notifications");
+
+        cut.Render(parameters => parameters
+            .Add(p => p.Role, "button")
+            .Add(p => p.AriaLive, "loud")
+            .Add(p => p.AriaLabel, "   "));
+
+        container = cut.Find(".vibe-toast-container");
+        container.GetAttribute("role").ShouldBe("region");
+        container.GetAttribute("aria-live").ShouldBe("polite");
+        container.GetAttribute("aria-label").ShouldBe("Notifications");
     }
 
     [Fact]
@@ -20,6 +62,25 @@ public class ToastContainerTests : TestBase
             .Add(p => p.Position, "top-left"));
 
         cut.Find(".vibe-toast-container").ClassList.ShouldContain("top-left");
+    }
+
+    [Fact]
+    public void ToastContainer_NormalizesUnsafePosition()
+    {
+        var cut = Render<ToastContainer>(parameters => parameters
+            .Add(p => p.Position, "top-left injected"));
+
+        var container = cut.Find(".vibe-toast-container");
+        container.ClassList.ShouldContain("bottom-right");
+        container.ClassList.ShouldNotContain("injected");
+        container.GetAttribute("data-position").ShouldBe("bottom-right");
+
+        cut.Render(parameters => parameters
+            .Add(p => p.Position, "custom-stack"));
+
+        container = cut.Find(".vibe-toast-container");
+        container.ClassList.ShouldContain("custom-stack");
+        container.GetAttribute("data-position").ShouldBe("custom-stack");
     }
 
     [Fact]
@@ -84,6 +145,59 @@ public class ToastContainerTests : TestBase
     }
 
     [Fact]
+    public void ToastContainer_ClampsNonPositiveMaxToasts()
+    {
+        var service = new FakeToastService();
+        Services.AddSingleton<IToastService>(service);
+        var cut = Render<ToastContainer>(parameters => parameters
+            .Add(p => p.MaxToasts, 0));
+
+        service.RaiseAdded(CreateToast("toast-1", "One"));
+        service.RaiseAdded(CreateToast("toast-2", "Two"));
+
+        cut.WaitForAssertion(() =>
+        {
+            var titles = cut.FindAll(".toast-title").Select(title => title.TextContent).ToArray();
+            titles.ShouldBe(["Two"]);
+            cut.Find(".vibe-toast-container").GetAttribute("data-toast-count").ShouldBe("1");
+        });
+    }
+
+    [Fact]
+    public void ToastContainer_UpdatesExistingToast_WhenServiceRaisesDuplicateId()
+    {
+        var service = new FakeToastService();
+        Services.AddSingleton<IToastService>(service);
+        var cut = Render<ToastContainer>();
+
+        service.RaiseAdded(CreateToast("toast-1", "First"));
+        service.RaiseAdded(CreateToast("toast-1", "Second"));
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.FindAll(".vibe-toast").Count.ShouldBe(1);
+            cut.Find(".toast-title").TextContent.ShouldBe("Second");
+            cut.Find(".vibe-toast-container").GetAttribute("data-toast-count").ShouldBe("1");
+        });
+    }
+
+    [Fact]
+    public void ToastContainer_IgnoresToastWithBlankId()
+    {
+        var service = new FakeToastService();
+        Services.AddSingleton<IToastService>(service);
+        var cut = Render<ToastContainer>();
+
+        service.RaiseAdded(CreateToast("   ", "No id"));
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.FindAll(".vibe-toast").ShouldBeEmpty();
+            cut.Find(".vibe-toast-container").GetAttribute("data-state").ShouldBe("empty");
+        });
+    }
+
+    [Fact]
     public void ToastContainer_RemovesToast_WhenServiceRaisesRemoved()
     {
         var service = new FakeToastService();
@@ -127,6 +241,73 @@ public class ToastContainerTests : TestBase
 
         service.AddedSubscribers.ShouldBe(0);
         service.RemovedSubscribers.ShouldBe(0);
+    }
+
+    [Fact]
+    public void ToastContainer_DisabledIgnoresAddedToasts()
+    {
+        var service = new FakeToastService();
+        Services.AddSingleton<IToastService>(service);
+        var cut = Render<ToastContainer>(parameters => parameters
+            .Add(p => p.Disabled, true));
+
+        service.RaiseAdded(CreateToast("toast-1", "Disabled"));
+
+        cut.WaitForAssertion(() =>
+        {
+            var container = cut.Find(".vibe-toast-container");
+            container.GetAttribute("aria-disabled").ShouldBe("true");
+            container.ClassList.ShouldContain("toast-container-disabled");
+            cut.FindAll(".vibe-toast").ShouldBeEmpty();
+        });
+    }
+
+    [Fact]
+    public void ToastContainer_ReadOnlyRendersToastsWithoutCloseControls()
+    {
+        var service = new FakeToastService();
+        Services.AddSingleton<IToastService>(service);
+        var cut = Render<ToastContainer>(parameters => parameters
+            .Add(p => p.ReadOnly, true));
+
+        service.RaiseAdded(CreateToast("toast-1", "Read only"));
+
+        cut.WaitForAssertion(() =>
+        {
+            var container = cut.Find(".vibe-toast-container");
+            container.GetAttribute("aria-disabled").ShouldBe("true");
+            container.ClassList.ShouldContain("toast-container-readonly");
+            cut.FindAll(".vibe-toast").Count.ShouldBe(1);
+            cut.FindAll(".toast-close").ShouldBeEmpty();
+        });
+    }
+
+    [Fact]
+    public void ToastContainer_NormalizesBlankToastContent()
+    {
+        var service = new FakeToastService();
+        Services.AddSingleton<IToastService>(service);
+        var cut = Render<ToastContainer>();
+
+        service.RaiseAdded(new ToastEventArgs
+        {
+            Id = "toast-blank",
+            Title = "   ",
+            Description = null!,
+            Variant = "default",
+            Icon = " ",
+            Duration = -1
+        });
+
+        cut.WaitForAssertion(() =>
+        {
+            var toast = cut.Find(".vibe-toast");
+            toast.GetAttribute("aria-label").ShouldBe("Notification");
+            cut.FindAll(".toast-title").ShouldBeEmpty();
+            cut.FindAll(".toast-description").ShouldBeEmpty();
+            cut.FindAll(".toast-icon").ShouldBeEmpty();
+            cut.FindAll(".toast-progress").ShouldBeEmpty();
+        });
     }
 
     [Fact]

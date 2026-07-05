@@ -1,17 +1,19 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
-    @if (Items != null)
+<div @attributes="AdditionalAttributes" class="@CombinedClass" role="@EffectiveRole" aria-label="@EffectiveAriaLabel">
+    @if (_items.Count > 0)
     {
-        @foreach (var item in Items)
+        @for (var index = 0; index < _items.Count; index++)
         {
-            var index = Items.IndexOf(item);
-            var isLast = index == Items.Count - 1;
+            var item = _items[index];
+            var isLast = index == _items.Count - 1;
+            var title = GetItemTitle(item);
+            var description = GetItemDescription(item);
 
-            <div class="timeline-item" @key="item.Id">
+            <div class="timeline-item" role="@TimelineItemRole" @key="GetItemKey(item, index)">
                 <div class="timeline-marker-container">
-                    <div class="timeline-marker @($"marker-{item.Status.ToString().ToLower()}")">
+                    <div class="@GetMarkerClass(item)" aria-hidden="true">
                         @if (item.Icon != null)
                         {
                             @item.Icon
@@ -19,19 +21,19 @@
                     </div>
                     @if (!isLast)
                     {
-                        <div class="timeline-connector"></div>
+                        <div class="timeline-connector" aria-hidden="true"></div>
                     }
                 </div>
 
                 <div class="timeline-content">
-                    @if (!string.IsNullOrEmpty(item.Title))
+                    @if (title is not null)
                     {
-                        <h4 class="timeline-title">@item.Title</h4>
+                        <h4 class="timeline-title">@title</h4>
                     }
 
-                    @if (!string.IsNullOrEmpty(item.Description))
+                    @if (description is not null)
                     {
-                        <p class="timeline-description">@item.Description</p>
+                        <p class="timeline-description">@description</p>
                     }
 
                     @if (item.Content != null)
@@ -52,6 +54,9 @@
 </div>
 
 @code {
+    private IReadOnlyList<TimelineItem> _items = Array.Empty<TimelineItem>();
+    private TimelinePosition _effectivePosition = TimelinePosition.Left;
+
     [Parameter]
     public List<TimelineItem>? Items { get; set; }
 
@@ -61,18 +66,37 @@
     [Parameter]
     public string? CssClass { get; set; }
 
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
     private string CombinedCssClass => CombineClasses(
-    "vibe-timeline",
-    $"timeline-{Position.ToString().ToLower()}",
-    CssClass
+        "vibe-timeline",
+        $"timeline-{GetPositionClass(_effectivePosition)}",
+        CssClass
     );
 
     protected override string ComponentClass => CombinedCssClass;
+
+    private string? EffectiveRole => HasAdditionalAttribute("role") ? null : "list";
+
+    private string? EffectiveAriaLabel =>
+        HasAdditionalAttribute("aria-label") || HasAdditionalAttribute("aria-labelledby") || string.IsNullOrWhiteSpace(AriaLabel)
+            ? null
+            : AriaLabel.Trim();
+
+    private string? TimelineItemRole => EffectiveRole == "list" ? "listitem" : null;
+
+    protected override void OnParametersSet()
+    {
+        _effectivePosition = Enum.IsDefined(Position) ? Position : TimelinePosition.Left;
+        _items = NormalizeItems(Items);
+    }
 
     private string FormatTimestamp(DateTime timestamp)
     {
         var diff = DateTime.Now - timestamp;
 
+        if (diff < TimeSpan.Zero) return timestamp.ToString("MMM d, yyyy");
         if (diff.TotalMinutes < 1) return "Just now";
         if (diff.TotalHours < 1) return $"{(int)diff.TotalMinutes}m ago";
         if (diff.TotalDays < 1) return $"{(int)diff.TotalHours}h ago";
@@ -80,6 +104,40 @@
 
         return timestamp.ToString("MMM d, yyyy");
     }
+
+    private static IReadOnlyList<TimelineItem> NormalizeItems(List<TimelineItem>? items)
+    {
+        if (items is null)
+        {
+            return Array.Empty<TimelineItem>();
+        }
+
+        return items
+            .Where(item => item is not null)
+            .ToArray()!;
+    }
+
+    private static string? GetItemTitle(TimelineItem item) => NormalizeOptionalText(item.Title);
+
+    private static string? GetItemDescription(TimelineItem item) => NormalizeOptionalText(item.Description);
+
+    private static object GetItemKey(TimelineItem item, int index) =>
+        $"{index}:{NormalizeOptionalText(item.Id) ?? "timeline-item"}";
+
+    private static string GetMarkerClass(TimelineItem item) =>
+        CombineClasses("timeline-marker", $"marker-{GetStatusClass(item.Status)}");
+
+    private static string GetStatusClass(TimelineStatus status) =>
+        Enum.IsDefined(status) ? status.ToString().ToLowerInvariant() : TimelineStatus.Default.ToString().ToLowerInvariant();
+
+    private static string GetPositionClass(TimelinePosition position) =>
+        Enum.IsDefined(position) ? position.ToString().ToLowerInvariant() : TimelinePosition.Left.ToString().ToLowerInvariant();
+
+    private static string? NormalizeOptionalText(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private bool HasAdditionalAttribute(string attributeName) =>
+        AdditionalAttributes?.Keys.Any(key => string.Equals(key, attributeName, StringComparison.OrdinalIgnoreCase)) == true;
 
     public class TimelineItem
     {

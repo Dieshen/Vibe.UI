@@ -1,21 +1,27 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+<div @attributes="AdditionalAttributes"
+     class="@CombinedClass"
+     role="@EffectiveRole"
+     aria-live="@EffectiveAriaLive"
+     aria-atomic="@AriaAtomicValue"
+     aria-label="@EffectiveAriaLabel"
+     data-state="empty">
     @if (Icon != null)
     {
-        <div class="empty-state-icon">@Icon</div>
+        <div class="empty-state-icon" aria-hidden="@IconAriaHiddenValue">@Icon</div>
     }
 
     <div class="empty-state-content">
-        @if (!string.IsNullOrEmpty(Title))
+        @if (!string.IsNullOrEmpty(_title))
         {
-            <h3 class="empty-state-title">@Title</h3>
+            <h3 class="empty-state-title">@_title</h3>
         }
 
-        @if (!string.IsNullOrEmpty(Description))
+        @if (!string.IsNullOrEmpty(_description))
         {
-            <p class="empty-state-description">@Description</p>
+            <p class="empty-state-description">@_description</p>
         }
 
         @if (ChildContent != null)
@@ -31,6 +37,15 @@
 </div>
 
 @code {
+    private const string DefaultRole = "status";
+    private const string DefaultAriaLive = "polite";
+    private const string DefaultEmptyAriaLabel = "No content";
+
+    private string? _title;
+    private string? _description;
+    private string _role = DefaultRole;
+    private string _ariaLive = DefaultAriaLive;
+
     [Parameter]
     public RenderFragment? Icon { get; set; }
 
@@ -47,12 +62,73 @@
     public RenderFragment? Action { get; set; }
 
     [Parameter]
+    public string? Role { get; set; } = DefaultRole;
+
+    [Parameter]
+    public string? AriaLive { get; set; } = DefaultAriaLive;
+
+    [Parameter]
+    public bool AriaAtomic { get; set; } = true;
+
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    [Parameter]
+    public bool IconAriaHidden { get; set; } = true;
+
+    [Parameter]
     public string? CssClass { get; set; }
 
-    private string CombinedCssClass => CombineClasses(
-    "vibe-empty-state",
-    CssClass
+    protected override string ComponentClass => CombineClasses(
+        "vibe-empty-state",
+        CssClass
     );
 
-    protected override string ComponentClass => CombinedCssClass;
+    private string EffectiveRole => _role;
+
+    private string EffectiveAriaLive => _ariaLive;
+
+    private string AriaAtomicValue => AriaBool(AriaAtomic);
+
+    private string IconAriaHiddenValue => AriaBool(IconAriaHidden);
+
+    private bool HasVisibleText => !string.IsNullOrWhiteSpace(_title) || !string.IsNullOrWhiteSpace(_description);
+
+    private string? EffectiveAriaLabel
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(AriaLabel))
+            {
+                return AriaLabel.Trim();
+            }
+
+            return HasVisibleText || ChildContent != null || Action != null ? null : DefaultEmptyAriaLabel;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        _title = NormalizeOptionalText(Title);
+        _description = NormalizeOptionalText(Description);
+        _role = NormalizeRole(Role);
+        _ariaLive = NormalizeAriaLive(AriaLive);
+    }
+
+    private static string? NormalizeOptionalText(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string NormalizeRole(string? role)
+    {
+        var normalizedRole = NormalizeOptionalText(role)?.ToLowerInvariant();
+        return normalizedRole is "status" or "region" or "group" ? normalizedRole : DefaultRole;
+    }
+
+    private static string NormalizeAriaLive(string? ariaLive)
+    {
+        var normalizedAriaLive = NormalizeOptionalText(ariaLive)?.ToLowerInvariant();
+        return normalizedAriaLive is "assertive" or "polite" or "off" ? normalizedAriaLive : DefaultAriaLive;
+    }
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
 }

@@ -1,11 +1,19 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<div class="@CombinedClass @(IndeterminateAnimation ? "animate" : string.Empty)" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@Value">
+<div @attributes="AdditionalAttributes"
+     class="@CombinedClass"
+     role="@EffectiveRole"
+     aria-label="@EffectiveAriaLabel"
+     aria-valuemin="@AriaValueMin"
+     aria-valuemax="@AriaValueMax"
+     aria-valuenow="@AriaValueNow">
     <div class="progress-indicator" style="width: @ProgressPercentage"></div>
 </div>
 
 @code {
+    private const string DefaultVariant = "default";
+
     /// <summary>
     /// Gets or sets the current value of the progress bar (0-100).
     /// </summary>
@@ -25,12 +33,69 @@
     public string? Variant { get; set; } = "default";
 
     /// <summary>
+    /// Gets or sets the accessible label for the progress bar.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
-    protected override string ComponentClass => $"vibe-progress vibe-progress-{Variant}";
+    protected override string ComponentClass => new ClassBuilder()
+        .Add("vibe-progress")
+        .Add($"vibe-progress-{NormalizedVariant}")
+        .AddIf("animate", IndeterminateAnimation)
+        .Build();
 
     /// <summary>
     /// Gets the calculated progress percentage string.
     /// </summary>
-    private string ProgressPercentage => IndeterminateAnimation ? "100%" : $"{Math.Clamp(Value, 0, 100)}%";
+    private string ProgressPercentage => IndeterminateAnimation ? "100%" : $"{ClampedValue}%";
+
+    private int ClampedValue => Math.Clamp(Value, 0, 100);
+
+    private string NormalizedVariant => NormalizeModifier(Variant, DefaultVariant);
+
+    private string? EffectiveRole => HasAdditionalAttribute("role") ? null : "progressbar";
+
+    private string? EffectiveAriaLabel =>
+        HasAdditionalAttribute("aria-label") || HasAdditionalAttribute("aria-labelledby") || string.IsNullOrWhiteSpace(AriaLabel)
+            ? null
+            : AriaLabel.Trim();
+
+    private int? AriaValueMin => HasAdditionalAttribute("aria-valuemin") ? null : 0;
+
+    private int? AriaValueMax => HasAdditionalAttribute("aria-valuemax") ? null : 100;
+
+    private int? AriaValueNow =>
+        IndeterminateAnimation || HasAdditionalAttribute("aria-valuenow")
+            ? null
+            : ClampedValue;
+
+    private static string NormalizeModifier(string? value, string fallback)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return fallback;
+        }
+
+        var trimmed = value.Trim();
+        return IsValidModifier(trimmed) ? trimmed.ToLowerInvariant() : fallback;
+    }
+
+    private static bool IsValidModifier(string value)
+    {
+        foreach (var character in value)
+        {
+            if (!char.IsLetterOrDigit(character) && character is not '-' and not '_')
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool HasAdditionalAttribute(string attributeName) =>
+        AdditionalAttributes?.Keys.Any(key => string.Equals(key, attributeName, StringComparison.OrdinalIgnoreCase)) == true;
 }

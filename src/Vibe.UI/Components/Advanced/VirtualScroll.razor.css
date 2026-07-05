@@ -5,3 +5,21 @@
   overflow: auto;
 }
 
+:global(.vibe-virtual-scroll:focus-visible) {
+  outline: 2px solid var(--vibe-ring, var(--vibe-primary));
+  outline-offset: 2px;
+}
+
+:global(.vibe-virtual-scroll .virtual-scroll-spacer) {
+  box-sizing: border-box;
+}
+
+:global(.vibe-virtual-scroll .virtual-scroll-item) {
+  min-height: 0;
+}
+
+:global(.vibe-virtual-scroll .virtual-scroll-empty) {
+  color: var(--vibe-muted-foreground);
+  padding: 1rem;
+  text-align: center;
+}

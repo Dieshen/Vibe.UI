@@ -28,12 +28,28 @@
     background-color: var(--vibe-primary);
 }
 
+::deep .vibe-progress-primary .progress-indicator {
+    background-color: var(--vibe-primary);
+}
+
 ::deep .vibe-progress-secondary .progress-indicator {
     background-color: var(--vibe-secondary-foreground);
 }
 
 ::deep .vibe-progress-success .progress-indicator {
     background-color: var(--vibe-success, #10b981);
+}
+
+::deep .vibe-progress-warning .progress-indicator {
+    background-color: var(--vibe-warning, #f59e0b);
+}
+
+::deep .vibe-progress-info .progress-indicator {
+    background-color: var(--vibe-info, #3b82f6);
+}
+
+::deep .vibe-progress-error .progress-indicator {
+    background-color: var(--vibe-destructive);
 }
 
 ::deep .vibe-progress-destructive .progress-indicator {

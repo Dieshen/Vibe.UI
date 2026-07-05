@@ -1,74 +1,182 @@
 @namespace Vibe.UI.Components
 @using Vibe.UI.Services.Toast
 @implements IDisposable
+@implements IAsyncDisposable
 @inject IToastService ToastService
 @inherits Vibe.UI.Base.VibeComponent
 
-<div class="@CombinedClass @Position" @attributes="AdditionalAttributes">
+<div @attributes="AdditionalAttributes"
+     class="@CombinedClass"
+     role="@EffectiveRole"
+     aria-live="@EffectiveAriaLive"
+     aria-atomic="@AriaAtomicValue"
+     aria-label="@EffectiveAriaLabel"
+     aria-disabled="@AriaDisabledValue"
+     data-state="@ContainerState"
+     data-position="@_position"
+     data-toast-count="@ToastCountText">
     @foreach (var toast in _toasts)
     {
-        <Toast Title="@toast.Title" Description="@toast.Description" Variant="@toast.Variant" Icon="@toast.Icon"
-            Duration="@toast.Duration" ShowCloseButton="true" ShowProgress="true" OnClose="() => RemoveToast(toast.Id)" />
+        <Toast @key="toast.Id"
+               Title="@toast.Title"
+               Description="@toast.Description"
+               Variant="@toast.Variant"
+               Icon="@toast.Icon"
+               Duration="@toast.Duration"
+               ShowCloseButton="@(!ControlsDisabled)"
+               ShowProgress="true"
+               OnClose="() => RemoveToast(toast.Id)" />
     }
 </div>
 
 @code {
-    private List<ToastItem> _toasts = new List<ToastItem>();
+    private const string DefaultPosition = "bottom-right";
+    private const string DefaultRole = "region";
+    private const string DefaultAriaLive = "polite";
+    private const string DefaultAriaLabel = "Notifications";
+
+    private static readonly HashSet<string> BuiltInPositions = new(StringComparer.Ordinal)
+    {
+        "bottom-right",
+        "bottom-left",
+        "top-right",
+        "top-left",
+        "top-center",
+        "bottom-center"
+    };
+
+    private readonly List<ToastItem> _toasts = new();
+    private string _position = DefaultPosition;
+    private string _role = DefaultRole;
+    private string _ariaLive = DefaultAriaLive;
+    private bool _disposed;
 
     [Parameter]
-    public string Position { get; set; } = "bottom-right";
+    public string Position { get; set; } = DefaultPosition;
 
     [Parameter]
     public int MaxToasts { get; set; } = 5;
 
-    protected override string ComponentClass => "vibe-toast-container";
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    [Parameter]
+    public string? Role { get; set; } = DefaultRole;
+
+    [Parameter]
+    public string? AriaLive { get; set; } = DefaultAriaLive;
+
+    [Parameter]
+    public bool AriaAtomic { get; set; }
+
+    [Parameter]
+    public string? AriaLabel { get; set; } = DefaultAriaLabel;
+
+    protected override string ComponentClass => CombineClasses(
+        "vibe-toast-container",
+        _position,
+        Disabled ? "toast-container-disabled" : null,
+        ReadOnly ? "toast-container-readonly" : null
+    );
+
+    private bool ControlsDisabled => Disabled || ReadOnly;
+
+    private string EffectiveRole => _role;
+
+    private string EffectiveAriaLive => _ariaLive;
+
+    private string AriaAtomicValue => AriaBool(AriaAtomic);
+
+    private string EffectiveAriaLabel => NormalizeRequiredText(AriaLabel, DefaultAriaLabel);
+
+    private string AriaDisabledValue => AriaBool(ControlsDisabled);
+
+    private string ContainerState => _toasts.Count == 0 ? "empty" : "open";
+
+    private string ToastCountText => _toasts.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    private int EffectiveMaxToasts => MaxToasts < 1 ? 1 : MaxToasts;
 
     protected override void OnInitialized()
     {
-        Console.WriteLine("[ToastContainer] OnInitialized - subscribing to events");
         ToastService.OnToastAdded += HandleToastAdded;
         ToastService.OnToastRemoved += HandleToastRemoved;
-        Console.WriteLine("[ToastContainer] Subscribed successfully");
     }
 
-    private void HandleToastAdded(object? sender, ToastEventArgs args)
+    protected override void OnParametersSet()
     {
-        Console.WriteLine($"[ToastContainer] HandleToastAdded called: {args.Title}");
-        InvokeAsync(() =>
-        {
-            var toast = new ToastItem
-            {
-                Id = args.Id,
-                Title = args.Title,
-                Description = args.Description,
-                Variant = args.Variant,
-                Icon = args.Icon,
-                Duration = args.Duration
-            };
+        _position = NormalizePosition(Position);
+        _role = NormalizeRole(Role);
+        _ariaLive = NormalizeAriaLive(AriaLive);
+    }
 
+    private async void HandleToastAdded(object? sender, ToastEventArgs args)
+    {
+        try
+        {
+            await InvokeAsync(() => AddToast(args));
+        }
+        catch (Exception exception) when (!_disposed)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    }
+
+    private async void HandleToastRemoved(object? sender, ToastEventArgs args)
+    {
+        try
+        {
+            await InvokeAsync(() => RemoveToast(args.Id));
+        }
+        catch (Exception exception) when (!_disposed)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    }
+
+    private void AddToast(ToastEventArgs args)
+    {
+        if (_disposed || Disabled)
+        {
+            return;
+        }
+
+        var toast = NormalizeToast(args);
+        if (toast == null)
+        {
+            return;
+        }
+
+        var existingIndex = _toasts.FindIndex(existingToast =>
+            string.Equals(existingToast.Id, toast.Id, StringComparison.Ordinal));
+
+        if (existingIndex >= 0)
+        {
+            _toasts[existingIndex] = toast;
+        }
+        else
+        {
             _toasts.Add(toast);
-            Console.WriteLine($"[ToastContainer] Toast added, total count: {_toasts.Count}");
+        }
 
-            // Enforce max number of toasts
-            while (_toasts.Count > MaxToasts)
-            {
-                _toasts.RemoveAt(0);
-            }
-
-            StateHasChanged();
-        });
-    }
-
-    private void HandleToastRemoved(object? sender, ToastEventArgs args)
-    {
-        InvokeAsync(() =>
+        while (_toasts.Count > EffectiveMaxToasts)
         {
-            RemoveToast(args.Id);
-        });
+            _toasts.RemoveAt(0);
+        }
+
+        StateHasChanged();
     }
 
-    private void RemoveToast(string id)
+    private void RemoveToast(string? id)
     {
+        if (_disposed || Disabled || string.IsNullOrWhiteSpace(id))
+        {
+            return;
+        }
+
         var toast = _toasts.FirstOrDefault(t => t.Id == id);
         if (toast != null)
         {
@@ -79,16 +187,95 @@
 
     public void Dispose()
     {
+        DisposeCore();
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        DisposeCore();
+        return ValueTask.CompletedTask;
+    }
+
+    private void DisposeCore()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
         ToastService.OnToastAdded -= HandleToastAdded;
         ToastService.OnToastRemoved -= HandleToastRemoved;
+        _toasts.Clear();
     }
+
+    private static ToastItem? NormalizeToast(ToastEventArgs args)
+    {
+        var id = NormalizeOptionalText(args.Id);
+        if (id == null)
+        {
+            return null;
+        }
+
+        return new ToastItem
+        {
+            Id = id,
+            Title = NormalizeOptionalText(args.Title),
+            Description = NormalizeOptionalText(args.Description),
+            Variant = NormalizeRequiredText(args.Variant, "default"),
+            Icon = NormalizeOptionalText(args.Icon),
+            Duration = Math.Max(0, args.Duration)
+        };
+    }
+
+    private static string NormalizePosition(string? position)
+    {
+        var normalizedPosition = NormalizeRequiredText(position, DefaultPosition).ToLowerInvariant();
+        if (BuiltInPositions.Contains(normalizedPosition))
+        {
+            return normalizedPosition;
+        }
+
+        return IsSafeCssClassToken(normalizedPosition) ? normalizedPosition : DefaultPosition;
+    }
+
+    private static string NormalizeRole(string? role)
+    {
+        var normalizedRole = NormalizeRequiredText(role, DefaultRole).ToLowerInvariant();
+        return normalizedRole is "region" or "status" or "log" ? normalizedRole : DefaultRole;
+    }
+
+    private static string NormalizeAriaLive(string? ariaLive)
+    {
+        var normalizedAriaLive = NormalizeRequiredText(ariaLive, DefaultAriaLive).ToLowerInvariant();
+        return normalizedAriaLive is "assertive" or "polite" or "off" ? normalizedAriaLive : DefaultAriaLive;
+    }
+
+    private static string? NormalizeOptionalText(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string NormalizeRequiredText(string? value, string fallback) =>
+        NormalizeOptionalText(value) ?? fallback;
+
+    private static bool IsSafeCssClassToken(string value)
+    {
+        if (value.Length is 0 or > 64)
+        {
+            return false;
+        }
+
+        return value.All(static character =>
+            char.IsAsciiLetterOrDigit(character) || character is '-' or '_');
+    }
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
 
     private class ToastItem
     {
         public string Id { get; set; } = string.Empty;
-        public string Title { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string Variant { get; set; } = string.Empty;
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+        public string Variant { get; set; } = "default";
         public string? Icon { get; set; }
         public int Duration { get; set; }
     }

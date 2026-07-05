@@ -3,30 +3,43 @@
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
-    @if (!string.IsNullOrEmpty(Title))
+<div @attributes="AdditionalAttributes" class="@CombinedClass">
+    @if (NormalizedTitle is not null)
     {
         <div class="vibe-chart-header">
-            <h3 class="vibe-chart-title">@Title</h3>
-            @if (!string.IsNullOrEmpty(Description))
+            <h3 id="@_titleId" class="vibe-chart-title">@NormalizedTitle</h3>
+            @if (NormalizedDescription is not null)
             {
-                <p class="vibe-chart-description">@Description</p>
+                <p id="@_descriptionId" class="vibe-chart-description">@NormalizedDescription</p>
             }
         </div>
     }
 
-    <div class="vibe-chart-container" style="height: @(Height)px;">
-        <canvas @ref="_canvasRef" id="@_canvasId" class="vibe-chart-canvas"></canvas>
+    <div class="vibe-chart-container" style="height: @EffectiveHeightStyle;">
+        @if (HasRenderableData)
+        {
+            <canvas @ref="_canvasRef"
+                    id="@_canvasId"
+                    class="vibe-chart-canvas"
+                    role="img"
+                    aria-label="@CanvasAriaLabel"
+                    aria-labelledby="@CanvasLabelledBy"
+                    aria-describedby="@CanvasDescribedBy"></canvas>
+        }
+        else
+        {
+            <div class="vibe-chart-empty" role="status">@EffectiveEmptyMessage</div>
+        }
     </div>
 
-    @if (ShowLegend && Data?.Datasets?.Any() == true && !UseBuiltInLegend)
+    @if (ShowLegend && HasRenderableData && !UseBuiltInLegend)
     {
-        <div class="vibe-chart-legend">
-            @foreach (var dataset in Data.Datasets)
+        <div class="vibe-chart-legend" role="list" aria-label="@LegendAriaLabel">
+            @foreach (var dataset in _datasets)
             {
-                <div class="vibe-chart-legend-item">
-                    <span class="vibe-chart-legend-color" style="background-color: @(dataset.BackgroundColor ?? dataset.Color);"></span>
-                    <span class="vibe-chart-legend-label">@dataset.Label</span>
+                <div class="vibe-chart-legend-item" role="listitem" @key="dataset">
+                    <span class="vibe-chart-legend-color" style="@GetLegendColorStyle(dataset)" aria-hidden="true"></span>
+                    <span class="vibe-chart-legend-label">@GetDatasetLabel(dataset)</span>
                 </div>
             }
         </div>
@@ -41,9 +54,26 @@
 </div>
 
 @code {
+    private const string CreateChartMethod = "vibeChart.createChart";
+    private const string UpdateChartMethod = "vibeChart.updateChart";
+    private const string DestroyChartMethod = "vibeChart.destroyChart";
+    private const string ExportChartMethod = "vibeChart.toBase64Image";
+    private const int DefaultHeight = 300;
+    private const int MaxHeight = 4000;
+    private const int MaxBorderWidth = 100;
+    private const int MaxAnimationDuration = 60000;
+    private const string DefaultDatasetColor = "#3b82f6";
+    private const string DefaultEmptyMessage = "No chart data available";
+
     private ElementReference _canvasRef;
-    private string _canvasId = $"chart-{Guid.NewGuid():N}";
-    private bool _chartCreated = false;
+    private readonly string _canvasId = $"chart-{Guid.NewGuid():N}";
+    private readonly string _titleId = $"chart-title-{Guid.NewGuid():N}";
+    private readonly string _descriptionId = $"chart-description-{Guid.NewGuid():N}";
+    private IReadOnlyList<string> _labels = Array.Empty<string>();
+    private IReadOnlyList<ChartDataset> _datasets = Array.Empty<ChartDataset>();
+    private ChartType _effectiveType = ChartType.Line;
+    private bool _chartCreated;
+    private bool _chartUpdatePending;
 
     /// <summary>
     /// The chart data to display.
@@ -91,7 +121,19 @@
     /// The height of the chart in pixels.
     /// </summary>
     [Parameter]
-    public int Height { get; set; } = 300;
+    public int Height { get; set; } = DefaultHeight;
+
+    /// <summary>
+    /// Accessible label used when the chart has no visible title.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Message displayed when no chart data is available.
+    /// </summary>
+    [Parameter]
+    public string? EmptyMessage { get; set; } = DefaultEmptyMessage;
 
     /// <summary>
     /// Chart configuration options.
@@ -113,25 +155,63 @@
 
     private string CombinedCssClass => CombineClasses(
         "vibe-chart",
-        $"vibe-chart-{Type.ToString().ToLower()}",
+        $"vibe-chart-{GetChartClassType(_effectiveType)}",
         CssClass
     );
 
     protected override string ComponentClass => CombinedCssClass;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private bool HasRenderableData => _datasets.Count > 0;
+
+    private string EffectiveHeightStyle => $"{Math.Clamp(Height, 0, MaxHeight)}px";
+
+    private string? NormalizedTitle => NormalizeOptionalText(Title);
+
+    private string? NormalizedDescription => NormalizeOptionalText(Description);
+
+    private string EffectiveEmptyMessage => NormalizeOptionalText(EmptyMessage) ?? DefaultEmptyMessage;
+
+    private string LegendAriaLabel => NormalizedTitle is null ? "Chart legend" : $"{NormalizedTitle} legend";
+
+    private string? CanvasLabelledBy => NormalizedTitle is null ? null : _titleId;
+
+    private string? CanvasDescribedBy => NormalizedDescription is null ? null : _descriptionId;
+
+    private string? CanvasAriaLabel => CanvasLabelledBy is null
+        ? NormalizeOptionalText(AriaLabel) ?? $"{_effectiveType} chart"
+        : null;
+
+    protected override void OnParametersSet()
     {
-        if (firstRender && Data != null)
-        {
-            await RenderChart();
-        }
+        _effectiveType = Enum.IsDefined(Type) ? Type : ChartType.Line;
+        _labels = NormalizeLabels(Data?.Labels);
+        _datasets = NormalizeDatasets(Data?.Datasets);
+        _chartUpdatePending = true;
     }
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_chartCreated && Data != null)
+        if (!_chartUpdatePending && !firstRender)
         {
-            await UpdateChart();
+            return;
+        }
+
+        _chartUpdatePending = false;
+
+        if (HasRenderableData)
+        {
+            if (_chartCreated)
+            {
+                await UpdateChart();
+            }
+            else
+            {
+                await RenderChart();
+            }
+        }
+        else if (_chartCreated)
+        {
+            await DestroyChart();
         }
     }
 
@@ -140,12 +220,11 @@
         try
         {
             var config = BuildChartConfig();
-            await JSRuntime.InvokeVoidAsync("vibeChart.createChart", _canvasId, config);
-            _chartCreated = true;
+            _chartCreated = await JSRuntime.InvokeAsync<bool>(CreateChartMethod, _canvasId, config);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (IsRecoverableJsInteropException(ex))
         {
-            Console.WriteLine($"Error rendering chart: {ex.Message}");
+            _chartCreated = false;
         }
     }
 
@@ -154,11 +233,11 @@
         try
         {
             var config = BuildChartConfig();
-            await JSRuntime.InvokeVoidAsync("vibeChart.updateChart", _canvasId, config);
+            _chartCreated = await JSRuntime.InvokeAsync<bool>(UpdateChartMethod, _canvasId, config);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (IsRecoverableJsInteropException(ex))
         {
-            Console.WriteLine($"Error updating chart: {ex.Message}");
+            _chartCreated = false;
         }
     }
 
@@ -180,36 +259,36 @@
                 tooltip = new
                 {
                     enabled = options.Tooltip?.Enabled ?? true,
-                    mode = options.Tooltip?.Mode ?? "index",
+                    mode = NormalizeOptionalText(options.Tooltip?.Mode) ?? "index",
                     intersect = options.Tooltip?.Intersect ?? false
                 }
             },
             scales = BuildScales(),
             animation = new
             {
-                duration = options.Animation?.Duration ?? 400,
-                easing = options.Animation?.Easing ?? "easeInOutQuart"
+                duration = Math.Clamp(options.Animation?.Duration ?? 400, 0, MaxAnimationDuration),
+                easing = NormalizeOptionalText(options.Animation?.Easing) ?? "easeInOutQuart"
             }
         };
 
         return new
         {
-            type = Type.ToString().ToLower(),
+            type = GetChartJsType(_effectiveType),
             data = new
             {
-                labels = Data?.Labels ?? new List<string>(),
-                datasets = Data?.Datasets.Select(ds => new
+                labels = _labels,
+                datasets = _datasets.Select(ds => new
                 {
-                    label = ds.Label,
-                    data = ds.Data,
-                    backgroundColor = ds.BackgroundColor ?? (Type == ChartType.Line ? "transparent" : ds.Color),
-                    borderColor = ds.BorderColor ?? ds.Color,
-                    borderWidth = ds.BorderWidth,
-                    fill = ds.Fill,
-                    tension = Type == ChartType.Line || Type == ChartType.Area ? 0.4 : 0,
-                    pointRadius = Type == ChartType.Line || Type == ChartType.Area ? 3 : 0,
-                    pointHoverRadius = Type == ChartType.Line || Type == ChartType.Area ? 5 : 0
-                }).ToArray() ?? Array.Empty<object>()
+                    label = GetDatasetLabel(ds),
+                    data = ds.Data ?? new List<double>(),
+                    backgroundColor = GetDatasetBackgroundColor(ds),
+                    borderColor = GetDatasetBorderColor(ds),
+                    borderWidth = Math.Clamp(ds.BorderWidth, 0, MaxBorderWidth),
+                    fill = ds.Fill || _effectiveType == ChartType.Area,
+                    tension = _effectiveType == ChartType.Line || _effectiveType == ChartType.Area ? 0.4 : 0,
+                    pointRadius = _effectiveType == ChartType.Line || _effectiveType == ChartType.Area ? 3 : 0,
+                    pointHoverRadius = _effectiveType == ChartType.Line || _effectiveType == ChartType.Area ? 5 : 0
+                }).ToArray()
             },
             options = chartOptions
         };
@@ -218,8 +297,8 @@
     private object? BuildScales()
     {
         // Don't show scales for pie, doughnut, radar, or polarArea charts
-        if (Type == ChartType.Pie || Type == ChartType.Doughnut ||
-            Type == ChartType.Radar || Type == ChartType.PolarArea)
+        if (_effectiveType == ChartType.Pie || _effectiveType == ChartType.Doughnut ||
+            _effectiveType == ChartType.Radar || _effectiveType == ChartType.PolarArea)
         {
             return null;
         }
@@ -249,6 +328,16 @@
     /// </summary>
     public async Task RefreshAsync()
     {
+        if (!HasRenderableData)
+        {
+            if (_chartCreated)
+            {
+                await DestroyChart();
+            }
+
+            return;
+        }
+
         if (_chartCreated)
         {
             await UpdateChart();
@@ -264,13 +353,17 @@
     /// </summary>
     public async Task<string?> ExportAsImageAsync()
     {
+        if (!_chartCreated)
+        {
+            return null;
+        }
+
         try
         {
-            return await JSRuntime.InvokeAsync<string>("vibeChart.toBase64Image", _canvasId);
+            return await JSRuntime.InvokeAsync<string>(ExportChartMethod, _canvasId);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (IsRecoverableJsInteropException(ex))
         {
-            Console.WriteLine($"Error exporting chart: {ex.Message}");
             return null;
         }
     }
@@ -281,14 +374,86 @@
         {
             try
             {
-                await JSRuntime.InvokeVoidAsync("vibeChart.destroyChart", _canvasId);
+                await DestroyChart();
             }
-            catch
+            catch (JSDisconnectedException)
             {
-                // Ignore errors during disposal
             }
         }
     }
+
+    private async Task DestroyChart()
+    {
+        try
+        {
+            await JSRuntime.InvokeAsync<bool>(DestroyChartMethod, _canvasId);
+        }
+        catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+        {
+        }
+        finally
+        {
+            _chartCreated = false;
+        }
+    }
+
+    private static IReadOnlyList<string> NormalizeLabels(List<string>? labels)
+    {
+        if (labels is null)
+        {
+            return Array.Empty<string>();
+        }
+
+        return labels.Select(label => label ?? string.Empty).ToArray();
+    }
+
+    private static IReadOnlyList<ChartDataset> NormalizeDatasets(List<ChartDataset>? datasets)
+    {
+        if (datasets is null)
+        {
+            return Array.Empty<ChartDataset>();
+        }
+
+        return datasets
+            .Where(dataset => dataset is not null && dataset.Data?.Count > 0)
+            .ToArray()!;
+    }
+
+    private static string GetDatasetLabel(ChartDataset dataset) =>
+        NormalizeOptionalText(dataset.Label) ?? string.Empty;
+
+    private static string GetDatasetColor(ChartDataset dataset) =>
+        NormalizeOptionalText(dataset.Color) ?? DefaultDatasetColor;
+
+    private string GetDatasetBackgroundColor(ChartDataset dataset) =>
+        NormalizeOptionalText(dataset.BackgroundColor)
+        ?? (_effectiveType == ChartType.Line ? "transparent" : GetDatasetColor(dataset));
+
+    private static string GetDatasetBorderColor(ChartDataset dataset) =>
+        NormalizeOptionalText(dataset.BorderColor) ?? GetDatasetColor(dataset);
+
+    private string GetLegendColorStyle(ChartDataset dataset) =>
+        $"background-color: {NormalizeOptionalText(dataset.BackgroundColor) ?? GetDatasetColor(dataset)};";
+
+    private static string GetChartClassType(ChartType type) =>
+        Enum.IsDefined(type) ? type.ToString().ToLowerInvariant() : ChartType.Line.ToString().ToLowerInvariant();
+
+    private static string GetChartJsType(ChartType type) => type switch
+    {
+        ChartType.Bar => "bar",
+        ChartType.Pie => "pie",
+        ChartType.Doughnut => "doughnut",
+        ChartType.Radar => "radar",
+        ChartType.PolarArea => "polarArea",
+        ChartType.Area => "line",
+        _ => "line"
+    };
+
+    private static string? NormalizeOptionalText(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static bool IsRecoverableJsInteropException(Exception exception) =>
+        exception is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException;
 
     public class ChartData
     {

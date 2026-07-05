@@ -30,6 +30,21 @@
   padding: 0.75rem 0.9rem;
 }
 
+:global(.vibe-chart .vibe-chart-canvas) {
+  width: 100%;
+  height: 100%;
+}
+
+:global(.vibe-chart .vibe-chart-empty) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  color: var(--vibe-muted-foreground);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
 :global(.vibe-chart .vibe-chart-legend) {
   display: flex;
   flex-wrap: wrap;
@@ -52,3 +67,6 @@
   border: 1px solid var(--vibe-border);
 }
 
+:global(.vibe-chart .vibe-chart-footer) {
+  padding: 0 0.9rem 0.75rem 0.9rem;
+}

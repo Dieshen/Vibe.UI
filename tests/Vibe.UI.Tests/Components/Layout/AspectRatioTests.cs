@@ -77,9 +77,10 @@ public class AspectRatioTests : TestBase
             .Add(p => p.Ratio, 0.0)
             .AddChildContent("Content"));
 
-        // Assert - Should render without crashing
+        // Assert
         var container = cut.Find(".vibe-aspect-ratio");
         container.ShouldNotBeNull();
+        container.GetAttribute("style")!.ShouldContain("padding-bottom: 56.25%");
     }
 
     [Fact]
@@ -90,9 +91,55 @@ public class AspectRatioTests : TestBase
             .Add(p => p.Ratio, -1.0)
             .AddChildContent("Content"));
 
-        // Assert - Should render without crashing
+        // Assert
         var container = cut.Find(".vibe-aspect-ratio");
         container.ShouldNotBeNull();
+        container.GetAttribute("style")!.ShouldContain("padding-bottom: 56.25%");
+    }
+
+    [Theory]
+    [InlineData(double.NaN)]
+    [InlineData(double.PositiveInfinity)]
+    [InlineData(double.NegativeInfinity)]
+    public void AspectRatio_WithNonFiniteRatio_UsesDefaultRatio(double ratio)
+    {
+        // Act
+        var cut = Render<AspectRatio>(parameters => parameters
+            .Add(p => p.Ratio, ratio)
+            .AddChildContent("Content"));
+
+        // Assert
+        cut.Find(".vibe-aspect-ratio")
+            .GetAttribute("style")!
+            .ShouldContain("padding-bottom: 56.25%");
+    }
+
+    [Fact]
+    public void AspectRatio_WithTinyPositiveRatio_ClampsToMinimumRatio()
+    {
+        // Act
+        var cut = Render<AspectRatio>(parameters => parameters
+            .Add(p => p.Ratio, 0.000001)
+            .AddChildContent("Content"));
+
+        // Assert
+        cut.Find(".vibe-aspect-ratio")
+            .GetAttribute("style")!
+            .ShouldContain("padding-bottom: 10000%");
+    }
+
+    [Fact]
+    public void AspectRatio_WithHugeRatio_ClampsToMaximumRatio()
+    {
+        // Act
+        var cut = Render<AspectRatio>(parameters => parameters
+            .Add(p => p.Ratio, 1000.0)
+            .AddChildContent("Content"));
+
+        // Assert
+        cut.Find(".vibe-aspect-ratio")
+            .GetAttribute("style")!
+            .ShouldContain("padding-bottom: 1%");
     }
 
     [Fact]
@@ -153,10 +200,30 @@ public class AspectRatioTests : TestBase
         container.ClassList.ShouldContain("custom-aspect-class");
     }
 
-    // NOTE: AspectRatio component doesn't apply @attributes in markup
-    // Removing this test as it tests unimplemented functionality
-    // [Fact]
-    // public void AspectRatio_WithAdditionalAttributes_AppliesCorrectly()
+    [Fact]
+    public void AspectRatio_WithAdditionalAttributes_MergesAttributesClassAndStyle()
+    {
+        // Act
+        var cut = Render<AspectRatio>(parameters => parameters
+            .Add(p => p.Class, "parameter-class")
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                ["class"] = "attribute-class",
+                ["style"] = "background: red;",
+                ["data-testid"] = "media-frame"
+            })
+            .AddChildContent("Content"));
+
+        // Assert
+        var container = cut.Find(".vibe-aspect-ratio");
+        container.ClassList.ShouldContain("parameter-class");
+        container.ClassList.ShouldContain("attribute-class");
+        container.GetAttribute("data-testid")!.ShouldBe("media-frame");
+
+        var style = container.GetAttribute("style")!;
+        style.ShouldContain("background: red");
+        style.ShouldContain("padding-bottom: 56.25%");
+    }
 
     [Fact]
     public void AspectRatio_WithEmptyContent_RendersEmpty()
@@ -168,6 +235,47 @@ public class AspectRatioTests : TestBase
         // Assert
         var content = cut.Find(".aspect-ratio-content");
         content.InnerHtml.Trim().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void AspectRatio_WithNullContent_RendersEmptyContentWrapper()
+    {
+        // Act
+        var cut = Render<AspectRatio>();
+
+        // Assert
+        var content = cut.Find(".aspect-ratio-content");
+        content.InnerHtml.Trim().ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void AspectRatio_WithAriaLabel_AddsGroupSemantics()
+    {
+        // Act
+        var cut = Render<AspectRatio>(parameters => parameters
+            .Add(p => p.AriaLabel, "Media preview")
+            .AddChildContent("Content"));
+
+        // Assert
+        var container = cut.Find(".vibe-aspect-ratio");
+        container.GetAttribute("role")!.ShouldBe("group");
+        container.GetAttribute("aria-label")!.ShouldBe("Media preview");
+    }
+
+    [Fact]
+    public void AspectRatio_WithCallerProvidedSemantics_PreservesCallerValues()
+    {
+        // Act
+        var cut = Render<AspectRatio>(parameters => parameters
+            .Add(p => p.AriaLabel, "Parameter label")
+            .AddUnmatched("role", "figure")
+            .AddUnmatched("aria-label", "Caller label")
+            .AddChildContent("Content"));
+
+        // Assert
+        var container = cut.Find(".vibe-aspect-ratio");
+        container.GetAttribute("role")!.ShouldBe("figure");
+        container.GetAttribute("aria-label")!.ShouldBe("Caller label");
     }
 
     [Fact]

@@ -155,7 +155,7 @@ public class ProgressTests : TestBase
         // Assert
         var indicator = cut.Find(".progress-indicator");
         indicator.GetAttribute("style")!.ShouldContain("width: 0%");
-        cut.Find(".vibe-progress").GetAttribute("aria-valuenow")!.ShouldBe("-100");
+        cut.Find(".vibe-progress").GetAttribute("aria-valuenow")!.ShouldBe("0");
     }
 
     [Fact]
@@ -168,7 +168,7 @@ public class ProgressTests : TestBase
         // Assert
         var indicator = cut.Find(".progress-indicator");
         indicator.GetAttribute("style")!.ShouldContain("width: 100%");
-        cut.Find(".vibe-progress").GetAttribute("aria-valuenow")!.ShouldBe("500");
+        cut.Find(".vibe-progress").GetAttribute("aria-valuenow")!.ShouldBe("100");
     }
 
     // === Variant Tests ===
@@ -330,6 +330,7 @@ public class ProgressTests : TestBase
         progress.GetAttribute("role")!.ShouldBe("progressbar");
         progress.GetAttribute("aria-valuemin")!.ShouldBe("0");
         progress.GetAttribute("aria-valuemax")!.ShouldBe("100");
+        progress.HasAttribute("aria-valuenow").ShouldBeFalse();
     }
 
     // === State Update Tests ===
@@ -372,5 +373,51 @@ public class ProgressTests : TestBase
         var progress = cut.Find(".vibe-progress");
         progress.ClassList.ShouldContain("vibe-progress-success");
         progress.ClassList.ShouldNotContain("vibe-progress-default");
+    }
+
+    [Fact]
+    public void Progress_AppliesCustomClassAdditionalAttributesAndAriaLabel()
+    {
+        // Act
+        var cut = Render<Progress>(parameters => parameters
+            .Add(p => p.Value, 40)
+            .Add(p => p.Class, "upload-progress")
+            .Add(p => p.AriaLabel, "Upload progress")
+            .AddUnmatched("data-testid", "upload"));
+
+        // Assert
+        var progress = cut.Find(".vibe-progress");
+        progress.ClassList.ShouldContain("upload-progress");
+        progress.GetAttribute("aria-label")!.ShouldBe("Upload progress");
+        progress.GetAttribute("data-testid")!.ShouldBe("upload");
+    }
+
+    [Fact]
+    public void Progress_TrimsAndNormalizesVariantClass()
+    {
+        // Act
+        var cut = Render<Progress>(parameters => parameters
+            .Add(p => p.Variant, "  Success  ")
+            .Add(p => p.Value, 50));
+
+        // Assert
+        var progress = cut.Find(".vibe-progress");
+        progress.ClassList.ShouldContain("vibe-progress-success");
+        progress.ClassList.ShouldNotContain("vibe-progress-default");
+    }
+
+    [Fact]
+    public void Progress_InvalidVariantFallsBackToDefault()
+    {
+        // Act
+        var cut = Render<Progress>(parameters => parameters
+            .Add(p => p.Variant, "success injected")
+            .Add(p => p.Value, 50));
+
+        // Assert
+        var classList = cut.Find(".vibe-progress").ClassList;
+        classList.ShouldContain("vibe-progress-default");
+        classList.ShouldNotContain("vibe-progress-success");
+        classList.ShouldNotContain("injected");
     }
 }

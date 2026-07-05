@@ -129,7 +129,55 @@ public class TableTests : TestBase
             .AddUnmatched("data-test", "table-value")
             .AddChildContent("<tr><td>Cell</td></tr>"));
 
-        // Assert - AdditionalAttributes are captured and can be applied
-        cut.Markup.ShouldNotBeNull();
+        // Assert
+        cut.Find(".vibe-table").GetAttribute("data-test")!.ShouldBe("table-value");
+    }
+
+    [Fact]
+    public void Table_Applies_CustomClass()
+    {
+        // Act
+        var cut = Render<Table>(parameters => parameters
+            .Add(p => p.Class, "orders-table")
+            .AddChildContent("<tr><td>Cell</td></tr>"));
+
+        // Assert
+        cut.Find(".vibe-table").ClassList.ShouldContain("orders-table");
+    }
+
+    [Fact]
+    public void Table_RendersCaption_WhenProvided()
+    {
+        // Act
+        var cut = Render<Table>(parameters => parameters
+            .Add(p => p.Caption, "  User information  ")
+            .AddChildContent("<tr><td>Cell</td></tr>"));
+
+        // Assert
+        cut.Find(".table-caption").TextContent.ShouldBe("User information");
+        cut.Find(".table-root").HasAttribute("aria-label").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Table_AppliesAriaLabel_WhenCaptionIsNotProvided()
+    {
+        // Act
+        var cut = Render<Table>(parameters => parameters
+            .Add(p => p.AriaLabel, "User information")
+            .AddChildContent("<tr><td>Cell</td></tr>"));
+
+        // Assert
+        cut.Find(".table-root").GetAttribute("aria-label")!.ShouldBe("User information");
+    }
+
+    [Fact]
+    public void Table_RendersEmptyBody_WhenChildContentIsNull()
+    {
+        // Act
+        var cut = Render<Table>();
+
+        // Assert
+        cut.Find(".table-root").ShouldNotBeNull();
+        cut.Find(".table-body").Children.Length.ShouldBe(0);
     }
 }
