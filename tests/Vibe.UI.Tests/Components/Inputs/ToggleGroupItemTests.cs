@@ -104,4 +104,48 @@ public class ToggleGroupItemTests : TestBase
         // Assert
         cut.Find(".vibe-toggle-group-item").ClassList.ShouldContain("custom-item");
     }
+
+    [Fact]
+    public void ToggleGroupItem_ForwardsClassAndAdditionalAttributes()
+    {
+        // Act
+        var cut = Render<ToggleGroupItem>(parameters => parameters
+            .Add(p => p.Value, "item1")
+            .Add(p => p.Class, "toolbar-item")
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                { "data-testid", "toggle-item" }
+            })
+            .AddChildContent("Item"));
+
+        // Assert
+        var button = cut.Find("button");
+        button.ClassList.ShouldContain("toolbar-item");
+        button.GetAttribute("data-testid")!.ShouldBe("toggle-item");
+    }
+
+    [Fact]
+    public void ToggleGroupItem_WhenDisabled_SetsAriaDisabled()
+    {
+        // Act
+        var cut = Render<ToggleGroupItem>(parameters => parameters
+            .Add(p => p.Value, "item1")
+            .Add(p => p.Disabled, true)
+            .AddChildContent("Item"));
+
+        // Assert
+        cut.Find("button").GetAttribute("aria-disabled")!.ShouldBe("true");
+    }
+
+    [Fact]
+    public void ToggleGroupItem_WithNullValue_DoesNotThrow()
+    {
+        // Act
+        var cut = Render<ToggleGroupItem>(parameters => parameters
+            .Add(p => p.Value, null!)
+            .AddChildContent("Item"));
+
+        // Assert
+        cut.Find("button").GetAttribute("aria-pressed")!.ShouldBe("false");
+    }
 }

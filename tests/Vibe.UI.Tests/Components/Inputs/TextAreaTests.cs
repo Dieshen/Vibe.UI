@@ -405,4 +405,71 @@ public class TextAreaTests : TestBase
         textarea.HasAttribute("disabled").ShouldBeFalse();
         textarea.HasAttribute("readonly").ShouldBeFalse();
     }
+
+    [Fact]
+    public void TextArea_WhenDisabled_IgnoresSyntheticInputAndChangeCallbacks()
+    {
+        // Arrange
+        string? changedValue = null;
+        var inputCount = 0;
+        var changeCount = 0;
+        var cut = Render<TextArea>(parameters => parameters
+            .Add(p => p.Value, "Initial")
+            .Add(p => p.Disabled, true)
+            .Add(p => p.ValueChanged, value => changedValue = value)
+            .Add(p => p.OnInput, _ => inputCount++)
+            .Add(p => p.OnChange, _ => changeCount++));
+
+        var textarea = cut.Find("textarea");
+
+        // Act
+        textarea.Input("Changed");
+        textarea.Change("Changed");
+
+        // Assert
+        changedValue.ShouldBeNull();
+        inputCount.ShouldBe(0);
+        changeCount.ShouldBe(0);
+        cut.Find("textarea").TextContent.ShouldBe("Initial");
+        cut.Find("textarea").GetAttribute("aria-disabled")!.ShouldBe("true");
+    }
+
+    [Fact]
+    public void TextArea_WhenReadOnly_IgnoresSyntheticInputAndChangeCallbacks()
+    {
+        // Arrange
+        string? changedValue = null;
+        var inputCount = 0;
+        var changeCount = 0;
+        var cut = Render<TextArea>(parameters => parameters
+            .Add(p => p.Value, "Initial")
+            .Add(p => p.ReadOnly, true)
+            .Add(p => p.ValueChanged, value => changedValue = value)
+            .Add(p => p.OnInput, _ => inputCount++)
+            .Add(p => p.OnChange, _ => changeCount++));
+
+        var textarea = cut.Find("textarea");
+
+        // Act
+        textarea.Input("Changed");
+        textarea.Change("Changed");
+
+        // Assert
+        changedValue.ShouldBeNull();
+        inputCount.ShouldBe(0);
+        changeCount.ShouldBe(0);
+        cut.Find("textarea").TextContent.ShouldBe("Initial");
+    }
+
+    [Fact]
+    public void TextArea_WithNoValueChangedDelegate_StillUpdatesRenderedValueOnInput()
+    {
+        // Act
+        var cut = Render<TextArea>();
+
+        cut.Find("textarea").Input("Typed");
+
+        // Assert
+        cut.Find("textarea").TextContent.ShouldBe("Typed");
+    }
 }

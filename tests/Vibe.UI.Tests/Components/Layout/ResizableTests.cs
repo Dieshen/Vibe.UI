@@ -131,4 +131,87 @@ public class ResizableTests : TestBase
         var resizable = cut.Find(".vibe-resizable");
         resizable.ShouldNotBeNull();
     }
+
+    [Fact]
+    public void Resizable_MergesClassStyleAndRootAttributes()
+    {
+        var cut = Render<Resizable>(parameters => parameters
+            .Add(p => p.Class, "resize-shell")
+            .Add(p => p.DefaultWidth, 360)
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                ["class"] = "attribute-resize",
+                ["style"] = "min-width: 10rem;",
+                ["data-testid"] = "resizable"
+            }));
+
+        var resizable = cut.Find(".vibe-resizable");
+        resizable.ClassList.ShouldContain("resize-shell");
+        resizable.ClassList.ShouldContain("attribute-resize");
+        resizable.GetAttribute("data-testid").ShouldBe("resizable");
+
+        var style = resizable.GetAttribute("style")!;
+        style.ShouldContain("min-width: 10rem");
+        style.ShouldContain("width: 360px");
+    }
+
+    [Fact]
+    public void Resizable_WithInvalidDirection_FallsBackToHorizontal()
+    {
+        var cut = Render<Resizable>(parameters => parameters
+            .Add(p => p.Direction, (Resizable.ResizableDirection)999));
+
+        var handle = cut.Find(".resizable-handle");
+        handle.ClassList.ShouldContain("resizable-handle-horizontal");
+        handle.GetAttribute("aria-orientation").ShouldBe("vertical");
+        cut.Find(".vibe-resizable").GetAttribute("style")!.ShouldContain("width: 300px");
+    }
+
+    [Fact]
+    public void Resizable_ClampsInitialWidthAndExposesAccessibleSize()
+    {
+        var cut = Render<Resizable>(parameters => parameters
+            .Add(p => p.DefaultWidth, 25)
+            .Add(p => p.MinWidth, 100)
+            .Add(p => p.MaxWidth, 200));
+
+        var resizable = cut.Find(".vibe-resizable");
+        resizable.GetAttribute("style")!.ShouldContain("width: 100px");
+
+        var handle = cut.Find(".resizable-handle");
+        handle.GetAttribute("role").ShouldBe("separator");
+        handle.GetAttribute("aria-valuenow").ShouldBe("100");
+        handle.GetAttribute("aria-valuemin").ShouldBe("100");
+        handle.GetAttribute("aria-valuemax").ShouldBe("200");
+        handle.GetAttribute("tabindex").ShouldBe("0");
+    }
+
+    [Fact]
+    public async Task Resizable_HandleDragEnd_InvokesSizeCallback()
+    {
+        double? changedSize = null;
+        var cut = Render<Resizable>(parameters => parameters
+            .Add(p => p.MinWidth, 100)
+            .Add(p => p.MaxWidth, 500)
+            .Add(p => p.OnSizeChange, value => changedSize = value));
+
+        await cut.InvokeAsync(() => cut.Instance.HandleDragMove(450, 0));
+        await cut.InvokeAsync(() => cut.Instance.HandleDragEnd());
+
+        changedSize.ShouldBe(450);
+    }
+
+    [Fact]
+    public void Resizable_KeyboardResize_UpdatesSizeAndInvokesCallback()
+    {
+        double? changedSize = null;
+        var cut = Render<Resizable>(parameters => parameters
+            .Add(p => p.DefaultWidth, 300)
+            .Add(p => p.OnSizeChange, value => changedSize = value));
+
+        cut.Find(".resizable-handle").KeyDown("ArrowRight");
+
+        changedSize.ShouldBe(310);
+        cut.Find(".vibe-resizable").GetAttribute("style")!.ShouldContain("width: 310px");
+    }
 }

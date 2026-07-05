@@ -2,22 +2,22 @@
 @typeparam TItem
 @inherits Base.VibeComponent
 
-<div class="@CombinedClass">
+<div @attributes="AdditionalAttributes" class="@CombinedClass">
     @if (!string.IsNullOrEmpty(Label))
     {
-        <label class="multiselect-label" for="@Id">@Label</label>
+        <label id="@LabelId" class="multiselect-label" for="@Id">@Label</label>
     }
 
     <div class="multiselect-container" @onclick="ToggleDropdown">
         <div class="multiselect-values">
-            @if (SelectedItems.Any())
+            @if (CurrentSelectedItems.Any())
             {
-                @foreach (var item in SelectedItems)
+                @foreach (var item in CurrentSelectedItems)
                 {
-                    <div class="multiselect-tag">
-                        <span class="multiselect-tag-label">@(ItemTemplate != null ? ItemTemplate(item) :
-                                                item!.ToString())</span>
-                        <button type="button" class="multiselect-tag-remove" @onclick="(e) => RemoveItem(e, item)">
+                    <div class="multiselect-tag" @key="item">
+                        <span class="multiselect-tag-label">@GetItemText(item)</span>
+                        <button type="button" class="multiselect-tag-remove" @onclick="() => RemoveItem(item)"
+                            @onclick:stopPropagation="true" aria-label="@($"Remove {GetItemText(item)}")" disabled="@Disabled">
                             <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M9.42426 2.57574C9.65858 2.34142 9.65858 1.96142 9.42426 1.72709C9.18995 1.49277 8.80995 1.49277 8.57563 1.72709L5 5.30272L1.42437 1.72709C1.19005 1.49277 0.810048 1.49277 0.575736 1.72709C0.341423 1.96142 0.341423 2.34142 0.575736 2.57574L4.15137 6.15137L0.575736 9.72699C0.341423 9.96131 0.341423 10.3413 0.575736 10.5756C0.810048 10.81 1.19005 10.81 1.42437 10.5756L5 7L8.57563 10.5756C8.80995 10.81 9.18995 10.81 9.42426 10.5756C9.65858 10.3413 9.65858 9.96131 9.42426 9.72699L5.84863 6.15137L9.42426 2.57574Z"
@@ -33,14 +33,18 @@
             }
 
             <input id="@Id" type="text" class="multiselect-input" @bind-value="SearchText" @bind-value:event="oninput"
-                @onfocus="() => IsOpen = true" @onkeydown="OnKeyDown"
-                placeholder="@(SelectedItems.Any() ? "" : Placeholder)" disabled="@Disabled" />
+                @onfocus="OpenDropdown" @onkeydown="OnKeyDown"
+                placeholder="@(CurrentSelectedItems.Any() ? "" : Placeholder)" disabled="@Disabled"
+                role="combobox" aria-expanded="@AriaBool(IsOpen)" aria-haspopup="listbox" aria-controls="@DropdownId"
+                aria-autocomplete="list" aria-activedescendant="@ActiveDescendantId" aria-describedby="@HelperTextId"
+                aria-disabled="@AriaBool(Disabled)" />
         </div>
 
         <div class="multiselect-indicators">
             @if (!string.IsNullOrEmpty(SearchText) && AllowClear)
             {
-                <button type="button" class="multiselect-clear" @onclick="ClearSearch">
+                <button type="button" class="multiselect-clear" @onclick="ClearSearch"
+                    @onclick:stopPropagation="true" aria-label="Clear search" disabled="@Disabled">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
                             d="M9.42426 2.57574C9.65858 2.34142 9.65858 1.96142 9.42426 1.72709C9.18995 1.49277 8.80995 1.49277 8.57563 1.72709L5 5.30272L1.42437 1.72709C1.19005 1.49277 0.810048 1.49277 0.575736 1.72709C0.341423 1.96142 0.341423 2.34142 0.575736 2.57574L4.15137 6.15137L0.575736 9.72699C0.341423 9.96131 0.341423 10.3413 0.575736 10.5756C0.810048 10.81 1.19005 10.81 1.42437 10.5756L5 7L8.57563 10.5756C8.80995 10.81 9.18995 10.81 9.42426 10.5756C9.65858 10.3413 9.65858 9.96131 9.42426 9.72699L5.84863 6.15137L9.42426 2.57574Z"
@@ -60,15 +64,20 @@
 
     @if (IsOpen)
     {
-        <div class="multiselect-dropdown">
-            @if (FilteredItems.Any())
+        var filteredItems = FilteredItems;
+        <div id="@DropdownId" class="multiselect-dropdown" role="listbox" aria-multiselectable="true"
+            aria-labelledby="@LabelId">
+            @if (filteredItems.Any())
             {
                 <div class="multiselect-options">
-                    @foreach (var item in FilteredItems)
+                    @for (var optionIndex = 0; optionIndex < filteredItems.Count; optionIndex++)
                     {
+                        var index = optionIndex;
+                        var item = filteredItems[index];
                         bool isSelected = IsItemSelected(item);
-                        <div class="multiselect-option @(isSelected ? "selected" : "") @(HighlightedIndex == FilteredItems.IndexOf(item) ? "highlighted" : "")"
-                            @onclick="() => ToggleItem(item)" @onmouseover="() => HighlightedIndex = FilteredItems.IndexOf(item)">
+                        <div id="@GetOptionId(index)" class="multiselect-option @(isSelected ? "selected" : "") @(HighlightedIndex == index ? "highlighted" : "")"
+                            role="option" aria-selected="@AriaBool(isSelected)" @key="item"
+                            @onclick="() => ToggleItem(item)" @onmouseover="() => HighlightedIndex = index">
 
                             <div class="multiselect-checkbox">
                                 @if (isSelected)
@@ -81,7 +90,7 @@
                             </div>
 
                             <div class="multiselect-option-content">
-                                @(ItemTemplate != null ? ItemTemplate(item) : item!.ToString())
+                                @GetItemText(item)
                             </div>
                         </div>
                     }
@@ -98,11 +107,16 @@
 
     @if (!string.IsNullOrEmpty(HelperText))
     {
-        <div class="multiselect-helper-text">@HelperText</div>
+        <div id="@HelperTextId" class="multiselect-helper-text">@HelperText</div>
     }
 </div>
 
 @code {
+    private readonly string _dropdownId = $"multiselect-listbox-{Guid.NewGuid():N}";
+    private readonly string _labelId = $"multiselect-label-{Guid.NewGuid():N}";
+    private readonly string _helperTextId = $"multiselect-helper-{Guid.NewGuid():N}";
+    private List<TItem> _selectedItems = new();
+
     /// <summary>
     /// Gets or sets the collection of items to choose from.
     /// </summary>
@@ -207,6 +221,24 @@
     /// </summary>
     protected override string ComponentClass => "vibe-multiselect";
 
+    private List<TItem> CurrentSelectedItems => _selectedItems;
+
+    private string DropdownId => _dropdownId;
+
+    private string? LabelId => string.IsNullOrEmpty(Label) ? null : _labelId;
+
+    private string? HelperTextId => string.IsNullOrEmpty(HelperText) ? null : _helperTextId;
+
+    private string? ActiveDescendantId
+        => IsOpen && HighlightedIndex >= 0 && HighlightedIndex < FilteredItems.Count
+            ? GetOptionId(HighlightedIndex)
+            : null;
+
+    protected override void OnParametersSet()
+    {
+        _selectedItems = SelectedItems?.ToList() ?? new List<TItem>();
+    }
+
     /// <summary>
     /// Gets the filtered list of items based on the search text.
     /// </summary>
@@ -214,16 +246,32 @@
     {
         get
         {
+            var items = Items?.ToList() ?? new List<TItem>();
+
             if (!EnableFiltering || string.IsNullOrEmpty(SearchText))
-                return Items.ToList();
+                return items;
 
             if (FilterFunc != null)
-                return Items.Where(item => FilterFunc(item, SearchText)).ToList();
+                return items.Where(item => FilterFunc(item, SearchText)).ToList();
 
-            return Items
+            return items
             .Where(item =>
             item?.ToString()?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false)
             .ToList();
+        }
+    }
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
+
+    private string GetOptionId(int index) => $"{DropdownId}-option-{index}";
+
+    private string GetItemText(TItem item) => ItemTemplate != null ? ItemTemplate(item) : item?.ToString() ?? string.Empty;
+
+    private void OpenDropdown()
+    {
+        if (!Disabled)
+        {
+            IsOpen = true;
         }
     }
 
@@ -253,8 +301,10 @@
     /// </summary>
     private void ClearSearch(MouseEventArgs args)
     {
+        if (Disabled)
+            return;
+
         SearchText = string.Empty;
-        // Note: Use @onclick:stopPropagation directive in markup instead of calling StopPropagation here
     }
 
     /// <summary>
@@ -265,8 +315,8 @@
     private bool IsItemSelected(TItem item)
     {
         return CompareItems != null
-        ? SelectedItems.Any(selectedItem => CompareItems(selectedItem, item))
-        : SelectedItems.Contains(item);
+        ? CurrentSelectedItems.Any(selectedItem => CompareItems(selectedItem, item))
+        : CurrentSelectedItems.Contains(item);
     }
 
     /// <summary>
@@ -279,58 +329,57 @@
             return;
 
         bool isSelected = IsItemSelected(item);
+        var updatedItems = CurrentSelectedItems.ToList();
 
         if (isSelected)
         {
-            // Remove item from selection
             if (CompareItems != null)
             {
-                var itemToRemove = SelectedItems.FirstOrDefault(selectedItem => CompareItems(selectedItem, item));
-                if (itemToRemove != null)
-                    SelectedItems.Remove(itemToRemove);
+                var indexToRemove = updatedItems.FindIndex(selectedItem => CompareItems(selectedItem, item));
+                if (indexToRemove >= 0)
+                    updatedItems.RemoveAt(indexToRemove);
             }
             else
             {
-                SelectedItems.Remove(item);
+                updatedItems.Remove(item);
             }
         }
         else
         {
-            // Check if max selection limit is reached
-            if (MaxSelectedItems.HasValue && SelectedItems.Count >= MaxSelectedItems.Value)
+            if (MaxSelectedItems.HasValue && updatedItems.Count >= MaxSelectedItems.Value)
                 return;
 
-            // Add item to selection
-            SelectedItems.Add(item);
+            updatedItems.Add(item);
         }
 
-        await SelectedItemsChanged.InvokeAsync(SelectedItems);
+        _selectedItems = updatedItems;
+        await SelectedItemsChanged.InvokeAsync(updatedItems);
     }
 
     /// <summary>
     /// Removes an item from the selection.
     /// </summary>
-    /// <param name="e">The mouse event args.</param>
     /// <param name="item">The item to remove.</param>
-    private async Task RemoveItem(MouseEventArgs e, TItem item)
+    private async Task RemoveItem(TItem item)
     {
         if (Disabled)
             return;
 
-        // Note: Use @onclick:stopPropagation directive in markup instead of calling StopPropagation here
+        var updatedItems = CurrentSelectedItems.ToList();
 
         if (CompareItems != null)
         {
-            var itemToRemove = SelectedItems.FirstOrDefault(selectedItem => CompareItems(selectedItem, item));
-            if (itemToRemove != null)
-                SelectedItems.Remove(itemToRemove);
+            var indexToRemove = updatedItems.FindIndex(selectedItem => CompareItems(selectedItem, item));
+            if (indexToRemove >= 0)
+                updatedItems.RemoveAt(indexToRemove);
         }
         else
         {
-            SelectedItems.Remove(item);
+            updatedItems.Remove(item);
         }
 
-        await SelectedItemsChanged.InvokeAsync(SelectedItems);
+        _selectedItems = updatedItems;
+        await SelectedItemsChanged.InvokeAsync(updatedItems);
     }
 
     /// <summary>
@@ -349,9 +398,10 @@
                 break;
 
             case "Enter":
-                if (IsOpen && HighlightedIndex >= 0 && HighlightedIndex < FilteredItems.Count)
+                var filteredItems = FilteredItems;
+                if (IsOpen && HighlightedIndex >= 0 && HighlightedIndex < filteredItems.Count)
                 {
-                    await ToggleItem(FilteredItems[HighlightedIndex]);
+                    await ToggleItem(filteredItems[HighlightedIndex]);
                 }
                 else if (!IsOpen)
                 {
@@ -360,20 +410,22 @@
                 break;
 
             case "ArrowDown":
+                filteredItems = FilteredItems;
                 if (!IsOpen)
                 {
                     IsOpen = true;
                 }
-                else if (FilteredItems.Any())
+                else if (filteredItems.Any())
                 {
-                    HighlightedIndex = (HighlightedIndex + 1) % FilteredItems.Count;
+                    HighlightedIndex = (HighlightedIndex + 1) % filteredItems.Count;
                 }
                 break;
 
             case "ArrowUp":
-                if (IsOpen && FilteredItems.Any())
+                filteredItems = FilteredItems;
+                if (IsOpen && filteredItems.Any())
                 {
-                    HighlightedIndex = (HighlightedIndex - 1 + FilteredItems.Count) % FilteredItems.Count;
+                    HighlightedIndex = (HighlightedIndex - 1 + filteredItems.Count) % filteredItems.Count;
                 }
                 break;
         }

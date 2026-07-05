@@ -1,8 +1,8 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
 
-<label class="@CombinedClass" @attributes="AdditionalAttributes">
-    <input type="radio" class="vibe-radio-input" name="@Name" value="@Value" checked="@Checked" disabled="@Disabled"
+<label class="@CombinedClass" aria-disabled="@(Disabled ? "true" : null)" @attributes="AdditionalAttributes">
+    <input type="radio" id="@Id" class="vibe-radio-input" name="@Name" value="@Value" checked="@currentChecked" disabled="@Disabled"
         @onchange="OnRadioChange" />
     <span class="vibe-radio-control"></span>
     @if (ChildContent != null)
@@ -14,6 +14,8 @@
 </label>
 
 @code {
+    private bool currentChecked;
+
     /// <summary>
     /// Gets or sets the label content
     /// </summary>
@@ -25,6 +27,12 @@
     /// </summary>
     [Parameter]
     public string? Value { get; set; }
+
+    /// <summary>
+    /// Gets or sets the radio input ID.
+    /// </summary>
+    [Parameter]
+    public string? Id { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the radio group
@@ -53,15 +61,27 @@
     /// <inheritdoc/>
     protected override string ComponentClass => $"vibe-radio {(Disabled ? "vibe-radio-disabled" : "")}";
 
+    protected override void OnParametersSet()
+    {
+        currentChecked = Checked;
+    }
+
     /// <summary>
     /// Handles the radio change event
     /// </summary>
     /// <param name="e">The radio change event</param>
     private async Task OnRadioChange(ChangeEventArgs e)
     {
-        if (e.Value != null)
+        if (Disabled)
         {
-            Checked = true;
+            return;
+        }
+
+        var isChecked = e.Value is bool value ? value : e.Value is not null;
+
+        if (isChecked)
+        {
+            currentChecked = true;
 
             if (CheckedChanged.HasDelegate)
             {

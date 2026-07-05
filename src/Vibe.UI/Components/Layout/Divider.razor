@@ -1,15 +1,23 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
 
-@if (!string.IsNullOrEmpty(Label))
+@if (HasLabel)
 {
-    <div class="@CombinedClass @OrientationClass @StyleClass @LabelPositionClass vibe-divider-label" @attributes="AdditionalAttributes">
-        @Label
+    <div class="@RootClass"
+         style="@RootStyle"
+         role="@EffectiveRole"
+         aria-orientation="@EffectiveAriaOrientation"
+         @attributes="RootAttributes">
+        @NormalizedLabel
     </div>
 }
 else
 {
-    <hr class="@CombinedClass @OrientationClass @StyleClass" style="@DividerStyleValue" @attributes="AdditionalAttributes" />
+    <hr class="@RootClass"
+        style="@RootStyle"
+        role="@EffectiveRole"
+        aria-orientation="@EffectiveAriaOrientation"
+        @attributes="RootAttributes" />
 }
 
 @code {
@@ -46,28 +54,130 @@ else
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-divider";
 
-    private string OrientationClass => Orientation switch
+    private bool HasLabel => !string.IsNullOrWhiteSpace(Label);
+
+    private string? NormalizedLabel => Label?.Trim();
+
+    private string RootClass => CombineClasses(
+        ComponentClass,
+        OrientationClass,
+        StyleClass,
+        HasLabel ? "vibe-divider-label" : null,
+        LabelPositionClass,
+        Class?.Trim(),
+        AdditionalClass);
+
+    private string OrientationClass => NormalizedOrientation switch
     {
         DividerOrientation.Horizontal => "vibe-divider-horizontal",
         DividerOrientation.Vertical => "vibe-divider-vertical",
         _ => "vibe-divider-horizontal"
     };
 
-    private string StyleClass => LineStyle switch
+    private string StyleClass => NormalizedLineStyle switch
     {
         DividerLineStyle.Dashed => "vibe-divider-dashed",
         DividerLineStyle.Dotted => "vibe-divider-dotted",
-        _ => ""
+        _ => string.Empty
     };
 
-    private string LabelPositionClass => !string.IsNullOrEmpty(Label) ? LabelPosition switch
+    private string LabelPositionClass => HasLabel ? NormalizedLabelPosition switch
     {
         DividerLabelPosition.Left => "vibe-divider-label-left",
         DividerLabelPosition.Right => "vibe-divider-label-right",
-        _ => ""
-    } : "";
+        _ => string.Empty
+    } : string.Empty;
 
-    private string? DividerStyleValue => Thickness > 1 ? $"border-width: {Thickness}px" : null;
+    private string? RootStyle => CombineStyles(AdditionalStyle, DividerStyleValue);
+
+    private string? DividerStyleValue => Thickness > 1
+        ? FormattableString.Invariant($"border-width: {Thickness}px")
+        : null;
+
+    private DividerOrientation NormalizedOrientation =>
+        Enum.IsDefined(typeof(DividerOrientation), Orientation)
+            ? Orientation
+            : DividerOrientation.Horizontal;
+
+    private DividerLineStyle NormalizedLineStyle =>
+        Enum.IsDefined(typeof(DividerLineStyle), LineStyle)
+            ? LineStyle
+            : DividerLineStyle.Solid;
+
+    private DividerLabelPosition NormalizedLabelPosition =>
+        Enum.IsDefined(typeof(DividerLabelPosition), LabelPosition)
+            ? LabelPosition
+            : DividerLabelPosition.Center;
+
+    private string? EffectiveRole => GetAdditionalAttributeValue("role") ?? "separator";
+
+    private string? EffectiveAriaOrientation =>
+        GetAdditionalAttributeValue("aria-orientation")
+        ?? (NormalizedOrientation == DividerOrientation.Vertical ? "vertical" : "horizontal");
+
+    private string? AdditionalClass => GetAdditionalAttributeValue("class");
+
+    private string? AdditionalStyle => GetAdditionalAttributeValue("style")?.TrimEnd(';');
+
+    private Dictionary<string, object>? RootAttributes => GetUnhandledAttributes();
+
+    private Dictionary<string, object>? GetUnhandledAttributes()
+    {
+        if (AdditionalAttributes is null || AdditionalAttributes.Count == 0)
+        {
+            return null;
+        }
+
+        var attributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (IsHandledRootAttribute(attribute.Key))
+            {
+                continue;
+            }
+
+            attributes[attribute.Key] = attribute.Value;
+        }
+
+        return attributes.Count == 0 ? null : attributes;
+    }
+
+    private static bool IsHandledRootAttribute(string attributeName) =>
+        string.Equals(attributeName, "class", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(attributeName, "style", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(attributeName, "role", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(attributeName, "aria-orientation", StringComparison.OrdinalIgnoreCase);
+
+    private string? GetAdditionalAttributeValue(string attributeName)
+    {
+        if (AdditionalAttributes is null)
+        {
+            return null;
+        }
+
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (string.Equals(attribute.Key, attributeName, StringComparison.OrdinalIgnoreCase))
+            {
+                return NormalizeAttributeValue(attribute.Value?.ToString());
+            }
+        }
+
+        return null;
+    }
+
+    private static string? NormalizeAttributeValue(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string? CombineStyles(params string?[] styles)
+    {
+        var normalizedStyles = styles
+            .Select(style => style?.Trim().TrimEnd(';'))
+            .Where(style => !string.IsNullOrWhiteSpace(style))
+            .ToArray();
+
+        return normalizedStyles.Length == 0 ? null : string.Join("; ", normalizedStyles);
+    }
 
     public enum DividerOrientation
     {

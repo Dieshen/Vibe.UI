@@ -344,4 +344,149 @@ public class TagInputTests : TestBase
         var input = cut.Find(".tag-input");
         input.GetAttribute("type")!.ShouldBe("text");
     }
+
+    [Fact]
+    public void TagInput_KeyboardEnter_AddsTagAndInvokesCallbacksWithoutMutatingCallerList()
+    {
+        // Arrange
+        var originalTags = new List<string> { "react" };
+        List<string>? changedTags = null;
+        string? addedTag = null;
+        var cut = Render<TagInput>(parameters => parameters
+            .Add(p => p.Tags, originalTags)
+            .Add(p => p.TagsChanged, tags => changedTags = tags)
+            .Add(p => p.OnTagAdded, tag => addedTag = tag));
+
+        var input = cut.Find(".tag-input");
+
+        // Act
+        input.Input("blazor");
+        input.KeyDown("Enter");
+
+        // Assert
+        originalTags.ShouldBe(new List<string> { "react" });
+        changedTags.ShouldNotBeNull();
+        changedTags.ShouldBe(new List<string> { "react", "blazor" });
+        changedTags.ShouldNotBeSameAs(originalTags);
+        addedTag.ShouldBe("blazor");
+        cut.FindAll(".tag-item").Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public void TagInput_SeparatorKey_AddsTrimmedTag()
+    {
+        // Arrange
+        List<string>? changedTags = null;
+        var cut = Render<TagInput>(parameters => parameters
+            .Add(p => p.Separator, ";")
+            .Add(p => p.TagsChanged, tags => changedTags = tags));
+
+        var input = cut.Find(".tag-input");
+
+        // Act
+        input.Input("  api  ");
+        input.KeyDown(";");
+
+        // Assert
+        changedTags.ShouldBe(new List<string> { "api" });
+        cut.Find(".tag-text").TextContent.ShouldBe("api");
+    }
+
+    [Fact]
+    public void TagInput_PreventsDuplicateKeyboardEntry()
+    {
+        // Arrange
+        var changed = false;
+        var cut = Render<TagInput>(parameters => parameters
+            .Add(p => p.Tags, new List<string> { "react" })
+            .Add(p => p.AllowDuplicates, false)
+            .Add(p => p.TagsChanged, _ => changed = true));
+
+        var input = cut.Find(".tag-input");
+
+        // Act
+        input.Input("react");
+        input.KeyDown("Enter");
+
+        // Assert
+        changed.ShouldBeFalse();
+        cut.FindAll(".tag-item").Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void TagInput_BackspaceWithEmptyInput_RemovesLastTag()
+    {
+        // Arrange
+        List<string>? changedTags = null;
+        string? removedTag = null;
+        var cut = Render<TagInput>(parameters => parameters
+            .Add(p => p.Tags, new List<string> { "react", "blazor" })
+            .Add(p => p.TagsChanged, tags => changedTags = tags)
+            .Add(p => p.OnTagRemoved, tag => removedTag = tag));
+
+        // Act
+        cut.Find(".tag-input").KeyDown("Backspace");
+
+        // Assert
+        changedTags.ShouldBe(new List<string> { "react" });
+        removedTag.ShouldBe("blazor");
+    }
+
+    [Fact]
+    public void TagInput_WhenDisabled_IgnoresSyntheticInputAndKeyDown()
+    {
+        // Arrange
+        var changed = false;
+        var added = false;
+        var cut = Render<TagInput>(parameters => parameters
+            .Add(p => p.Disabled, true)
+            .Add(p => p.TagsChanged, _ => changed = true)
+            .Add(p => p.OnTagAdded, _ => added = true));
+
+        var input = cut.Find(".tag-input");
+
+        // Act
+        input.Input("blazor");
+        input.KeyDown("Enter");
+
+        // Assert
+        changed.ShouldBeFalse();
+        added.ShouldBeFalse();
+        cut.FindAll(".tag-item").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void TagInput_ShowsSuggestionsOnFocus_WithListboxSemantics()
+    {
+        // Act
+        var cut = Render<TagInput>(parameters => parameters
+            .Add(p => p.Tags, new List<string> { "React" })
+            .Add(p => p.Suggestions, new List<string> { "React", "Vue", "Angular" }));
+
+        var input = cut.Find(".tag-input");
+        input.Focus();
+
+        // Assert
+        input.GetAttribute("role")!.ShouldBe("combobox");
+        input.GetAttribute("aria-expanded")!.ShouldBe("true");
+        cut.Find(".tag-suggestions").GetAttribute("role")!.ShouldBe("listbox");
+
+        var suggestions = cut.FindAll(".tag-suggestion");
+        suggestions.Count.ShouldBe(2);
+        suggestions[0].GetAttribute("role")!.ShouldBe("option");
+    }
+
+    [Fact]
+    public void TagInput_NullTagsAndSuggestions_RenderSafely()
+    {
+        // Act
+        var cut = Render<TagInput>(parameters => parameters
+            .Add(p => p.Tags, null!)
+            .Add(p => p.Suggestions, null!));
+
+        // Assert
+        cut.Find(".tag-input").GetAttribute("placeholder")!.ShouldBe("Add tags...");
+        cut.FindAll(".tag-item").ShouldBeEmpty();
+        cut.FindAll(".tag-suggestions").ShouldBeEmpty();
+    }
 }

@@ -19,8 +19,8 @@ public class DialogDescriptionTests : TestBase
     {
         var cut = Render<DialogDescription>();
 
-        cut.Instance.Id.ShouldNotBeNullOrWhiteSpace();
-        cut.Find(".vibe-dialog-description").GetAttribute("id").ShouldBe(cut.Instance.Id);
+        cut.Instance.Id.ShouldBeNull();
+        cut.Find(".vibe-dialog-description").GetAttribute("id")!.ShouldStartWith("vibe-dialog-description-");
     }
 
     [Fact]

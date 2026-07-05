@@ -3,7 +3,7 @@
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
 
-@if (IsOpen)
+@if (_isOpen)
 {
     <CascadingValue Value="_context">
         <div class="vibe-dialog-overlay" @onclick="OnOutsideClick" @onkeydown="HandleKeyDown" tabindex="-1">
@@ -12,6 +12,7 @@
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="@_context?.TitleId"
+                aria-label="@DialogAriaLabel"
                 aria-describedby="@_context?.DescriptionId"
                 @onclick:stopPropagation="true"
                 @attributes="AdditionalAttributes">
@@ -33,6 +34,9 @@ else if (ChildContent != null)
     private bool _focusTrapActive;
     private ElementReference _dialogRef;
     private readonly string _dialogKey = $"vibe-dialog-{Guid.NewGuid():N}";
+    private bool _hasSeenIsOpenParameter;
+    private bool _isOpen;
+    private bool _lastIsOpenParameter;
 
     /// <summary>
     /// Gets or sets the content of the dialog, including trigger and content components.
@@ -64,34 +68,56 @@ else if (ChildContent != null)
     [Parameter]
     public bool CloseOnEscape { get; set; } = true;
 
+    /// <summary>
+    /// Gets or sets the accessible label used when no DialogTitle labels the dialog.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-dialog";
+
+    private string? DialogAriaLabel => _context?.TitleId is null ? NormalizeOptionalText(AriaLabel) ?? "Dialog" : null;
 
     /// <inheritdoc/>
     protected override void OnInitialized()
     {
-        _context = new DialogContext(OpenDialog, CloseDialog, () => _ = InvokeAsync(StateHasChanged));
+        _context = new DialogContext(OpenDialog, CloseDialog, NotifyContextStateChanged, _isOpen);
         base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (!_hasSeenIsOpenParameter || IsOpen != _lastIsOpenParameter)
+        {
+            _isOpen = IsOpen;
+            _lastIsOpenParameter = IsOpen;
+            _hasSeenIsOpenParameter = true;
+            _context?.SetOpenState(_isOpen);
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (IsOpen && !_focusTrapActive)
+        if (_isOpen && !_focusTrapActive)
         {
-            _dialogModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
-                "import", "./_content/Vibe.UI/js/vibe-dialog.js");
-
-            await _dialogModule.InvokeVoidAsync("activate", _dialogKey, _dialogRef);
-            _focusTrapActive = true;
-        }
-        else if (!IsOpen && _focusTrapActive)
-        {
-            if (_dialogModule != null)
+            try
             {
-                await _dialogModule.InvokeVoidAsync("deactivate", _dialogKey);
+                _dialogModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
+                    "import", "./_content/Vibe.UI/js/vibe-dialog.js");
+
+                await _dialogModule.InvokeVoidAsync("activate", _dialogKey, _dialogRef);
+            }
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+            {
+                return;
             }
 
-            _focusTrapActive = false;
+            _focusTrapActive = true;
+        }
+        else if (!_isOpen && _focusTrapActive)
+        {
+            await DeactivateFocusTrapAsync();
         }
     }
 
@@ -123,9 +149,10 @@ else if (ChildContent != null)
     /// </summary>
     private async Task CloseDialog()
     {
-        if (IsOpen)
+        if (_isOpen)
         {
-            IsOpen = false;
+            _isOpen = false;
+            _context?.SetOpenState(false);
 
             if (IsOpenChanged.HasDelegate)
             {
@@ -141,9 +168,10 @@ else if (ChildContent != null)
     /// </summary>
     private async Task OpenDialog()
     {
-        if (!IsOpen)
+        if (!_isOpen)
         {
-            IsOpen = true;
+            _isOpen = true;
+            _context?.SetOpenState(true);
 
             if (IsOpenChanged.HasDelegate)
             {
@@ -156,15 +184,51 @@ else if (ChildContent != null)
 
     public async ValueTask DisposeAsync()
     {
-        if (_focusTrapActive && _dialogModule != null)
-        {
-            await _dialogModule.InvokeVoidAsync("deactivate", _dialogKey);
-            _focusTrapActive = false;
-        }
+        await DeactivateFocusTrapAsync();
 
         if (_dialogModule != null)
         {
-            await _dialogModule.DisposeAsync();
+            try
+            {
+                await _dialogModule.DisposeAsync();
+            }
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+            {
+            }
         }
     }
+
+    private async Task DeactivateFocusTrapAsync()
+    {
+        if (_dialogModule != null)
+        {
+            try
+            {
+                await _dialogModule.InvokeVoidAsync("deactivate", _dialogKey);
+            }
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+            {
+            }
+        }
+
+        _focusTrapActive = false;
+    }
+
+    private async void NotifyContextStateChanged()
+    {
+        try
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            await DispatchExceptionAsync(ex);
+        }
+    }
+
+    private static string? NormalizeOptionalText(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static bool IsRecoverableJsInteropException(Exception exception) =>
+        exception is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException;
 }

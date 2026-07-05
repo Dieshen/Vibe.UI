@@ -1,11 +1,15 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
 
-<div class="@CombinedClass" style="@GridStyle" @attributes="AdditionalAttributes">
+<div class="@RootClass" style="@GridStyle" @attributes="RootAttributes">
     @ChildContent
 </div>
 
 @code {
+    private const int DefaultColumns = 12;
+    private const string DefaultGap = "1rem";
+    private const string DefaultMinColumnWidth = "250px";
+
     /// <summary>
     /// Gets or sets the child content
     /// </summary>
@@ -51,45 +55,116 @@
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-grid";
 
+    private string RootClass => CombineClasses(ComponentClass, Class?.Trim(), AdditionalClass);
+
+    private Dictionary<string, object>? RootAttributes => GetUnhandledAttributes();
+
     /// <summary>
     /// Generates the inline style for the grid
     /// </summary>
-    private string GridStyle
+    private string? GridStyle
     {
         get
         {
             var styles = new List<string>();
 
-            if (AutoFit)
+            var additionalStyle = AdditionalStyle;
+            if (!string.IsNullOrWhiteSpace(additionalStyle))
             {
-                styles.Add($"grid-template-columns: repeat(auto-fit, minmax({MinColumnWidth}, 1fr))");
-            }
-            else
-            {
-                styles.Add($"grid-template-columns: repeat({Columns}, 1fr)");
+                styles.Add(additionalStyle);
             }
 
-            if (!string.IsNullOrEmpty(RowGap) && !string.IsNullOrEmpty(ColumnGap))
+            if (AutoFit)
             {
-                styles.Add($"row-gap: {RowGap}");
-                styles.Add($"column-gap: {ColumnGap}");
-            }
-            else if (!string.IsNullOrEmpty(RowGap))
-            {
-                styles.Add($"row-gap: {RowGap}");
-                styles.Add($"column-gap: {Gap}");
-            }
-            else if (!string.IsNullOrEmpty(ColumnGap))
-            {
-                styles.Add($"row-gap: {Gap}");
-                styles.Add($"column-gap: {ColumnGap}");
+                styles.Add($"grid-template-columns: repeat(auto-fit, minmax({EffectiveMinColumnWidth}, 1fr))");
             }
             else
             {
-                styles.Add($"gap: {Gap}");
+                styles.Add($"grid-template-columns: repeat({EffectiveColumns}, 1fr)");
+            }
+
+            var rowGap = NormalizeAttributeValue(RowGap);
+            var columnGap = NormalizeAttributeValue(ColumnGap);
+            var gap = EffectiveGap;
+
+            if (rowGap is not null && columnGap is not null)
+            {
+                styles.Add($"row-gap: {rowGap}");
+                styles.Add($"column-gap: {columnGap}");
+            }
+            else if (rowGap is not null)
+            {
+                styles.Add($"row-gap: {rowGap}");
+                styles.Add($"column-gap: {gap}");
+            }
+            else if (columnGap is not null)
+            {
+                styles.Add($"row-gap: {gap}");
+                styles.Add($"column-gap: {columnGap}");
+            }
+            else
+            {
+                styles.Add($"gap: {gap}");
             }
 
             return string.Join("; ", styles);
         }
     }
+
+    private int EffectiveColumns => Columns > 0 ? Columns : DefaultColumns;
+
+    private string EffectiveGap => NormalizeAttributeValue(Gap) ?? DefaultGap;
+
+    private string EffectiveMinColumnWidth =>
+        NormalizeAttributeValue(MinColumnWidth) ?? DefaultMinColumnWidth;
+
+    private string? AdditionalClass => GetAdditionalAttributeValue("class");
+
+    private string? AdditionalStyle => GetAdditionalAttributeValue("style")?.TrimEnd(';');
+
+    private Dictionary<string, object>? GetUnhandledAttributes()
+    {
+        if (AdditionalAttributes is null || AdditionalAttributes.Count == 0)
+        {
+            return null;
+        }
+
+        var attributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (IsHandledRootAttribute(attribute.Key))
+            {
+                continue;
+            }
+
+            attributes[attribute.Key] = attribute.Value;
+        }
+
+        return attributes.Count == 0 ? null : attributes;
+    }
+
+    private static bool IsHandledRootAttribute(string attributeName) =>
+        string.Equals(attributeName, "class", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(attributeName, "style", StringComparison.OrdinalIgnoreCase);
+
+    private string? GetAdditionalAttributeValue(string attributeName)
+    {
+        if (AdditionalAttributes is null)
+        {
+            return null;
+        }
+
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (string.Equals(attribute.Key, attributeName, StringComparison.OrdinalIgnoreCase))
+            {
+                return NormalizeAttributeValue(attribute.Value?.ToString());
+            }
+        }
+
+        return null;
+    }
+
+    private static string? NormalizeAttributeValue(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

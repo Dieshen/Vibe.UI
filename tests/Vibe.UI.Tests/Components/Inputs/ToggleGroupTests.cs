@@ -149,4 +149,129 @@ public class ToggleGroupTests : TestBase
         // Assert
         cut.Find(".vibe-toggle-group").ClassList.ShouldContain("custom-toggle-group");
     }
+
+    [Fact]
+    public void ToggleGroup_ForwardsAdditionalAttributesClassAndAriaOrientation()
+    {
+        // Act
+        var cut = Render<ToggleGroup>(parameters => parameters
+            .Add(p => p.Class, "editor-formatting")
+            .Add(p => p.Orientation, ToggleGroup.ToggleGroupOrientation.Vertical)
+            .Add(p => p.Disabled, true)
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                { "data-testid", "toggle-group" }
+            })
+            .AddChildContent("<div>Items</div>"));
+
+        // Assert
+        var group = cut.Find(".vibe-toggle-group");
+        group.ClassList.ShouldContain("editor-formatting");
+        group.GetAttribute("data-testid")!.ShouldBe("toggle-group");
+        group.GetAttribute("aria-orientation")!.ShouldBe("vertical");
+        group.GetAttribute("aria-disabled")!.ShouldBe("true");
+    }
+
+    [Fact]
+    public void ToggleGroup_InvalidEnumValues_FallBackToDefaultClasses()
+    {
+        // Act
+        var cut = Render<ToggleGroup>(parameters => parameters
+            .Add(p => p.Type, (ToggleGroup.ToggleGroupType)999)
+            .Add(p => p.Orientation, (ToggleGroup.ToggleGroupOrientation)999)
+            .Add(p => p.Size, (ToggleGroup.ToggleGroupSize)999)
+            .AddChildContent(BuildItems("left", "right")));
+
+        // Assert
+        var group = cut.Find(".vibe-toggle-group");
+        group.ClassList.ShouldContain("vibe-toggle-group-horizontal");
+        group.ClassList.ShouldContain("vibe-toggle-group-default");
+        group.ClassList.ShouldNotContain("vibe-toggle-group-999");
+    }
+
+    [Fact]
+    public void ToggleGroup_SingleMode_TogglesValueAndUpdatesItemState()
+    {
+        // Arrange
+        string? changedValue = "unchanged";
+        var cut = Render<ToggleGroup>(parameters => parameters
+            .Add(p => p.ValueChanged, value => changedValue = value)
+            .AddChildContent(BuildItems("left", "right")));
+
+        // Act
+        cut.FindAll("button")[1].Click();
+
+        // Assert
+        changedValue.ShouldBe("right");
+        cut.FindAll("button")[1].ClassList.ShouldContain("vibe-toggle-group-item-pressed");
+        cut.FindAll("button")[1].GetAttribute("aria-pressed")!.ShouldBe("true");
+
+        // Act
+        cut.FindAll("button")[1].Click();
+
+        // Assert
+        changedValue.ShouldBeNull();
+        cut.FindAll("button")[1].ClassList.ShouldNotContain("vibe-toggle-group-item-pressed");
+    }
+
+    [Fact]
+    public void ToggleGroup_MultipleMode_DoesNotMutateCallerOwnedValuesList()
+    {
+        // Arrange
+        var originalValues = new List<string> { "left" };
+        List<string>? changedValues = null;
+        var cut = Render<ToggleGroup>(parameters => parameters
+            .Add(p => p.Type, ToggleGroup.ToggleGroupType.Multiple)
+            .Add(p => p.Values, originalValues)
+            .Add(p => p.ValuesChanged, values => changedValues = values)
+            .AddChildContent(BuildItems("left", "right")));
+
+        // Act
+        cut.FindAll("button")[1].Click();
+
+        // Assert
+        originalValues.ShouldBe(new List<string> { "left" });
+        changedValues.ShouldNotBeNull();
+        changedValues.ShouldBe(new List<string> { "left", "right" });
+        changedValues.ShouldNotBeSameAs(originalValues);
+        cut.FindAll("button")[1].ClassList.ShouldContain("vibe-toggle-group-item-pressed");
+    }
+
+    [Fact]
+    public void ToggleGroup_WhenDisabled_DisablesChildItemsAndIgnoresSyntheticClick()
+    {
+        // Arrange
+        string? changedValue = "unchanged";
+        var cut = Render<ToggleGroup>(parameters => parameters
+            .Add(p => p.Disabled, true)
+            .Add(p => p.ValueChanged, value => changedValue = value)
+            .AddChildContent(BuildItems("left", "right")));
+
+        // Act
+        cut.FindAll("button")[0].Click();
+
+        // Assert
+        changedValue.ShouldBe("unchanged");
+        var button = cut.FindAll("button")[0];
+        button.HasAttribute("disabled").ShouldBeTrue();
+        button.GetAttribute("aria-disabled")!.ShouldBe("true");
+    }
+
+    private static RenderFragment BuildItems(params string[] values)
+    {
+        return builder =>
+        {
+            var sequence = 0;
+            foreach (var value in values)
+            {
+                builder.OpenComponent<ToggleGroupItem>(sequence++);
+                builder.AddAttribute(sequence++, nameof(ToggleGroupItem.Value), value);
+                builder.AddAttribute(sequence++, nameof(ToggleGroupItem.ChildContent), (RenderFragment)(childBuilder =>
+                {
+                    childBuilder.AddContent(0, value);
+                }));
+                builder.CloseComponent();
+            }
+        };
+    }
 }

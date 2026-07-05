@@ -1,10 +1,17 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
 
-<button type="button" class="@CombinedClass @DangerClass @DisabledClass" disabled="@Disabled" @onclick="HandleClick" @attributes="AdditionalAttributes">
+<button type="button"
+        class="@CombinedClass"
+        role="menuitem"
+        tabindex="@TabIndex"
+        disabled="@Disabled"
+        aria-disabled="@AriaDisabled"
+        @onclick="HandleClick"
+        @attributes="AdditionalAttributes">
     @if (!string.IsNullOrEmpty(Icon))
     {
-        <span class="menu-item-icon">@Icon</span>
+        <span class="menu-item-icon" aria-hidden="true">@Icon</span>
     }
     @ChildContent
 </button>
@@ -43,8 +50,19 @@
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-menu-item";
 
-    private string DangerClass => Danger ? "vibe-menu-item-danger" : string.Empty;
-    private string DisabledClass => Disabled ? "vibe-menu-item-disabled" : string.Empty;
+    /// <inheritdoc/>
+    protected override string GetCombinedClass()
+    {
+        return CombineClasses(
+            ComponentClass,
+            Danger ? "vibe-menu-item-danger" : null,
+            Disabled ? "vibe-menu-item-disabled" : null,
+            Class);
+    }
+
+    private string AriaDisabled => Disabled ? "true" : "false";
+
+    private string TabIndex => Disabled ? "-1" : "0";
 
     private async Task HandleClick(MouseEventArgs e)
     {

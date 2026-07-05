@@ -11,6 +11,11 @@ public class DialogContext
     private readonly Action? _onStateChanged;
 
     /// <summary>
+    /// Gets whether the owning dialog is currently open.
+    /// </summary>
+    public bool IsOpen { get; private set; }
+
+    /// <summary>
     /// Gets the element ID used to label the dialog title.
     /// </summary>
     public string? TitleId { get; private set; }
@@ -26,11 +31,13 @@ public class DialogContext
     /// <param name="openAction">The action to execute when opening the dialog.</param>
     /// <param name="closeAction">The action to execute when closing the dialog.</param>
     /// <param name="onStateChanged">An optional callback to notify the owner that context state changed.</param>
-    public DialogContext(Func<Task> openAction, Func<Task> closeAction, Action? onStateChanged = null)
+    /// <param name="isOpen">The initial dialog open state.</param>
+    public DialogContext(Func<Task> openAction, Func<Task> closeAction, Action? onStateChanged = null, bool isOpen = false)
     {
         _openAction = openAction;
         _closeAction = closeAction;
         _onStateChanged = onStateChanged;
+        IsOpen = isOpen;
     }
 
     /// <summary>
@@ -46,6 +53,19 @@ public class DialogContext
     public Task Close() => _closeAction();
 
     /// <summary>
+    /// Updates the current open state.
+    /// </summary>
+    /// <param name="isOpen">Whether the owning dialog is open.</param>
+    public void SetOpenState(bool isOpen)
+    {
+        if (IsOpen == isOpen)
+            return;
+
+        IsOpen = isOpen;
+        _onStateChanged?.Invoke();
+    }
+
+    /// <summary>
     /// Updates the title element ID.
     /// </summary>
     /// <param name="id">The title element ID, or <see langword="null"/> when no title is registered.</param>
@@ -59,6 +79,18 @@ public class DialogContext
     }
 
     /// <summary>
+    /// Clears the title element ID when the registered title is removed.
+    /// </summary>
+    /// <param name="id">The title element ID being removed.</param>
+    public void ClearTitleId(string id)
+    {
+        if (TitleId == id)
+        {
+            SetTitleId(null);
+        }
+    }
+
+    /// <summary>
     /// Updates the description element ID.
     /// </summary>
     /// <param name="id">The description element ID, or <see langword="null"/> when no description is registered.</param>
@@ -69,5 +101,17 @@ public class DialogContext
 
         DescriptionId = id;
         _onStateChanged?.Invoke();
+    }
+
+    /// <summary>
+    /// Clears the description element ID when the registered description is removed.
+    /// </summary>
+    /// <param name="id">The description element ID being removed.</param>
+    public void ClearDescriptionId(string id)
+    {
+        if (DescriptionId == id)
+        {
+            SetDescriptionId(null);
+        }
     }
 }

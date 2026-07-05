@@ -41,6 +41,33 @@ public class DialogTests : TestBase
     }
 
     [Fact]
+    public void Dialog_UsesAriaLabelFallback_WhenHeaderIsMissing()
+    {
+        var cut = Render<Dialog>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.AriaLabel, "Settings dialog")
+            .AddChildContent("Dialog Content"));
+
+        var dialog = cut.Find(".vibe-dialog");
+        dialog.GetAttribute("aria-label").ShouldBe("Settings dialog");
+        dialog.HasAttribute("aria-labelledby").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Dialog_UsesHeaderAsAccessibleLabel_WhenHeaderIsProvided()
+    {
+        var cut = Render<Dialog>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.AriaLabel, "Fallback label")
+            .Add(p => p.Header, builder => builder.AddContent(0, "Dialog Header"))
+            .AddChildContent("Dialog Content"));
+
+        var dialog = cut.Find(".vibe-dialog");
+        dialog.GetAttribute("aria-labelledby")!.ShouldStartWith("vibe-dialog-title-");
+        dialog.HasAttribute("aria-label").ShouldBeFalse();
+    }
+
+    [Fact]
     public void Dialog_Renders_Overlay()
     {
         // Act
@@ -140,5 +167,27 @@ public class DialogTests : TestBase
 
         // Assert - AdditionalAttributes are captured
         cut.Markup.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Dialog_SyncsInternalOpenState_WhenParameterChanges()
+    {
+        var closed = Render<Dialog>(parameters => parameters
+            .Add(p => p.IsOpen, false)
+            .AddChildContent("Dialog Content"));
+
+        closed.FindAll(".vibe-dialog").ShouldBeEmpty();
+
+        var open = Render<Dialog>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .AddChildContent("Dialog Content"));
+
+        open.Find(".vibe-dialog").TextContent.ShouldContain("Dialog Content");
+
+        var closedAgain = Render<Dialog>(parameters => parameters
+            .Add(p => p.IsOpen, false)
+            .AddChildContent("Dialog Content"));
+
+        closedAgain.FindAll(".vibe-dialog").ShouldBeEmpty();
     }
 }

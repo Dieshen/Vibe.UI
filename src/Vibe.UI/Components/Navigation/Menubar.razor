@@ -1,22 +1,44 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<div class="@CombinedClass" role="menubar">
-    @foreach (var menu in Menus)
+<div class="@CombinedClass" role="menubar" aria-label="@EffectiveAriaLabel" @attributes="AdditionalAttributes">
+    @{
+        var menus = GetSafeMenus();
+    }
+    @for (var index = 0; index < menus.Count; index++)
     {
-        <div class="menubar-menu">
-            <button class="menubar-trigger @(ActiveMenu == menu.Id ? "active" : "")" @onclick="() => ToggleMenu(menu.Id)"
-                role="menuitem" aria-haspopup="true" aria-expanded="@(ActiveMenu == menu.Id ? "true" : "false")">
-                @menu.Label
+        var menu = menus[index];
+        var menuKey = GetMenuKey(menu, index);
+        var triggerId = GetTriggerId(menuKey);
+        var contentId = GetContentId(menuKey);
+        var isActive = ActiveMenu == menuKey;
+
+        <div class="menubar-menu" role="none" @key="menuKey">
+            <button id="@triggerId"
+                    type="button"
+                    class="@GetTriggerClass(isActive)"
+                    role="menuitem"
+                    tabindex="0"
+                    aria-haspopup="menu"
+                    aria-expanded="@AriaBool(isActive)"
+                    aria-controls="@contentId"
+                    @onclick="() => ToggleMenu(menuKey)"
+                    @onkeydown="args => HandleTriggerKeyDown(args, menuKey)">
+                @GetMenuLabel(menu, index)
             </button>
 
-            @if (ActiveMenu == menu.Id)
+            @if (isActive)
             {
-                <div class="menubar-content">
+                <div id="@contentId"
+                     class="menubar-content"
+                     role="menu"
+                     tabindex="-1"
+                     aria-labelledby="@triggerId"
+                     @onkeydown="HandleMenuKeyDown">
                     @menu.Content
                 </div>
 
-                <div class="menubar-backdrop" @onclick="CloseMenu"></div>
+                <div class="menubar-backdrop" aria-hidden="true" @onclick="CloseMenu"></div>
             }
         </div>
     }
@@ -51,6 +73,12 @@
     public List<MenubarItem> Menus { get; set; } = new List<MenubarItem>();
 
     /// <summary>
+    /// Gets or sets the accessible label for the menubar.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; } = "Menubar";
+
+    /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
     protected override string ComponentClass => "vibe-menubar";
@@ -59,6 +87,30 @@
     /// The ID of the active menu.
     /// </summary>
     private string? ActiveMenu;
+
+    private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel)
+        ? "Menubar"
+        : AriaLabel.Trim();
+
+    /// <inheritdoc/>
+    protected override void OnParametersSet()
+    {
+        if (ActiveMenu == null)
+        {
+            return;
+        }
+
+        var menus = GetSafeMenus();
+        for (var index = 0; index < menus.Count; index++)
+        {
+            if (ActiveMenu == GetMenuKey(menus[index], index))
+            {
+                return;
+            }
+        }
+
+        ActiveMenu = null;
+    }
 
     /// <summary>
     /// Toggles a menu.
@@ -83,4 +135,111 @@
     {
         ActiveMenu = null;
     }
+
+    private void HandleTriggerKeyDown(KeyboardEventArgs args, string menuId)
+    {
+        if (args.Key is "ArrowDown" or "ArrowUp")
+        {
+            ActiveMenu = menuId;
+        }
+        else if (args.Key == "Escape")
+        {
+            CloseMenu();
+        }
+        else if (args.Key == "ArrowRight")
+        {
+            MoveActiveMenu(menuId, 1);
+        }
+        else if (args.Key == "ArrowLeft")
+        {
+            MoveActiveMenu(menuId, -1);
+        }
+    }
+
+    private void HandleMenuKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Escape")
+        {
+            CloseMenu();
+        }
+    }
+
+    private void MoveActiveMenu(string menuId, int offset)
+    {
+        var menus = GetSafeMenus();
+        if (menus.Count == 0)
+        {
+            return;
+        }
+
+        var currentIndex = -1;
+        for (var index = 0; index < menus.Count; index++)
+        {
+            if (GetMenuKey(menus[index], index) == menuId)
+            {
+                currentIndex = index;
+                break;
+            }
+        }
+
+        if (currentIndex == -1)
+        {
+            return;
+        }
+
+        var nextIndex = (currentIndex + offset + menus.Count) % menus.Count;
+        ActiveMenu = GetMenuKey(menus[nextIndex], nextIndex);
+    }
+
+    private IReadOnlyList<MenubarItem> GetSafeMenus()
+    {
+        if (Menus is null || Menus.Count == 0)
+        {
+            return Array.Empty<MenubarItem>();
+        }
+
+        return Menus.Where(static menu => menu is not null).ToList();
+    }
+
+    private static string GetMenuKey(MenubarItem menu, int index)
+    {
+        return $"{GetMenuIdPart(menu.Id, index)}-{index}";
+    }
+
+    private static string GetMenuIdPart(string? id, int index)
+    {
+        var trimmedId = id?.Trim();
+        if (string.IsNullOrEmpty(trimmedId))
+        {
+            return $"item-{index + 1}";
+        }
+
+        var idCharacters = trimmedId
+            .Select(static character => char.IsLetterOrDigit(character) || character is '-' or '_'
+                ? char.ToLowerInvariant(character)
+                : '-')
+            .ToArray();
+        var sanitizedId = new string(idCharacters).Trim('-');
+
+        return string.IsNullOrEmpty(sanitizedId)
+            ? $"item-{index + 1}"
+            : sanitizedId;
+    }
+
+    private static string GetTriggerId(string menuId) => $"vibe-menubar-trigger-{menuId}";
+
+    private static string GetContentId(string menuId) => $"vibe-menubar-content-{menuId}";
+
+    private static string GetMenuLabel(MenubarItem menu, int index)
+    {
+        var label = menu.Label?.Trim();
+        return string.IsNullOrEmpty(label) ? $"Menu {index + 1}" : label;
+    }
+
+    private string GetTriggerClass(bool isActive)
+    {
+        return CombineClasses("menubar-trigger", isActive ? "active" : null);
+    }
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
 }

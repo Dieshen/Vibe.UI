@@ -6,3 +6,24 @@
   min-width: 0;
 }
 
+:global(.vibe-splitter.splitter-horizontal) {
+  flex-direction: row;
+}
+
+:global(.vibe-splitter.splitter-vertical) {
+  flex-direction: column;
+}
+
+:global(.vibe-splitter .splitter-pane) {
+  min-width: 0;
+  min-height: 0;
+}
+
+:global(.vibe-splitter .splitter-divider) {
+  flex: 0 0 auto;
+  cursor: col-resize;
+}
+
+:global(.vibe-splitter.splitter-vertical .splitter-divider) {
+  cursor: row-resize;
+}

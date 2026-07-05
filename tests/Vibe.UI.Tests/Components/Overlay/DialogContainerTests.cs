@@ -32,6 +32,25 @@ public class DialogContainerTests : TestBase
     }
 
     [Fact]
+    public void DialogContainer_UsesAriaLabelFallback_WhenTitleIsMissing()
+    {
+        var service = Services.GetRequiredService<IDialogService>();
+        var cut = Render<DialogContainer>(parameters => parameters
+            .Add(p => p.AriaLabel, "Service dialog"));
+
+        _ = service.ShowCustomAsync("", builder => builder.AddContent(0, "Body"));
+
+        cut.WaitForAssertion(() =>
+        {
+            var dialog = cut.Find(".vibe-dialog-container");
+            dialog.GetAttribute("aria-label").ShouldBe("Service dialog");
+            dialog.HasAttribute("aria-labelledby").ShouldBeFalse();
+            cut.FindAll(".vibe-dialog-header").ShouldBeEmpty();
+            cut.Find(".vibe-dialog-body").TextContent.ShouldContain("Body");
+        });
+    }
+
+    [Fact]
     public void DialogContainer_CloseButtonClosesServiceDialog()
     {
         var service = Services.GetRequiredService<IDialogService>();
@@ -89,5 +108,18 @@ public class DialogContainerTests : TestBase
             host.ClassList.ShouldContain("global-dialog-host");
             host.GetAttribute("data-host").ShouldBe("dialog");
         });
+    }
+
+    [Fact]
+    public void DialogContainer_UnsubscribesFromServiceEvents_OnDispose()
+    {
+        var service = Services.GetRequiredService<IDialogService>();
+        var cut = Render<DialogContainer>();
+
+        cut.Instance.Dispose();
+
+        _ = service.ShowCustomAsync("Disposed", builder => builder.AddContent(0, "Body"));
+
+        cut.FindAll(".vibe-dialog-host").ShouldBeEmpty();
     }
 }

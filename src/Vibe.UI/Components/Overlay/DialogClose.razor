@@ -1,7 +1,13 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
 
-<button type="button" class="@CombinedClass" @onclick="OnCloseClick" aria-label="Close" @attributes="AdditionalAttributes">
+<button type="button"
+        class="@CloseClass"
+        disabled="@Disabled"
+        aria-disabled="@AriaDisabled"
+        @onclick="OnCloseClick"
+        aria-label="@EffectiveAriaLabel"
+        @attributes="AdditionalAttributes">
     @if (ChildContent != null)
     {
         @ChildContent
@@ -27,6 +33,18 @@
     public EventCallback OnClick { get; set; }
 
     /// <summary>
+    /// Gets or sets whether the close button is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets the accessible label for the close button.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; } = "Close";
+
+    /// <summary>
     /// Gets the cascading DialogContext from a parent component.
     /// </summary>
     [CascadingParameter]
@@ -35,11 +53,25 @@
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-dialog-close";
 
+    private string CloseClass => CombineClasses(
+        CombinedClass,
+        Disabled ? "vibe-dialog-close-disabled" : null);
+
+    private string AriaDisabled => Disabled ? "true" : "false";
+
+    private string EffectiveAriaLabel =>
+        string.IsNullOrWhiteSpace(AriaLabel) ? "Close" : AriaLabel.Trim();
+
     /// <summary>
     /// Handles the close button click event, closing the dialog through the cascading context.
     /// </summary>
     private async Task OnCloseClick()
     {
+        if (Disabled)
+        {
+            return;
+        }
+
         if (Context != null)
         {
             await Context.Close();

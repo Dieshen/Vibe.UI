@@ -60,4 +60,54 @@ public class StackTests : TestBase
         stack.ClassList.ShouldContain("toolbar-stack");
         stack.GetAttribute("data-stack").ShouldBe("toolbar");
     }
+
+    [Fact]
+    public void Stack_MergesAdditionalClassStyleAndRootAttributes()
+    {
+        var cut = Render<Stack>(parameters => parameters
+            .Add(p => p.Class, "toolbar-stack")
+            .Add(p => p.Spacing, "20px")
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                ["class"] = "attribute-stack",
+                ["style"] = "min-width: 0;",
+                ["data-testid"] = "stack"
+            }));
+
+        var stack = cut.Find(".vibe-stack");
+        stack.ClassList.ShouldContain("toolbar-stack");
+        stack.ClassList.ShouldContain("attribute-stack");
+        stack.GetAttribute("data-testid").ShouldBe("stack");
+
+        var style = stack.GetAttribute("style")!;
+        style.ShouldContain("min-width: 0");
+        style.ShouldContain("gap: 20px");
+        style.ShouldContain("align-items: stretch");
+    }
+
+    [Fact]
+    public void Stack_WithInvalidEnumsAndBlankSpacing_FallsBackToDefaults()
+    {
+        var cut = Render<Stack>(parameters => parameters
+            .Add(p => p.Direction, (Stack.StackDirection)999)
+            .Add(p => p.Align, (Stack.StackAlign)999)
+            .Add(p => p.Justify, (Stack.StackJustify)999)
+            .Add(p => p.Spacing, "   "));
+
+        var stack = cut.Find(".vibe-stack");
+        stack.ClassList.ShouldContain("vibe-stack-vertical");
+
+        var style = stack.GetAttribute("style")!;
+        style.ShouldContain("gap: 1rem");
+        style.ShouldContain("align-items: stretch");
+        style.ShouldContain("justify-content: flex-start");
+    }
+
+    [Fact]
+    public void Stack_WithNullChildContent_RendersEmptyRoot()
+    {
+        var cut = Render<Stack>();
+
+        cut.Find(".vibe-stack").InnerHtml.Trim().ShouldBeEmpty();
+    }
 }

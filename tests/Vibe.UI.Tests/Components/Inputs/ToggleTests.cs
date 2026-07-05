@@ -98,4 +98,54 @@ public class ToggleTests : TestBase
         // Assert
         pressedValue.ShouldBeFalse();
     }
+
+    [Fact]
+    public void Toggle_ForwardsAdditionalAttributesAndAriaState()
+    {
+        // Act
+        var cut = Render<Toggle>(parameters => parameters
+            .Add(p => p.Pressed, true)
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                { "data-testid", "format-bold" }
+            })
+            .AddChildContent("Bold"));
+
+        // Assert
+        var button = cut.Find("button");
+        button.GetAttribute("data-testid")!.ShouldBe("format-bold");
+        button.GetAttribute("aria-pressed")!.ShouldBe("true");
+        button.GetAttribute("aria-disabled")!.ShouldBe("false");
+    }
+
+    [Fact]
+    public void Toggle_InvalidVariantAndSize_FallBackToDefaultClasses()
+    {
+        // Act
+        var cut = Render<Toggle>(parameters => parameters
+            .Add(p => p.Variant, "unknown")
+            .Add(p => p.Size, "massive")
+            .AddChildContent("Toggle"));
+
+        // Assert
+        var button = cut.Find("button");
+        button.ClassList.ShouldContain("toggle-default");
+        button.ClassList.ShouldNotContain("toggle-unknown");
+        button.ClassList.ShouldNotContain("toggle-massive");
+    }
+
+    [Fact]
+    public void Toggle_ClickUpdatesInternalPressedState_WhenNoCallbackIsRegistered()
+    {
+        // Act
+        var cut = Render<Toggle>(parameters => parameters
+            .AddChildContent("Toggle"));
+
+        cut.Find("button").Click();
+
+        // Assert
+        var button = cut.Find("button");
+        button.ClassList.ShouldContain("pressed");
+        button.GetAttribute("aria-pressed")!.ShouldBe("true");
+    }
 }

@@ -139,4 +139,51 @@ public class MasonryGridTests : TestBase
         var items = cut.FindAll(".masonry-item");
         items.ShouldBeEmpty();
     }
+
+    [Fact]
+    public void MasonryGrid_MergesClassStyleAndRootAttributes()
+    {
+        var cut = Render<MasonryGrid>(parameters => parameters
+            .Add(p => p.Class, "gallery")
+            .Add(p => p.CssClass, "dense")
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                ["class"] = "attribute-gallery",
+                ["style"] = "align-items: stretch;",
+                ["data-testid"] = "gallery"
+            }));
+
+        var grid = cut.Find(".vibe-masonry");
+        grid.ClassList.ShouldContain("gallery");
+        grid.ClassList.ShouldContain("dense");
+        grid.ClassList.ShouldContain("attribute-gallery");
+        grid.GetAttribute("data-testid").ShouldBe("gallery");
+
+        var style = grid.GetAttribute("style")!;
+        style.ShouldContain("align-items: stretch");
+        style.ShouldContain("gap: 16px");
+    }
+
+    [Fact]
+    public void MasonryGrid_WithInvalidColumnsAndGap_FallsBackToDefaults()
+    {
+        var cut = Render<MasonryGrid>(parameters => parameters
+            .Add(p => p.Columns, 0)
+            .Add(p => p.Gap, -4));
+
+        cut.FindAll(".masonry-column").Count.ShouldBe(3);
+        cut.Find(".vibe-masonry").GetAttribute("style")!.ShouldContain("gap: 16px");
+    }
+
+    [Fact]
+    public void MasonryGrid_WithItemWithoutContent_RendersEmptyItem()
+    {
+        var cut = Render<MasonryGrid>(parameters => parameters
+            .Add(p => p.Items, new List<MasonryGrid.MasonryItem>
+            {
+                new() { Id = "empty" }
+            }));
+
+        cut.Find(".masonry-item").InnerHtml.Trim().ShouldBeEmpty();
+    }
 }

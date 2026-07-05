@@ -3,18 +3,33 @@
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
 
-<div class="@CombinedClass"
-    style="@(Direction == ResizableDirection.Horizontal ? $"width: {Width}px;" : $"height: {Height}px;")">
+<div class="@RootClass" style="@RootStyle" @attributes="RootAttributes">
     <div class="resizable-panel">
         @ChildContent
     </div>
 
-    <div class="resizable-handle @HandleDirectionClass" @onmousedown="HandleDragStart" @ref="_handleReference">
+    <div class="resizable-handle @HandleDirectionClass"
+         role="separator"
+         aria-orientation="@HandleAriaOrientation"
+         aria-label="Resize panel"
+         aria-valuenow="@CurrentSizeAriaValue"
+         aria-valuemin="@CurrentMinAriaValue"
+         aria-valuemax="@CurrentMaxAriaValue"
+         tabindex="0"
+         @onmousedown="HandleDragStart"
+         @onkeydown="HandleKeyDown"
+         @ref="_handleReference">
         <div class="resizable-handle-bar"></div>
     </div>
 </div>
 
 @code {
+    private const double DefaultWidthValue = 300;
+    private const double DefaultHeightValue = 200;
+    private const double DefaultMinWidthValue = 100;
+    private const double DefaultMinHeightValue = 50;
+    private const double KeyboardStep = 10;
+
     /// <summary>
     /// The direction in which the element can be resized.
     /// </summary>
@@ -100,17 +115,61 @@
     /// </summary>
     private ElementReference _handleReference;
 
+    private bool _hasInitializedParameters;
+    private double _lastDefaultWidth;
+    private double _lastDefaultHeight;
+
     /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
     protected override string ComponentClass => "vibe-resizable";
 
+    private string RootClass => CombineClasses(ComponentClass, Class?.Trim(), AdditionalClass);
+
+    private string? RootStyle => CombineStyles(
+        AdditionalStyle,
+        IsHorizontal
+            ? $"width: {FormatSize(Width)}px"
+            : $"height: {FormatSize(Height)}px");
+
+    private Dictionary<string, object>? RootAttributes => GetUnhandledAttributes();
+
     /// <summary>
     /// Gets the handle CSS class based on direction.
     /// </summary>
-    private string HandleDirectionClass => Direction == ResizableDirection.Horizontal
-    ? "resizable-handle-horizontal"
-    : "resizable-handle-vertical";
+    private string HandleDirectionClass => IsHorizontal
+        ? "resizable-handle-horizontal"
+        : "resizable-handle-vertical";
+
+    private ResizableDirection EffectiveDirection =>
+        Enum.IsDefined(typeof(ResizableDirection), Direction)
+            ? Direction
+            : ResizableDirection.Horizontal;
+
+    private bool IsHorizontal => EffectiveDirection == ResizableDirection.Horizontal;
+
+    private string HandleAriaOrientation => IsHorizontal ? "vertical" : "horizontal";
+
+    private string CurrentSizeAriaValue => FormatSize(CurrentSize);
+
+    private string CurrentMinAriaValue => FormatSize(CurrentMinSize);
+
+    private string? CurrentMaxAriaValue =>
+        CurrentMaxSize == double.MaxValue ? null : FormatSize(CurrentMaxSize);
+
+    private double CurrentSize => IsHorizontal ? Width : Height;
+
+    private double CurrentMinSize => IsHorizontal ? EffectiveMinWidth : EffectiveMinHeight;
+
+    private double CurrentMaxSize => IsHorizontal ? EffectiveMaxWidth : EffectiveMaxHeight;
+
+    private double EffectiveMinWidth => NormalizeMinimum(MinWidth, DefaultMinWidthValue);
+
+    private double EffectiveMinHeight => NormalizeMinimum(MinHeight, DefaultMinHeightValue);
+
+    private double EffectiveMaxWidth => NormalizeMaximum(MaxWidth, EffectiveMinWidth);
+
+    private double EffectiveMaxHeight => NormalizeMaximum(MaxHeight, EffectiveMinHeight);
 
     /// <summary>
     /// DotNet reference for JavaScript interop.
@@ -130,11 +189,34 @@
     /// <summary>
     /// Initializes the component.
     /// </summary>
-    protected override void OnInitialized()
+    protected override void OnParametersSet()
     {
-        base.OnInitialized();
-        Width = DefaultWidth;
-        Height = DefaultHeight;
+        base.OnParametersSet();
+
+        var defaultWidth = CoerceFinite(DefaultWidth, DefaultWidthValue);
+        var defaultHeight = CoerceFinite(DefaultHeight, DefaultHeightValue);
+
+        if (!_hasInitializedParameters || !AreClose(_lastDefaultWidth, defaultWidth))
+        {
+            Width = ClampWidth(defaultWidth);
+        }
+        else
+        {
+            Width = ClampWidth(Width);
+        }
+
+        if (!_hasInitializedParameters || !AreClose(_lastDefaultHeight, defaultHeight))
+        {
+            Height = ClampHeight(defaultHeight);
+        }
+        else
+        {
+            Height = ClampHeight(Height);
+        }
+
+        _lastDefaultWidth = defaultWidth;
+        _lastDefaultHeight = defaultHeight;
+        _hasInitializedParameters = true;
     }
 
     /// <summary>
@@ -155,7 +237,7 @@
 
                 // Create the drag handler
                 _dragRef = await _dragModule.InvokeAsync<IJSObjectReference>(
-                    "createDragHandler", _dotNetRef, Direction == ResizableDirection.Horizontal);
+                    "createDragHandler", _dotNetRef, IsHorizontal);
             }
             catch
             {
@@ -181,13 +263,13 @@
     [JSInvokable]
     public void HandleDragMove(double clientX, double clientY)
     {
-        if (Direction == ResizableDirection.Horizontal)
+        if (IsHorizontal)
         {
-            Width = Math.Clamp(clientX, MinWidth, MaxWidth);
+            Width = ClampWidth(clientX);
         }
         else
         {
-            Height = Math.Clamp(clientY, MinHeight, MaxHeight);
+            Height = ClampHeight(clientY);
         }
 
         StateHasChanged();
@@ -199,14 +281,134 @@
     [JSInvokable]
     public async Task HandleDragEnd()
     {
-        if (Direction == ResizableDirection.Horizontal)
+        await OnSizeChange.InvokeAsync(CurrentSize);
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        var delta = GetKeyboardDelta(e.Key);
+        if (delta == 0)
         {
-            await OnSizeChange.InvokeAsync(Width);
+            return;
+        }
+
+        await SetCurrentSize(CurrentSize + delta);
+    }
+
+    private double GetKeyboardDelta(string? key) => key switch
+    {
+        "ArrowLeft" when IsHorizontal => -KeyboardStep,
+        "ArrowRight" when IsHorizontal => KeyboardStep,
+        "ArrowUp" when !IsHorizontal => -KeyboardStep,
+        "ArrowDown" when !IsHorizontal => KeyboardStep,
+        _ => 0
+    };
+
+    private async Task SetCurrentSize(double size)
+    {
+        var oldSize = CurrentSize;
+        if (IsHorizontal)
+        {
+            Width = ClampWidth(size);
         }
         else
         {
-            await OnSizeChange.InvokeAsync(Height);
+            Height = ClampHeight(size);
         }
+
+        if (!AreClose(oldSize, CurrentSize))
+        {
+            await OnSizeChange.InvokeAsync(CurrentSize);
+            StateHasChanged();
+        }
+    }
+
+    private double ClampWidth(double value) =>
+        Math.Clamp(CoerceFinite(value, DefaultWidthValue), EffectiveMinWidth, EffectiveMaxWidth);
+
+    private double ClampHeight(double value) =>
+        Math.Clamp(CoerceFinite(value, DefaultHeightValue), EffectiveMinHeight, EffectiveMaxHeight);
+
+    private static double NormalizeMinimum(double value, double fallback) =>
+        double.IsFinite(value) && value >= 0 ? value : fallback;
+
+    private static double NormalizeMaximum(double value, double minimum)
+    {
+        if (double.IsPositiveInfinity(value) || value == double.MaxValue || !double.IsFinite(value))
+        {
+            return double.MaxValue;
+        }
+
+        return value >= minimum ? value : minimum;
+    }
+
+    private static double CoerceFinite(double value, double fallback) =>
+        double.IsFinite(value) ? value : fallback;
+
+    private static bool AreClose(double left, double right) =>
+        Math.Abs(left - right) < 0.0001;
+
+    private static string FormatSize(double value) =>
+        FormattableString.Invariant($"{value:0.##}");
+
+    private string? AdditionalClass => GetAdditionalAttributeValue("class");
+
+    private string? AdditionalStyle => GetAdditionalAttributeValue("style")?.TrimEnd(';');
+
+    private Dictionary<string, object>? GetUnhandledAttributes()
+    {
+        if (AdditionalAttributes is null || AdditionalAttributes.Count == 0)
+        {
+            return null;
+        }
+
+        var attributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (IsHandledRootAttribute(attribute.Key))
+            {
+                continue;
+            }
+
+            attributes[attribute.Key] = attribute.Value;
+        }
+
+        return attributes.Count == 0 ? null : attributes;
+    }
+
+    private static bool IsHandledRootAttribute(string attributeName) =>
+        string.Equals(attributeName, "class", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(attributeName, "style", StringComparison.OrdinalIgnoreCase);
+
+    private string? GetAdditionalAttributeValue(string attributeName)
+    {
+        if (AdditionalAttributes is null)
+        {
+            return null;
+        }
+
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (string.Equals(attribute.Key, attributeName, StringComparison.OrdinalIgnoreCase))
+            {
+                return NormalizeAttributeValue(attribute.Value?.ToString());
+            }
+        }
+
+        return null;
+    }
+
+    private static string? NormalizeAttributeValue(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string? CombineStyles(params string?[] styles)
+    {
+        var normalizedStyles = styles
+            .Select(style => style?.Trim().TrimEnd(';'))
+            .Where(style => !string.IsNullOrWhiteSpace(style))
+            .ToArray();
+
+        return normalizedStyles.Length == 0 ? null : string.Join("; ", normalizedStyles);
     }
 
     /// <summary>
@@ -214,11 +416,12 @@
     /// </summary>
     public async ValueTask DisposeAsync()
     {
-        if (_dragModule != null)
+        if (_dragRef != null)
         {
             try
             {
-                await _dragModule.DisposeAsync();
+                await _dragRef.InvokeVoidAsync("dispose");
+                await _dragRef.DisposeAsync();
             }
             catch
             {
@@ -226,12 +429,11 @@
             }
         }
 
-        if (_dragRef != null)
+        if (_dragModule != null)
         {
             try
             {
-                await _dragRef.InvokeVoidAsync("dispose");
-                await _dragRef.DisposeAsync();
+                await _dragModule.DisposeAsync();
             }
             catch
             {

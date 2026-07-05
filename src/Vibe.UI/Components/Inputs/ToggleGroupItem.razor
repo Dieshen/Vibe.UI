@@ -2,7 +2,7 @@
 @inherits VibeComponent
 
 <button type="button" @attributes="AdditionalAttributes" class="@CombinedCssClass" disabled="@IsDisabled"
-    aria-pressed="@IsPressed.ToString().ToLower()" @onclick="HandleClick">
+    aria-pressed="@AriaBool(IsPressed)" aria-disabled="@AriaBool(IsDisabled)" @onclick="HandleClick">
     @ChildContent
 </button>
 
@@ -34,23 +34,28 @@
     [CascadingParameter]
     private ToggleGroup? Parent { get; set; }
 
-    private bool IsPressed => Parent?.IsSelected(Value) ?? false;
+    private string EffectiveValue => Value ?? string.Empty;
+
+    private bool IsPressed => Parent?.IsSelected(EffectiveValue) ?? false;
     private bool IsDisabled => Disabled || (Parent?.Disabled ?? false);
 
     private string CombinedCssClass => CombineClasses(
     "vibe-toggle-group-item",
     IsPressed ? "vibe-toggle-group-item-pressed" : null,
     IsDisabled ? "vibe-toggle-group-item-disabled" : null,
+    Class,
     CssClass
     );
 
     protected override string ComponentClass => CombinedCssClass;
 
+    private static string AriaBool(bool value) => value ? "true" : "false";
+
     private async Task HandleClick()
     {
         if (Parent != null && !IsDisabled)
         {
-            await Parent.HandleItemToggle(Value);
+            await Parent.HandleItemToggle(EffectiveValue);
         }
     }
 }

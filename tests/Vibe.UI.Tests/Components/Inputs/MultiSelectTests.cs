@@ -360,4 +360,116 @@ public class MultiSelectTests : TestBase
         // Assert - Each instance should have unique ID
         cut1.Instance.Id.ShouldNotBe(cut2.Instance.Id);
     }
+
+    [Fact]
+    public void MultiSelect_ForwardsClassAndAdditionalAttributes_ToRoot()
+    {
+        // Act
+        var cut = Render<MultiSelect<string>>(parameters => parameters
+            .Add(p => p.Class, "people-picker")
+            .Add(p => p.Items, new List<string> { "Option 1" })
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                { "data-testid", "multi" }
+            }));
+
+        // Assert
+        var root = cut.Find(".vibe-multiselect");
+        root.ClassList.ShouldContain("people-picker");
+        root.GetAttribute("data-testid")!.ShouldBe("multi");
+    }
+
+    [Fact]
+    public void MultiSelect_ExposesComboboxAndListboxSemantics()
+    {
+        // Act
+        var cut = Render<MultiSelect<string>>(parameters => parameters
+            .Add(p => p.Id, "skills")
+            .Add(p => p.Label, "Skills")
+            .Add(p => p.HelperText, "Choose one or more skills")
+            .Add(p => p.Items, new List<string> { "C#", "F#" })
+            .Add(p => p.SelectedItems, new List<string> { "C#" }));
+
+        var input = cut.Find("input[role='combobox']");
+        input.GetAttribute("id")!.ShouldBe("skills");
+        input.GetAttribute("aria-expanded")!.ShouldBe("false");
+        input.GetAttribute("aria-describedby").ShouldNotBeNullOrEmpty();
+        cut.Find("label").GetAttribute("for")!.ShouldBe("skills");
+        cut.Find(".multiselect-helper-text").GetAttribute("id")!.ShouldBe(input.GetAttribute("aria-describedby"));
+
+        // Act
+        cut.Find(".multiselect-container").Click();
+
+        // Assert
+        input = cut.Find("input[role='combobox']");
+        input.GetAttribute("aria-expanded")!.ShouldBe("true");
+        cut.Find("[role='listbox']").GetAttribute("aria-multiselectable")!.ShouldBe("true");
+
+        var options = cut.FindAll("[role='option']");
+        options.Count.ShouldBe(2);
+        options[0].GetAttribute("aria-selected")!.ShouldBe("true");
+        options[1].GetAttribute("aria-selected")!.ShouldBe("false");
+    }
+
+    [Fact]
+    public void MultiSelect_ToggleItem_DoesNotMutateCallerOwnedSelectionList()
+    {
+        // Arrange
+        var originalSelection = new List<string> { "Option 1" };
+        List<string>? callbackSelection = null;
+        var cut = Render<MultiSelect<string>>(parameters => parameters
+            .Add(p => p.Items, new List<string> { "Option 1", "Option 2" })
+            .Add(p => p.SelectedItems, originalSelection)
+            .Add(p => p.SelectedItemsChanged, items => callbackSelection = items));
+
+        // Act
+        cut.Find(".multiselect-container").Click();
+        cut.FindAll(".multiselect-option")[1].Click();
+
+        // Assert
+        originalSelection.ShouldBe(new List<string> { "Option 1" });
+        callbackSelection.ShouldNotBeNull();
+        callbackSelection.ShouldBe(new List<string> { "Option 1", "Option 2" });
+        callbackSelection.ShouldNotBeSameAs(originalSelection);
+    }
+
+    [Fact]
+    public void MultiSelect_KeyboardNavigation_HighlightsAndSelectsOption()
+    {
+        // Arrange
+        List<string>? selectedItems = null;
+        var cut = Render<MultiSelect<string>>(parameters => parameters
+            .Add(p => p.Items, new List<string> { "Option 1", "Option 2" })
+            .Add(p => p.SelectedItemsChanged, items => selectedItems = items));
+
+        var input = cut.Find(".multiselect-input");
+
+        // Act
+        input.KeyDown("ArrowDown");
+        input.KeyDown("ArrowDown");
+
+        // Assert
+        cut.Find(".multiselect-option.highlighted").TextContent.ShouldContain("Option 1");
+        cut.Find(".multiselect-input").GetAttribute("aria-activedescendant").ShouldNotBeNullOrEmpty();
+
+        // Act
+        input.KeyDown("Enter");
+
+        // Assert
+        selectedItems.ShouldBe(new List<string> { "Option 1" });
+    }
+
+    [Fact]
+    public void MultiSelect_WithNullCollections_RendersEmptyDropdown()
+    {
+        // Act
+        var cut = Render<MultiSelect<string>>(parameters => parameters
+            .Add(p => p.Items, null!)
+            .Add(p => p.SelectedItems, null!));
+
+        cut.Find(".multiselect-container").Click();
+
+        // Assert
+        cut.Find(".multiselect-no-options").TextContent.ShouldBe("No options available");
+    }
 }

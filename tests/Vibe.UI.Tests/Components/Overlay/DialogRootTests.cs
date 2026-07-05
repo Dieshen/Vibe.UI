@@ -13,6 +13,34 @@ public class DialogRootTests : TestBase
     }
 
     [Fact]
+    public void DialogRoot_HidesDialogContentUntilTriggerOpensComposedDialog()
+    {
+        bool? changed = null;
+        var cut = Render<DialogRoot>(parameters => parameters
+            .Add(p => p.IsOpenChanged, EventCallback.Factory.Create<bool>(this, value => changed = value))
+            .AddChildContent(builder =>
+            {
+                builder.OpenComponent<DialogTrigger>(0);
+                builder.AddAttribute(1, "ChildContent", (RenderFragment)(trigger => trigger.AddContent(0, "Open")));
+                builder.CloseComponent();
+
+                builder.OpenComponent<DialogContent>(2);
+                builder.AddAttribute(3, "ChildContent", (RenderFragment)(content => content.AddContent(0, "Dialog body")));
+                builder.CloseComponent();
+            }));
+
+        cut.Find(".vibe-dialog-trigger").TextContent.ShouldBe("Open");
+        cut.FindAll(".vibe-dialog-content").ShouldBeEmpty();
+        cut.Markup.ShouldNotContain("Dialog body");
+
+        cut.Find(".vibe-dialog-trigger").Click();
+
+        changed.ShouldBe(true);
+        cut.FindAll(".vibe-dialog-trigger").ShouldBeEmpty();
+        cut.Find(".vibe-dialog-content").TextContent.ShouldBe("Dialog body");
+    }
+
+    [Fact]
     public void DialogRoot_RendersDialog_WhenOpen()
     {
         var cut = Render<DialogRoot>(parameters => parameters
@@ -24,6 +52,19 @@ public class DialogRootTests : TestBase
         dialog.GetAttribute("aria-modal").ShouldBe("true");
         cut.Find(".vibe-dialog-overlay").GetAttribute("tabindex").ShouldBe("-1");
         dialog.TextContent.ShouldContain("Dialog body");
+    }
+
+    [Fact]
+    public void DialogRoot_UsesAriaLabelFallback_WhenNoTitleIsRegistered()
+    {
+        var cut = Render<DialogRoot>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.AriaLabel, "Custom dialog")
+            .AddChildContent("Dialog body"));
+
+        var dialog = cut.Find(".vibe-dialog");
+        dialog.GetAttribute("aria-label").ShouldBe("Custom dialog");
+        dialog.HasAttribute("aria-labelledby").ShouldBeFalse();
     }
 
     [Fact]
@@ -77,5 +118,44 @@ public class DialogRootTests : TestBase
 
         changed.ShouldBeFalse();
         cut.Find(".vibe-dialog").ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void DialogRoot_SyncsInternalOpenState_WhenParameterChanges()
+    {
+        var closed = Render<DialogRoot>(parameters => parameters
+            .Add(p => p.IsOpen, false)
+            .AddChildContent(builder =>
+            {
+                builder.OpenComponent<DialogContent>(0);
+                builder.AddAttribute(1, "ChildContent", (RenderFragment)(content => content.AddContent(0, "Dialog body")));
+                builder.CloseComponent();
+            }));
+
+        closed.FindAll(".vibe-dialog").ShouldBeEmpty();
+        closed.FindAll(".vibe-dialog-content").ShouldBeEmpty();
+
+        var open = Render<DialogRoot>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .AddChildContent(builder =>
+            {
+                builder.OpenComponent<DialogContent>(0);
+                builder.AddAttribute(1, "ChildContent", (RenderFragment)(content => content.AddContent(0, "Dialog body")));
+                builder.CloseComponent();
+            }));
+
+        open.Find(".vibe-dialog-content").TextContent.ShouldBe("Dialog body");
+
+        var closedAgain = Render<DialogRoot>(parameters => parameters
+            .Add(p => p.IsOpen, false)
+            .AddChildContent(builder =>
+            {
+                builder.OpenComponent<DialogContent>(0);
+                builder.AddAttribute(1, "ChildContent", (RenderFragment)(content => content.AddContent(0, "Dialog body")));
+                builder.CloseComponent();
+            }));
+
+        closedAgain.FindAll(".vibe-dialog").ShouldBeEmpty();
+        closedAgain.FindAll(".vibe-dialog-content").ShouldBeEmpty();
     }
 }

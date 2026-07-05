@@ -453,4 +453,64 @@ public class RatingTests : TestBase
             star.GetAttribute("type")!.ShouldBe("button");
         }
     }
+
+    [Fact]
+    public void Rating_ForwardsAdditionalAttributesAndClass()
+    {
+        // Act
+        var cut = Render<Rating>(parameters => parameters
+            .Add(p => p.Class, "review-score")
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                { "data-testid", "rating" }
+            }));
+
+        // Assert
+        var rating = cut.Find(".vibe-rating");
+        rating.ClassList.ShouldContain("review-score");
+        rating.GetAttribute("data-testid")!.ShouldBe("rating");
+    }
+
+    [Fact]
+    public void Rating_InvalidSizeEnum_FallsBackToDefaultClass()
+    {
+        // Act
+        var cut = Render<Rating>(parameters => parameters
+            .Add(p => p.Size, (Rating.RatingSize)999));
+
+        // Assert
+        var rating = cut.Find(".vibe-rating");
+        rating.ClassList.ShouldContain("rating-default");
+        rating.ClassList.ShouldNotContain("rating-999");
+    }
+
+    [Fact]
+    public void Rating_StarsExposeRadioState()
+    {
+        // Act
+        var cut = Render<Rating>(parameters => parameters
+            .Add(p => p.Value, 2)
+            .Add(p => p.MaxRating, 3));
+
+        // Assert
+        var stars = cut.FindAll(".rating-star");
+        stars[0].GetAttribute("role")!.ShouldBe("radio");
+        stars[0].GetAttribute("aria-checked")!.ShouldBe("true");
+        stars[1].GetAttribute("aria-checked")!.ShouldBe("true");
+        stars[2].GetAttribute("aria-checked")!.ShouldBe("false");
+    }
+
+    [Fact]
+    public void Rating_DisabledAndReadOnlyState_AppliesAriaFlags()
+    {
+        // Act
+        var cut = Render<Rating>(parameters => parameters
+            .Add(p => p.Disabled, true)
+            .Add(p => p.ReadOnly, true));
+
+        // Assert
+        var rating = cut.Find(".vibe-rating");
+        rating.GetAttribute("aria-disabled")!.ShouldBe("true");
+        rating.GetAttribute("aria-readonly")!.ShouldBe("true");
+    }
 }

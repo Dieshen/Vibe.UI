@@ -197,14 +197,17 @@ public class RadioTests : TestBase
     public void Radio_ChangeEvent_UpdatesCheckedState()
     {
         // Arrange
+        bool? changedTo = null;
         var cut = Render<Radio>(parameters => parameters
-            .Add(p => p.Checked, false));
+            .Add(p => p.Checked, false)
+            .Add(p => p.CheckedChanged, isChecked => changedTo = isChecked));
 
         // Act
         cut.Find("input[type='radio']").Change(true);
 
         // Assert
-        cut.Instance.Checked.ShouldBeTrue();
+        changedTo.ShouldBe(true);
+        cut.Find("input[type='radio']").HasAttribute("checked").ShouldBeTrue();
     }
 
     [Fact]
@@ -216,5 +219,52 @@ public class RadioTests : TestBase
 
         // Assert
         cut.Find("input[type='radio']").GetAttribute("value")!.ShouldBe("");
+    }
+
+    [Fact]
+    public void Radio_ForwardsIdAndAriaDisabled()
+    {
+        // Act
+        var cut = Render<Radio>(parameters => parameters
+            .Add(p => p.Id, "email-radio")
+            .Add(p => p.Disabled, true)
+            .AddChildContent("Email"));
+
+        // Assert
+        cut.Find("input[type='radio']").GetAttribute("id")!.ShouldBe("email-radio");
+        cut.Find("label").GetAttribute("aria-disabled")!.ShouldBe("true");
+    }
+
+    [Fact]
+    public void Radio_DisabledSyntheticChange_DoesNotInvokeCallbackOrUpdateState()
+    {
+        // Arrange
+        var wasChecked = false;
+        var cut = Render<Radio>(parameters => parameters
+            .Add(p => p.Disabled, true)
+            .Add(p => p.CheckedChanged, isChecked => wasChecked = isChecked));
+
+        // Act
+        cut.Find("input[type='radio']").Change(true);
+
+        // Assert
+        wasChecked.ShouldBeFalse();
+        cut.Find("input[type='radio']").HasAttribute("checked").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Radio_FalseSyntheticChange_DoesNotCheckOrInvokeCallback()
+    {
+        // Arrange
+        var invoked = false;
+        var cut = Render<Radio>(parameters => parameters
+            .Add(p => p.CheckedChanged, _ => invoked = true));
+
+        // Act
+        cut.Find("input[type='radio']").Change(false);
+
+        // Assert
+        invoked.ShouldBeFalse();
+        cut.Find("input[type='radio']").HasAttribute("checked").ShouldBeFalse();
     }
 }

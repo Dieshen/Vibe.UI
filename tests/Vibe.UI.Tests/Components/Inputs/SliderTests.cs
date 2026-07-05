@@ -285,4 +285,102 @@ public class SliderTests : TestBase
         slider.GetAttribute("data-testid")!.ShouldBe("my-slider");
         slider.GetAttribute("aria-label")!.ShouldBe("Custom Slider");
     }
+
+    [Fact]
+    public void Slider_ForwardsIdLabelAndAriaValueSemantics_ToRangeInput()
+    {
+        // Act
+        var cut = Render<Slider>(parameters => parameters
+            .Add(p => p.Id, "volume")
+            .Add(p => p.Label, "Volume")
+            .Add(p => p.Min, 0)
+            .Add(p => p.Max, 10)
+            .Add(p => p.Value, 4));
+
+        // Assert
+        cut.Find("label").GetAttribute("for")!.ShouldBe("volume");
+        cut.Find("label").TextContent.ShouldBe("Volume");
+
+        var input = cut.Find("input[type='range']");
+        input.GetAttribute("id")!.ShouldBe("volume");
+        input.GetAttribute("aria-label")!.ShouldBe("Volume");
+        input.GetAttribute("aria-valuemin")!.ShouldBe("0");
+        input.GetAttribute("aria-valuemax")!.ShouldBe("10");
+        input.GetAttribute("aria-valuenow")!.ShouldBe("4");
+    }
+
+    [Fact]
+    public void Slider_UsesValueFormat_ForDisplayedValue()
+    {
+        // Act
+        var cut = Render<Slider>(parameters => parameters
+            .Add(p => p.Value, 12.345)
+            .Add(p => p.ValueFormat, "0.0")
+            .Add(p => p.ShowValue, true));
+
+        // Assert
+        cut.Find(".vibe-slider-value").TextContent.ShouldBe("12.3");
+    }
+
+    [Fact]
+    public void Slider_InvokesValueChangedAndOnInput_WhenInputChanges()
+    {
+        // Arrange
+        double? changedValue = null;
+        ChangeEventArgs? inputArgs = null;
+        var cut = Render<Slider>(parameters => parameters
+            .Add(p => p.ValueChanged, value => changedValue = value)
+            .Add(p => p.OnInput, args => inputArgs = args));
+
+        // Act
+        cut.Find("input[type='range']").Input("25");
+
+        // Assert
+        changedValue.ShouldBe(25);
+        inputArgs.ShouldNotBeNull();
+        inputArgs.Value.ShouldBe("25");
+    }
+
+    [Fact]
+    public void Slider_WhenDisabled_DoesNotInvokeCallbacksFromSyntheticInputOrChange()
+    {
+        // Arrange
+        var valueChangedCount = 0;
+        var inputCount = 0;
+        var changeCount = 0;
+        var cut = Render<Slider>(parameters => parameters
+            .Add(p => p.Disabled, true)
+            .Add(p => p.ValueChanged, _ => valueChangedCount++)
+            .Add(p => p.OnInput, _ => inputCount++)
+            .Add(p => p.OnChange, _ => changeCount++));
+
+        var input = cut.Find("input[type='range']");
+
+        // Act
+        input.Input("25");
+        input.Change("50");
+
+        // Assert
+        valueChangedCount.ShouldBe(0);
+        inputCount.ShouldBe(0);
+        changeCount.ShouldBe(0);
+    }
+
+    [Fact]
+    public void Slider_WithInvalidInput_DoesNotInvokeCallbacks()
+    {
+        // Arrange
+        var valueChangedCount = 0;
+        var inputCount = 0;
+        var cut = Render<Slider>(parameters => parameters
+            .Add(p => p.ValueChanged, _ => valueChangedCount++)
+            .Add(p => p.OnInput, _ => inputCount++));
+
+        // Act
+        cut.Find("input[type='range']").Input("not-a-number");
+
+        // Assert
+        valueChangedCount.ShouldBe(0);
+        inputCount.ShouldBe(0);
+    }
 }

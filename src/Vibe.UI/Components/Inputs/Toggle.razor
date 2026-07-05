@@ -1,12 +1,16 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<button type="button" class="@CombinedClass @(Pressed ? "pressed" : "") @VariantClass @SizeClass"
-    @onclick="OnTogglePressed" disabled="@Disabled" aria-pressed="@Pressed" @attributes="AdditionalAttributes">
+<button type="button" @attributes="AdditionalAttributes" class="@CombinedClass @(currentPressed ? "pressed" : "") @VariantClass @SizeClass"
+    @onclick="OnTogglePressed" disabled="@Disabled" aria-pressed="@AriaBool(currentPressed)" aria-disabled="@AriaBool(Disabled)">
     @ChildContent
 </button>
 
 @code {
+    private bool currentPressed;
+    private static readonly HashSet<string> SupportedVariants = new(StringComparer.OrdinalIgnoreCase) { "default", "outline" };
+    private static readonly HashSet<string> SupportedSizes = new(StringComparer.OrdinalIgnoreCase) { "default", "sm", "lg" };
+
     /// <summary>
     /// Gets or sets the content of the toggle.
     /// </summary>
@@ -51,12 +55,31 @@
     /// <summary>
     /// Gets the CSS class for the variant.
     /// </summary>
-    private string VariantClass => $"toggle-{Variant}";
+    private string VariantClass => $"toggle-{NormalizedVariant}";
 
     /// <summary>
     /// Gets the CSS class for the size.
     /// </summary>
-    private string SizeClass => $"toggle-{Size}";
+    private string SizeClass => $"toggle-{NormalizedSize}";
+
+    private string NormalizedVariant => NormalizeToken(Variant, SupportedVariants, "default");
+
+    private string NormalizedSize => NormalizeToken(Size, SupportedSizes, "default");
+
+    protected override void OnParametersSet()
+    {
+        currentPressed = Pressed;
+    }
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
+
+    private static string NormalizeToken(string? value, HashSet<string> supportedValues, string fallback)
+    {
+        var normalizedValue = value?.Trim().ToLowerInvariant();
+        return !string.IsNullOrEmpty(normalizedValue) && supportedValues.Contains(normalizedValue)
+            ? normalizedValue
+            : fallback;
+    }
 
     /// <summary>
     /// Handles the toggle press event.
@@ -65,8 +88,8 @@
     {
         if (!Disabled)
         {
-            Pressed = !Pressed;
-            await PressedChanged.InvokeAsync(Pressed);
+            currentPressed = !currentPressed;
+            await PressedChanged.InvokeAsync(currentPressed);
         }
     }
 }

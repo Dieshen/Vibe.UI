@@ -1,9 +1,12 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
 
-<div class="@CombinedClass" role="document" @attributes="AdditionalAttributes">
-    @ChildContent
-</div>
+@if (ShouldRenderContent)
+{
+    <div class="@CombinedClass" role="document" @attributes="AdditionalAttributes">
+        @ChildContent
+    </div>
+}
 
 @code {
     /// <summary>
@@ -12,6 +15,11 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    [CascadingParameter]
+    private DialogContext? Context { get; set; }
+
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-dialog-content";
+
+    private bool ShouldRenderContent => Context?.IsOpen ?? true;
 }

@@ -19,8 +19,8 @@ public class DialogTitleTests : TestBase
     {
         var cut = Render<DialogTitle>();
 
-        cut.Instance.Id.ShouldNotBeNullOrWhiteSpace();
-        cut.Find(".vibe-dialog-title").GetAttribute("id").ShouldBe(cut.Instance.Id);
+        cut.Instance.Id.ShouldBeNull();
+        cut.Find(".vibe-dialog-title").GetAttribute("id")!.ShouldStartWith("vibe-dialog-title-");
     }
 
     [Fact]

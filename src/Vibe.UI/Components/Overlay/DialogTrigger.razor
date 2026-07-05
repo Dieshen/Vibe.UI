@@ -1,15 +1,21 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
 
-<span class="@CombinedClass"
-      role="button"
-      tabindex="0"
-      aria-haspopup="dialog"
-      @onclick="OnTriggerClick"
-      @onkeydown="HandleKeyDown"
-      @attributes="AdditionalAttributes">
-    @ChildContent
-</span>
+@if (!IsParentDialogOpen)
+{
+    <span class="@TriggerClass"
+          role="button"
+          tabindex="@TriggerTabIndex"
+          aria-haspopup="dialog"
+          aria-expanded="@AriaExpanded"
+          aria-disabled="@AriaDisabled"
+          aria-label="@EffectiveAriaLabel"
+          @onclick="OnTriggerClick"
+          @onkeydown="HandleKeyDown"
+          @attributes="AdditionalAttributes">
+        @ChildContent
+    </span>
+}
 
 @code {
     /// <summary>
@@ -25,6 +31,18 @@
     public EventCallback OnClick { get; set; }
 
     /// <summary>
+    /// Gets or sets whether the trigger is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets an accessible label for icon-only trigger content.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
     /// Gets the cascading DialogContext from a parent component.
     /// </summary>
     [CascadingParameter]
@@ -33,11 +51,33 @@
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-dialog-trigger";
 
+    private bool IsParentDialogOpen => Context?.IsOpen == true;
+
+    private string TriggerClass => CombineClasses(
+        CombinedClass,
+        Disabled ? "vibe-dialog-trigger-disabled" : null);
+
+    private string TriggerTabIndex => Disabled ? "-1" : "0";
+
+    private string AriaDisabled => Disabled ? "true" : "false";
+
+    private string? AriaExpanded => Context is null ? null : (Context.IsOpen ? "true" : "false");
+
+    private string? EffectiveAriaLabel =>
+        !string.IsNullOrWhiteSpace(AriaLabel)
+            ? AriaLabel.Trim()
+            : ChildContent is null ? "Open dialog" : null;
+
     /// <summary>
     /// Handles the trigger click event, opening the dialog through the cascading context.
     /// </summary>
     private async Task OnTriggerClick()
     {
+        if (Disabled)
+        {
+            return;
+        }
+
         if (Context != null)
         {
             await Context.Open();
@@ -51,7 +91,7 @@
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key is "Enter" or " ")
+        if (!Disabled && (e.Key == "Enter" || e.Key == " "))
         {
             await OnTriggerClick();
         }

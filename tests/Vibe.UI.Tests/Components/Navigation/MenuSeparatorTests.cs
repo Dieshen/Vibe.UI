@@ -7,7 +7,10 @@ public class MenuSeparatorTests : TestBase
     {
         var cut = Render<MenuSeparator>();
 
-        cut.Find(".vibe-menu-separator").ShouldNotBeNull();
+        var separator = cut.Find(".vibe-menu-separator");
+        separator.GetAttribute("role").ShouldBe("separator");
+        separator.GetAttribute("aria-orientation").ShouldBe("horizontal");
+        separator.HasAttribute("tabindex").ShouldBeFalse();
     }
 
     [Fact]

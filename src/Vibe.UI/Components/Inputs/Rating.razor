@@ -1,16 +1,19 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="radiogroup" aria-label="@AriaLabel">
-    @for (int i = 1; i <= MaxRating; i++)
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="radiogroup" aria-label="@AriaLabel"
+    aria-disabled="@AriaBool(Disabled)" aria-readonly="@AriaBool(ReadOnly)">
+    @for (int i = 1; i <= EffectiveMaxRating; i++)
     {
         var index = i;
-        var isFilled = AllowHalf ? index <= Value : (int)Math.Ceiling(Value) >= index;
-        var isHalfFilled = AllowHalf && Value >= index - 0.5 && Value < index;
+        var displayValue = DisplayValue;
+        var isFilled = AllowHalf ? index <= displayValue : (int)Math.Ceiling(displayValue) >= index;
+        var isHalfFilled = AllowHalf && displayValue >= index - 0.5 && displayValue < index;
 
         <button type="button" class="rating-star @(isFilled ? "star-filled" : "") @(isHalfFilled ? "star-half" : "")"
             @onclick="() => HandleClick(index)" @onmouseenter="() => HandleHover(index)" @onmouseleave="HandleHoverEnd"
-            disabled="@(Disabled || ReadOnly)" aria-label="@($"{index} star{(index > 1 ? "s" : "")}")">
+            disabled="@(Disabled || ReadOnly)" role="radio" aria-checked="@AriaBool(isFilled || isHalfFilled)"
+            aria-label="@($"{index} star{(index > 1 ? "s" : "")}")">
             @if (CustomIcon != null)
             {
                 @CustomIcon
@@ -24,7 +27,7 @@
 
     @if (ShowValue)
     {
-        <span class="rating-value">@Value.ToString("0.#") / @MaxRating</span>
+        <span class="rating-value">@Value.ToString("0.#") / @EffectiveMaxRating</span>
     }
 </div>
 
@@ -66,13 +69,22 @@
 
     private string CombinedCssClass => CombineClasses(
     "vibe-rating",
-    $"rating-{Size.ToString().ToLower()}",
+    $"rating-{EffectiveSize.ToString().ToLowerInvariant()}",
     ReadOnly ? "rating-readonly" : null,
     Disabled ? "rating-disabled" : null,
+    Class,
     CssClass
     );
 
     protected override string ComponentClass => CombinedCssClass;
+
+    private int EffectiveMaxRating => Math.Max(0, MaxRating);
+
+    private RatingSize EffectiveSize => Enum.IsDefined(typeof(RatingSize), Size) ? Size : RatingSize.Default;
+
+    private double DisplayValue => _hoverValue > 0 ? _hoverValue : Value;
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
 
     private async Task HandleClick(int rating)
     {

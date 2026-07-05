@@ -13,6 +13,16 @@ public class BreadcrumbTests : TestBase
     }
 
     [Fact]
+    public void Breadcrumb_RendersEmptyList_WhenChildContentIsNull()
+    {
+        var cut = Render<Breadcrumb>();
+
+        var list = cut.Find("ol.breadcrumb-list");
+        list.TextContent.Trim().ShouldBeEmpty();
+        cut.FindAll("li").ShouldBeEmpty();
+    }
+
+    [Fact]
     public void Breadcrumb_RendersChildContent()
     {
         var cut = Render<Breadcrumb>(parameters => parameters
@@ -31,6 +41,30 @@ public class BreadcrumbTests : TestBase
             .Add(p => p.Class, "compact-breadcrumb"));
 
         cut.Find(".vibe-breadcrumb").ClassList.ShouldContain("compact-breadcrumb");
+    }
+
+    [Fact]
+    public void Breadcrumb_PreservesAdditionalAttributesAndCustomAriaLabel()
+    {
+        var cut = Render<Breadcrumb>(parameters => parameters
+            .Add(p => p.AriaLabel, " Product trail ")
+            .AddUnmatched("data-testid", "breadcrumb"));
+
+        var nav = cut.Find(".vibe-breadcrumb");
+        nav.GetAttribute("aria-label").ShouldBe("Product trail");
+        nav.GetAttribute("data-testid").ShouldBe("breadcrumb");
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Breadcrumb_FallsBackToDefaultAriaLabel_WhenLabelIsMissing(string? ariaLabel)
+    {
+        var cut = Render<Breadcrumb>(parameters => parameters
+            .Add(p => p.AriaLabel, ariaLabel));
+
+        cut.Find(".vibe-breadcrumb").GetAttribute("aria-label").ShouldBe("Breadcrumb");
     }
 
     [Fact]

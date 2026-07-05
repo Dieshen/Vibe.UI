@@ -49,19 +49,20 @@ Depth-hardened components completed on the beta-readiness branch:
 - Disclosure: Accordion, AccordionItem, Carousel, CarouselItem, Collapsible.
 - Feedback: Alert, Confetti, EmptyState, NotificationCenter, Skeleton, Sonner, Spinner, Toast, ToastContainer.
 - Form: Combobox, Form, FormField, FormLabel.
-- Inputs: Button, Checkbox, ColorPicker, FileUpload, ImageCropper, Input, InputOTP, Mentions, RadioGroupItem, RichTextEditor, Select, Switch, TransferList.
-- Layout: AspectRatio, Card, Container, Sheet.
-- Navigation: BreadcrumbItem, Link, Menu, NavigationMenu, NavigationMenuItem, Pagination, Sidebar, Stepper, TabItem, Tabs.
-- Overlay: AlertDialog, ContextMenu, ContextMenuItem.
+- Inputs: Button, Checkbox, ColorPicker, FileUpload, ImageCropper, Input, InputOTP, Mentions, MultiSelect, Radio, RadioGroupItem, Rating, RichTextEditor, Select, Slider, Switch, TagInput, TextArea, Toggle, ToggleGroup, ToggleGroupItem, TransferList.
+- Layout: AspectRatio, Card, Container, Divider, Grid, GridItem, MasonryGrid, Resizable, Separator, Sheet, Splitter, Stack.
+- Navigation: Breadcrumb, BreadcrumbItem, Link, Menu, Menubar, MenuItem, MenuSeparator, NavigationMenu, NavigationMenuItem, Pagination, Sidebar, Stepper, TabItem, Tabs.
+- Overlay: AlertDialog, ContextMenu, ContextMenuItem, Dialog, DialogClose, DialogContainer, DialogContent, DialogDescription, DialogRoot, DialogTitle, DialogTrigger.
 - Utility: Command, DropdownMenu, Icon, Kbd, QRCode, ScrollArea.
 
-Current depth-hardened count on this branch: 69 components.
+Current depth-hardened count on this branch: 98 components.
 
 Next priority depth candidates:
 
-- Inputs: MultiSelect, Radio, Rating, Slider, TagInput, TextArea, Toggle, ToggleGroup, ToggleGroupItem.
-- Layout: Divider, Grid, GridItem, MasonryGrid, Resizable, Separator, Splitter, Stack.
-- Navigation: Breadcrumb, Menubar, MenuItem, MenuSeparator.
+- Inputs: RadioGroup.
+- Form: FormMessage, Label, ValidatedInput.
+- Overlay: DialogFooter, DialogHeader, Drawer, HoverCard, Popover, Tooltip.
+- Theme: ThemeProvider, ThemeToggle.
 
 ## Mutation-Style Quality Checks
 

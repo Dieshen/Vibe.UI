@@ -1,30 +1,32 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="group" aria-disabled="@AriaBool(Disabled)">
     <div class="tag-input-container">
-        @foreach (var tag in Tags)
+        @foreach (var tag in CurrentTags)
         {
             <div class="tag-item" @key="tag">
                 <span class="tag-text">@tag</span>
                 @if (!Disabled)
                 {
                     <button type="button" class="tag-remove" @onclick="() => RemoveTag(tag)"
-                        aria-label="@($"Remove {tag}")">×</button>
+                        aria-label="@GetRemoveAriaLabel(tag)">×</button>
                 }
             </div>
         }
 
-        <input type="text" class="tag-input" placeholder="@(Tags.Count == 0 ? Placeholder : "")" @bind="_inputValue"
-            @bind:event="oninput" @onkeydown="HandleKeyDown" disabled="@Disabled" aria-label="@AriaLabel" />
+        <input type="text" class="tag-input" placeholder="@(CurrentTags.Count == 0 ? Placeholder : "")"
+            value="@_inputValue" @oninput="HandleInput" @onfocus="ShowSuggestions" @onkeydown="HandleKeyDown"
+            disabled="@Disabled" aria-label="@AriaLabel" role="combobox" aria-autocomplete="list"
+            aria-expanded="@AriaBool(ShouldShowSuggestions)" aria-controls="@SuggestionsId" />
     </div>
 
-    @if (Suggestions?.Any() == true && _showSuggestions)
+    @if (ShouldShowSuggestions)
     {
-        <div class="tag-suggestions">
-            @foreach (var suggestion in Suggestions.Where(s => !Tags.Contains(s)))
+        <div id="@SuggestionsId" class="tag-suggestions" role="listbox">
+            @foreach (var suggestion in VisibleSuggestions)
             {
-                <button type="button" class="tag-suggestion" @onclick="() => AddTag(suggestion)" @key="suggestion">
+                <button type="button" class="tag-suggestion" role="option" @onclick="() => AddTag(suggestion)" @key="suggestion">
                     @suggestion
                 </button>
             }
@@ -33,6 +35,8 @@
 </div>
 
 @code {
+    private readonly string _suggestionsId = $"tag-input-suggestions-{Guid.NewGuid():N}";
+    private List<string> _tags = new();
     private string _inputValue = string.Empty;
     private bool _showSuggestions;
 
@@ -80,35 +84,104 @@
 
     protected override string ComponentClass => CombinedCssClass;
 
+    private List<string> CurrentTags => _tags;
+
+    private string SuggestionsId => _suggestionsId;
+
+    private List<string> VisibleSuggestions => Suggestions?
+        .Where(suggestion => !string.IsNullOrWhiteSpace(suggestion) && !CurrentTags.Contains(suggestion))
+        .ToList() ?? new List<string>();
+
+    private bool ShouldShowSuggestions => !Disabled && _showSuggestions && VisibleSuggestions.Any();
+
+    protected override void OnParametersSet()
+    {
+        _tags = Tags?.Where(tag => tag is not null).Select(tag => tag!).ToList() ?? new List<string>();
+
+        if (Disabled)
+        {
+            _showSuggestions = false;
+        }
+    }
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
+
+    private static string GetRemoveAriaLabel(string tag)
+        => string.IsNullOrWhiteSpace(tag) ? "Remove tag" : $"Remove {tag}";
+
+    private void HandleInput(ChangeEventArgs e)
+    {
+        if (Disabled)
+        {
+            return;
+        }
+
+        _inputValue = e.Value?.ToString() ?? string.Empty;
+        _showSuggestions = true;
+    }
+
+    private void ShowSuggestions()
+    {
+        if (!Disabled)
+        {
+            _showSuggestions = true;
+        }
+    }
+
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key == "Enter" || e.Key == Separator)
+        if (Disabled)
+        {
+            return;
+        }
+
+        if (IsCommitKey(e.Key))
         {
             await AddTag(_inputValue.Trim());
             _inputValue = string.Empty;
         }
-        else if (e.Key == "Backspace" && string.IsNullOrEmpty(_inputValue) && Tags.Any())
+        else if (e.Key == "Backspace" && string.IsNullOrEmpty(_inputValue) && CurrentTags.Any())
         {
-            await RemoveTag(Tags.Last());
+            await RemoveTag(CurrentTags.Last());
         }
     }
 
     private async Task AddTag(string tag)
     {
-        if (string.IsNullOrWhiteSpace(tag)) return;
-        if (Tags.Count >= MaxTags) return;
-        if (!AllowDuplicates && Tags.Contains(tag)) return;
+        if (Disabled) return;
 
-        Tags.Add(tag);
-        await TagsChanged.InvokeAsync(Tags);
-        await OnTagAdded.InvokeAsync(tag);
+        var normalizedTag = tag.Trim();
+        if (string.IsNullOrWhiteSpace(normalizedTag)) return;
+        if (CurrentTags.Count >= MaxTags) return;
+        if (!AllowDuplicates && CurrentTags.Contains(normalizedTag)) return;
+
+        var updatedTags = CurrentTags.ToList();
+        updatedTags.Add(normalizedTag);
+        _tags = updatedTags;
+
+        await TagsChanged.InvokeAsync(updatedTags);
+        await OnTagAdded.InvokeAsync(normalizedTag);
         _showSuggestions = false;
     }
 
     private async Task RemoveTag(string tag)
     {
-        Tags.Remove(tag);
-        await TagsChanged.InvokeAsync(Tags);
+        if (Disabled) return;
+
+        var updatedTags = CurrentTags.ToList();
+        if (!updatedTags.Remove(tag))
+        {
+            return;
+        }
+
+        _tags = updatedTags;
+        await TagsChanged.InvokeAsync(updatedTags);
         await OnTagRemoved.InvokeAsync(tag);
+    }
+
+    private bool IsCommitKey(string key)
+    {
+        return key == "Enter"
+            || (!string.IsNullOrEmpty(Separator) && key == Separator);
     }
 }

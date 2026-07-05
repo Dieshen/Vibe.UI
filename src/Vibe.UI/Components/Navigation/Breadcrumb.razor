@@ -1,7 +1,7 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<nav class="@CombinedClass" aria-label="Breadcrumb">
+<nav class="@CombinedClass" aria-label="@EffectiveAriaLabel" @attributes="AdditionalAttributes">
     <ol class="breadcrumb-list">
         @ChildContent
     </ol>
@@ -15,6 +15,12 @@
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Gets or sets the accessible label for the breadcrumb navigation.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; } = "Breadcrumb";
+
+    /// <summary>
     /// Gets or sets the separator used between items.
     /// </summary>
     [Parameter]
@@ -24,4 +30,8 @@
     /// Gets the component CSS class name.
     /// </summary>
     protected override string ComponentClass => "vibe-breadcrumb";
+
+    private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel)
+        ? "Breadcrumb"
+        : AriaLabel.Trim();
 }
