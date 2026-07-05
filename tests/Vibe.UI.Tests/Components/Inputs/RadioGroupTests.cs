@@ -169,6 +169,10 @@ public class RadioGroupTests : TestBase
 
         // Assert
         selectedValue.ShouldBe("option2");
+        cut.Instance.Value.ShouldBe("option1");
+        radioInputs = cut.FindAll("input[type='radio']");
+        radioInputs[0].HasAttribute("checked").ShouldBeFalse();
+        radioInputs[1].HasAttribute("checked").ShouldBeTrue();
     }
 
     [Fact]
@@ -193,6 +197,26 @@ public class RadioGroupTests : TestBase
 
         // Assert - Value should not change when disabled
         selectedValue.ShouldBe("option1");
+    }
+
+    [Fact]
+    public void RadioGroup_ClickingSelectedItem_DoesNotFireDuplicateCallback()
+    {
+        // Arrange
+        var callbackCount = 0;
+        var cut = Render<RadioGroup>(parameters => parameters
+            .Add(p => p.Value, "option1")
+            .Add(p => p.ValueChanged, _ => callbackCount++)
+            .AddChildContent<RadioGroupItem>(item => item
+                .Add(i => i.Value, "option1")
+                .AddChildContent("Option 1")));
+
+        // Act
+        cut.Find("input[type='radio']").Change(true);
+
+        // Assert
+        callbackCount.ShouldBe(0);
+        cut.Find("input[type='radio']").HasAttribute("checked").ShouldBeTrue();
     }
 
     [Fact]
@@ -303,6 +327,26 @@ public class RadioGroupTests : TestBase
         radioInputs[0].GetAttribute("name")!.ShouldBe("test-group");
         radioInputs[1].GetAttribute("name")!.ShouldBe("test-group");
         radioInputs[2].GetAttribute("name")!.ShouldBe("test-group");
+    }
+
+    [Fact]
+    public void RadioGroup_RendersAccessibleStateAttributes()
+    {
+        // Act
+        var cut = Render<RadioGroup>(parameters => parameters
+            .Add(p => p.Required, true)
+            .Add(p => p.Disabled, true)
+            .Add(p => p.Orientation, RadioGroup.RadioGroupOrientation.Horizontal)
+            .AddChildContent<RadioGroupItem>(item => item
+                .Add(i => i.Value, "option1")
+                .AddChildContent("Option 1")));
+
+        // Assert
+        var group = cut.Find(".vibe-radio-group");
+        group.GetAttribute("aria-required").ShouldBe("true");
+        group.GetAttribute("aria-disabled").ShouldBe("true");
+        group.GetAttribute("aria-orientation").ShouldBe("horizontal");
+        cut.Find("input[type='radio']").GetAttribute("aria-checked").ShouldBe("false");
     }
 
     [Fact]

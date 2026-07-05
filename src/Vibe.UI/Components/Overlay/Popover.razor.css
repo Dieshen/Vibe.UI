@@ -14,6 +14,17 @@
     cursor: pointer;
 }
 
+::deep .popover-trigger:focus-visible {
+    outline: 2px solid var(--vibe-ring);
+    outline-offset: 2px;
+    border-radius: var(--vibe-radius-sm);
+}
+
+::deep .popover-trigger[aria-disabled="true"] {
+    cursor: default;
+    opacity: 0.6;
+}
+
 /* Popover Content */
 ::deep .popover-content {
     position: absolute;

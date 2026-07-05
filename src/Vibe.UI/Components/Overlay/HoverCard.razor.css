@@ -21,6 +21,17 @@
     cursor: pointer;
 }
 
+.hovercard-trigger:focus-visible {
+    outline: 2px solid var(--vibe-ring);
+    outline-offset: 2px;
+    border-radius: var(--vibe-radius-sm, 0.25rem);
+}
+
+.vibe-hovercard.hovercard-disabled .hovercard-trigger {
+    cursor: default;
+    opacity: 0.6;
+}
+
 /* ----------------------------------------
    HoverCard Content (Popup Card)
    ---------------------------------------- */
@@ -47,7 +58,9 @@
 }
 
 /* Visible State - Applied when IsOpen is true */
-.hovercard-content[style*="opacity: 1"] {
+.hovercard-content[data-state="open"] {
+    opacity: 1;
+    visibility: visible;
     pointer-events: auto;
     transform: scale(1);
 }
@@ -62,7 +75,7 @@
     transform: translateX(-50%) scale(0.95);
 }
 
-.hovercard-top[style*="opacity: 1"] {
+.hovercard-top[data-state="open"] {
     transform: translateX(-50%) scale(1);
 }
 
@@ -91,7 +104,7 @@
     transform: translateX(-50%) scale(0.95);
 }
 
-.hovercard-bottom[style*="opacity: 1"] {
+.hovercard-bottom[data-state="open"] {
     transform: translateX(-50%) scale(1);
 }
 
@@ -120,7 +133,7 @@
     transform: translateY(-50%) scale(0.95);
 }
 
-.hovercard-left[style*="opacity: 1"] {
+.hovercard-left[data-state="open"] {
     transform: translateY(-50%) scale(1);
 }
 
@@ -149,7 +162,7 @@
     transform: translateY(-50%) scale(0.95);
 }
 
-.hovercard-right[style*="opacity: 1"] {
+.hovercard-right[data-state="open"] {
     transform: translateY(-50%) scale(1);
 }
 

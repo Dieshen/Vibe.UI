@@ -37,6 +37,7 @@ public class FormMessageTests : TestBase
 
         var icon = cut.Find(".form-message-icon");
         icon.InnerHtml.ShouldContain("<svg");
+        icon.GetAttribute("aria-hidden").ShouldBe("true");
         cut.Find("p").TextContent.ShouldContain("Error");
     }
 
@@ -62,5 +63,63 @@ public class FormMessageTests : TestBase
             .AddChildContent("Error"));
 
         cut.Find("p").GetAttribute("role").ShouldBe("alert");
+    }
+
+    [Fact]
+    public void FormMessage_AddsAlertSemantics_ForErrorVariant()
+    {
+        var cut = Render<FormMessage>(parameters => parameters
+            .Add(p => p.Variant, "error")
+            .AddChildContent("Email is required"));
+
+        var message = cut.Find("p");
+        message.GetAttribute("role").ShouldBe("alert");
+        message.GetAttribute("aria-live").ShouldBe("assertive");
+    }
+
+    [Fact]
+    public void FormMessage_PreservesCallerRole_WhenErrorVariant()
+    {
+        var cut = Render<FormMessage>(parameters => parameters
+            .Add(p => p.Variant, "error")
+            .AddUnmatched("role", "status")
+            .AddUnmatched("aria-live", "polite")
+            .AddChildContent("Saved"));
+
+        var message = cut.Find("p");
+        message.GetAttribute("role").ShouldBe("status");
+        message.GetAttribute("aria-live").ShouldBe("polite");
+    }
+
+    [Fact]
+    public void FormMessage_MergesClassParameterAndUnmatchedClass()
+    {
+        var cut = Render<FormMessage>(parameters => parameters
+            .Add(p => p.Class, "from-parameter")
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                { "class", "from-attributes" }
+            })
+            .AddChildContent("Message"));
+
+        var message = cut.Find("p");
+        message.ClassList.ShouldContain("vibe-form-message");
+        message.ClassList.ShouldContain("form-message-default");
+        message.ClassList.ShouldContain("from-parameter");
+        message.ClassList.ShouldContain("from-attributes");
+    }
+
+    [Theory]
+    [InlineData(null, "form-message-default")]
+    [InlineData("", "form-message-default")]
+    [InlineData("  Error  ", "form-message-error")]
+    [InlineData("custom state", "form-message-custom-state")]
+    public void FormMessage_NormalizesVariantClass(string? variant, string expectedClass)
+    {
+        var cut = Render<FormMessage>(parameters => parameters
+            .Add(p => p.Variant, variant)
+            .AddChildContent("Message"));
+
+        cut.Find("p").ClassList.ShouldContain(expectedClass);
     }
 }

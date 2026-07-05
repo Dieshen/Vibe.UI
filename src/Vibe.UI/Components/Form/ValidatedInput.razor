@@ -1,28 +1,32 @@
 @namespace Vibe.UI.Components
-@inherits VibeComponent
+@using System.Globalization
+@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Components.Forms
 @typeparam TValue
+@inherits Base.VibeComponent
+@implements IDisposable
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
-    @if (!string.IsNullOrEmpty(Label))
+<div @attributes="RootAttributes" class="@CombinedCssClass">
+    @if (HasLabel)
     {
-        <label class="validated-input-label" for="@_inputId">
+        <label class="validated-input-label" for="@InputId">
             @Label
             @if (Required)
             {
-                <span class="required-indicator">*</span>
+                <span class="required-indicator" aria-hidden="true">*</span>
             }
         </label>
     }
 
     <div class="validated-input-wrapper">
-        <input id="@_inputId" type="@InputType" class="validated-input-field @GetValidationClass()"
-            placeholder="@Placeholder" value="@Value" disabled="@Disabled" readonly="@ReadOnly" @oninput="HandleInput"
-            @onblur="HandleBlur" />
+        <input @attributes="InputAttributes" id="@InputId" type="@EffectiveInputType" class="@InputCssClass"
+            placeholder="@Placeholder" value="@FormattedValue" disabled="@Disabled" readonly="@ReadOnly"
+            required="@Required" @oninput="HandleInput" @onblur="HandleBlur" />
 
-        @if (ShowValidationIcon && IsValid.HasValue)
+        @if (ShowValidationIcon && !Disabled && ValidationState.HasValue)
         {
-            <span class="validation-icon">
-                @if (IsValid.Value)
+            <span class="validation-icon" aria-hidden="true">
+                @if (ValidationState.Value)
                 {
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -43,26 +47,39 @@
         }
     </div>
 
-    @if (!string.IsNullOrEmpty(HelperText) && string.IsNullOrEmpty(ErrorMessage))
+    @if (HasHelperText && !HasError)
     {
-        <div class="validated-input-helper">@HelperText</div>
+        <div class="validated-input-helper" id="@HelperId">@HelperText</div>
     }
 
-    @if (!string.IsNullOrEmpty(ErrorMessage))
+    @if (HasError)
     {
-        <div class="validated-input-error">@ErrorMessage</div>
+        <div class="validated-input-error" id="@ErrorId" role="alert">@EffectiveErrorMessage</div>
     }
 </div>
 
 @code {
-    private string _inputId = $"input-{Guid.NewGuid():N}";
-    private bool _touched = false;
+    private readonly string _generatedInputId = $"input-{Guid.NewGuid():N}";
+    private bool _touched;
+    private TValue? _currentValue;
+    private string? _validationErrorMessage;
+    private EditContext? _previousEditContext;
+    private FieldIdentifier? _fieldIdentifier;
+
+    [CascadingParameter]
+    private EditContext? CurrentEditContext { get; set; }
 
     [Parameter]
     public TValue? Value { get; set; }
 
     [Parameter]
     public EventCallback<TValue?> ValueChanged { get; set; }
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    [Parameter]
+    public Expression<Func<TValue>>? For { get; set; }
 
     [Parameter]
     public string? Label { get; set; }
@@ -103,55 +120,162 @@
     [Parameter]
     public string? CssClass { get; set; }
 
+    protected override string ComponentClass => "vibe-validated-input";
+
     private string CombinedCssClass => CombineClasses(
-    "vibe-validated-input",
-    IsValid.HasValue ? (IsValid.Value ? "valid" : "invalid") : null,
-    _touched ? "touched" : null,
-    Disabled ? "disabled" : null,
-    CssClass
-    );
+        ComponentClass,
+        ValidationState.HasValue ? (ValidationState.Value ? "valid" : "invalid") : null,
+        _touched ? "touched" : null,
+        Disabled ? "disabled" : null,
+        ReadOnly ? "readonly" : null,
+        CssClass,
+        Class,
+        AdditionalClass);
 
-    protected override string ComponentClass => CombinedCssClass;
+    private string InputId => string.IsNullOrWhiteSpace(Id) ? _generatedInputId : Id;
 
-    private bool? IsValid
+    private string HelperId => $"{InputId}-helper";
+
+    private string ErrorId => $"{InputId}-error";
+
+    private string EffectiveInputType => string.IsNullOrWhiteSpace(InputType) ? "text" : InputType;
+
+    private string FormattedValue => _currentValue?.ToString() ?? string.Empty;
+
+    private bool HasLabel => !string.IsNullOrWhiteSpace(Label);
+
+    private bool HasHelperText => !string.IsNullOrWhiteSpace(HelperText);
+
+    private bool HasError => !string.IsNullOrWhiteSpace(EffectiveErrorMessage);
+
+    private string? EffectiveErrorMessage
     {
         get
         {
-            if (!_touched && !ValidateOnInput) return null;
-            return string.IsNullOrEmpty(ErrorMessage);
+            if (!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                return ErrorMessage;
+            }
+
+            if (!string.IsNullOrWhiteSpace(_validationErrorMessage))
+            {
+                return _validationErrorMessage;
+            }
+
+            return ValidationMessages.FirstOrDefault(message => !string.IsNullOrWhiteSpace(message));
+        }
+    }
+
+    private IReadOnlyList<string> ValidationMessages => GetValidationMessages();
+
+    private bool? ValidationState
+    {
+        get
+        {
+            if (HasError)
+            {
+                return false;
+            }
+
+            if (!_touched)
+            {
+                return null;
+            }
+
+            return true;
+        }
+    }
+
+    private string InputCssClass => CombineClasses("validated-input-field", GetValidationClass());
+
+    private Dictionary<string, object>? RootAttributes => BuildRootAttributes();
+
+    private Dictionary<string, object>? InputAttributes => BuildInputAttributes();
+
+    private string? AdditionalClass =>
+        AdditionalAttributes != null && AdditionalAttributes.TryGetValue("class", out var classValue)
+            ? classValue?.ToString()
+            : null;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _currentValue = Value;
+        _fieldIdentifier = For == null ? null : FieldIdentifier.Create(For);
+
+        if (!ReferenceEquals(_previousEditContext, CurrentEditContext))
+        {
+            if (_previousEditContext != null)
+            {
+                _previousEditContext.OnValidationStateChanged -= HandleValidationStateChanged;
+            }
+
+            if (CurrentEditContext != null)
+            {
+                CurrentEditContext.OnValidationStateChanged += HandleValidationStateChanged;
+            }
+
+            _previousEditContext = CurrentEditContext;
+        }
+
+        if (Disabled)
+        {
+            _touched = false;
+            _validationErrorMessage = null;
+            return;
+        }
+
+        if (_touched)
+        {
+            Validate();
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_previousEditContext != null)
+        {
+            _previousEditContext.OnValidationStateChanged -= HandleValidationStateChanged;
         }
     }
 
     private async Task HandleInput(ChangeEventArgs e)
     {
+        if (Disabled || ReadOnly)
+        {
+            return;
+        }
+
         var stringValue = e.Value?.ToString();
 
-        try
+        if (!TryConvertValue(stringValue, out var newValue))
         {
-            TValue? newValue = default;
-
-            if (!string.IsNullOrEmpty(stringValue))
-            {
-                newValue = (TValue?)Convert.ChangeType(stringValue, typeof(TValue));
-            }
-
-            Value = newValue;
-            await ValueChanged.InvokeAsync(newValue);
-
-            if (ValidateOnInput)
-            {
-                _touched = true;
-                Validate();
-            }
+            return;
         }
-        catch
+
+        _currentValue = newValue;
+        await ValueChanged.InvokeAsync(newValue);
+
+        if (CurrentEditContext != null && _fieldIdentifier.HasValue)
         {
-            // Conversion failed
+            CurrentEditContext.NotifyFieldChanged(_fieldIdentifier.Value);
+        }
+
+        if (ValidateOnInput)
+        {
+            _touched = true;
+            Validate();
         }
     }
 
     private void HandleBlur()
     {
+        if (Disabled)
+        {
+            return;
+        }
+
         if (ValidateOnBlur)
         {
             _touched = true;
@@ -161,17 +285,22 @@
 
     private void Validate()
     {
-        ErrorMessage = null;
+        _validationErrorMessage = null;
 
-        if (Required && (Value == null || string.IsNullOrWhiteSpace(Value.ToString())))
+        if (Disabled)
         {
-            ErrorMessage = $"{Label ?? "This field"} is required";
+            return;
+        }
+
+        if (Required && IsEmptyValue(_currentValue))
+        {
+            _validationErrorMessage = $"{RequiredFieldName} is required";
             return;
         }
 
         if (Validator != null)
         {
-            ErrorMessage = Validator(Value);
+            _validationErrorMessage = Validator(_currentValue);
         }
     }
 
@@ -185,12 +314,132 @@
     public bool IsValidField()
     {
         Validate();
-        return string.IsNullOrEmpty(ErrorMessage);
+        return !HasError;
     }
 
     private string GetValidationClass()
     {
-        if (!_touched) return string.Empty;
-        return IsValid.HasValue ? (IsValid.Value ? "is-valid" : "is-invalid") : string.Empty;
+        if (!ValidationState.HasValue) return string.Empty;
+        return ValidationState.Value ? "is-valid" : "is-invalid";
+    }
+
+    private string RequiredFieldName => string.IsNullOrWhiteSpace(Label) ? "This field" : Label;
+
+    private IReadOnlyList<string> GetValidationMessages()
+    {
+        if (CurrentEditContext == null || _fieldIdentifier == null)
+        {
+            return Array.Empty<string>();
+        }
+
+        return CurrentEditContext.GetValidationMessages(_fieldIdentifier.Value).ToArray();
+    }
+
+    private Dictionary<string, object>? BuildRootAttributes()
+    {
+        var attributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+        if (AdditionalAttributes != null)
+        {
+            foreach (var attribute in AdditionalAttributes)
+            {
+                if (!attribute.Key.Equals("class", StringComparison.OrdinalIgnoreCase))
+                {
+                    attributes[attribute.Key] = attribute.Value;
+                }
+            }
+        }
+
+        if (Disabled)
+        {
+            attributes.TryAdd("aria-disabled", "true");
+        }
+
+        return attributes.Count == 0 ? null : attributes;
+    }
+
+    private Dictionary<string, object>? BuildInputAttributes()
+    {
+        var attributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+        if (HasError)
+        {
+            attributes["aria-invalid"] = "true";
+            attributes["aria-errormessage"] = ErrorId;
+        }
+
+        if (Required)
+        {
+            attributes["aria-required"] = "true";
+        }
+
+        var describedBy = CombineIds(
+            HasHelperText && !HasError ? HelperId : null,
+            HasError ? ErrorId : null);
+
+        if (!string.IsNullOrEmpty(describedBy))
+        {
+            attributes["aria-describedby"] = describedBy;
+        }
+
+        return attributes.Count == 0 ? null : attributes;
+    }
+
+    private static bool TryConvertValue(string? stringValue, out TValue? value)
+    {
+        if (string.IsNullOrEmpty(stringValue))
+        {
+            value = default;
+            return true;
+        }
+
+        if (typeof(TValue) == typeof(string))
+        {
+            value = (TValue?)(object)stringValue;
+            return true;
+        }
+
+        if (BindConverter.TryConvertTo<TValue>(stringValue, CultureInfo.CurrentCulture, out var convertedValue))
+        {
+            value = convertedValue;
+            return true;
+        }
+
+        value = default;
+        return false;
+    }
+
+    private static bool IsEmptyValue(TValue? value)
+    {
+        if (value is null)
+        {
+            return true;
+        }
+
+        return value is string stringValue
+            ? string.IsNullOrWhiteSpace(stringValue)
+            : string.IsNullOrWhiteSpace(value.ToString());
+    }
+
+    private static string? CombineIds(params string?[] ids)
+    {
+        var combined = ids
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Select(id => id!.Trim())
+            .ToList();
+
+        return combined.Count == 0 ? null : string.Join(" ", combined);
+    }
+
+    private async void HandleValidationStateChanged(object? sender, ValidationStateChangedEventArgs e)
+    {
+        try
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception exception)
+        {
+            await DispatchExceptionAsync(exception);
+        }
     }
 }

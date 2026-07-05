@@ -23,4 +23,14 @@ public class DialogHeaderTests : TestBase
         header.ClassList.ShouldContain("dialog-top");
         header.GetAttribute("data-header").ShouldBe("dialog");
     }
+
+    [Fact]
+    public void DialogHeader_RendersStableElement_WhenContentIsNull()
+    {
+        var cut = Render<DialogHeader>();
+
+        var header = cut.Find(".vibe-dialog-header");
+        header.TagName.ShouldBe("DIV");
+        header.TextContent.ShouldBeEmpty();
+    }
 }

@@ -1,29 +1,42 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<div class="@CombinedClass" @ref="PopoverRef">
+<div @attributes="RootAttributes" @ref="_popoverRef">
     <div class="popover-trigger"
          role="button"
-         tabindex="0"
-         aria-expanded="@(IsOpen ? "true" : "false")"
+         tabindex="@TriggerTabIndex"
+         aria-expanded="@AriaExpanded"
          aria-haspopup="dialog"
-         aria-controls="@ContentId"
-         @onclick="TogglePopover"
-         @onkeydown="HandleTriggerKeyDown">
+         aria-controls="@_contentId"
+         aria-disabled="@AriaDisabled"
+         data-state="@CurrentState"
+         @onclick="TogglePopoverAsync"
+         @onkeydown="HandleTriggerKeyDownAsync">
         @TriggerContent
     </div>
 
-    @if (IsOpen)
+    @if (_isOpen)
     {
-        <div id="@ContentId" class="popover-content @PositionClass" role="dialog">
+        <div id="@_contentId"
+             class="popover-content @PositionClass"
+             role="dialog"
+             aria-label="@EffectiveAriaLabel"
+             aria-labelledby="@NormalizedAriaLabelledBy"
+             aria-describedby="@NormalizedAriaDescribedBy"
+             data-state="open">
             @Content
         </div>
 
-        <div class="popover-backdrop" @onclick="ClosePopover"></div>
+        <div class="popover-backdrop" aria-hidden="true" @onclick="ClosePopoverAsync"></div>
     }
 </div>
 
 @code {
+    private readonly string _contentId = $"vibe-popover-content-{Guid.NewGuid():N}";
+    private bool _hasSeenIsOpenParameter;
+    private bool _isOpen;
+    private bool _lastIsOpenParameter;
+
     /// <summary>
     /// Gets or sets the trigger content.
     /// </summary>
@@ -55,6 +68,48 @@
     public bool CloseOnClickOutside { get; set; } = true;
 
     /// <summary>
+    /// Gets or sets whether pressing Escape should close the popover.
+    /// </summary>
+    [Parameter]
+    public bool CloseOnEscape { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets whether the popover trigger is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the popover is open.
+    /// </summary>
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback for when the popover open state changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> IsOpenChanged { get; set; }
+
+    /// <summary>
+    /// Gets or sets the accessible label used when no labelled-by element is provided.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the id of the element that labels the popover dialog.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabelledBy { get; set; }
+
+    /// <summary>
+    /// Gets or sets the id of the element that describes the popover dialog.
+    /// </summary>
+    [Parameter]
+    public string? AriaDescribedBy { get; set; }
+
+    /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
     protected override string ComponentClass => "vibe-popover";
@@ -62,48 +117,142 @@
     /// <summary>
     /// Gets the CSS class for the popover position/alignment.
     /// </summary>
-    private string PositionClass => $"popover-{Position} popover-{Align}";
-
-    /// <summary>
-    /// Flag to track if the popover is open.
-    /// </summary>
-    private bool IsOpen = false;
+    private string PositionClass => $"popover-{NormalizedPosition} popover-{NormalizedAlign}";
 
     /// <summary>
     /// Reference to the popover element.
     /// </summary>
-    private ElementReference PopoverRef;
+    private ElementReference _popoverRef;
 
-    private readonly string ContentId = $"vibe-popover-content-{Guid.NewGuid():N}";
+    /// <summary>
+    /// Gets attributes for the root element while preserving required class/state values.
+    /// </summary>
+    private Dictionary<string, object?> RootAttributes
+    {
+        get
+        {
+            var attributes = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+
+            if (AdditionalAttributes is not null)
+            {
+                foreach (var attribute in AdditionalAttributes)
+                {
+                    attributes[attribute.Key] = attribute.Value;
+                }
+            }
+
+            attributes["class"] = RootClass;
+            attributes["data-state"] = CurrentState;
+
+            if (Disabled)
+            {
+                attributes["data-disabled"] = string.Empty;
+            }
+
+            return attributes;
+        }
+    }
+
+    private string RootClass => CombineClasses(
+        ComponentClass,
+        _isOpen ? "popover-open" : null,
+        Disabled ? "popover-disabled" : null,
+        Class);
+
+    private string AriaExpanded => _isOpen ? "true" : "false";
+
+    private string AriaDisabled => Disabled ? "true" : "false";
+
+    private string CurrentState => _isOpen ? "open" : "closed";
+
+    private string TriggerTabIndex => Disabled ? "-1" : "0";
+
+    private string NormalizedPosition => Position?.Trim().ToLowerInvariant() switch
+    {
+        "top" => "top",
+        "left" => "left",
+        "right" => "right",
+        _ => "bottom"
+    };
+
+    private string NormalizedAlign => Align?.Trim().ToLowerInvariant() switch
+    {
+        "start" => "start",
+        "end" => "end",
+        _ => "center"
+    };
+
+    private string? NormalizedAriaLabelledBy => NormalizeOptionalText(AriaLabelledBy);
+
+    private string? NormalizedAriaDescribedBy => NormalizeOptionalText(AriaDescribedBy);
+
+    private string? EffectiveAriaLabel => NormalizedAriaLabelledBy is null
+        ? NormalizeOptionalText(AriaLabel) ?? "Popover"
+        : null;
+
+    /// <inheritdoc/>
+    protected override void OnParametersSet()
+    {
+        if (!_hasSeenIsOpenParameter || IsOpen != _lastIsOpenParameter)
+        {
+            _isOpen = IsOpen;
+            _lastIsOpenParameter = IsOpen;
+            _hasSeenIsOpenParameter = true;
+        }
+    }
 
     /// <summary>
     /// Toggles the popover state.
     /// </summary>
-    private void TogglePopover()
+    private async Task TogglePopoverAsync()
     {
-        IsOpen = !IsOpen;
+        if (Disabled)
+        {
+            return;
+        }
+
+        await SetOpenAsync(!_isOpen);
     }
 
-    private void HandleTriggerKeyDown(KeyboardEventArgs e)
+    private async Task HandleTriggerKeyDownAsync(KeyboardEventArgs e)
     {
-        if (e.Key is "Enter" or " ")
+        if (Disabled)
         {
-            TogglePopover();
+            return;
         }
-        else if (e.Key == "Escape" && IsOpen)
+
+        if (e.Key is "Enter" or " " or "Spacebar")
         {
-            IsOpen = false;
+            await SetOpenAsync(!_isOpen);
+        }
+        else if (e.Key == "Escape" && CloseOnEscape)
+        {
+            await SetOpenAsync(false);
         }
     }
 
     /// <summary>
     /// Closes the popover.
     /// </summary>
-    private void ClosePopover()
+    private async Task ClosePopoverAsync()
     {
         if (CloseOnClickOutside)
         {
-            IsOpen = false;
+            await SetOpenAsync(false);
         }
     }
+
+    private async Task SetOpenAsync(bool open)
+    {
+        if (_isOpen == open)
+        {
+            return;
+        }
+
+        _isOpen = open;
+        await IsOpenChanged.InvokeAsync(open);
+    }
+
+    private static string? NormalizeOptionalText(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

@@ -48,21 +48,19 @@ Depth-hardened components completed on the beta-readiness branch:
 - DataDisplay: Avatar, Badge, Chart, DataTable, Progress, Table, Tag, Timeline.
 - Disclosure: Accordion, AccordionItem, Carousel, CarouselItem, Collapsible.
 - Feedback: Alert, Confetti, EmptyState, NotificationCenter, Skeleton, Sonner, Spinner, Toast, ToastContainer.
-- Form: Combobox, Form, FormField, FormLabel.
-- Inputs: Button, Checkbox, ColorPicker, FileUpload, ImageCropper, Input, InputOTP, Mentions, MultiSelect, Radio, RadioGroupItem, Rating, RichTextEditor, Select, Slider, Switch, TagInput, TextArea, Toggle, ToggleGroup, ToggleGroupItem, TransferList.
+- Form: Combobox, Form, FormField, FormLabel, FormMessage, Label, ValidatedInput.
+- Inputs: Button, Checkbox, ColorPicker, FileUpload, ImageCropper, Input, InputOTP, Mentions, MultiSelect, Radio, RadioGroup, RadioGroupItem, Rating, RichTextEditor, Select, Slider, Switch, TagInput, TextArea, Toggle, ToggleGroup, ToggleGroupItem, TransferList.
 - Layout: AspectRatio, Card, Container, Divider, Grid, GridItem, MasonryGrid, Resizable, Separator, Sheet, Splitter, Stack.
 - Navigation: Breadcrumb, BreadcrumbItem, Link, Menu, Menubar, MenuItem, MenuSeparator, NavigationMenu, NavigationMenuItem, Pagination, Sidebar, Stepper, TabItem, Tabs.
-- Overlay: AlertDialog, ContextMenu, ContextMenuItem, Dialog, DialogClose, DialogContainer, DialogContent, DialogDescription, DialogRoot, DialogTitle, DialogTrigger.
+- Overlay: AlertDialog, ContextMenu, ContextMenuItem, Dialog, DialogClose, DialogContainer, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogRoot, DialogTitle, DialogTrigger, Drawer, HoverCard, Popover, Tooltip.
+- Theme: ThemeProvider, ThemeToggle.
 - Utility: Command, DropdownMenu, Icon, Kbd, QRCode, ScrollArea.
 
-Current depth-hardened count on this branch: 98 components.
+Current depth-hardened count on this branch: 110 components.
 
 Next priority depth candidates:
 
-- Inputs: RadioGroup.
-- Form: FormMessage, Label, ValidatedInput.
-- Overlay: DialogFooter, DialogHeader, Drawer, HoverCard, Popover, Tooltip.
-- Theme: ThemeProvider, ThemeToggle.
+None. All 110 source components have direct unit coverage and depth-hardening coverage on this branch.
 
 ## Mutation-Style Quality Checks
 

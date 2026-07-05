@@ -39,6 +39,9 @@ public class LabelTests : TestBase
         // Assert
         var label = cut.Find("label");
         label.ClassList.ShouldContain("vibe-label-required");
+        var indicator = cut.Find(".required-indicator");
+        indicator.TextContent.ShouldBe("*");
+        indicator.GetAttribute("aria-hidden").ShouldBe("true");
     }
 
     [Fact]
@@ -52,6 +55,7 @@ public class LabelTests : TestBase
         // Assert
         var label = cut.Find("label");
         label.ClassList.ShouldContain("vibe-label-disabled");
+        label.GetAttribute("aria-disabled").ShouldBe("true");
     }
 
     [Fact]
@@ -121,7 +125,7 @@ public class LabelTests : TestBase
     #region Edge Cases
 
     [Fact]
-    public void Label_HandlesEmptyFor_Attribute()
+    public void Label_HandlesEmptyFor_ByOmittingAttribute()
     {
         // Act
         var cut = Render<Label>(parameters => parameters
@@ -130,7 +134,7 @@ public class LabelTests : TestBase
 
         // Assert
         var label = cut.Find("label");
-        label.GetAttribute("for")!.ShouldBe("");
+        label.HasAttribute("for").ShouldBeFalse();
     }
 
     [Fact]
@@ -218,6 +222,43 @@ public class LabelTests : TestBase
         label.ClassList.ShouldContain("vibe-label-required");
         label.ClassList.ShouldContain("class1");
         label.ClassList.ShouldContain("class2");
+    }
+
+    [Fact]
+    public void Label_MergesBaseClassCssClassClassParameterAndUnmatchedClass()
+    {
+        // Act
+        var cut = Render<Label>(parameters => parameters
+            .Add(p => p.CssClass, "css-class")
+            .Add(p => p.Class, "class-parameter")
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                { "class", "unmatched-class" }
+            })
+            .AddChildContent("Label"));
+
+        // Assert
+        var label = cut.Find("label");
+        label.ClassList.ShouldContain("vibe-label");
+        label.ClassList.ShouldContain("css-class");
+        label.ClassList.ShouldContain("class-parameter");
+        label.ClassList.ShouldContain("unmatched-class");
+    }
+
+    [Fact]
+    public void Label_ForwardsAdditionalAttributes_WithoutOverridingComputedClass()
+    {
+        // Act
+        var cut = Render<Label>(parameters => parameters
+            .AddUnmatched("data-testid", "email-label")
+            .AddUnmatched("class", "custom-label")
+            .AddChildContent("Email"));
+
+        // Assert
+        var label = cut.Find("label");
+        label.GetAttribute("data-testid").ShouldBe("email-label");
+        label.ClassList.ShouldContain("vibe-label");
+        label.ClassList.ShouldContain("custom-label");
     }
 
     [Fact]

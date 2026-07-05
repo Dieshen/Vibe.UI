@@ -1,7 +1,16 @@
+using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
+
 namespace Vibe.UI.Tests.Components.Form;
 
 public class ValidatedInputTests : TestBase
 {
+    private sealed class FieldValidationModel
+    {
+        [Required(ErrorMessage = "Email is required")]
+        public string Email { get; set; } = string.Empty;
+    }
+
     [Fact]
     public void ValidatedInput_Renders_WithDefaultProps()
     {
@@ -36,6 +45,7 @@ public class ValidatedInputTests : TestBase
         // Assert
         var indicator = cut.Find(".required-indicator");
         indicator.TextContent.ShouldBe("*");
+        indicator.GetAttribute("aria-hidden").ShouldBe("true");
     }
 
     [Fact]
@@ -76,6 +86,45 @@ public class ValidatedInputTests : TestBase
     }
 
     [Fact]
+    public void ValidatedInput_UsesProvidedId_ForInputLabelAndHelper()
+    {
+        // Act
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
+            .Add(p => p.Id, "email")
+            .Add(p => p.Label, "Email")
+            .Add(p => p.HelperText, "Use your work email")
+            .Add(p => p.Required, true));
+
+        // Assert
+        var input = cut.Find(".validated-input-field");
+        input.GetAttribute("id").ShouldBe("email");
+        input.GetAttribute("aria-describedby").ShouldBe("email-helper");
+        input.GetAttribute("aria-required").ShouldBe("true");
+
+        cut.Find(".validated-input-label").GetAttribute("for").ShouldBe("email");
+        cut.Find(".validated-input-helper").GetAttribute("id").ShouldBe("email-helper");
+    }
+
+    [Fact]
+    public void ValidatedInput_GeneratedId_RemainsStableAcrossRerender()
+    {
+        // Arrange
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
+            .Add(p => p.Label, "Email"));
+
+        var originalId = cut.Find(".validated-input-field").GetAttribute("id");
+
+        // Act
+        cut.Render(parameters => parameters
+            .Add(p => p.Label, "Work Email"));
+
+        // Assert
+        var updatedId = cut.Find(".validated-input-field").GetAttribute("id");
+        updatedId.ShouldBe(originalId);
+        cut.Find(".validated-input-label").GetAttribute("for").ShouldBe(originalId);
+    }
+
+    [Fact]
     public void ValidatedInput_Shows_HelperText()
     {
         // Act
@@ -92,11 +141,19 @@ public class ValidatedInputTests : TestBase
     {
         // Act
         var cut = Render<ValidatedInput<string>>(parameters => parameters
+            .Add(p => p.Id, "email")
             .Add(p => p.ErrorMessage, "Email is required"));
 
         // Assert
         var error = cut.Find(".validated-input-error");
         error.TextContent.ShouldBe("Email is required");
+        error.GetAttribute("id").ShouldBe("email-error");
+        error.GetAttribute("role").ShouldBe("alert");
+
+        var input = cut.Find(".validated-input-field");
+        input.GetAttribute("aria-invalid").ShouldBe("true");
+        input.GetAttribute("aria-errormessage").ShouldBe("email-error");
+        input.GetAttribute("aria-describedby").ShouldBe("email-error");
     }
 
     [Fact]
@@ -133,6 +190,27 @@ public class ValidatedInputTests : TestBase
 
         // Assert
         cut.Find(".vibe-validated-input").ClassList.ShouldContain("custom-input");
+    }
+
+    [Fact]
+    public void ValidatedInput_MergesClassParametersAndForwardsRootAttributes()
+    {
+        // Act
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
+            .Add(p => p.CssClass, "css-class")
+            .Add(p => p.Class, "class-parameter")
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                { "class", "unmatched-class" },
+                { "data-testid", "email-field" }
+            }));
+
+        // Assert
+        var root = cut.Find(".vibe-validated-input");
+        root.ClassList.ShouldContain("css-class");
+        root.ClassList.ShouldContain("class-parameter");
+        root.ClassList.ShouldContain("unmatched-class");
+        root.GetAttribute("data-testid").ShouldBe("email-field");
     }
 
     [Fact]
@@ -285,6 +363,65 @@ public class ValidatedInputTests : TestBase
         // Assert
         var error = cut.Find(".validated-input-error");
         error.TextContent.ShouldBe("Must contain @");
+    }
+
+    [Fact]
+    public void ValidatedInput_DoesNotClearExternalErrorMessage_WhenValidationRuns()
+    {
+        // Act
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
+            .Add(p => p.Value, "valid@example.com")
+            .Add(p => p.Required, true)
+            .Add(p => p.ErrorMessage, "Server-side error")
+            .Add(p => p.ValidateOnBlur, false)
+            .Add(p => p.ValidateOnInput, false));
+
+        cut.InvokeAsync(() => cut.Instance.ForceValidation());
+
+        // Assert
+        cut.Find(".validated-input-error").TextContent.ShouldBe("Server-side error");
+        cut.Instance.ErrorMessage.ShouldBe("Server-side error");
+    }
+
+    [Fact]
+    public void ValidatedInput_RendersEditContextValidationMessage_ForField()
+    {
+        // Arrange
+        var model = new FieldValidationModel();
+        Expression<Func<string>> validationFor = () => model.Email;
+
+        // Act
+        var cut = Render(builder =>
+        {
+            builder.OpenComponent<Vibe.UI.Components.Form<FieldValidationModel>>(0);
+            builder.AddAttribute(1, "Model", model);
+            builder.AddAttribute(2, "ShowValidationSummary", false);
+            builder.AddAttribute(3, "ChildContent", (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<ValidatedInput<string>>(0);
+                childBuilder.AddAttribute(1, "Id", "email");
+                childBuilder.AddAttribute(2, "Label", "Email");
+                childBuilder.AddAttribute(3, "For", validationFor);
+                childBuilder.AddAttribute(4, "Value", model.Email);
+                childBuilder.AddAttribute(5, "ValueChanged", EventCallback.Factory.Create<string?>(this, value => model.Email = value ?? string.Empty));
+                childBuilder.CloseComponent();
+                childBuilder.AddMarkupContent(6, "<button type=\"submit\">Submit</button>");
+            }));
+            builder.CloseComponent();
+        });
+
+        cut.Find("form").Submit();
+
+        // Assert
+        var input = cut.Find(".validated-input-field");
+        input.GetAttribute("aria-invalid").ShouldBe("true");
+        input.GetAttribute("aria-errormessage").ShouldBe("email-error");
+        input.GetAttribute("aria-describedby").ShouldBe("email-error");
+
+        var error = cut.Find(".validated-input-error");
+        error.GetAttribute("id").ShouldBe("email-error");
+        error.GetAttribute("role").ShouldBe("alert");
+        error.TextContent.ShouldContain("Email is required");
     }
 
     #endregion
@@ -610,16 +747,23 @@ public class ValidatedInputTests : TestBase
     public void ValidatedInput_DisabledInput_DoesNotTriggerValidation()
     {
         // Act
+        var callbackCount = 0;
         var cut = Render<ValidatedInput<string>>(parameters => parameters
             .Add(p => p.Required, true)
             .Add(p => p.Disabled, true)
-            .Add(p => p.ValidateOnBlur, true));
+            .Add(p => p.ValidateOnBlur, true)
+            .Add(p => p.ValidateOnInput, true)
+            .Add(p => p.ValueChanged, _ => callbackCount++));
 
         var input = cut.Find(".validated-input-field");
+        input.Input("");
+        input.Blur();
 
-        // Input events don't fire on disabled inputs in real DOM
-        // We can only verify the disabled state
+        // Assert
         input.HasAttribute("disabled").ShouldBeTrue();
+        cut.FindAll(".validated-input-error").ShouldBeEmpty();
+        cut.Find(".vibe-validated-input").ClassList.ShouldNotContain("touched");
+        callbackCount.ShouldBe(0);
     }
 
     [Fact]
@@ -632,6 +776,23 @@ public class ValidatedInputTests : TestBase
         // Assert
         var input = cut.Find(".validated-input-field");
         input.HasAttribute("readonly").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ValidatedInput_ReadOnlyInput_DoesNotInvokeValueChanged()
+    {
+        // Arrange
+        string? capturedValue = "initial";
+        var cut = Render<ValidatedInput<string>>(parameters => parameters
+            .Add(p => p.Value, "initial")
+            .Add(p => p.ReadOnly, true)
+            .Add(p => p.ValueChanged, value => capturedValue = value));
+
+        // Act
+        cut.Find(".validated-input-field").Input("changed");
+
+        // Assert
+        capturedValue.ShouldBe("initial");
     }
 
     #endregion

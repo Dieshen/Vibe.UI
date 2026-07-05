@@ -3,7 +3,7 @@
 
 <label @attributes="AdditionalAttributes" class="@CombinedCssClass">
     <input id="@Id" type="radio" class="vibe-radio-group-item-input" name="@GroupName" value="@Value" checked="@IsChecked"
-        disabled="@IsDisabled" @onchange="HandleChange" />
+        disabled="@IsDisabled" aria-checked="@AriaChecked" @onchange="HandleChange" />
     <span class="vibe-radio-group-item-control"></span>
     @if (ChildContent != null)
     {
@@ -50,6 +50,7 @@
     private string GroupName => Parent?.Name ?? string.Empty;
     private bool IsChecked => Parent?.IsSelected(Value) ?? false;
     private bool IsDisabled => Disabled || (Parent?.Disabled ?? false);
+    private string AriaChecked => IsChecked ? "true" : "false";
 
     private string CombinedCssClass => CombineClasses(
     "vibe-radio-group-item",

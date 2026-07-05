@@ -23,4 +23,14 @@ public class DialogFooterTests : TestBase
         footer.ClassList.ShouldContain("dialog-actions");
         footer.GetAttribute("data-footer").ShouldBe("dialog");
     }
+
+    [Fact]
+    public void DialogFooter_RendersStableElement_WhenContentIsNull()
+    {
+        var cut = Render<DialogFooter>();
+
+        var footer = cut.Find(".vibe-dialog-footer");
+        footer.TagName.ShouldBe("DIV");
+        footer.TextContent.ShouldBeEmpty();
+    }
 }
