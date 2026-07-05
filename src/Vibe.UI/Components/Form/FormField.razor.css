@@ -5,8 +5,14 @@
   gap: 0.25rem;
 }
 
+:global(.form-field-description),
 :global(.vibe-form-field-description) {
   font-size: 0.85rem;
   color: var(--vibe-muted-foreground);
+}
+
+:global(.form-validation-message) {
+  font-size: 0.85rem;
+  color: var(--vibe-destructive);
 }
 

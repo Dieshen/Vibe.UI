@@ -47,7 +47,7 @@
 
     internal async Task ToggleItem(string itemId, bool isExpanded)
     {
-        if (Type == AccordionType.Single && isExpanded && CollapseOthers)
+        if (EffectiveType == AccordionType.Single && isExpanded && CollapseOthers)
         {
             // Collapse other items
             _expandedItems.Clear();
@@ -74,6 +74,8 @@
     {
         return _expandedItems.Contains(itemId);
     }
+
+    private AccordionType EffectiveType => Enum.IsDefined(Type) ? Type : AccordionType.Single;
 
     /// <summary>
     /// Accordion types

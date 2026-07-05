@@ -8,12 +8,12 @@
         {
             <span class="vibe-input-icon vibe-input-icon-leading">@((MarkupString)LeadingIcon)</span>
         }
-        <input type="@Type" class="@GetInputClass()" id="@Id" placeholder="@GetPlaceholder()" value="@Value"
+        <input type="@EffectiveType" class="@GetInputClass()" id="@EffectiveId" placeholder="@GetPlaceholder()" value="@currentValue"
             @onchange="OnValueChanged" @oninput="OnInput" @onfocus="OnFocus" @onblur="OnBlur" disabled="@Disabled"
             readonly="@ReadOnly" @attributes="GetInputAttributes()" />
         @if (!string.IsNullOrEmpty(Label))
         {
-            <label class="@GetLabelClass()" for="@Id">@Label</label>
+            <label class="@GetLabelClass()" for="@EffectiveId">@Label</label>
         }
         @if (!string.IsNullOrEmpty(TrailingIcon))
         {
@@ -31,45 +31,75 @@
 </div>
 
 @code {
-    [Parameter] public string Id { get; set; } = Guid.NewGuid().ToString();
-    [Parameter] public string Label { get; set; } = string.Empty;
-    [Parameter] public string Type { get; set; } = "text";
-    [Parameter] public string Placeholder { get; set; } = string.Empty;
-    [Parameter] public string Value { get; set; } = string.Empty;
+    private readonly string generatedId = Guid.NewGuid().ToString();
+    private string currentValue = string.Empty;
+
+    [Parameter] public string? Id { get; set; }
+    [Parameter] public string? Label { get; set; } = string.Empty;
+    [Parameter] public string? Type { get; set; } = "text";
+    [Parameter] public string? Placeholder { get; set; } = string.Empty;
+    [Parameter] public string? Value { get; set; } = string.Empty;
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
     [Parameter] public bool Disabled { get; set; } = false;
     [Parameter] public bool ReadOnly { get; set; } = false;
-    [Parameter] public string LeadingIcon { get; set; } = string.Empty;
-    [Parameter] public string TrailingIcon { get; set; } = string.Empty;
-    [Parameter] public string ErrorMessage { get; set; } = string.Empty;
-    [Parameter] public string HelperText { get; set; } = string.Empty;
+    [Parameter] public string? LeadingIcon { get; set; } = string.Empty;
+    [Parameter] public string? TrailingIcon { get; set; } = string.Empty;
+    [Parameter] public string? ErrorMessage { get; set; } = string.Empty;
+    [Parameter] public string? HelperText { get; set; } = string.Empty;
     [Parameter] public ComponentSize Size { get; set; } = ComponentSize.Medium;
     [Parameter] public InputVariant Variant { get; set; } = InputVariant.Outlined;
 
     private bool isFocused = false;
-    private bool hasValue => !string.IsNullOrEmpty(Value);
+    private bool hasValue => !string.IsNullOrEmpty(currentValue);
     private bool HasError => !string.IsNullOrEmpty(ErrorMessage);
     private bool HasHelper => !string.IsNullOrEmpty(HelperText);
 
-    private string ErrorId => $"{Id}-error";
-    private string HelperId => $"{Id}-helper";
+    private string EffectiveId => string.IsNullOrWhiteSpace(Id) ? generatedId : Id;
+    private string EffectiveType => string.IsNullOrWhiteSpace(Type) ? "text" : Type;
+    private string ErrorId => $"{EffectiveId}-error";
+    private string HelperId => $"{EffectiveId}-helper";
     private string? DescribedBy => BuildDescribedBy();
+    private ComponentSize EffectiveSize => Enum.IsDefined(typeof(ComponentSize), Size) ? Size : ComponentSize.Medium;
+    private InputVariant EffectiveVariant => Enum.IsDefined(typeof(InputVariant), Variant) ? Variant : InputVariant.Outlined;
+
+    protected override void OnParametersSet()
+    {
+        currentValue = Value ?? string.Empty;
+
+        if (Disabled)
+        {
+            isFocused = false;
+        }
+    }
 
     private async Task OnValueChanged(ChangeEventArgs e)
     {
-        Value = e.Value?.ToString() ?? string.Empty;
-        await ValueChanged.InvokeAsync(Value);
+        if (Disabled || ReadOnly)
+        {
+            return;
+        }
+
+        currentValue = e.Value?.ToString() ?? string.Empty;
+        await ValueChanged.InvokeAsync(currentValue);
     }
 
     private async Task OnInput(ChangeEventArgs e)
     {
-        Value = e.Value?.ToString() ?? string.Empty;
-        await ValueChanged.InvokeAsync(Value);
+        if (Disabled || ReadOnly)
+        {
+            return;
+        }
+
+        currentValue = e.Value?.ToString() ?? string.Empty;
+        await ValueChanged.InvokeAsync(currentValue);
     }
 
     private void OnFocus(FocusEventArgs e)
     {
-        isFocused = true;
+        if (!Disabled)
+        {
+            isFocused = true;
+        }
     }
 
     private void OnBlur(FocusEventArgs e)
@@ -87,8 +117,8 @@
 
     private string GetInputWrapperClass() => new ClassBuilder()
         .Add("vibe-input-wrapper")
-        .AddVariant("vibe-input-wrapper", Variant)
-        .AddVariant("vibe-input-wrapper", Size)
+        .AddVariant("vibe-input-wrapper", EffectiveVariant)
+        .AddVariant("vibe-input-wrapper", EffectiveSize)
         .AddIf("vibe-input-disabled", Disabled)
         .AddIf("vibe-input-focused", isFocused)
         .AddIf("vibe-input-has-value", hasValue)
@@ -97,14 +127,14 @@
 
     private string GetLabelClass() => new ClassBuilder()
         .Add("vibe-input-label")
-        .AddVariant("vibe-input-label", Variant)
+        .AddVariant("vibe-input-label", EffectiveVariant)
         .AddIf("vibe-input-label-floating", isFocused || hasValue)
         .Build();
 
     private string GetInputClass() => new ClassBuilder()
         .Add("vibe-input")
-        .AddVariant("vibe-input", Size)
-        .AddVariant("vibe-input", Variant)
+        .AddVariant("vibe-input", EffectiveSize)
+        .AddVariant("vibe-input", EffectiveVariant)
         .AddIf("vibe-input-with-leading-icon", !string.IsNullOrEmpty(LeadingIcon))
         .AddIf("vibe-input-with-trailing-icon", !string.IsNullOrEmpty(TrailingIcon))
         .AddIf("vibe-input-error-state", HasError)
@@ -114,7 +144,7 @@
     {
         // Only show placeholder when focused or if no label
         if (string.IsNullOrEmpty(Label) || isFocused)
-            return Placeholder;
+            return Placeholder ?? string.Empty;
 
         return string.Empty;
     }
@@ -154,19 +184,15 @@
 
     private void MergeComputedA11yAttributes(Dictionary<string, object> target)
     {
-        if (HasError && !target.ContainsKey("aria-invalid"))
+        if (HasError)
         {
             target["aria-invalid"] = "true";
-        }
-
-        if (HasError && !target.ContainsKey("aria-errormessage"))
-        {
             target["aria-errormessage"] = ErrorId;
         }
 
-        if (!string.IsNullOrEmpty(DescribedBy) && !target.ContainsKey("aria-describedby"))
+        if (!string.IsNullOrEmpty(DescribedBy))
         {
-            target["aria-describedby"] = DescribedBy;
+            MergeSpaceSeparatedAttribute(target, "aria-describedby", DescribedBy);
         }
     }
 
@@ -181,5 +207,21 @@
             describedBy = describedBy == null ? HelperId : $"{describedBy} {HelperId}";
 
         return describedBy;
+    }
+
+    private static void MergeSpaceSeparatedAttribute(Dictionary<string, object> target, string key, string value)
+    {
+        if (!target.TryGetValue(key, out var existingValue) || existingValue is null)
+        {
+            target[key] = value;
+            return;
+        }
+
+        var tokens = existingValue.ToString()!
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Concat(value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            .Distinct(StringComparer.Ordinal);
+
+        target[key] = string.Join(" ", tokens);
     }
 }

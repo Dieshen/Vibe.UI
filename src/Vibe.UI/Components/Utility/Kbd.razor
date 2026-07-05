@@ -1,7 +1,7 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
 
-<kbd @attributes="AdditionalAttributes" class="@CombinedCssClass">
+<kbd @attributes="AdditionalAttributes" class="@CombinedClass">
     @ChildContent
 </kbd>
 
@@ -16,12 +16,15 @@
     public string? CssClass { get; set; }
 
     private string CombinedCssClass => CombineClasses(
-    "vibe-kbd",
-    $"kbd-{Size.ToString().ToLower()}",
-    CssClass
+        "vibe-kbd",
+        $"kbd-{GetSizeClass(Size)}",
+        CssClass
     );
 
     protected override string ComponentClass => CombinedCssClass;
+
+    private static string GetSizeClass(KbdSize size) =>
+        Enum.IsDefined(size) ? size.ToString().ToLowerInvariant() : KbdSize.Default.ToString().ToLowerInvariant();
 
     public enum KbdSize
     {

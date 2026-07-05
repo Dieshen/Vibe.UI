@@ -249,10 +249,22 @@ public class SelectTests : TestBase
 
     // === ID Generation ===
 
-    // NOTE: Select_WithoutId_GeneratesUniqueId test removed
-    // Component has _id field and ElementId property but uses id="@Id" instead of id="@ElementId"
-    // This means when Id parameter is null/empty, the select element gets no id attribute
-    // Test would fail because component doesn't actually generate unique IDs in the DOM
+    [Fact]
+    public void Select_WithoutId_GeneratesUniqueId()
+    {
+        // Act
+        var cut1 = Render<Select>(parameters => parameters
+            .AddChildContent("<option>Option 1</option>"));
+        var cut2 = Render<Select>(parameters => parameters
+            .AddChildContent("<option>Option 1</option>"));
+
+        // Assert
+        var id1 = cut1.Find("select").GetAttribute("id");
+        var id2 = cut2.Find("select").GetAttribute("id");
+        id1.ShouldNotBeNullOrEmpty();
+        id2.ShouldNotBeNullOrEmpty();
+        id1.ShouldNotBe(id2);
+    }
 
     // === Event Handling ===
 
@@ -324,6 +336,29 @@ public class SelectTests : TestBase
         cut.Find("select").HasAttribute("disabled").ShouldBeTrue();
     }
 
+    [Fact]
+    public void Select_WhenDisabled_DoesNotInvokeCallbacksFromSyntheticChange()
+    {
+        // Arrange
+        string? selectedValue = "unchanged";
+        ChangeEventArgs? capturedArgs = null;
+        var cut = Render<Select>(parameters => parameters
+            .Add(p => p.Disabled, true)
+            .Add(p => p.ValueChanged, value => selectedValue = value)
+            .Add(p => p.OnChange, args => capturedArgs = args)
+            .AddChildContent(@"
+                <option value='1'>Option 1</option>
+                <option value='2'>Option 2</option>
+            "));
+
+        // Act
+        cut.Find("select").Change("2");
+
+        // Assert
+        selectedValue.ShouldBe("unchanged");
+        capturedArgs.ShouldBeNull();
+    }
+
     // === CSS Classes ===
 
     [Fact]
@@ -355,6 +390,92 @@ public class SelectTests : TestBase
         var select = cut.Find("select");
         select.GetAttribute("data-testid")!.ShouldBe("my-select");
         select.GetAttribute("aria-label")!.ShouldBe("Custom Select");
+    }
+
+    [Fact]
+    public void Select_WithClassParameter_AppendsCustomClassToContainer()
+    {
+        // Act
+        var cut = Render<Select>(parameters => parameters
+            .Add(p => p.Class, "country-select")
+            .AddChildContent("<option>Option 1</option>"));
+
+        // Assert
+        var container = cut.Find(".vibe-select");
+        container.ClassList.ShouldContain("country-select");
+    }
+
+    [Fact]
+    public void Select_WithValue_RendersValueAndDoesNotSelectPlaceholder()
+    {
+        // Act
+        var cut = Render<Select>(parameters => parameters
+            .Add(p => p.Placeholder, "Choose one")
+            .Add(p => p.Value, "2")
+            .AddChildContent(@"
+                <option value='1'>Option 1</option>
+                <option value='2'>Option 2</option>
+            "));
+
+        // Assert
+        var select = cut.Find("select");
+        select.GetAttribute("value")!.ShouldBe("2");
+        cut.Find("option[value='']").HasAttribute("selected").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Select_InvokesValueChangedAndOnChange_WhenSelectionChanges()
+    {
+        // Arrange
+        string? selectedValue = null;
+        ChangeEventArgs? capturedArgs = null;
+        var cut = Render<Select>(parameters => parameters
+            .Add(p => p.ValueChanged, value => selectedValue = value)
+            .Add(p => p.OnChange, args => capturedArgs = args)
+            .AddChildContent(@"
+                <option value='1'>Option 1</option>
+                <option value='2'>Option 2</option>
+            "));
+
+        // Act
+        cut.Find("select").Change("2");
+
+        // Assert
+        selectedValue.ShouldBe("2");
+        capturedArgs.ShouldNotBeNull();
+        capturedArgs.Value.ShouldBe("2");
+    }
+
+    [Fact]
+    public void Select_WithHelperText_ComputesAriaDescribedBy()
+    {
+        // Act
+        var cut = Render<Select>(parameters => parameters
+            .Add(p => p.Id, "country")
+            .Add(p => p.HelperText, "Choose your country")
+            .AddChildContent("<option value='us'>United States</option>"));
+
+        // Assert
+        cut.Find("select").GetAttribute("aria-describedby")!.ShouldBe("country-helper");
+        cut.Find("#country-helper").TextContent.ShouldBe("Choose your country");
+    }
+
+    [Fact]
+    public void Select_WithAdditionalAriaDescribedBy_MergesHelperDescription()
+    {
+        // Act
+        var cut = Render<Select>(parameters => parameters
+            .Add(p => p.Id, "state")
+            .Add(p => p.HelperText, "Choose your state")
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                { "aria-describedby", "external-description" }
+            })
+            .AddChildContent("<option value='ny'>New York</option>"));
+
+        // Assert
+        cut.Find("select").GetAttribute("aria-describedby")!.Split(' ')
+            .ShouldBe(new[] { "external-description", "state-helper" });
     }
 
     // === Complex Scenarios ===

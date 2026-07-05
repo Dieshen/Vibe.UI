@@ -2,12 +2,16 @@
 @inherits Base.VibeComponent
 
 <label class="@CombinedClass @(Disabled ? "disabled" : string.Empty)">
-    <input type="checkbox" class="switch-input" checked="@Checked" @onchange="OnToggleChanged" disabled="@Disabled"
+    <input type="checkbox" id="@Id" name="@Name" value="@Value" class="switch-input" role="switch"
+        checked="@currentChecked" aria-checked="@currentChecked.ToString().ToLowerInvariant()" @onchange="OnToggleChanged" disabled="@Disabled"
+        required="@Required"
         @attributes="AdditionalAttributes" />
     <span class="switch-thumb"></span>
 </label>
 
 @code {
+    private bool currentChecked;
+
     /// <summary>
     /// Gets or sets whether the switch is checked.
     /// </summary>
@@ -21,6 +25,30 @@
     public bool Disabled { get; set; }
 
     /// <summary>
+    /// Gets or sets the switch input ID.
+    /// </summary>
+    [Parameter]
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// Gets or sets the switch form field name.
+    /// </summary>
+    [Parameter]
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// Gets or sets the submitted switch value.
+    /// </summary>
+    [Parameter]
+    public string? Value { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the switch is required.
+    /// </summary>
+    [Parameter]
+    public bool Required { get; set; }
+
+    /// <summary>
     /// Gets or sets the callback for when the switch value changes.
     /// </summary>
     [Parameter]
@@ -31,6 +59,11 @@
     /// </summary>
     protected override string ComponentClass => "vibe-switch";
 
+    protected override void OnParametersSet()
+    {
+        currentChecked = Checked;
+    }
+
     /// <summary>
     /// Handles the toggle of the switch.
     /// </summary>
@@ -39,7 +72,10 @@
         if (Disabled)
             return Task.CompletedTask;
 
-        Checked = (bool)e.Value!;
-        return CheckedChanged.InvokeAsync(Checked);
+        if (e.Value is not bool value)
+            return Task.CompletedTask;
+
+        currentChecked = value;
+        return CheckedChanged.InvokeAsync(value);
     }
 }

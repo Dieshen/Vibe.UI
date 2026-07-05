@@ -514,4 +514,167 @@ public class InputTests : TestBase
         string? placeholderAttr = input.GetAttribute("placeholder");
         (placeholderAttr ?? string.Empty).ShouldBe(string.Empty);
     }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Input_WithNullOrWhitespaceType_FallsBackToText(string? type)
+    {
+        // Act
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
+            .Add(p => p.Type, type));
+
+        // Assert
+        cut.Find("input").GetAttribute("type")!.ShouldBe("text");
+    }
+
+    [Fact]
+    public void Input_WhenDisabled_DoesNotInvokeValueChangedFromSyntheticEvents()
+    {
+        // Arrange
+        string capturedValue = "unchanged";
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
+            .Add(p => p.Disabled, true)
+            .Add(p => p.ValueChanged, value => capturedValue = value));
+
+        // Act
+        AngleSharp.Dom.IElement input = cut.Find("input");
+        input.Input("typed");
+        input.Change("changed");
+
+        // Assert
+        capturedValue.ShouldBe("unchanged");
+    }
+
+    [Fact]
+    public void Input_WhenReadOnly_DoesNotInvokeValueChangedFromSyntheticEvents()
+    {
+        // Arrange
+        string capturedValue = "unchanged";
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
+            .Add(p => p.ReadOnly, true)
+            .Add(p => p.ValueChanged, value => capturedValue = value));
+
+        // Act
+        AngleSharp.Dom.IElement input = cut.Find("input");
+        input.Input("typed");
+        input.Change("changed");
+
+        // Assert
+        capturedValue.ShouldBe("unchanged");
+    }
+
+    [Fact]
+    public void Input_WhenDisabled_DoesNotApplyFocusedClassFromSyntheticFocus()
+    {
+        // Act
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
+            .Add(p => p.Disabled, true));
+
+        cut.Find("input").Focus();
+
+        // Assert
+        cut.Find(".vibe-input-wrapper").ClassList.ShouldNotContain("vibe-input-focused");
+    }
+
+    [Fact]
+    public void Input_WithErrorAndHelperText_ComputesAriaRelationships()
+    {
+        // Act
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
+            .Add(p => p.Id, "email")
+            .Add(p => p.ErrorMessage, "Email is required")
+            .Add(p => p.HelperText, "Use your work email"));
+
+        // Assert
+        AngleSharp.Dom.IElement input = cut.Find("input");
+        input.GetAttribute("aria-invalid")!.ShouldBe("true");
+        input.GetAttribute("aria-errormessage")!.ShouldBe("email-error");
+        input.GetAttribute("aria-describedby")!.Split(' ').ShouldBe(new[] { "email-error", "email-helper" });
+        cut.Find("#email-error").TextContent.ShouldBe("Email is required");
+        cut.Find("#email-helper").TextContent.ShouldBe("Use your work email");
+    }
+
+    [Fact]
+    public void Input_WithAdditionalAriaDescribedBy_MergesGeneratedDescriptions()
+    {
+        // Act
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
+            .Add(p => p.Id, "username")
+            .Add(p => p.HelperText, "Visible helper")
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                { "aria-describedby", "external-helper" }
+            }));
+
+        // Assert
+        cut.Find("input").GetAttribute("aria-describedby")!.Split(' ')
+            .ShouldBe(new[] { "external-helper", "username-helper" });
+    }
+
+    [Fact]
+    public void Input_WithAdditionalAriaInvalid_FallsBackToTrueWhenErrorMessageExists()
+    {
+        // Act
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
+            .Add(p => p.Id, "password")
+            .Add(p => p.ErrorMessage, "Password is required")
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                { "aria-invalid", "false" }
+            }));
+
+        // Assert
+        cut.Find("input").GetAttribute("aria-invalid")!.ShouldBe("true");
+    }
+
+    [Fact]
+    public void Input_WithClassAndAdditionalAttributes_ForwardsToExpectedElements()
+    {
+        // Act
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
+            .Add(p => p.Class, "profile-input")
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                { "data-testid", "username-input" },
+                { "aria-label", "Username" }
+            }));
+
+        // Assert
+        cut.Find(".vibe-input-container").ClassList.ShouldContain("profile-input");
+        AngleSharp.Dom.IElement input = cut.Find("input");
+        input.GetAttribute("data-testid")!.ShouldBe("username-input");
+        input.GetAttribute("aria-label")!.ShouldBe("Username");
+    }
+
+    [Fact]
+    public void Input_WithNullId_GeneratesIdAndConnectsLabel()
+    {
+        // Act
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
+            .Add(p => p.Id, null)
+            .Add(p => p.Label, "Username"));
+
+        // Assert
+        string id = cut.Find("input").GetAttribute("id")!;
+        id.ShouldNotBeNullOrWhiteSpace();
+        cut.Find("label").GetAttribute("for")!.ShouldBe(id);
+    }
+
+    [Fact]
+    public void Input_WithInvalidVariantAndSize_FallsBackToDefaults()
+    {
+        // Act
+        IRenderedComponent<Input> cut = Render<Input>(parameters => parameters
+            .Add(p => p.Variant, (InputVariant)999)
+            .Add(p => p.Size, (ComponentSize)999));
+
+        // Assert
+        AngleSharp.Dom.IElement input = cut.Find("input");
+        input.ClassList.ShouldContain("vibe-input-outlined");
+        input.ClassList.ShouldContain("vibe-input-medium");
+        input.ClassList.ShouldNotContain("vibe-input-999");
+        cut.Find(".vibe-input-wrapper").ClassList.ShouldContain("vibe-input-wrapper-medium");
+    }
 }

@@ -4,15 +4,16 @@
 @if (Href != null)
 {
     @* Note: disabled attribute doesn't work on anchors, so we use aria-disabled + pointer-events: none in CSS + click prevention *@
-    <a href="@(Disabled || Loading ? null : Href)"
-        class="@CombinedClass @(Disabled ? "vibe-button-disabled" : "")"
+    <a href="@(IsInteractionDisabled ? null : Href)"
+        class="@CombinedClass @(IsInteractionDisabled ? "vibe-button-disabled" : "")"
         target="@Target"
         rel="@RelAttribute"
-        aria-disabled="@(Disabled || Loading ? "true" : null)"
-        tabindex="@(Disabled || Loading ? -1 : 0)"
+        aria-disabled="@(IsInteractionDisabled ? "true" : null)"
+        aria-busy="@(Loading ? "true" : null)"
+        tabindex="@(IsInteractionDisabled ? -1 : 0)"
         @attributes="AdditionalAttributes"
         @onclick="OnClickHandler"
-        @onclick:preventDefault="@(Disabled || Loading)">
+        @onclick:preventDefault="@IsInteractionDisabled">
         @if (Loading)
         {
             <span class="vibe-button-spinner"></span>
@@ -29,7 +30,7 @@
 }
 else
 {
-    <button type="@Type" class="@CombinedClass" disabled="@Disabled" @attributes="AdditionalAttributes"
+    <button type="@EffectiveType" class="@CombinedClass" disabled="@IsInteractionDisabled" aria-busy="@(Loading ? "true" : null)" @attributes="AdditionalAttributes"
         @onclick="OnClickHandler">
         @if (Loading)
         {
@@ -95,7 +96,7 @@ else
     /// Gets or sets the button type (submit, reset, button)
     /// </summary>
     [Parameter]
-    public string Type { get; set; } = "button";
+    public string? Type { get; set; } = "button";
 
     /// <summary>
     /// Gets or sets the URL to navigate to when the button is clicked
@@ -127,8 +128,8 @@ else
     /// <inheritdoc/>
     protected override string ComponentClass => new ClassBuilder()
         .Add("vibe-button")
-        .AddVariant("vibe-button", Variant)
-        .AddVariant("vibe-button", Size)
+        .AddVariant("vibe-button", EffectiveVariant)
+        .AddVariant("vibe-button", EffectiveSize)
         .AddIf("vibe-button-full-width", FullWidth)
         .AddIf("vibe-button-loading", Loading)
         .AddWhen("vibe-button-icon-only", () => Icon != null && ChildContent == null)
@@ -139,9 +140,21 @@ else
     /// </summary>
     private string? RelAttribute => string.IsNullOrEmpty(Target) ? Rel : "noopener noreferrer";
 
+    private bool IsInteractionDisabled => Disabled || Loading;
+
+    private string EffectiveType => string.IsNullOrWhiteSpace(Type) ? "button" : Type;
+
+    private ButtonVariant EffectiveVariant => Enum.IsDefined(typeof(ButtonVariant), Variant)
+        ? Variant
+        : ButtonVariant.Primary;
+
+    private ComponentSize EffectiveSize => Enum.IsDefined(typeof(ComponentSize), Size)
+        ? Size
+        : ComponentSize.Medium;
+
     private async Task OnClickHandler(MouseEventArgs args)
     {
-        if (!Disabled && !Loading && OnClick.HasDelegate)
+        if (!IsInteractionDisabled && OnClick.HasDelegate)
         {
             await OnClick.InvokeAsync(args);
         }

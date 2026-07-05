@@ -1,18 +1,28 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<div class="@CombinedClass">
-    <div class="collapsible-trigger-wrapper"
+<div class="@CombinedClass" @attributes="AdditionalAttributes">
+    <div id="@_triggerId"
+         class="collapsible-trigger-wrapper"
          role="button"
          tabindex="0"
-         aria-expanded="@(IsOpen ? "true" : "false")"
-         aria-controls="@ContentId"
+         aria-expanded="@AriaBool(_isOpen)"
+         aria-controls="@_contentId"
+         aria-label="@FallbackTriggerAriaLabel"
          @onclick="ToggleAsync"
          @onkeydown="HandleTriggerKeyDown">
-        @TriggerContent(IsOpen)
+        @if (TriggerContent is not null)
+        {
+            @TriggerContent(_isOpen)
+        }
     </div>
 
-    <div id="@ContentId" class="vibe-collapsible-content collapsible-content @(IsOpen ? "expanded" : "")">
+    <div id="@_contentId"
+         class="@ContentClass"
+         role="region"
+         aria-labelledby="@_triggerId"
+         aria-hidden="@AriaHiddenValue"
+         hidden="@(!_isOpen)">
         @ChildContent
     </div>
 </div>
@@ -28,7 +38,7 @@
     /// Gets or sets the trigger content with expanded state parameter.
     /// </summary>
     [Parameter]
-    public RenderFragment<bool> TriggerContent { get; set; } = default!;
+    public RenderFragment<bool>? TriggerContent { get; set; }
 
     /// <summary>
     /// Gets or sets whether the collapsible is open.
@@ -47,15 +57,37 @@
     /// </summary>
     protected override string ComponentClass => "vibe-collapsible";
 
-    private readonly string ContentId = $"vibe-collapsible-content-{Guid.NewGuid():N}";
+    private readonly string _triggerId = $"vibe-collapsible-trigger-{Guid.NewGuid():N}";
+    private readonly string _contentId = $"vibe-collapsible-content-{Guid.NewGuid():N}";
+    private bool _hasSeenIsOpenParameter;
+    private bool _isOpen;
+    private bool _lastIsOpenParameter;
+
+    private string ContentClass => CombineClasses(
+        "vibe-collapsible-content",
+        "collapsible-content",
+        _isOpen ? "expanded" : null);
+    private string? AriaHiddenValue => _isOpen ? null : "true";
+    private string? FallbackTriggerAriaLabel => TriggerContent is null ? "Toggle collapsible" : null;
+
+    protected override void OnParametersSet()
+    {
+        if (!_hasSeenIsOpenParameter || IsOpen != _lastIsOpenParameter)
+        {
+            _isOpen = IsOpen;
+            _lastIsOpenParameter = IsOpen;
+            _hasSeenIsOpenParameter = true;
+        }
+    }
 
     /// <summary>
     /// Toggles the collapsible state.
     /// </summary>
     public async Task ToggleAsync()
     {
-        IsOpen = !IsOpen;
-        await IsOpenChanged.InvokeAsync(IsOpen);
+        _isOpen = !_isOpen;
+        await IsOpenChanged.InvokeAsync(_isOpen);
+        StateHasChanged();
     }
 
     private async Task HandleTriggerKeyDown(KeyboardEventArgs e)
@@ -65,4 +97,6 @@
             await ToggleAsync();
         }
     }
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
 }

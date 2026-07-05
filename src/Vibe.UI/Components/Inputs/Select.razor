@@ -1,13 +1,13 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
 
-<div class="@GetContainerClass()">
+<div class="@CombinedClass">
     <div class="vibe-select-wrapper">
-        <select id="@ElementId" class="vibe-select-input" disabled="@Disabled" @attributes="AdditionalAttributes"
+        <select id="@ElementId" class="vibe-select-input" value="@currentValue" disabled="@Disabled" @attributes="GetSelectAttributes()"
             @onchange="OnChangeHandler" @onfocus="OnFocus" @onblur="OnBlur" @onclick:stopPropagation>
             @if (!string.IsNullOrEmpty(Placeholder))
             {
-                <option value="" disabled selected>@Placeholder</option>
+                <option value="" disabled selected="@string.IsNullOrEmpty(currentValue)">@Placeholder</option>
             }
 
             @ChildContent
@@ -23,13 +23,14 @@
 
     @if (!string.IsNullOrEmpty(HelperText))
     {
-        <div class="vibe-select-helper-text">@HelperText</div>
+        <div class="vibe-select-helper-text" id="@HelperId">@HelperText</div>
     }
 </div>
 
 @code {
-    private string _id = Guid.NewGuid().ToString();
+    private readonly string _id = Guid.NewGuid().ToString();
     private bool isFocused = false;
+    private string currentValue = string.Empty;
 
     /// <summary>
     /// Gets or sets the select ID
@@ -62,6 +63,18 @@
     public bool Disabled { get; set; }
 
     /// <summary>
+    /// Gets or sets the current selected value.
+    /// </summary>
+    [Parameter]
+    public string? Value { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback for when the selected value changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string?> ValueChanged { get; set; }
+
+    /// <summary>
     /// Gets or sets the select options
     /// </summary>
     [Parameter]
@@ -79,14 +92,25 @@
     /// <summary>
     /// Gets the ID of the select element
     /// </summary>
-    private string ElementId => string.IsNullOrEmpty(Id) ? _id : Id;
+    private string ElementId => string.IsNullOrWhiteSpace(Id) ? _id : Id;
+
+    private string HelperId => $"{ElementId}-helper";
+
+    protected override void OnParametersSet()
+    {
+        currentValue = Value ?? string.Empty;
+
+        if (Disabled)
+        {
+            isFocused = false;
+        }
+    }
 
     private string GetContainerClass()
-    {
-        var classes = new List<string> { "vibe-select" };
-        if (Disabled) classes.Add("vibe-select-disabled");
-        return string.Join(" ", classes);
-    }
+        => new ClassBuilder()
+            .Add("vibe-select")
+            .AddIf("vibe-select-disabled", Disabled)
+            .Build();
 
     private string GetLabelClass()
     {
@@ -101,7 +125,10 @@
 
     private void OnFocus(FocusEventArgs e)
     {
-        isFocused = true;
+        if (!Disabled)
+        {
+            isFocused = true;
+        }
     }
 
     private void OnBlur(FocusEventArgs e)
@@ -111,9 +138,69 @@
 
     private async Task OnChangeHandler(ChangeEventArgs args)
     {
+        if (Disabled)
+        {
+            return;
+        }
+
+        currentValue = args.Value?.ToString() ?? string.Empty;
+
+        if (ValueChanged.HasDelegate)
+        {
+            await ValueChanged.InvokeAsync(currentValue);
+        }
+
         if (OnChange.HasDelegate)
         {
             await OnChange.InvokeAsync(args);
         }
+    }
+
+    private Dictionary<string, object>? GetSelectAttributes()
+    {
+        Dictionary<string, object>? attributes = null;
+
+        if (AdditionalAttributes is { Count: > 0 })
+        {
+            attributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var attribute in AdditionalAttributes)
+            {
+                if (!IsReservedSelectAttribute(attribute.Key))
+                {
+                    attributes[attribute.Key] = attribute.Value;
+                }
+            }
+        }
+
+        if (!string.IsNullOrEmpty(HelperText))
+        {
+            attributes ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            MergeSpaceSeparatedAttribute(attributes, "aria-describedby", HelperId);
+        }
+
+        return attributes is { Count: > 0 } ? attributes : null;
+    }
+
+    private static bool IsReservedSelectAttribute(string attributeName)
+        => attributeName.Equals("class", StringComparison.OrdinalIgnoreCase)
+            || attributeName.Equals("id", StringComparison.OrdinalIgnoreCase)
+            || attributeName.Equals("value", StringComparison.OrdinalIgnoreCase)
+            || attributeName.Equals("disabled", StringComparison.OrdinalIgnoreCase);
+
+    private static void MergeSpaceSeparatedAttribute(Dictionary<string, object> target, string key, string value)
+    {
+        if (!target.TryGetValue(key, out var existingValue) || existingValue is null)
+        {
+            target[key] = value;
+            return;
+        }
+
+        var tokens = existingValue.ToString()!
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Concat(value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            .Distinct(StringComparer.Ordinal);
+
+        target[key] = string.Join(" ", tokens);
     }
 }

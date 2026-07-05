@@ -393,4 +393,79 @@ public class ButtonTests : TestBase
         button.GetAttribute("data-testid")!.ShouldBe("my-button");
         button.GetAttribute("aria-label")!.ShouldBe("Custom Button");
     }
+
+    [Fact]
+    public void Button_WithClassParameter_AppendsCustomClass()
+    {
+        // Act
+        var cut = Render<Button>(parameters => parameters
+            .Add(p => p.Class, "tracking-button")
+            .AddChildContent("Tracked"));
+
+        // Assert
+        var button = cut.Find("button");
+        button.ClassList.ShouldContain("vibe-button");
+        button.ClassList.ShouldContain("tracking-button");
+    }
+
+    [Fact]
+    public void Button_WithLoading_DisablesNativeButtonAndSetsBusyState()
+    {
+        // Act
+        var cut = Render<Button>(parameters => parameters
+            .Add(p => p.Loading, true)
+            .AddChildContent("Saving"));
+
+        // Assert
+        var button = cut.Find("button");
+        button.HasAttribute("disabled").ShouldBeTrue();
+        button.GetAttribute("aria-busy")!.ShouldBe("true");
+    }
+
+    [Fact]
+    public void Button_AsLink_WithLoading_RemovesNavigationAndSetsDisabledSemantics()
+    {
+        // Act
+        var cut = Render<Button>(parameters => parameters
+            .Add(p => p.Href, "https://example.com")
+            .Add(p => p.Loading, true)
+            .AddChildContent("Loading Link"));
+
+        // Assert
+        var link = cut.Find("a");
+        link.GetAttribute("href").ShouldBeNull();
+        link.GetAttribute("aria-disabled")!.ShouldBe("true");
+        link.GetAttribute("aria-busy")!.ShouldBe("true");
+        link.GetAttribute("tabindex")!.ShouldBe("-1");
+        link.ClassList.ShouldContain("vibe-button-disabled");
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Button_WithNullOrWhitespaceType_FallsBackToButton(string? type)
+    {
+        // Act
+        var cut = Render<Button>(parameters => parameters
+            .Add(p => p.Type, type));
+
+        // Assert
+        cut.Find("button").GetAttribute("type")!.ShouldBe("button");
+    }
+
+    [Fact]
+    public void Button_WithInvalidVariantAndSize_FallsBackToDefaults()
+    {
+        // Act
+        var cut = Render<Button>(parameters => parameters
+            .Add(p => p.Variant, (ButtonVariant)999)
+            .Add(p => p.Size, (ComponentSize)999));
+
+        // Assert
+        var classes = cut.Find("button").ClassList;
+        classes.ShouldContain("vibe-button-primary");
+        classes.ShouldContain("vibe-button-medium");
+        classes.ShouldNotContain("vibe-button-999");
+    }
 }

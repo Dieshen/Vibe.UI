@@ -73,8 +73,11 @@ public class CheckboxTests : TestBase
         var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Checked, false));
 
-        // Act & Assert - Should not throw
+        // Act
         cut.Find("input[type='checkbox']").Change(true);
+
+        // Assert
+        cut.Find("input[type='checkbox']").HasAttribute("checked").ShouldBeTrue();
     }
 
     // === Edge Cases ===
@@ -174,8 +177,12 @@ public class CheckboxTests : TestBase
             .Add(p => p.Disabled, true)
             .Add(p => p.CheckedChanged, newValue => checkedValue = newValue));
 
-        // Act - bUnit doesn't prevent disabled checkbox change, but we verify the disabled attribute
+        // Act - bUnit can dispatch directly even when the element is disabled.
+        cut.Find("input[type='checkbox']").Change(true);
+
+        // Assert
         cut.Find("input[type='checkbox']").HasAttribute("disabled").ShouldBeTrue();
+        checkedValue.ShouldBeFalse();
     }
 
     [Fact]
@@ -270,5 +277,65 @@ public class CheckboxTests : TestBase
         var label = cut.Find("label");
         label.GetAttribute("data-testid")!.ShouldBe("my-checkbox");
         label.GetAttribute("aria-label")!.ShouldBe("Custom Checkbox");
+    }
+
+    [Fact]
+    public void Checkbox_WithClassParameter_AppendsCustomClassToLabel()
+    {
+        // Act
+        var cut = Render<Checkbox>(parameters => parameters
+            .Add(p => p.Class, "terms-checkbox")
+            .AddChildContent("Terms"));
+
+        // Assert
+        var label = cut.Find("label");
+        label.ClassList.ShouldContain("vibe-checkbox");
+        label.ClassList.ShouldContain("terms-checkbox");
+    }
+
+    [Fact]
+    public void Checkbox_ForwardsFormSemantics_ToNativeInput()
+    {
+        // Act
+        var cut = Render<Checkbox>(parameters => parameters
+            .Add(p => p.Id, "terms")
+            .Add(p => p.Name, "acceptedTerms")
+            .Add(p => p.Value, "yes")
+            .Add(p => p.Required, true)
+            .AddChildContent("Accept terms"));
+
+        // Assert
+        var checkbox = cut.Find("input[type='checkbox']");
+        checkbox.GetAttribute("id")!.ShouldBe("terms");
+        checkbox.GetAttribute("name")!.ShouldBe("acceptedTerms");
+        checkbox.GetAttribute("value")!.ShouldBe("yes");
+        checkbox.HasAttribute("required").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Checkbox_WhenDisabled_SetsAriaDisabledOnLabel()
+    {
+        // Act
+        var cut = Render<Checkbox>(parameters => parameters
+            .Add(p => p.Disabled, true)
+            .AddChildContent("Disabled"));
+
+        // Assert
+        cut.Find("label").GetAttribute("aria-disabled")!.ShouldBe("true");
+    }
+
+    [Fact]
+    public void Checkbox_WithNonBooleanValue_DoesNotInvokeCallback()
+    {
+        // Arrange
+        var invoked = false;
+        var cut = Render<Checkbox>(parameters => parameters
+            .Add(p => p.CheckedChanged, _ => invoked = true));
+
+        // Act
+        cut.Find("input[type='checkbox']").Change("not a boolean");
+
+        // Assert
+        invoked.ShouldBeFalse();
     }
 }

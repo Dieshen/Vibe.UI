@@ -57,6 +57,21 @@ public class FormTests : TestBase
     }
 
     [Fact]
+    public void Form_ForwardsAdditionalAttributesAndClass()
+    {
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+            .Add(p => p.Model, new TestModel())
+            .Add(p => p.Class, "custom-form")
+            .AddUnmatched("data-testid", "profile-form")
+            .AddChildContent("<div>Content</div>"));
+
+        var form = cut.Find("form");
+        form.ClassList.ShouldContain("vibe-form");
+        form.ClassList.ShouldContain("custom-form");
+        form.GetAttribute("data-testid").ShouldBe("profile-form");
+    }
+
+    [Fact]
     public void Form_Applies_FormName()
     {
         // Act
@@ -97,6 +112,39 @@ public class FormTests : TestBase
     }
 
     [Fact]
+    public void Form_WithNullModel_UsesFallbackEditContext()
+    {
+        EditContext? capturedContext = null;
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+            .Add(p => p.Model, null!)
+            .Add(p => p.OnInvalidSubmit, context => capturedContext = context)
+            .AddChildContent("<button type='submit'>Submit</button>"));
+
+        cut.Find("form").Submit();
+
+        capturedContext.ShouldNotBeNull();
+        capturedContext!.Model.ShouldBeOfType<TestModel>();
+    }
+
+    [Fact]
+    public void Form_UsesProvidedEditContext()
+    {
+        EditContext? capturedContext = null;
+        var model = new TestModel { Name = "John", Email = "john@example.com", Age = 25 };
+        var editContext = new EditContext(model);
+
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+            .Add(p => p.EditContext, editContext)
+            .Add(p => p.OnSubmit, context => capturedContext = context)
+            .AddChildContent("<button type='submit'>Submit</button>"));
+
+        cut.Find("form").Submit();
+
+        capturedContext.ShouldBe(editContext);
+        capturedContext!.Model.ShouldBe(model);
+    }
+
+    [Fact]
     public void Form_Renders_ValidationSummary()
     {
         // Arrange - Create invalid model to trigger validation
@@ -133,6 +181,23 @@ public class FormTests : TestBase
 
         // Assert
         capturedContext.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Form_InvokesOnValidSubmitAlias_WhenValid()
+    {
+        EditContext? capturedContext = null;
+        var model = new TestModel { Name = "John", Email = "john@example.com", Age = 25 };
+
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+            .Add(p => p.Model, model)
+            .Add(p => p.OnValidSubmit, context => capturedContext = context)
+            .AddChildContent("<button type='submit'>Submit</button>"));
+
+        cut.Find("form").Submit();
+
+        capturedContext.ShouldNotBeNull();
+        capturedContext.Model.ShouldBe(model);
     }
 
     [Fact]
@@ -202,6 +267,20 @@ public class FormTests : TestBase
 
         // Assert
         cut.FindAll(".validation-summary").ShouldNotBeEmpty();
+    }
+
+    [Fact]
+    public void Form_CanHideValidationSummary()
+    {
+        var model = new TestModel();
+        var cut = Render<Vibe.UI.Components.Form<TestModel>>(parameters => parameters
+            .Add(p => p.Model, model)
+            .Add(p => p.ShowValidationSummary, false)
+            .AddChildContent("<button type='submit'>Submit</button>"));
+
+        cut.Find("form").Submit();
+
+        cut.FindAll(".validation-summary").ShouldBeEmpty();
     }
 
     #endregion

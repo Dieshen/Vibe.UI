@@ -1,7 +1,10 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<div class="@CombinedClass">
+<div class="@CombinedClass"
+     role="group"
+     aria-roledescription="slide"
+     @attributes="AdditionalAttributes">
     @ChildContent
 </div>
 

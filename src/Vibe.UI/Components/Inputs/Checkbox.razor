@@ -1,8 +1,9 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
 
-<label class="@CombinedClass" @attributes="AdditionalAttributes">
-    <input type="checkbox" class="vibe-checkbox-input" checked="@Checked" disabled="@Disabled"
+<label class="@CombinedClass" aria-disabled="@(Disabled ? "true" : null)" @attributes="AdditionalAttributes">
+    <input type="checkbox" id="@Id" name="@Name" value="@Value" class="vibe-checkbox-input" checked="@currentChecked" disabled="@Disabled"
+        required="@Required"
         @onchange="OnCheckboxChange" />
     <span class="vibe-checkbox-control"></span>
     @if (ChildContent != null)
@@ -14,6 +15,8 @@
 </label>
 
 @code {
+    private bool currentChecked;
+
     /// <summary>
     /// Gets or sets the label content
     /// </summary>
@@ -33,13 +36,45 @@
     public EventCallback<bool> CheckedChanged { get; set; }
 
     /// <summary>
+    /// Gets or sets the checkbox input ID.
+    /// </summary>
+    [Parameter]
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// Gets or sets the checkbox form field name.
+    /// </summary>
+    [Parameter]
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// Gets or sets the submitted checkbox value.
+    /// </summary>
+    [Parameter]
+    public string? Value { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the checkbox is required.
+    /// </summary>
+    [Parameter]
+    public bool Required { get; set; }
+
+    /// <summary>
     /// Gets or sets whether the checkbox is disabled
     /// </summary>
     [Parameter]
     public bool Disabled { get; set; }
 
     /// <inheritdoc/>
-    protected override string ComponentClass => $"vibe-checkbox {(Disabled ? "vibe-checkbox-disabled" : "")}";
+    protected override string ComponentClass => new ClassBuilder()
+        .Add("vibe-checkbox")
+        .AddIf("vibe-checkbox-disabled", Disabled)
+        .Build();
+
+    protected override void OnParametersSet()
+    {
+        currentChecked = Checked;
+    }
 
     /// <summary>
     /// Handles the checkbox change event
@@ -47,9 +82,14 @@
     /// <param name="e">The checkbox change event</param>
     private async Task OnCheckboxChange(ChangeEventArgs e)
     {
+        if (Disabled)
+        {
+            return;
+        }
+
         if (e.Value is bool value)
         {
-            Checked = value;
+            currentChecked = value;
 
             if (CheckedChanged.HasDelegate)
             {

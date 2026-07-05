@@ -29,11 +29,35 @@ public class KbdTests : TestBase
     {
         var cut = Render<Kbd>(parameters => parameters
             .Add(p => p.CssClass, "shortcut-key")
+            .Add(p => p.Class, "outer-key")
             .AddUnmatched("aria-label", "Control key")
             .AddChildContent("Ctrl"));
 
         var kbd = cut.Find(".vibe-kbd");
         kbd.ClassList.ShouldContain("shortcut-key");
+        kbd.ClassList.ShouldContain("outer-key");
         kbd.GetAttribute("aria-label").ShouldBe("Control key");
+    }
+
+    [Fact]
+    public void Kbd_InvalidSizeFallsBackToDefaultSize()
+    {
+        var cut = Render<Kbd>(parameters => parameters
+            .Add(p => p.Size, (Kbd.KbdSize)999)
+            .AddChildContent("Esc"));
+
+        var kbd = cut.Find(".vibe-kbd");
+        kbd.ClassList.ShouldContain("kbd-default");
+        kbd.ClassList.ShouldNotContain("kbd-999");
+    }
+
+    [Fact]
+    public void Kbd_NullContentRendersEmptyKeyboardElement()
+    {
+        var cut = Render<Kbd>();
+
+        var kbd = cut.Find("kbd.vibe-kbd");
+        kbd.TextContent.ShouldBe(string.Empty);
+        kbd.ClassList.ShouldContain("kbd-default");
     }
 }

@@ -13,6 +13,15 @@ public class AccordionTests : TestBase
     }
 
     [Fact]
+    public void Accordion_RendersWithoutChildContent()
+    {
+        var cut = Render<Accordion>();
+
+        var accordion = cut.Find(".vibe-accordion");
+        accordion.InnerHtml.Trim().ShouldBeEmpty();
+    }
+
+    [Fact]
     public void Accordion_PreservesCustomClassAndAttributes()
     {
         var cut = Render<Accordion>(parameters => parameters
@@ -28,19 +37,9 @@ public class AccordionTests : TestBase
     public void Accordion_SingleModeCollapsesOtherItems()
     {
         var cut = Render<Accordion>(parameters => parameters
-            .AddChildContent(builder =>
-            {
-                builder.OpenComponent<AccordionItem>(0);
-                builder.AddAttribute(1, "Id", "one");
-                builder.AddAttribute(2, "Header", (RenderFragment)(header => header.AddContent(0, "One")));
-                builder.AddAttribute(3, "Content", (RenderFragment)(content => content.AddContent(0, "One content")));
-                builder.CloseComponent();
-                builder.OpenComponent<AccordionItem>(4);
-                builder.AddAttribute(5, "Id", "two");
-                builder.AddAttribute(6, "Header", (RenderFragment)(header => header.AddContent(0, "Two")));
-                builder.AddAttribute(7, "Content", (RenderFragment)(content => content.AddContent(0, "Two content")));
-                builder.CloseComponent();
-            }));
+            .AddChildContent(BuildAccordionItems(
+                ("one", "One", "One content"),
+                ("two", "Two", "Two content"))));
 
         var triggers = cut.FindAll(".vibe-accordion-item-trigger");
         triggers[0].Click();
@@ -56,19 +55,9 @@ public class AccordionTests : TestBase
     {
         var cut = Render<Accordion>(parameters => parameters
             .Add(p => p.Type, Accordion.AccordionType.Multiple)
-            .AddChildContent(builder =>
-            {
-                builder.OpenComponent<AccordionItem>(0);
-                builder.AddAttribute(1, "Id", "one");
-                builder.AddAttribute(2, "Header", (RenderFragment)(header => header.AddContent(0, "One")));
-                builder.AddAttribute(3, "Content", (RenderFragment)(content => content.AddContent(0, "One content")));
-                builder.CloseComponent();
-                builder.OpenComponent<AccordionItem>(4);
-                builder.AddAttribute(5, "Id", "two");
-                builder.AddAttribute(6, "Header", (RenderFragment)(header => header.AddContent(0, "Two")));
-                builder.AddAttribute(7, "Content", (RenderFragment)(content => content.AddContent(0, "Two content")));
-                builder.CloseComponent();
-            }));
+            .AddChildContent(BuildAccordionItems(
+                ("one", "One", "One content"),
+                ("two", "Two", "Two content"))));
 
         foreach (var trigger in cut.FindAll(".vibe-accordion-item-trigger"))
         {
@@ -79,24 +68,75 @@ public class AccordionTests : TestBase
     }
 
     [Fact]
-    public void Accordion_RaisesStateChangedEvent()
+    public void Accordion_SingleModeCanKeepItemsExpanded_WhenCollapseOthersDisabled()
     {
-        Accordion.AccordionItemEventArgs? args = null;
         var cut = Render<Accordion>(parameters => parameters
-            .Add(p => p.OnItemStateChanged, EventCallback.Factory.Create<Accordion.AccordionItemEventArgs>(this, value => args = value))
-            .AddChildContent(builder =>
+            .Add(p => p.CollapseOthers, false)
+            .AddChildContent(BuildAccordionItems(
+                ("one", "One", "One content"),
+                ("two", "Two", "Two content"))));
+
+        foreach (var trigger in cut.FindAll(".vibe-accordion-item-trigger"))
+        {
+            trigger.Click();
+        }
+
+        cut.FindAll(".vibe-accordion-item-expanded").Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public void Accordion_InvalidTypeFallsBackToSingleMode()
+    {
+        var cut = Render<Accordion>(parameters => parameters
+            .Add(p => p.Type, (Accordion.AccordionType)999)
+            .AddChildContent(BuildAccordionItems(
+                ("one", "One", "One content"),
+                ("two", "Two", "Two content"))));
+
+        var triggers = cut.FindAll(".vibe-accordion-item-trigger");
+        triggers[0].Click();
+        triggers[1].Click();
+
+        cut.FindAll(".vibe-accordion-item-expanded").Count.ShouldBe(1);
+        cut.FindAll(".vibe-accordion-item")[0].ClassList.ShouldNotContain("vibe-accordion-item-expanded");
+        cut.FindAll(".vibe-accordion-item")[1].ClassList.ShouldContain("vibe-accordion-item-expanded");
+    }
+
+    [Fact]
+    public void Accordion_RaisesStateChangedEvent_ForExpandAndCollapse()
+    {
+        var events = new List<Accordion.AccordionItemEventArgs>();
+        var cut = Render<Accordion>(parameters => parameters
+            .Add(p => p.OnItemStateChanged, EventCallback.Factory.Create<Accordion.AccordionItemEventArgs>(this, events.Add))
+            .AddChildContent(BuildAccordionItems(("item-a", "Item A", "A content"))));
+
+        var trigger = cut.Find(".vibe-accordion-item-trigger");
+        trigger.Click();
+        trigger.Click();
+
+        events.Count.ShouldBe(2);
+        events[0].ItemId.ShouldBe("item-a");
+        events[0].IsExpanded.ShouldBeTrue();
+        events[1].ItemId.ShouldBe("item-a");
+        events[1].IsExpanded.ShouldBeFalse();
+        cut.Find(".vibe-accordion-item").ClassList.ShouldNotContain("vibe-accordion-item-expanded");
+    }
+
+    private static RenderFragment BuildAccordionItems(params (string Id, string Header, string Content)[] items)
+    {
+        return builder =>
+        {
+            var sequence = 0;
+            foreach (var item in items)
             {
-                builder.OpenComponent<AccordionItem>(0);
-                builder.AddAttribute(1, "Id", "item-a");
-                builder.AddAttribute(2, "Header", (RenderFragment)(header => header.AddContent(0, "Item A")));
-                builder.AddAttribute(3, "Content", (RenderFragment)(content => content.AddContent(0, "A content")));
+                builder.OpenComponent<AccordionItem>(sequence++);
+                builder.AddAttribute(sequence++, nameof(AccordionItem.Id), item.Id);
+                builder.AddAttribute(sequence++, nameof(AccordionItem.Header), (RenderFragment)(header =>
+                    header.AddContent(0, item.Header)));
+                builder.AddAttribute(sequence++, nameof(AccordionItem.Content), (RenderFragment)(content =>
+                    content.AddContent(0, item.Content)));
                 builder.CloseComponent();
-            }));
-
-        cut.Find(".vibe-accordion-item-trigger").Click();
-
-        args.ShouldNotBeNull();
-        args.ItemId.ShouldBe("item-a");
-        args.IsExpanded.ShouldBeTrue();
+            }
+        };
     }
 }

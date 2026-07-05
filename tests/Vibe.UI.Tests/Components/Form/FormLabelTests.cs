@@ -42,7 +42,9 @@ public class FormLabelTests : TestBase
 
         var indicator = cut.Find(".required-indicator");
         indicator.TextContent.ShouldBe("*");
+        indicator.GetAttribute("aria-hidden").ShouldBe("true");
         cut.Find("label").TextContent.ShouldContain("Email");
+        cut.Find("label").ClassList.ShouldContain("required");
     }
 
     [Fact]
@@ -53,5 +55,37 @@ public class FormLabelTests : TestBase
             .AddChildContent("Email"));
 
         cut.Find("label").GetAttribute("data-testid").ShouldBe("email-label");
+    }
+
+    [Fact]
+    public void FormLabel_AppliesCustomClass()
+    {
+        var cut = Render<FormLabel>(parameters => parameters
+            .Add(p => p.Class, "custom-label")
+            .AddChildContent("Email"));
+
+        cut.Find("label").ClassList.ShouldContain("custom-label");
+    }
+
+    [Fact]
+    public void FormLabel_AppliesDisabledSemantics()
+    {
+        var cut = Render<FormLabel>(parameters => parameters
+            .Add(p => p.Disabled, true)
+            .AddChildContent("Email"));
+
+        var label = cut.Find("label");
+        label.ClassList.ShouldContain("disabled");
+        label.GetAttribute("aria-disabled").ShouldBe("true");
+    }
+
+    [Fact]
+    public void FormLabel_OmitsForAttribute_WhenForIsWhitespace()
+    {
+        var cut = Render<FormLabel>(parameters => parameters
+            .Add(p => p.For, "   ")
+            .AddChildContent("Email"));
+
+        cut.Find("label").HasAttribute("for").ShouldBeFalse();
     }
 }

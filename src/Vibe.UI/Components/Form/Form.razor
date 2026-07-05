@@ -3,10 +3,16 @@
 @typeparam TForm where TForm : class, new()
 @inherits Base.VibeComponent
 
-<EditForm Model="@Model" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit" FormName="@FormName"
-    class="@CombinedClass">
-    <DataAnnotationsValidator />
-    <ValidationSummary class="validation-summary" />
+<EditForm @attributes="AdditionalAttributes" EditContext="@EffectiveEditContext" OnValidSubmit="HandleValidSubmit"
+    OnInvalidSubmit="HandleInvalidSubmit" FormName="@FormName" Enhance="@Enhance" class="@CombinedClass">
+    @if (EnableDataAnnotationsValidator)
+    {
+        <DataAnnotationsValidator />
+    }
+    @if (ShowValidationSummary)
+    {
+        <ValidationSummary class="@ValidationSummaryClass" />
+    }
 
     <CascadingValue Value="this" IsFixed="true">
         @ChildContent
@@ -33,10 +39,22 @@
     public string? FormName { get; set; }
 
     /// <summary>
+    /// Gets or sets an explicit edit context for advanced form scenarios.
+    /// </summary>
+    [Parameter]
+    public EditContext? EditContext { get; set; }
+
+    /// <summary>
     /// Gets or sets the callback when the form is successfully submitted.
     /// </summary>
     [Parameter]
     public EventCallback<EditContext> OnSubmit { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback when the form is successfully submitted.
+    /// </summary>
+    [Parameter]
+    public EventCallback<EditContext> OnValidSubmit { get; set; }
 
     /// <summary>
     /// Gets or sets the callback when the form submission fails validation.
@@ -45,15 +63,56 @@
     public EventCallback<EditContext> OnInvalidSubmit { get; set; }
 
     /// <summary>
+    /// Gets or sets whether to render a data annotations validator.
+    /// </summary>
+    [Parameter]
+    public bool EnableDataAnnotationsValidator { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets whether to render a validation summary.
+    /// </summary>
+    [Parameter]
+    public bool ShowValidationSummary { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the validation summary CSS class.
+    /// </summary>
+    [Parameter]
+    public string ValidationSummaryClass { get; set; } = "validation-summary";
+
+    /// <summary>
+    /// Gets or sets whether enhanced form handling should be enabled.
+    /// </summary>
+    [Parameter]
+    public bool Enhance { get; set; }
+
+    /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
     protected override string ComponentClass => "vibe-form";
 
-    /// <summary>
-    /// Initializes a new instance of the Form component.
-    /// </summary>
-    public Form()
+    private readonly TForm _fallbackModel = new();
+    private TForm? _lastEffectiveModel;
+    private EditContext? _internalEditContext;
+
+    private EditContext EffectiveEditContext => EditContext ?? _internalEditContext ?? throw new InvalidOperationException("The form edit context has not been initialized.");
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
     {
+        base.OnParametersSet();
+
+        if (EditContext != null)
+        {
+            return;
+        }
+
+        var effectiveModel = Model ?? _fallbackModel;
+        if (!ReferenceEquals(effectiveModel, _lastEffectiveModel))
+        {
+            _internalEditContext = new EditContext(effectiveModel);
+            _lastEffectiveModel = effectiveModel;
+        }
     }
 
     /// <summary>
@@ -63,6 +122,7 @@
     private async Task HandleValidSubmit(EditContext context)
     {
         await OnSubmit.InvokeAsync(context);
+        await OnValidSubmit.InvokeAsync(context);
     }
 
     /// <summary>

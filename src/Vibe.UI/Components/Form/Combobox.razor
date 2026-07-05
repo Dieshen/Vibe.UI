@@ -1,11 +1,16 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<div class="@CombinedClass">
+<div @attributes="AdditionalAttributes" class="@CombinedClass">
     <div class="combobox-trigger" @onclick="ToggleDropdown">
-        <input type="text" class="combobox-input" placeholder="@Placeholder" @bind-value="InputValue"
-            @bind-value:event="oninput" @onfocus="OnInputFocus" @onkeydown="OnKeyDown" autocomplete="off" />
-        <div class="combobox-chevron">
+        <input id="@InputId" type="text" class="combobox-input" placeholder="@Placeholder" value="@InputValue"
+            @oninput="OnInputChanged" @onfocus="OnInputFocus" @onkeydown="OnKeyDown" disabled="@Disabled"
+            readonly="@ReadOnly" autocomplete="off" role="combobox" aria-label="@AriaLabel"
+            aria-labelledby="@AriaLabelledBy" aria-autocomplete="list" aria-haspopup="listbox"
+            aria-expanded="@AriaBool(IsOpen)" aria-controls="@ListboxId" aria-activedescendant="@ActiveDescendantId"
+            aria-describedby="@InputDescribedBy" aria-invalid="@AriaInvalid" aria-readonly="@AriaReadonly"
+            required="@Required" />
+        <div class="combobox-chevron" aria-hidden="true">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m6 9 6 6 6-6" />
@@ -15,28 +20,46 @@
 
     @if (IsOpen)
     {
-        <div class="combobox-content">
+        <div class="combobox-content" id="@ListboxId" role="listbox">
             @if (FilteredOptions.Any())
             {
-                @foreach (var option in FilteredOptions)
+                @for (var i = 0; i < FilteredOptions.Count; i++)
                 {
-                    <div class="combobox-option @(IsSelectedOption(option) ? "selected" : "")" @onclick="() => SelectOption(option)"
+                    var option = FilteredOptions[i];
+                    <div id="@GetOptionId(i)" @key="option" role="option"
+                        class="combobox-option @(IsSelectedOption(option) ? "selected" : "")"
+                        aria-selected="@AriaBool(IsSelectedOption(option))" @onclick="() => SelectOption(option)"
                         @onmouseenter="() => HighlightOption(option)">
-                        @option.Label
+                        @GetOptionLabel(option)
                     </div>
                 }
             }
             else
             {
-                <div class="combobox-empty">No results found.</div>
+                <div class="combobox-empty" role="status">@EmptyText</div>
             }
         </div>
 
         <div class="combobox-backdrop" @onclick="CloseDropdown"></div>
     }
+
+    @if (HasHelperText)
+    {
+        <div class="combobox-helper" id="@HelperTextId">@HelperText</div>
+    }
+
+    @if (HasError)
+    {
+        <div class="combobox-error" id="@ErrorTextId" role="alert">@ErrorMessage</div>
+    }
 </div>
 
 @code {
+    private readonly string _instanceId = Guid.NewGuid().ToString("N");
+    private string? _lastValue;
+    private List<ComboboxOption>? _lastOptions;
+    private bool _hasSyncedParameters;
+
     /// <summary>
     /// Represents an option in the combobox.
     /// </summary>
@@ -65,6 +88,12 @@
     public string Placeholder { get; set; } = "Select an option...";
 
     /// <summary>
+    /// Gets or sets the input element ID.
+    /// </summary>
+    [Parameter]
+    public string? Id { get; set; }
+
+    /// <summary>
     /// Gets or sets the available options.
     /// </summary>
     [Parameter]
@@ -89,9 +118,74 @@
     public bool AllowFreeText { get; set; }
 
     /// <summary>
+    /// Gets or sets whether the combobox is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the combobox is read-only.
+    /// </summary>
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the combobox value is required.
+    /// </summary>
+    [Parameter]
+    public bool Required { get; set; }
+
+    /// <summary>
+    /// Gets or sets helper text displayed when there is no error message.
+    /// </summary>
+    [Parameter]
+    public string? HelperText { get; set; }
+
+    /// <summary>
+    /// Gets or sets an error message for the combobox.
+    /// </summary>
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Gets or sets the text displayed when no options match.
+    /// </summary>
+    [Parameter]
+    public string EmptyText { get; set; } = "No results found.";
+
+    /// <summary>
+    /// Gets or sets an accessible label for the input.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the ID of an element that labels the input.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabelledBy { get; set; }
+
+    /// <summary>
+    /// Gets or sets additional IDs that describe the input.
+    /// </summary>
+    [Parameter]
+    public string? AriaDescribedBy { get; set; }
+
+    /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
     protected override string ComponentClass => "vibe-combobox";
+
+    /// <inheritdoc />
+    protected override string GetCombinedClass()
+    {
+        return CombineClasses(
+            ComponentClass,
+            Disabled ? "disabled" : null,
+            ReadOnly ? "readonly" : null,
+            HasError ? "has-error" : null,
+            Class);
+    }
 
     /// <summary>
     /// The current input value.
@@ -122,14 +216,36 @@
     /// </summary>
     private ComboboxOption? HighlightedOption;
 
-    /// <summary>
-    /// Initialize the component.
-    /// </summary>
-    protected override void OnInitialized()
+    private string InputId => string.IsNullOrWhiteSpace(Id) ? $"vibe-combobox-input-{_instanceId}" : Id!;
+
+    private string ListboxId => $"{InputId}-listbox";
+
+    private string HelperTextId => $"{InputId}-helper";
+
+    private string ErrorTextId => $"{InputId}-error";
+
+    private bool IsInteractive => !Disabled && !ReadOnly;
+
+    private bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
+
+    private bool HasHelperText => !HasError && !string.IsNullOrWhiteSpace(HelperText);
+
+    private string? AriaInvalid => HasError ? "true" : null;
+
+    private string? AriaReadonly => ReadOnly ? "true" : null;
+
+    private string? InputDescribedBy => CombineIds(
+        AriaDescribedBy,
+        HasError ? ErrorTextId : null,
+        HasHelperText ? HelperTextId : null);
+
+    private string? ActiveDescendantId
     {
-        base.OnInitialized();
-        UpdateInputFromValue();
-        FilterOptions();
+        get
+        {
+            var index = HighlightedOption == null ? -1 : FilteredOptions.IndexOf(HighlightedOption);
+            return index >= 0 ? GetOptionId(index) : null;
+        }
     }
 
     /// <summary>
@@ -138,7 +254,25 @@
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        UpdateInputFromValue();
+
+        var valueChanged = !_hasSyncedParameters || !string.Equals(Value, _lastValue, StringComparison.Ordinal);
+        var optionsChanged = !_hasSyncedParameters || !ReferenceEquals(Options, _lastOptions);
+
+        if (valueChanged || optionsChanged)
+        {
+            UpdateInputFromValue();
+        }
+
+        _lastValue = Value;
+        _lastOptions = Options;
+        _hasSyncedParameters = true;
+
+        if (!IsInteractive)
+        {
+            CloseDropdown();
+        }
+
+        FilterOptions();
     }
 
     /// <summary>
@@ -146,18 +280,16 @@
     /// </summary>
     private void UpdateInputFromValue()
     {
-        if (!string.IsNullOrEmpty(Value))
+        if (string.IsNullOrEmpty(Value))
         {
-            var selectedOption = Options.FirstOrDefault(o => o.Value == Value);
-            if (selectedOption != null)
-            {
-                _inputValue = selectedOption.Label;
-            }
-            else if (AllowFreeText)
-            {
-                _inputValue = Value;
-            }
+            _inputValue = string.Empty;
+            return;
         }
+
+        var selectedOption = GetOptions().FirstOrDefault(o => string.Equals(o.Value, Value, StringComparison.Ordinal));
+        _inputValue = selectedOption != null
+            ? GetOptionLabel(selectedOption)
+            : AllowFreeText ? Value : string.Empty;
     }
 
     /// <summary>
@@ -166,12 +298,24 @@
     private void FilterOptions()
     {
         FilteredOptions = string.IsNullOrWhiteSpace(InputValue)
-        ? Options.Where(o => !o.Disabled).ToList()
-        : Options.Where(o => !o.Disabled &&
-        o.Label.Contains(InputValue, StringComparison.OrdinalIgnoreCase))
-        .ToList();
+            ? GetOptions().Where(o => !o.Disabled).ToList()
+            : GetOptions()
+                .Where(o => !o.Disabled &&
+                    GetOptionLabel(o).Contains(InputValue, StringComparison.OrdinalIgnoreCase))
+                .ToList();
 
         HighlightedOption = FilteredOptions.FirstOrDefault();
+    }
+
+    private void OnInputChanged(ChangeEventArgs e)
+    {
+        if (!IsInteractive)
+        {
+            return;
+        }
+
+        InputValue = e.Value?.ToString() ?? string.Empty;
+        IsOpen = true;
     }
 
     /// <summary>
@@ -179,6 +323,11 @@
     /// </summary>
     private void ToggleDropdown()
     {
+        if (!IsInteractive)
+        {
+            return;
+        }
+
         IsOpen = !IsOpen;
         if (IsOpen)
         {
@@ -199,6 +348,11 @@
     /// </summary>
     private void OnInputFocus()
     {
+        if (!IsInteractive)
+        {
+            return;
+        }
+
         IsOpen = true;
         FilterOptions();
     }
@@ -209,6 +363,11 @@
     /// <param name="e">The keyboard event args.</param>
     private async Task OnKeyDown(KeyboardEventArgs e)
     {
+        if (!IsInteractive)
+        {
+            return;
+        }
+
         switch (e.Key)
         {
             case "ArrowDown":
@@ -255,7 +414,9 @@
     private void MoveHighlight(int step)
     {
         if (!FilteredOptions.Any())
+        {
             return;
+        }
 
         var currentIndex = HighlightedOption == null ? -1 : FilteredOptions.IndexOf(HighlightedOption);
         if (currentIndex == -1)
@@ -293,11 +454,43 @@
     /// <param name="option">The option to select.</param>
     private async Task SelectOption(ComboboxOption? option)
     {
-        if (option == null || option.Disabled)
+        if (!IsInteractive || option == null || option.Disabled)
+        {
             return;
+        }
 
-        InputValue = option.Label;
-        await ValueChanged.InvokeAsync(option.Value);
+        InputValue = GetOptionLabel(option);
+        await ValueChanged.InvokeAsync(option.Value ?? string.Empty);
         CloseDropdown();
+    }
+
+    private IEnumerable<ComboboxOption> GetOptions()
+    {
+        return Options ?? Enumerable.Empty<ComboboxOption>();
+    }
+
+    private string GetOptionLabel(ComboboxOption option)
+    {
+        return option.Label ?? string.Empty;
+    }
+
+    private string GetOptionId(int index)
+    {
+        return $"{InputId}-option-{index}";
+    }
+
+    private static string AriaBool(bool value)
+    {
+        return value ? "true" : "false";
+    }
+
+    private static string? CombineIds(params string?[] ids)
+    {
+        var combined = ids
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Select(id => id!.Trim())
+            .ToList();
+
+        return combined.Count == 0 ? null : string.Join(" ", combined);
     }
 }

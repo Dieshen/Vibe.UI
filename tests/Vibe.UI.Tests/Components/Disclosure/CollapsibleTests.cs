@@ -5,153 +5,186 @@ public class CollapsibleTests : TestBase
     [Fact]
     public void Collapsible_Renders_WithDefaultProps()
     {
-        // Act
-        var cut = Render<Collapsible>(parameters => parameters
-            .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
-            .AddChildContent("Collapsible Content"));
+        var cut = RenderBasicCollapsible();
 
-        // Assert
         cut.Find(".vibe-collapsible").ShouldNotBeNull();
         var trigger = cut.Find(".collapsible-trigger-wrapper");
+        var content = cut.Find(".collapsible-content");
         trigger.GetAttribute("role").ShouldBe("button");
         trigger.GetAttribute("tabindex").ShouldBe("0");
         trigger.GetAttribute("aria-expanded").ShouldBe("false");
+        trigger.GetAttribute("aria-controls").ShouldBe(content.GetAttribute("id"));
+        trigger.GetAttribute("aria-label").ShouldBeNull();
+        content.GetAttribute("role").ShouldBe("region");
+        content.GetAttribute("aria-labelledby").ShouldBe(trigger.GetAttribute("id"));
+        content.GetAttribute("aria-hidden").ShouldBe("true");
+        content.HasAttribute("hidden").ShouldBeTrue();
     }
 
     [Fact]
     public void Collapsible_IsClosed_ByDefault()
     {
-        // Act
-        var cut = Render<Collapsible>(parameters => parameters
-            .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
-            .AddChildContent("Collapsible Content"));
+        var cut = RenderBasicCollapsible();
 
-        // Assert
         cut.Instance.IsOpen.ShouldBeFalse();
+        cut.Find(".collapsible-content").ClassList.ShouldNotContain("expanded");
     }
 
     [Fact]
     public void Collapsible_Renders_TriggerContent()
     {
-        // Act
-        var cut = Render<Collapsible>(parameters => parameters
-            .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle Me"))
-            .AddChildContent("Collapsible Content"));
+        var cut = RenderBasicCollapsible("Toggle Me");
 
-        // Assert
         cut.Markup.ShouldContain("Toggle Me");
     }
 
     [Fact]
     public void Collapsible_Renders_ChildContent()
     {
-        // Act
         var cut = Render<Collapsible>(parameters => parameters
-            .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
+            .Add(p => p.TriggerContent, Trigger("Toggle"))
             .AddChildContent("<span class='test-content'>Test Content</span>"));
 
-        // Assert
-        var content = cut.Find(".test-content");
-        content.TextContent.ShouldBe("Test Content");
+        cut.Find(".test-content").TextContent.ShouldBe("Test Content");
     }
 
     [Fact]
-    public void Collapsible_Content_NotExpanded_Initially()
+    public void Collapsible_RendersWithoutTriggerContent()
     {
-        // Act
         var cut = Render<Collapsible>(parameters => parameters
-            .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
             .AddChildContent("Collapsible Content"));
 
-        // Assert
-        var content = cut.Find(".collapsible-content");
-        content.ClassList.ShouldNotContain("expanded");
+        var trigger = cut.Find(".collapsible-trigger-wrapper");
+        trigger.TextContent.Trim().ShouldBeEmpty();
+        trigger.GetAttribute("aria-label").ShouldBe("Toggle collapsible");
+    }
+
+    [Fact]
+    public void Collapsible_RendersWithoutChildContent()
+    {
+        var cut = Render<Collapsible>(parameters => parameters
+            .Add(p => p.TriggerContent, Trigger("Toggle")));
+
+        cut.Find(".collapsible-content").TextContent.Trim().ShouldBeEmpty();
     }
 
     [Fact]
     public void Collapsible_Content_Expanded_WhenOpen()
     {
-        // Act
-        var cut = Render<Collapsible>(parameters => parameters
-            .Add(p => p.IsOpen, true)
-            .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
-            .AddChildContent("Collapsible Content"));
+        var cut = RenderBasicCollapsible(isOpen: true);
 
-        // Assert
         var content = cut.Find(".collapsible-content");
         content.ClassList.ShouldContain("expanded");
+        content.HasAttribute("hidden").ShouldBeFalse();
+        content.GetAttribute("aria-hidden").ShouldBeNull();
         cut.Find(".collapsible-trigger-wrapper").GetAttribute("aria-expanded").ShouldBe("true");
     }
 
     [Fact]
-    public void Collapsible_Invokes_IsOpenChanged()
+    public void Collapsible_ClickTogglesStateAndInvokesCallback()
     {
-        // Arrange
-        bool stateChanged = false;
+        var states = new List<bool>();
         var cut = Render<Collapsible>(parameters => parameters
-            .Add(p => p.IsOpenChanged, EventCallback.Factory.Create<bool>(this, value => stateChanged = true))
-            .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
+            .Add(p => p.IsOpenChanged, EventCallback.Factory.Create<bool>(this, states.Add))
+            .Add(p => p.TriggerContent, Trigger("Toggle"))
             .AddChildContent("Collapsible Content"));
 
-        // Act
-        cut.Instance.ToggleAsync();
+        var trigger = cut.Find(".collapsible-trigger-wrapper");
+        trigger.Click();
+        trigger.Click();
 
-        // Assert
-        stateChanged.ShouldBeTrue();
+        states.Count.ShouldBe(2);
+        states[0].ShouldBeTrue();
+        states[1].ShouldBeFalse();
+        trigger.GetAttribute("aria-expanded").ShouldBe("false");
+        cut.Find(".collapsible-content").ClassList.ShouldNotContain("expanded");
     }
 
     [Fact]
-    public void Collapsible_Toggles_State()
+    public async Task Collapsible_ToggleAsync_RerendersState()
     {
-        // Act
-        var cut = Render<Collapsible>(parameters => parameters
-            .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
-            .AddChildContent("Collapsible Content"));
+        var cut = RenderBasicCollapsible();
 
-        var initialState = cut.Instance.IsOpen;
-        cut.Instance.ToggleAsync();
+        await cut.InvokeAsync(() => cut.Instance.ToggleAsync());
 
-        // Assert
-        cut.Instance.IsOpen.ShouldBe(!initialState);
+        cut.Find(".collapsible-trigger-wrapper").GetAttribute("aria-expanded").ShouldBe("true");
+        cut.Find(".collapsible-content").ClassList.ShouldContain("expanded");
     }
 
-    [Fact]
-    public void Collapsible_Toggles_WithKeyboard()
+    [Theory]
+    [InlineData("Enter")]
+    [InlineData(" ")]
+    public void Collapsible_Toggles_WithKeyboardActivationKeys(string key)
     {
-        var cut = Render<Collapsible>(parameters => parameters
-            .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
-            .AddChildContent("Collapsible Content"));
+        var cut = RenderBasicCollapsible();
 
-        cut.Find(".collapsible-trigger-wrapper").KeyDown("Enter");
+        cut.Find(".collapsible-trigger-wrapper").KeyDown(key);
 
         cut.Find(".collapsible-trigger-wrapper").GetAttribute("aria-expanded").ShouldBe("true");
         cut.Find(".collapsible-content").ClassList.ShouldContain("expanded");
     }
 
     [Fact]
+    public void Collapsible_IgnoresNonActivationKeyboardInput()
+    {
+        var cut = RenderBasicCollapsible();
+
+        cut.Find(".collapsible-trigger-wrapper").KeyDown("Escape");
+
+        cut.Find(".collapsible-trigger-wrapper").GetAttribute("aria-expanded").ShouldBe("false");
+        cut.Find(".collapsible-content").ClassList.ShouldNotContain("expanded");
+    }
+
+    [Fact]
     public void Collapsible_Passes_IsOpenState_ToTrigger()
     {
-        // Act
         var cut = Render<Collapsible>(parameters => parameters
             .Add(p => p.IsOpen, true)
-            .Add(p => p.TriggerContent, (isOpen) => builder =>
+            .Add(p => p.TriggerContent, isOpen => builder =>
                 builder.AddContent(0, isOpen ? "Close" : "Open"))
             .AddChildContent("Collapsible Content"));
 
-        // Assert
         cut.Markup.ShouldContain("Close");
     }
 
     [Fact]
-    public void Collapsible_Applies_AdditionalAttributes()
+    public void Collapsible_RespondsToExternalIsOpenParameterChanges()
     {
-        // Act
+        var cut = RenderBasicCollapsible();
+
+        cut.Render(parameters => parameters.Add(p => p.IsOpen, true));
+        cut.Find(".collapsible-trigger-wrapper").GetAttribute("aria-expanded").ShouldBe("true");
+        cut.Find(".collapsible-content").ClassList.ShouldContain("expanded");
+
+        cut.Render(parameters => parameters.Add(p => p.IsOpen, false));
+        cut.Find(".collapsible-trigger-wrapper").GetAttribute("aria-expanded").ShouldBe("false");
+        cut.Find(".collapsible-content").ClassList.ShouldNotContain("expanded");
+    }
+
+    [Fact]
+    public void Collapsible_PreservesCustomClassAndAdditionalAttributes()
+    {
         var cut = Render<Collapsible>(parameters => parameters
-            .Add(p => p.TriggerContent, (isOpen) => builder => builder.AddContent(0, "Toggle"))
+            .Add(p => p.Class, "settings-collapsible")
+            .Add(p => p.TriggerContent, Trigger("Toggle"))
             .AddUnmatched("data-test", "collapsible-value")
             .AddChildContent("Collapsible Content"));
 
-        // Assert - AdditionalAttributes are captured
-        cut.Markup.ShouldNotBeNull();
+        var root = cut.Find(".vibe-collapsible");
+        root.ClassList.ShouldContain("settings-collapsible");
+        root.GetAttribute("data-test").ShouldBe("collapsible-value");
+    }
+
+    private IRenderedComponent<Collapsible> RenderBasicCollapsible(string triggerText = "Toggle", bool isOpen = false)
+    {
+        return Render<Collapsible>(parameters => parameters
+            .Add(p => p.IsOpen, isOpen)
+            .Add(p => p.TriggerContent, Trigger(triggerText))
+            .AddChildContent("Collapsible Content"));
+    }
+
+    private static RenderFragment<bool> Trigger(string text)
+    {
+        return _ => builder => builder.AddContent(0, text);
     }
 }

@@ -46,21 +46,22 @@ Depth-hardened components completed on the beta-readiness branch:
 - Advanced: KanbanBoard, TreeView, TreeViewNode, VirtualScroll.
 - DateTime: Calendar, DatePicker, DateRangePicker.
 - DataDisplay: Avatar, Badge, Chart, DataTable, Progress, Table, Tag, Timeline.
-- Disclosure: AccordionItem, Carousel.
+- Disclosure: Accordion, AccordionItem, Carousel, CarouselItem, Collapsible.
 - Feedback: Alert, Confetti, EmptyState, NotificationCenter, Skeleton, Sonner, Spinner, Toast, ToastContainer.
-- Inputs: ColorPicker, FileUpload, ImageCropper, InputOTP, Mentions, RadioGroupItem, RichTextEditor, TransferList.
+- Form: Combobox, Form, FormField, FormLabel.
+- Inputs: Button, Checkbox, ColorPicker, FileUpload, ImageCropper, Input, InputOTP, Mentions, RadioGroupItem, RichTextEditor, Select, Switch, TransferList.
 - Layout: AspectRatio, Card, Container, Sheet.
 - Navigation: BreadcrumbItem, Link, Menu, NavigationMenu, NavigationMenuItem, Pagination, Sidebar, Stepper, TabItem, Tabs.
 - Overlay: AlertDialog, ContextMenu, ContextMenuItem.
-- Utility: Command, DropdownMenu, Icon.
+- Utility: Command, DropdownMenu, Icon, Kbd, QRCode, ScrollArea.
 
-Current depth-hardened count on this branch: 54 components.
+Current depth-hardened count on this branch: 69 components.
 
 Next priority depth candidates:
 
-- Disclosure: Accordion, CarouselItem, Collapsible.
-- Form: Combobox, Form, FormField, FormLabel.
-- Inputs: Button, Checkbox, Input, Select, Switch.
+- Inputs: MultiSelect, Radio, Rating, Slider, TagInput, TextArea, Toggle, ToggleGroup, ToggleGroupItem.
+- Layout: Divider, Grid, GridItem, MasonryGrid, Resizable, Separator, Splitter, Stack.
+- Navigation: Breadcrumb, Menubar, MenuItem, MenuSeparator.
 
 ## Mutation-Style Quality Checks
 
