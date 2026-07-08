@@ -3,6 +3,7 @@ using Spectre.Console.Cli;
 using System.ComponentModel;
 using System.Xml.Linq;
 using Vibe.UI.CLI.Infrastructure;
+using Vibe.UI.CLI.Models;
 using Vibe.UI.CLI.Services;
 
 namespace Vibe.UI.CLI.Commands;
@@ -50,9 +51,19 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         AnsiConsole.MarkupLine("[blue]Initializing Vibe.UI in your project...[/]\n");
 
         var configService = new ConfigService();
+        var projectService = new ProjectService();
+        var requestedProjectPath = Path.GetFullPath(settings.ProjectPath);
+        var topology = await projectService.DetectProjectTopologyAsync(requestedProjectPath);
+        var target = ResolveInitTarget(topology, requestedProjectPath, settings.SkipPrompts);
+
+        AnsiConsole.WriteLine($"Detected project type: {topology.DisplayName}");
+        if (!PathsEqual(requestedProjectPath, target.ProjectPath))
+        {
+            AnsiConsole.WriteLine($"Installing into {target.Description}: {target.ProjectPath}");
+        }
 
         // Check if already initialized
-        var vibeDir = Path.Combine(settings.ProjectPath, "Vibe");
+        var vibeDir = Path.Combine(target.ProjectPath, "Vibe");
         if (Directory.Exists(vibeDir))
         {
             if (!settings.SkipPrompts)
@@ -70,7 +81,7 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         {
             componentDir = AnsiConsole.Ask("Where should components be installed?", "Components/vibe");
         }
-        ValidateProjectRelativePath(settings.ProjectPath, componentDir, "components directory");
+        ValidateProjectRelativePath(target.ProjectPath, componentDir, "components directory");
 
         // Select base color (shadcn-style)
         var baseColor = "Slate";
@@ -86,7 +97,7 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         // Create configuration
         var config = new Models.VibeConfig
         {
-            ProjectType = "Blazor",
+            ProjectType = GetConfigProjectType(topology, target.ProjectPath),
             Theme = "both",
             ComponentsDirectory = componentDir,
             CssVariables = true
@@ -99,32 +110,32 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
             .StartAsync("Setting up Vibe.UI infrastructure...", async ctx =>
             {
                 // Save configuration
-                await configService.SaveConfigAsync(settings.ProjectPath, config);
+                await configService.SaveConfigAsync(target.ProjectPath, config);
 
                 ctx.Status("Copying infrastructure files...");
 
                 // Copy infrastructure files (includes CSS foundation files)
-                await CopyInfrastructureAsync(settings.ProjectPath, settings.Minimal, settings.NoTheme, settings.WithCharts);
+                await CopyInfrastructureAsync(target.ProjectPath, settings.Minimal, settings.NoTheme, settings.WithCharts);
 
                 ctx.Status("Updating root _Imports.razor...");
-                await UpdateRootImportsAsync(settings.ProjectPath);
+                await UpdateRootImportsAsync(target.ProjectPath);
 
                 ctx.Status("Creating component directory...");
 
                 // Create components directory
-                Directory.CreateDirectory(Path.Combine(settings.ProjectPath, componentDir));
+                Directory.CreateDirectory(Path.Combine(target.ProjectPath, componentDir));
 
                 ctx.Status("Applying color scheme to CSS...");
 
                 // Update vibe-base.css with selected color scheme
-                await ApplyColorSchemeAsync(settings.ProjectPath, baseColor);
+                await ApplyColorSchemeAsync(target.ProjectPath, baseColor);
 
                 // Add Vibe.UI.CSS package reference (only if --with-css is specified)
                 // This is opt-in because the Vibe.UI.CSS package may not be published to NuGet yet
                 if (settings.WithCss)
                 {
                     ctx.Status("Adding Vibe.UI.CSS package reference...");
-                    csprojPath = FindCsprojFile(settings.ProjectPath);
+                    csprojPath = FindCsprojFile(target.ProjectPath);
                     if (csprojPath != null)
                     {
                         vibeCssAdded = await AddVibeCssToProjectAsync(csprojPath);
@@ -133,9 +144,9 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
             });
 
         AnsiConsole.MarkupLine("\n[green]✓[/] Vibe.UI initialized successfully!");
-        AnsiConsole.MarkupLine($"[grey]Infrastructure copied to Vibe/ folder[/]");
-        AnsiConsole.MarkupLine($"[grey]CSS foundation files copied to wwwroot/css/[/]");
-        AnsiConsole.MarkupLine($"[grey]Color scheme: {baseColor}[/]");
+        AnsiConsole.WriteLine($"Infrastructure copied to {Path.Combine(target.ProjectPath, "Vibe")}");
+        AnsiConsole.WriteLine($"CSS foundation files copied to {Path.Combine(target.ProjectPath, "wwwroot", "css")}");
+        AnsiConsole.WriteLine($"Color scheme: {baseColor}");
 
         if (vibeCssAdded)
         {
@@ -147,20 +158,10 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         }
 
         AnsiConsole.MarkupLine($"\n[blue]Next steps:[/]");
-        if (settings.WithCss)
+        var nextSteps = ProjectSetupGuidance.BuildNextSteps(topology, target.ProjectPath, settings.WithCss);
+        for (var index = 0; index < nextSteps.Count; index++)
         {
-            AnsiConsole.MarkupLine($"  1. Add [yellow]<link href=\"css/Vibe.UI.CSS\" rel=\"stylesheet\" />[/] to your index.html");
-            AnsiConsole.MarkupLine($"  2. Run [yellow]vibe css --watch[/] during development (or rely on build-time generation)");
-            AnsiConsole.MarkupLine($"  3. Add [yellow]<ThemeToggle />[/] to your layout for light/dark mode");
-            AnsiConsole.MarkupLine($"  4. Run [yellow]vibe add button[/] to add your first component");
-            AnsiConsole.MarkupLine($"  5. Run [yellow]vibe list[/] to see all available components");
-        }
-        else
-        {
-            AnsiConsole.MarkupLine($"  1. Add [yellow]@import 'css/vibe-base.css';[/] to your app.css or index.html");
-            AnsiConsole.MarkupLine($"  2. Add [yellow]<ThemeToggle />[/] to your layout for light/dark mode");
-            AnsiConsole.MarkupLine($"  3. Run [yellow]vibe add button[/] to add your first component");
-            AnsiConsole.MarkupLine($"  4. Run [yellow]vibe list[/] to see all available components");
+            AnsiConsole.WriteLine($"  {index + 1}. {nextSteps[index]}");
         }
 
         return 0;
@@ -561,6 +562,62 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
             throw new InvalidOperationException($"{description} must be within the project directory.");
         }
     }
+
+    private static InitProjectTarget ResolveInitTarget(
+        ProjectTopology topology,
+        string requestedProjectPath,
+        bool skipPrompts)
+    {
+        if (!topology.HasServerProject || !topology.HasClientProject)
+        {
+            return new InitProjectTarget(topology.ProjectPath ?? requestedProjectPath, "project");
+        }
+
+        const string clientChoice = "Client project (recommended for Interactive WebAssembly/Auto)";
+        const string serverChoice = "Server project (static SSR or Interactive Server)";
+
+        var selectedChoice = clientChoice;
+        if (!skipPrompts)
+        {
+            selectedChoice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("Where should Vibe.UI source components be installed?")
+                    .AddChoices(new[] { clientChoice, serverChoice }));
+        }
+
+        if (selectedChoice == serverChoice && !string.IsNullOrWhiteSpace(topology.ServerProjectPath))
+        {
+            return new InitProjectTarget(topology.ServerProjectPath, "server project");
+        }
+
+        if (!string.IsNullOrWhiteSpace(topology.ClientProjectPath))
+        {
+            return new InitProjectTarget(topology.ClientProjectPath, "client project");
+        }
+
+        return new InitProjectTarget(topology.ProjectPath ?? requestedProjectPath, "project");
+    }
+
+    private static string GetConfigProjectType(ProjectTopology topology, string targetProjectPath)
+    {
+        if (topology.IsBlazorWebApp)
+        {
+            if (!string.IsNullOrWhiteSpace(topology.ClientProjectPath)
+                && PathsEqual(targetProjectPath, topology.ClientProjectPath))
+            {
+                return "Blazor Web App Client";
+            }
+
+            return "Blazor Web App";
+        }
+
+        return topology.DisplayName;
+    }
+
+    private static bool PathsEqual(string left, string right) =>
+        string.Equals(Path.GetFullPath(left), Path.GetFullPath(right), StringComparison.OrdinalIgnoreCase);
+
+    private sealed record InitProjectTarget(string ProjectPath, string Description);
 
     /// <summary>
     /// Finds the .csproj file in the project directory.

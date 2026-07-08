@@ -229,9 +229,64 @@ public class InitCommandTests : IDisposable
         var configService = new ConfigService();
         var config = await configService.LoadConfigAsync(_testProjectPath);
         config.Should().NotBeNull();
-        config!.ProjectType.Should().Be("Blazor"); // InitCommand sets "Blazor" not "Blazor WebAssembly"
+        config!.ProjectType.Should().Be("Blazor WebAssembly");
         config.ComponentsDirectory.Should().Contain("Components"); // Could be "Components/vibe"
         config.CssVariables.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WebAppRoot_WithSkipPrompts_InitializesClientProject()
+    {
+        // Arrange
+        var serverPath = Path.Combine(_testProjectPath, "TestApp");
+        var clientPath = Path.Combine(_testProjectPath, "TestApp.Client");
+        Directory.CreateDirectory(serverPath);
+        Directory.CreateDirectory(clientPath);
+
+        await File.WriteAllTextAsync(
+            Path.Combine(serverPath, "TestApp.csproj"),
+            @"<Project Sdk=""Microsoft.NET.Sdk.Web"">
+  <ItemGroup>
+    <ProjectReference Include=""..\TestApp.Client\TestApp.Client.csproj"" />
+    <PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly.Server"" Version=""10.0.0"" />
+  </ItemGroup>
+</Project>");
+
+        await File.WriteAllTextAsync(
+            Path.Combine(clientPath, "TestApp.Client.csproj"),
+            @"<Project Sdk=""Microsoft.NET.Sdk.BlazorWebAssembly"">
+  <ItemGroup>
+    <PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly"" Version=""10.0.0"" />
+  </ItemGroup>
+</Project>");
+
+        var settings = new InitCommand.Settings
+        {
+            SkipPrompts = true,
+            ProjectPath = _testProjectPath
+        };
+
+        var context = new CommandContext(
+            Array.Empty<string>(),
+            new TestRemainingArguments(),
+            "init",
+            null);
+
+        // Act
+        var result = await _command.ExecuteAsync(context, settings);
+
+        // Assert
+        result.Should().Be(0);
+
+        var configService = new ConfigService();
+        var rootConfig = await configService.LoadConfigAsync(_testProjectPath);
+        var clientConfig = await configService.LoadConfigAsync(clientPath);
+
+        rootConfig.Should().BeNull("Web App root initialization should target a concrete project");
+        clientConfig.Should().NotBeNull();
+        clientConfig!.ProjectType.Should().Be("Blazor Web App Client");
+        Directory.Exists(Path.Combine(clientPath, "Components")).Should().BeTrue();
+        File.Exists(Path.Combine(clientPath, "vibe.json")).Should().BeTrue();
     }
 
     #region Vibe.UI.CSS Integration Tests

@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Vibe.UI.CLI.Models;
 using Vibe.UI.CLI.Services;
 using System.Reflection;
 using Xunit;
@@ -43,6 +44,62 @@ public class ProjectServiceTests : IDisposable
 
         // Assert
         projectType.Should().Be("Blazor WebAssembly");
+    }
+
+    [Fact]
+    public async Task DetectProjectTopologyAsync_ReturnsStandaloneWasm_ForSingleWasmProject()
+    {
+        // Arrange
+        var csprojContent = @"<Project Sdk=""Microsoft.NET.Sdk.BlazorWebAssembly"">
+  <ItemGroup>
+    <PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly"" Version=""10.0.0"" />
+  </ItemGroup>
+</Project>";
+        await File.WriteAllTextAsync(Path.Combine(_testProjectPath, "Test.csproj"), csprojContent);
+
+        // Act
+        var topology = await _projectService.DetectProjectTopologyAsync(_testProjectPath);
+
+        // Assert
+        topology.Kind.Should().Be(BlazorProjectKind.BlazorWebAssembly);
+        topology.DisplayName.Should().Be("Blazor WebAssembly");
+        topology.HasClientProject.Should().BeTrue();
+        topology.HasServerProject.Should().BeFalse();
+        topology.ClientProjectPath.Should().Be(_testProjectPath);
+    }
+
+    [Fact]
+    public async Task DetectProjectTopologyAsync_ReturnsWebApp_ForServerAndClientRoot()
+    {
+        // Arrange
+        var (serverPath, clientPath) = await CreateWebAppProjectsAsync();
+
+        // Act
+        var topology = await _projectService.DetectProjectTopologyAsync(_testProjectPath);
+
+        // Assert
+        topology.Kind.Should().Be(BlazorProjectKind.BlazorWebApp);
+        topology.DisplayName.Should().Be("Blazor Web App");
+        topology.ServerProjectPath.Should().Be(serverPath);
+        topology.ClientProjectPath.Should().Be(clientPath);
+        topology.ClientNamespace.Should().Be("TestApp.Client");
+    }
+
+    [Fact]
+    public async Task DetectProjectTopologyAsync_ReturnsWebAppClient_WhenRunFromClientProject()
+    {
+        // Arrange
+        var (serverPath, clientPath) = await CreateWebAppProjectsAsync();
+
+        // Act
+        var topology = await _projectService.DetectProjectTopologyAsync(clientPath);
+
+        // Assert
+        topology.Kind.Should().Be(BlazorProjectKind.BlazorWebAppClient);
+        topology.DisplayName.Should().Be("Blazor Web App Client");
+        topology.ProjectPath.Should().Be(clientPath);
+        topology.ServerProjectPath.Should().Be(serverPath);
+        topology.ClientProjectPath.Should().Be(clientPath);
     }
 
     [Fact]
@@ -233,6 +290,44 @@ public class ProjectServiceTests : IDisposable
 
         var version = typeof(ProjectService).Assembly.GetName().Version;
         return version == null ? "0.0.0" : $"{version.Major}.{version.Minor}.{version.Build}";
+    }
+
+    private async Task<(string ServerPath, string ClientPath)> CreateWebAppProjectsAsync()
+    {
+        var serverPath = Path.Combine(_testProjectPath, "TestApp");
+        var clientPath = Path.Combine(_testProjectPath, "TestApp.Client");
+        Directory.CreateDirectory(serverPath);
+        Directory.CreateDirectory(clientPath);
+
+        await File.WriteAllTextAsync(
+            Path.Combine(serverPath, "TestApp.csproj"),
+            @"<Project Sdk=""Microsoft.NET.Sdk.Web"">
+  <ItemGroup>
+    <ProjectReference Include=""..\TestApp.Client\TestApp.Client.csproj"" />
+    <PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly.Server"" Version=""10.0.0"" />
+  </ItemGroup>
+</Project>");
+
+        await File.WriteAllTextAsync(
+            Path.Combine(serverPath, "Program.cs"),
+            @"builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents()
+    .AddInteractiveWebAssemblyComponents();
+
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode()
+    .AddInteractiveWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(typeof(TestApp.Client._Imports).Assembly);");
+
+        await File.WriteAllTextAsync(
+            Path.Combine(clientPath, "TestApp.Client.csproj"),
+            @"<Project Sdk=""Microsoft.NET.Sdk.BlazorWebAssembly"">
+  <ItemGroup>
+    <PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly"" Version=""10.0.0"" />
+  </ItemGroup>
+</Project>");
+
+        return (serverPath, clientPath);
     }
 }
 
