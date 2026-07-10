@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text;
 
 namespace Vibe.UI.Services;
@@ -20,34 +21,15 @@ public static class DataTableExporter
 
         var sb = new StringBuilder();
 
-        // Get column definitions
-        Dictionary<string, Func<T, object?>> columnDefs;
-
-        if (columns != null)
-        {
-            columnDefs = columns;
-        }
-        else
-        {
-            // Use all public properties
-            var props = typeof(T).GetProperties();
-            columnDefs = props.ToDictionary(
-                p => p.Name,
-                p => (Func<T, object?>)(item => p.GetValue(item))
-            );
-        }
+        var columnDefs = GetColumnDefinitions(columns);
 
         // Write headers
-        sb.AppendLine(string.Join(",", columnDefs.Keys.Select(EscapeCsvValue)));
+        sb.AppendLine(string.Join(",", columnDefs.Keys.Select(EscapeCsvHeader)));
 
         // Write rows
         foreach (var item in itemsList)
         {
-            var values = columnDefs.Values.Select(func =>
-            {
-                var value = func(item);
-                return EscapeCsvValue(value?.ToString() ?? string.Empty);
-            });
+            var values = columnDefs.Values.Select(func => EscapeCsvValue(func(item)));
 
             sb.AppendLine(string.Join(",", values));
         }
@@ -68,33 +50,15 @@ public static class DataTableExporter
 
         var sb = new StringBuilder();
 
-        // Get column definitions
-        Dictionary<string, Func<T, object?>> columnDefs;
-
-        if (columns != null)
-        {
-            columnDefs = columns;
-        }
-        else
-        {
-            var props = typeof(T).GetProperties();
-            columnDefs = props.ToDictionary(
-                p => p.Name,
-                p => (Func<T, object?>)(item => p.GetValue(item))
-            );
-        }
+        var columnDefs = GetColumnDefinitions(columns);
 
         // Write headers
-        sb.AppendLine(string.Join("\t", columnDefs.Keys));
+        sb.AppendLine(string.Join("\t", columnDefs.Keys.Select(EscapeTsvHeader)));
 
         // Write rows
         foreach (var item in itemsList)
         {
-            var values = columnDefs.Values.Select(func =>
-            {
-                var value = func(item);
-                return (value?.ToString() ?? string.Empty).Replace("\t", " ");
-            });
+            var values = columnDefs.Values.Select(func => EscapeTsvValue(func(item)));
 
             sb.AppendLine(string.Join("\t", values));
         }
@@ -127,27 +91,13 @@ public static class DataTableExporter
 
         var sb = new StringBuilder();
 
-        // Get column definitions
-        Dictionary<string, Func<T, object?>> columnDefs;
-
-        if (columns != null)
-        {
-            columnDefs = columns;
-        }
-        else
-        {
-            var props = typeof(T).GetProperties();
-            columnDefs = props.ToDictionary(
-                p => p.Name,
-                p => (Func<T, object?>)(item => p.GetValue(item))
-            );
-        }
+        var columnDefs = GetColumnDefinitions(columns);
 
         // Start table
         sb.Append("<table");
         if (!string.IsNullOrEmpty(tableClass))
         {
-            sb.Append($" class=\"{tableClass}\"");
+            sb.Append($" class=\"{EscapeHtml(tableClass)}\"");
         }
         sb.AppendLine(">");
 
@@ -205,22 +155,86 @@ public static class DataTableExporter
         return ToDataUri(jsonContent, "application/json;charset=utf-8");
     }
 
-    private static string EscapeCsvValue(string value)
+    private static Dictionary<string, Func<T, object?>> GetColumnDefinitions<T>(Dictionary<string, Func<T, object?>>? columns)
     {
-        if (value.Contains(",") || value.Contains("\"") || value.Contains("\n") || value.Contains("\r"))
+        if (columns != null)
         {
-            return $"\"{value.Replace("\"", "\"\"")}\"";
+            return columns;
         }
+
+        var props = typeof(T).GetProperties();
+        return props.ToDictionary(
+            p => p.Name,
+            p => (Func<T, object?>)(item => p.GetValue(item))
+        );
+    }
+
+    private static string EscapeCsvHeader(string value)
+    {
+        return EscapeCsvValueCore(value, protectFormulaInjection: true);
+    }
+
+    private static string EscapeCsvValue(object? value)
+    {
+        return EscapeCsvValueCore(value?.ToString() ?? string.Empty, protectFormulaInjection: value is string);
+    }
+
+    private static string EscapeCsvValueCore(string value, bool protectFormulaInjection)
+    {
+        var escapedValue = protectFormulaInjection ? ProtectSpreadsheetFormula(value) : value;
+
+        if (escapedValue.Contains(',') || escapedValue.Contains('"') || escapedValue.Contains('\n') || escapedValue.Contains('\r'))
+        {
+            return $"\"{escapedValue.Replace("\"", "\"\"")}\"";
+        }
+
+        return escapedValue;
+    }
+
+    private static string EscapeTsvHeader(string value)
+    {
+        return EscapeTsvValueCore(value, protectFormulaInjection: true);
+    }
+
+    private static string EscapeTsvValue(object? value)
+    {
+        return EscapeTsvValueCore(value?.ToString() ?? string.Empty, protectFormulaInjection: value is string);
+    }
+
+    private static string EscapeTsvValueCore(string value, bool protectFormulaInjection)
+    {
+        var normalizedValue = value
+            .Replace('\t', ' ')
+            .Replace("\r\n", " ")
+            .Replace('\r', ' ')
+            .Replace('\n', ' ');
+
+        return protectFormulaInjection ? ProtectSpreadsheetFormula(normalizedValue) : normalizedValue;
+    }
+
+    private static string ProtectSpreadsheetFormula(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return value;
+        }
+
+        var trimmedValue = value.TrimStart(' ', '\t', '\r', '\n');
+        if (trimmedValue.Length == 0)
+        {
+            return value;
+        }
+
+        if (trimmedValue[0] is '=' or '+' or '-' or '@')
+        {
+            return $"'{value}";
+        }
+
         return value;
     }
 
     private static string EscapeHtml(string value)
     {
-        return value
-            .Replace("&", "&amp;")
-            .Replace("<", "&lt;")
-            .Replace(">", "&gt;")
-            .Replace("\"", "&quot;")
-            .Replace("'", "&#39;");
+        return WebUtility.HtmlEncode(value);
     }
 }
