@@ -98,19 +98,34 @@ function Write-NuGetConfig {
     Set-Content -LiteralPath $Path -Value $content -Encoding utf8NoBOM
 }
 
-function Restore-And-BuildPackageFixture {
+function Copy-DirectoryTree {
     param(
-        [Parameter(Mandatory = $true)][string]$ProjectRelativePath,
-        [Parameter(Mandatory = $true)][string]$CssOutputName,
-        [Parameter(Mandatory = $true)][string]$NuGetConfigPath,
-        [Parameter(Mandatory = $true)][string]$TempRoot,
-        [Parameter(Mandatory = $true)][string]$PackageVersion
+        [Parameter(Mandatory = $true)][string]$SourcePath,
+        [Parameter(Mandatory = $true)][string]$DestinationPath
     )
 
-    $projectPath = Join-Path $repoRoot $ProjectRelativePath
-    $cssOutputDirectory = Join-Path $TempRoot "generated-css"
-    $cssOutput = Join-Path $cssOutputDirectory $CssOutputName
-    New-Item -ItemType Directory -Force -Path $cssOutputDirectory | Out-Null
+    New-Item -ItemType Directory -Force -Path $DestinationPath | Out-Null
+    Copy-Item -Path (Join-Path $SourcePath '*') -Destination $DestinationPath -Recurse -Force
+}
+
+function Restore-And-BuildPackageFixture {
+    param(
+        [Parameter(Mandatory = $true)][string]$FixtureRelativePath,
+        [Parameter(Mandatory = $true)][string]$ProjectRelativePath,
+        [Parameter(Mandatory = $true)][string]$NuGetConfigPath,
+        [Parameter(Mandatory = $true)][string]$TempRoot,
+        [Parameter(Mandatory = $true)][string]$PackageVersion,
+        [Parameter(Mandatory = $true)][string[]]$ExpectedCssOutputs,
+        [string[]]$ExpectedMissingCssOutputs = @(),
+        [int]$BuildCount = 1
+    )
+
+    $fixtureSourcePath = Join-Path $repoRoot $FixtureRelativePath
+    $fixtureName = [System.IO.Path]::GetFileName($FixtureRelativePath.TrimEnd('\', '/'))
+    $fixtureRoot = Join-Path $TempRoot $fixtureName
+    Copy-DirectoryTree -SourcePath $fixtureSourcePath -DestinationPath $fixtureRoot
+
+    $projectPath = Join-Path $fixtureRoot $ProjectRelativePath
 
     $packageProperties = @(
         "-p:VibeUsePackageReferences=true",
@@ -130,11 +145,36 @@ function Restore-And-BuildPackageFixture {
         $projectPath,
         "--configuration",
         "Release",
-        "--no-restore",
-        "-p:VibeCssOutput=$cssOutput"
+        "--no-restore"
     ) + $packageProperties)
 
-    Assert-FileExists $cssOutput
+    foreach ($relativePath in $ExpectedCssOutputs) {
+        Assert-FileExists (Join-Path $fixtureRoot $relativePath)
+    }
+
+    foreach ($relativePath in $ExpectedMissingCssOutputs) {
+        $fullPath = Join-Path $fixtureRoot $relativePath
+        if (Test-Path -LiteralPath $fullPath -PathType Leaf) {
+            throw "Expected CSS output to be absent: $fullPath"
+        }
+    }
+
+    for ($buildIndex = 2; $buildIndex -le $BuildCount; $buildIndex++) {
+        Invoke-Checked "dotnet" (@(
+            "build",
+            $projectPath,
+            "--configuration",
+            "Release",
+            "--no-restore"
+        ) + $packageProperties)
+    }
+
+    foreach ($relativePath in $ExpectedMissingCssOutputs) {
+        $fullPath = Join-Path $fixtureRoot $relativePath
+        if (Test-Path -LiteralPath $fullPath -PathType Leaf) {
+            throw "Expected CSS output to remain absent after rebuild: $fullPath"
+        }
+    }
 }
 
 function Validate-CliToolPackage {
@@ -176,14 +216,47 @@ function Validate-CliToolPackage {
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 </Project>
 "@
 
     Invoke-Checked $toolExecutable @("init", "--yes", "--minimal", "--path", $cliProject)
+
+    $rootImportsPath = Join-Path $cliProject "_Imports.razor"
+    if (Test-Path -LiteralPath $rootImportsPath -PathType Leaf) {
+        Remove-Item -LiteralPath $rootImportsPath -Force
+    }
+
+    $componentImportsPath = Join-Path $cliProject "Components/_Imports.razor"
+    Set-Content -LiteralPath $componentImportsPath -Encoding utf8NoBOM -Value @"
+@using global::Vibe.UI.Base
+@using global::Vibe.UI.Enums
+@using global::Microsoft.AspNetCore.Components.Web
+@using global::Microsoft.JSInterop
+"@
+
     Invoke-Checked $toolExecutable @("add", "button", "--yes", "--path", $cliProject)
 
     Assert-FileExists (Join-Path $cliProject "Vibe/Base/VibeComponent.cs")
     Assert-FileExists (Join-Path $cliProject "Components/vibe/Button.razor")
+    Assert-FileExists (Join-Path $cliProject "wwwroot/js/vibe-dialog.js")
+    Assert-FileExists (Join-Path $cliProject "wwwroot/js/vibe-richtext.js")
+
+    Invoke-Checked $toolExecutable @("add", "dialog", "--yes", "--path", $cliProject)
+
+    $dialogComponentPath = Join-Path $cliProject "Components/vibe/Dialog.razor"
+    Assert-FileExists $dialogComponentPath
+
+    $dialogComponentContent = Get-Content -LiteralPath $dialogComponentPath -Raw
+    if ($dialogComponentContent -notmatch '\./js/vibe-dialog\.js') {
+        throw "Expected generated dialog component to reference ./js/vibe-dialog.js."
+    }
+
+    if ($dialogComponentContent -match '_content/Vibe\.UI/js') {
+        throw "Generated dialog component still references _content/Vibe.UI/js."
+    }
 
     $cliCssOutput = Join-Path $TempRoot "cli-generated.css"
     Invoke-Checked $toolExecutable @(
@@ -194,6 +267,92 @@ function Validate-CliToolPackage {
         "--with-base"
     )
     Assert-FileExists $cliCssOutput
+
+    Invoke-Checked "dotnet" @(
+        "restore",
+        (Join-Path $cliProject "CliConsumer.csproj"),
+        "--configfile",
+        $NuGetConfigPath
+    )
+
+    Invoke-Checked "dotnet" @(
+        "build",
+        (Join-Path $cliProject "CliConsumer.csproj"),
+        "--configuration",
+        "Release",
+        "--no-restore",
+        "-p:TreatWarningsAsErrors=true"
+    )
+
+    $hostedRoot = Join-Path $TempRoot "cli-hosted"
+    Invoke-Checked "dotnet" @(
+        "new",
+        "blazor",
+        "--name",
+        "CliHosted",
+        "--output",
+        $hostedRoot,
+        "--framework",
+        "net10.0",
+        "--interactivity",
+        "WebAssembly",
+        "--all-interactive",
+        "--no-restore",
+        "--no-update-check"
+    )
+
+    Invoke-Checked $toolExecutable @(
+        "init",
+        "--yes",
+        "--minimal",
+        "--with-css",
+        "--path",
+        $hostedRoot
+    )
+
+    $hostedServerProject = Join-Path $hostedRoot "CliHosted/CliHosted.csproj"
+    $hostedClientProject = Join-Path $hostedRoot "CliHosted.Client/CliHosted.Client.csproj"
+    $hostedServerContent = Get-Content -LiteralPath $hostedServerProject -Raw
+    $hostedClientContent = Get-Content -LiteralPath $hostedClientProject -Raw
+
+    if ($hostedServerContent -notmatch '<PackageReference Include="Vibe\.UI\.CSS"') {
+        throw "Expected hosted CLI initialization to add Vibe.UI.CSS to the server project."
+    }
+
+    if (-not $hostedServerContent.Contains('<VibeCssScanRoot>$(MSBuildProjectDirectory)/..</VibeCssScanRoot>')) {
+        throw "Expected hosted CLI initialization to configure the server shared CSS scan root."
+    }
+
+    if ($hostedClientContent -match '<PackageReference Include="Vibe\.UI\.CSS"') {
+        throw "Hosted CLI initialization must not add Vibe.UI.CSS to the client project."
+    }
+
+    Assert-FileExists (Join-Path $hostedRoot "CliHosted.Client/vibe.json")
+
+    Invoke-Checked "dotnet" @(
+        "restore",
+        $hostedServerProject,
+        "--configfile",
+        $NuGetConfigPath
+    )
+
+    for ($buildIndex = 1; $buildIndex -le 2; $buildIndex++) {
+        Invoke-Checked "dotnet" @(
+            "build",
+            $hostedServerProject,
+            "--configuration",
+            "Release",
+            "--no-restore",
+            "-p:TreatWarningsAsErrors=true"
+        )
+    }
+
+    Assert-FileExists (Join-Path $hostedRoot "CliHosted/wwwroot/css/Vibe.UI.CSS")
+
+    $hostedClientCss = Join-Path $hostedRoot "CliHosted.Client/wwwroot/css/Vibe.UI.CSS"
+    if (Test-Path -LiteralPath $hostedClientCss -PathType Leaf) {
+        throw "Hosted CLI initialization generated a duplicate client Vibe.UI.CSS asset."
+    }
 }
 
 if ([string]::IsNullOrWhiteSpace($Version)) {
@@ -232,7 +391,9 @@ $requiredEntries = @{
         "README.cli.md",
         "icon.png",
         "tools/net10.0/any/Vibe.UI.CLI.dll",
-        "Templates/Infrastructure/ServiceCollectionExtensions.cs"
+        "Templates/Infrastructure/ServiceCollectionExtensions.cs",
+        "Templates/wwwroot/js/vibe-dialog.js",
+        "Templates/wwwroot/js/vibe-richtext.js"
     )
 }
 
@@ -253,18 +414,22 @@ try {
     $env:NUGET_PACKAGES = $globalPackages
 
     Restore-And-BuildPackageFixture `
-        -ProjectRelativePath "samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj" `
-        -CssOutputName "standalone.css" `
+        -FixtureRelativePath "samples/Vibe.UI.Compatibility.StandaloneClient" `
+        -ProjectRelativePath "Vibe.UI.Compatibility.StandaloneClient.csproj" `
         -NuGetConfigPath $nugetConfig `
         -TempRoot $tempRoot `
-        -PackageVersion $Version
+        -PackageVersion $Version `
+        -ExpectedCssOutputs @("wwwroot/css/Vibe.UI.CSS")
 
     Restore-And-BuildPackageFixture `
-        -ProjectRelativePath "samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj" `
-        -CssOutputName "webapp.css" `
+        -FixtureRelativePath "samples/Vibe.UI.Compatibility.WebApp" `
+        -ProjectRelativePath "Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj" `
         -NuGetConfigPath $nugetConfig `
         -TempRoot $tempRoot `
-        -PackageVersion $Version
+        -PackageVersion $Version `
+        -ExpectedCssOutputs @("Vibe.UI.Compatibility.WebApp/wwwroot/css/Vibe.UI.CSS") `
+        -ExpectedMissingCssOutputs @("Vibe.UI.Compatibility.WebApp.Client/wwwroot/css/Vibe.UI.CSS") `
+        -BuildCount 2
 
     Validate-CliToolPackage `
         -NuGetConfigPath $nugetConfig `

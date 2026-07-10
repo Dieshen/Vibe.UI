@@ -23,6 +23,7 @@ This checklist targets the `1.0.0-beta` release line. Beta means Vibe.UI is read
 - [x] Compatibility tests support externally managed app URLs through `VIBE_STANDALONE_BASE_URL` and `VIBE_WEBAPP_BASE_URL`.
 - [x] Compatibility fixtures are included in `Vibe.sln`.
 - [x] Compatibility behavior is documented in `docs/Compatibility.md`.
+- [x] Hosted package-mode CSS generation uses a single server-owned `wwwroot/css/Vibe.UI.CSS` and survives an immediate repeat build on Windows/.NET SDK `10.0.301`.
 - [x] 100% direct component unit coverage is complete; see `docs/Beta-Component-Hardening.md`.
 
 ### CI And Publish Gates
@@ -35,7 +36,10 @@ This checklist targets the `1.0.0-beta` release line. Beta means Vibe.UI is read
 - [x] CI validates `dotnet pack` for `Vibe.UI`, `Vibe.UI.CSS`, and `Vibe.UI.CLI`.
 - [x] CI validates required package contents for `Vibe.UI`, `Vibe.UI.CSS`, and `Vibe.UI.CLI`.
 - [x] CI builds the standalone and web app compatibility fixtures from locally packed `.nupkg` files.
+- [x] CI and local package validation build the hosted Web App fixture from locally packed `.nupkg` files twice in a row to catch duplicate static web asset regressions.
 - [x] CI installs `Vibe.UI.CLI` from the locally packed `.nupkg` and verifies package-bundled templates and CSS generation.
+- [x] Local package validation verifies `vibe-dialog.js` and `vibe-richtext.js` ship in the CLI package/init output, rewrites generated component JS imports to `./js/...`, and builds a generated JS-backed consumer.
+- [x] Local package validation creates a fresh hosted Web App with the packed CLI, configures `--with-css` on the server, and builds the init-only project twice with warnings as errors.
 - [x] CI runs the docs `Category=Integration` browser tests under Chromium.
 - [x] CI runs the docs `Category=Smoke` browser tests under Chromium.
 - [x] CI installs Playwright Chromium, Firefox, and WebKit and runs `Category=Compatibility` browser tests in all three browsers.
@@ -79,6 +83,7 @@ pwsh scripts/Validate-LocalPackages.ps1 -PackagesPath ./packages
 dotnet restore samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --source ./packages --source https://api.nuget.org/v3/index.json -p:VibeUsePackageReferences=true -p:VibePackageVersion=1.0.0-beta
 dotnet restore samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --source ./packages --source https://api.nuget.org/v3/index.json -p:VibeUsePackageReferences=true -p:VibePackageVersion=1.0.0-beta
 dotnet build samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion=1.0.0-beta
+dotnet build samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion=1.0.0-beta
 dotnet build samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion=1.0.0-beta
 BROWSER=chromium dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Compatibility -- RunConfiguration.TestSessionTimeout=180000
 BROWSER=firefox dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Compatibility -- RunConfiguration.TestSessionTimeout=180000
