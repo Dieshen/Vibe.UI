@@ -44,6 +44,11 @@ Purpose:
 - Verifies Vibe.UI works in `InteractiveWebAssembly` from the `.Client` project.
 - Verifies Vibe.UI works in `InteractiveAuto`, including server prerendering before WebAssembly activation.
 - Verifies `AddVibeUI()` is registered in both server and client DI containers.
+- In package mode, keeps `Vibe.UI.CSS` ownership on the server project so hosted rebuilds do not emit duplicate `wwwroot/css/Vibe.UI.CSS` static assets from both server and client.
+
+When `Vibe.UI.CSS` is referenced by both hosted projects, the server project scans the shared sample root and owns the generated `wwwroot/css/Vibe.UI.CSS`. The `.Client` project keeps its `StaticWebAssetProjectMode=Default` role and does not publish its own copy of that generated CSS file.
+
+The CLI follows the same topology for `vibe init --with-css`: source components remain in the recommended client project, while the `Vibe.UI.CSS` package and shared scan-root configuration are written to the server project.
 
 Run locally:
 
@@ -63,6 +68,8 @@ Routes:
 The CI workflow restores and builds both fixtures in Release configuration, installs the Playwright browser runtime, and runs the `Category=Compatibility` browser smoke tests in Chromium, Firefox, and WebKit.
 
 The fixtures use project references by default for normal development. The local package validation script flips them to package references with `VibeUsePackageReferences=true`, restores from the packed `.nupkg` files, and builds both hosting shapes before a package can be published.
+
+The hosted Web App package-mode validation deliberately builds the server project twice back to back. That guards the Windows/.NET SDK `10.0.301` duplicate-static-web-asset regression where both hosted projects used to claim the same generated `wwwroot/css/Vibe.UI.CSS`.
 
 Set `BROWSER=chromium`, `BROWSER=firefox`, or `BROWSER=webkit` to run a specific browser locally. In PowerShell, use `$env:BROWSER = "chromium"` before invoking `dotnet test`. Set `VIBE_STANDALONE_BASE_URL` or `VIBE_WEBAPP_BASE_URL` when the target app is already running and should not be started by the test harness.
 
