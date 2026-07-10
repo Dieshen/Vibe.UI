@@ -2,6 +2,9 @@
 
 This guide explains how to include and configure Vibe.UI CSS in your Blazor application.
 
+For scanner, generator, command-line, and MSBuild target behavior, see
+[Vibe.UI.CSS](VIBE-UI-CSS.md).
+
 ## Overview
 
 Vibe.UI uses a multi-layered CSS architecture:
@@ -319,13 +322,13 @@ private async Task ToggleDarkMode()
 
 Typical CSS sizes when using Vibe.UI:
 
-| File | Size (uncompressed) | Size (gzipped) |
-|------|---------------------|----------------|
-| `vibe-base.css` | ~10KB | ~2KB |
-| `vibe-utilities.css` | ~15KB | ~3KB |
-| `Vibe.UI.bundle.scp.css` | ~30KB | ~5KB |
-| **Total (Base + Scoped)** | **~40KB** | **~7KB** |
-| **Total (All CSS)** | **~55KB** | **~10KB** |
+| File                      | Size (uncompressed) | Size (gzipped) |
+| ------------------------- | ------------------- | -------------- |
+| `vibe-base.css`           | ~10KB               | ~2KB           |
+| `vibe-utilities.css`      | ~15KB               | ~3KB           |
+| `Vibe.UI.bundle.scp.css`  | ~30KB               | ~5KB           |
+| **Total (Base + Scoped)** | **~40KB**           | **~7KB**       |
+| **Total (All CSS)**       | **~55KB**           | **~10KB**      |
 
 ### Optimization Tips
 

@@ -1,6 +1,34 @@
-## Alpha 1.0.0-alpha Readiness Checklist
+# Alpha 1.0.0-alpha release history
 
 > Note: This checklist targets the `1.0.0-alpha` release (the filename is historical).
+
+- **Release date:** December 16, 2025
+- **Status:** Completed and superseded by [1.0.0-beta](Beta-Readiness-Checklist.md)
+
+## Release summary
+
+The alpha release established the source-copy CLI workflow, the .NET-native
+utility CSS generator, the initial accessible component baseline, and the
+project's prerelease packaging conventions.
+
+The release work included:
+
+- focus-visible styling and invalid-state support across flagship form controls;
+- disabled-state handling for dialog and drawer close controls;
+- initial dialog focus trapping and focus restoration;
+- `1.0.0-alpha` package metadata for `Vibe.UI`, `Vibe.UI.CSS`, and `Vibe.UI.CLI`;
+- alpha messaging, known limitations, and parity-roadmap links in the repository docs; and
+- packaged CLI templates for source-owned components and infrastructure.
+
+The original memory-bank summary contained conflicting component totals, so
+those snapshot counts are intentionally not preserved as release facts. The
+source-backed inventory was normalized to 110 components during beta hardening.
+
+Alpha follow-up work called for full validation, local package installation,
+NuGet artifact checks, and docs-site updates. Those gates are now represented by
+the beta checklist and CI/package validation workflow.
+
+## Readiness checklist
 
 ### Docs site (`samples/Vibe.UI.Docs`)
 - [x] `dotnet build samples/Vibe.UI.Docs/Vibe.UI.Docs.csproj -c Release` succeeds and regenerates `samples/Vibe.UI.Docs/wwwroot/css/Vibe.UI.CSS`

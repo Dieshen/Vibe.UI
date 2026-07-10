@@ -1,8 +1,11 @@
-## Beta 1.0.0-beta Readiness Checklist
+# Beta 1.0.0-beta readiness checklist
 
 This checklist targets the `1.0.0-beta` release line. Beta means Vibe.UI is ready for broader dogfooding across the supported hosting models, with known limitations still documented before stable 1.0.
 
-### Release Metadata
+- **Status:** Passed and merged to `main` in commit `5ea53d9` on July 10, 2026.
+- **Final pull request:** [#5 - Harden Vibe.UI for beta](https://github.com/Narcoleptic-Fox/Vibe.UI/pull/5)
+
+## Release Metadata
 
 - [x] Shipping package versions set to `1.0.0-beta`:
   - `src/Vibe.UI`
@@ -14,7 +17,7 @@ This checklist targets the `1.0.0-beta` release line. Beta means Vibe.UI is read
 - [x] Beta install commands pin prerelease package/tool versions.
 - [x] Publish workflow validates the requested beta version against all shipping project versions before packing.
 
-### Hosting Compatibility
+## Hosting Compatibility
 
 - [x] Standalone Blazor WebAssembly compatibility fixture added.
 - [x] Blazor Web App compatibility fixture added with static SSR, Interactive Server, Interactive WebAssembly, and Interactive Auto routes.
@@ -26,7 +29,7 @@ This checklist targets the `1.0.0-beta` release line. Beta means Vibe.UI is read
 - [x] Hosted package-mode CSS generation uses a single server-owned `wwwroot/css/Vibe.UI.CSS` and survives an immediate repeat build on Windows/.NET SDK `10.0.301`.
 - [x] 100% direct component unit coverage is complete; see `docs/Beta-Component-Hardening.md`.
 
-### CI And Publish Gates
+## CI And Publish Gates
 
 - [x] CI restores and builds the docs app.
 - [x] CI runs TypeScript build/test/deploy for `src/Vibe.UI/ts-src` and `samples/Vibe.UI.Docs/ts-src`.
@@ -53,7 +56,7 @@ This checklist targets the `1.0.0-beta` release line. Beta means Vibe.UI is read
 - [x] NuGet publish workflow runs the docs `Category=Integration` browser tests under Chromium before packaging.
 - [x] NuGet publish workflow runs the docs `Category=Smoke` browser tests under Chromium before packaging.
 
-### Validation Commands
+## Validation Commands
 
 Run these before cutting the beta release:
 
@@ -98,7 +101,7 @@ dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Relea
 Remove-Item Env:BROWSER
 ```
 
-### Known Beta Debt
+## Known Beta Debt
 
 - [ ] The docs E2E functional/mobile/accessibility suites beyond `Category=Compatibility`, `Category=Integration`, and `Category=Smoke` should be reviewed separately before stable 1.0.
 - [x] Direct component unit coverage covers 110 of 110 source components.

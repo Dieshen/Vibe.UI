@@ -16,20 +16,20 @@ Direct unit coverage means a component has an explicit `*Tests.cs` file under `t
 
 ## Current Category Snapshot
 
-| Category | Total | Direct unit tests | Docs smoke routes |
-| --- | ---: | ---: | ---: |
-| Advanced | 4 | 4 | 3 |
-| DataDisplay | 8 | 8 | 7 |
-| DateTime | 3 | 3 | 3 |
-| Disclosure | 5 | 5 | 3 |
-| Feedback | 9 | 9 | 4 |
-| Form | 7 | 7 | 3 |
-| Inputs | 23 | 23 | 11 |
-| Layout | 12 | 12 | 7 |
-| Navigation | 14 | 14 | 6 |
-| Overlay | 17 | 17 | 4 |
-| Theme | 2 | 2 | 1 |
-| Utility | 6 | 6 | 1 |
+| Category    | Total | Direct unit tests | Docs smoke routes |
+| ----------- | ----: | ----------------: | ----------------: |
+| Advanced    |     4 |                 4 |                 3 |
+| DataDisplay |     8 |                 8 |                 7 |
+| DateTime    |     3 |                 3 |                 3 |
+| Disclosure  |     5 |                 5 |                 3 |
+| Feedback    |     9 |                 9 |                 4 |
+| Form        |     7 |                 7 |                 3 |
+| Inputs      |    23 |                23 |                11 |
+| Layout      |    12 |                12 |                 7 |
+| Navigation  |    14 |                14 |                 6 |
+| Overlay     |    17 |                17 |                 4 |
+| Theme       |     2 |                 2 |                 1 |
+| Utility     |     6 |                 6 |                 1 |
 
 ## 80% Target Status
 
@@ -41,7 +41,7 @@ Post-target hardening can continue with deeper browser coverage for JS-heavy com
 
 Direct test-file coverage is complete, but production hardening is tracked separately. A depth-hardened component has focused assertions for meaningful behavior, accessibility semantics, disabled/read-only states, callback contracts, null/edge inputs, and browser or JS boundaries where applicable.
 
-Depth-hardened components completed on the beta-readiness branch:
+Depth-hardened components completed for the beta release:
 
 - Advanced: KanbanBoard, TreeView, TreeViewNode, VirtualScroll.
 - DateTime: Calendar, DatePicker, DateRangePicker.
@@ -56,11 +56,11 @@ Depth-hardened components completed on the beta-readiness branch:
 - Theme: ThemeProvider, ThemeToggle.
 - Utility: Command, DropdownMenu, Icon, Kbd, QRCode, ScrollArea.
 
-Current depth-hardened count on this branch: 110 components.
+Final beta depth-hardened count: 110 components.
 
 Next priority depth candidates:
 
-None. All 110 source components have direct unit coverage and depth-hardening coverage on this branch.
+None. All 110 source components have direct unit coverage and depth-hardening coverage for the beta release.
 
 ## Mutation-Style Quality Checks
 

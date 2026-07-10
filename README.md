@@ -9,6 +9,8 @@
 
 A comprehensive Blazor component library inspired by Shadcn UI, built with Razor components and C#. Complete with **110 components**, comprehensive theming, Chart.js integration, form validation, icon library, testing infrastructure, CLI tooling, and IDE extensions.
 
+Project documentation is indexed in [`docs/README.md`](docs/README.md).
+
 > **Built for developers who want full control.** Copy components into your project and customize them, or use our NuGet package for quick integration.
 
 ## Features
@@ -28,7 +30,7 @@ A comprehensive Blazor component library inspired by Shadcn UI, built with Razor
 - **Theme Persistence** - Save user theme preferences across sessions
 
 ### Developer Tools
-- **Vibe CLI** - Command-line tool to add components like shadcn (`vibe add button`)
+- **Vibe CLI** - Command-line tool to add components like shadcn (`vibe add button`); see the [CLI guide](docs/CLI.md)
 - **VS Code Extension** - Snippets, commands, and IntelliSense support
 - **Visual Studio 2022 Extension** - Project templates, item templates, and integrated tooling
 - **Comprehensive Testing** - Unit and integration tests with bUnit and xUnit
@@ -38,11 +40,12 @@ A comprehensive Blazor component library inspired by Shadcn UI, built with Razor
 
 Vibe.UI.CSS is the utility-first companion (Tailwind-style) for Vibe.UI.
 
-- Tailwind parity roadmap: `docs/Vibe.UI.CSS.TailwindParity.md`
+- [Vibe.UI.CSS architecture and reference](docs/VIBE-UI-CSS.md)
+- [Tailwind parity roadmap](docs/Vibe.UI.CSS.TailwindParity.md)
 
 ## shadcn/ui Parity
 
-- Vibe.UI parity roadmap: `docs/Vibe.UI.ShadcnParity.md`
+- [Vibe.UI parity roadmap](docs/Vibe.UI.ShadcnParity.md)
 
 ## Installation
 
@@ -604,20 +607,21 @@ As a beta release, Vibe.UI has some known limitations we're actively working on:
 ### Components
 - **Error states**: Not all form components fully support `[aria-invalid]` styling yet
 - **Dark mode**: Some components rely on CSS variable inheritance rather than explicit dark mode rules
-- **Accessibility**: Continuous improvements to ARIA attributes and keyboard navigation
+- **Accessibility**: Continuous improvements to ARIA attributes and keyboard navigation; see the [accessibility guide](docs/ACCESSIBILITY.md)
 
 ### Vibe.UI.CSS
-- **Utility coverage**: Not all Tailwind utilities are implemented yet (see `docs/Vibe.UI.CSS.TailwindParity.md`)
+- **Utility coverage**: Not all Tailwind utilities are implemented yet (see the [Tailwind parity roadmap](docs/Vibe.UI.CSS.TailwindParity.md))
 - **Responsive variants**: Some responsive breakpoint variants are still in progress
 
 ### CLI
 - **Template packaging**: CLI templates are bundled in the NuGet package; local development requires packaging first
 
 For detailed roadmaps, see:
-- `docs/Vibe.UI.ShadcnParity.md` - Component parity with shadcn/ui
-- `docs/Vibe.UI.CSS.TailwindParity.md` - Utility parity with Tailwind CSS
-- `docs/Beta-Readiness-Checklist.md` - Beta release checklist
-- `docs/Alpha-0.1.0-Checklist.md` - Historical alpha release checklist
+- [Documentation index](docs/README.md)
+- [Component parity with shadcn/ui](docs/Vibe.UI.ShadcnParity.md)
+- [Utility parity with Tailwind CSS](docs/Vibe.UI.CSS.TailwindParity.md)
+- [Beta release checklist](docs/Beta-Readiness-Checklist.md)
+- [Historical alpha release](docs/Alpha-0.1.0-Checklist.md)
 
 ## Sponsorship
 
