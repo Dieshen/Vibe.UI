@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Vibe.UI.Tests.Components.DataDisplay;
 
 public class ChartTests : TestBase
@@ -161,6 +163,38 @@ public class ChartTests : TestBase
 
         JSInterop.Invocations.Count.ShouldBe(2);
         JSInterop.Invocations.ElementAt(1).Identifier.ShouldBe("vibeChart.updateChart");
+    }
+
+    [Fact]
+    public void Chart_UsesStructuredSliceColors_ForPieDatasets()
+    {
+        JSInterop.Setup<bool>("vibeChart.createChart", _ => true).SetResult(true);
+
+        var cut = Render<Chart>(parameters => parameters
+            .Add(p => p.Type, Chart.ChartType.Pie)
+            .Add(p => p.Data, new Chart.ChartData
+            {
+                Labels = ["North", "South", "West"],
+                Datasets =
+                [
+                    new()
+                    {
+                        Label = "Share",
+                        Data = [35, 40, 25],
+                        Color = "#111111",
+                        BackgroundColors = ["#ff6384", "#36a2eb", "#ffce56"],
+                        BorderColors = ["#c21d52", "#1f6ea5", "#d4a315"]
+                    }
+                ]
+            }));
+
+        var invocation = JSInterop.Invocations.Single();
+        invocation.Identifier.ShouldBe("vibeChart.createChart");
+
+        var configJson = JsonSerializer.Serialize(invocation.Arguments[1]);
+        configJson.ShouldContain(@"""backgroundColor"":[""#ff6384"",""#36a2eb"",""#ffce56""]");
+        configJson.ShouldContain(@"""borderColor"":[""#c21d52"",""#1f6ea5"",""#d4a315""]");
+        cut.Find(".vibe-chart-legend-color").GetAttribute("style")!.ShouldContain("background-color: #ff6384");
     }
 
     private static Chart.ChartData CreateData() => new()

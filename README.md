@@ -192,10 +192,12 @@ Use 70+ built-in Lucide icons:
 Full Chart.js integration for data visualization:
 
 ```razor
+@using Vibe.UI.Components
 @using Vibe.UI.Services
+@using static Vibe.UI.Components.Chart
 
 <!-- Line Chart -->
-<Chart ChartData="@chartData"
+<Chart Data="@chartData"
        Type="ChartType.Line"
        Title="Sales Data"
        Height="400" />
@@ -209,6 +211,7 @@ Full Chart.js integration for data visualization:
 }
 
 <!-- Chart types: Line, Bar, Pie, Doughnut, Radar, PolarArea, Area -->
+<!-- Pie/Doughnut slice colors: set ChartDataset.BackgroundColors / BorderColors -->
 <!-- See docs/CHARTS.md for complete documentation -->
 ```
 

@@ -281,8 +281,8 @@
                 {
                     label = GetDatasetLabel(ds),
                     data = ds.Data ?? new List<double>(),
-                    backgroundColor = GetDatasetBackgroundColor(ds),
-                    borderColor = GetDatasetBorderColor(ds),
+                    backgroundColor = GetDatasetBackgroundColors(ds),
+                    borderColor = GetDatasetBorderColors(ds),
                     borderWidth = Math.Clamp(ds.BorderWidth, 0, MaxBorderWidth),
                     fill = ds.Fill || _effectiveType == ChartType.Area,
                     tension = _effectiveType == ChartType.Line || _effectiveType == ChartType.Area ? 0.4 : 0,
@@ -429,11 +429,26 @@
         NormalizeOptionalText(dataset.BackgroundColor)
         ?? (_effectiveType == ChartType.Line ? "transparent" : GetDatasetColor(dataset));
 
+    private object GetDatasetBackgroundColors(ChartDataset dataset) =>
+        NormalizeColorValues(dataset.BackgroundColors) is { Count: > 0 } colors
+            ? colors.ToArray()
+            : GetDatasetBackgroundColor(dataset);
+
     private static string GetDatasetBorderColor(ChartDataset dataset) =>
         NormalizeOptionalText(dataset.BorderColor) ?? GetDatasetColor(dataset);
 
+    private object GetDatasetBorderColors(ChartDataset dataset) =>
+        NormalizeColorValues(dataset.BorderColors) is { Count: > 0 } colors
+            ? colors.ToArray()
+            : GetDatasetBorderColor(dataset);
+
     private string GetLegendColorStyle(ChartDataset dataset) =>
-        $"background-color: {NormalizeOptionalText(dataset.BackgroundColor) ?? GetDatasetColor(dataset)};";
+        $"background-color: {GetLegendColor(dataset)};";
+
+    private static string GetLegendColor(ChartDataset dataset) =>
+        NormalizeColorValues(dataset.BackgroundColors)?.FirstOrDefault()
+        ?? NormalizeOptionalText(dataset.BackgroundColor)
+        ?? GetDatasetColor(dataset);
 
     private static string GetChartClassType(ChartType type) =>
         Enum.IsDefined(type) ? type.ToString().ToLowerInvariant() : ChartType.Line.ToString().ToLowerInvariant();
@@ -452,6 +467,20 @@
     private static string? NormalizeOptionalText(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
+    private static List<string>? NormalizeColorValues(List<string>? values)
+    {
+        if (values is null)
+        {
+            return null;
+        }
+
+        return values
+            .Select(NormalizeOptionalText)
+            .Where(value => value is not null)
+            .Cast<string>()
+            .ToList();
+    }
+
     private static bool IsRecoverableJsInteropException(Exception exception) =>
         exception is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException;
 
@@ -467,7 +496,9 @@
         public List<double> Data { get; set; } = new();
         public string Color { get; set; } = "#3b82f6";
         public string? BackgroundColor { get; set; }
+        public List<string>? BackgroundColors { get; set; }
         public string? BorderColor { get; set; }
+        public List<string>? BorderColors { get; set; }
         public int BorderWidth { get; set; } = 2;
         public bool Fill { get; set; }
     }
