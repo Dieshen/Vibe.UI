@@ -1,40 +1,81 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 @implements IDisposable
+@implements IAsyncDisposable
 
-<div class="@CombinedClass @VariantClass @(IsVisible ? "visible" : "")" role="alert" aria-live="assertive">
+<div @attributes="AdditionalAttributes"
+     class="@CombinedClass"
+     role="@EffectiveRole"
+     aria-live="@EffectiveAriaLive"
+     aria-atomic="true"
+     aria-label="@EffectiveAriaLabel"
+     data-state="@StateName">
     <div class="toast-content">
-        @if (!string.IsNullOrEmpty(Icon))
+        @if (!string.IsNullOrWhiteSpace(_icon))
         {
-            <div class="toast-icon">@Icon</div>
+            <div class="toast-icon" aria-hidden="true">@_icon</div>
         }
-        <div class="toast-message">
-            @if (!string.IsNullOrEmpty(Title))
-            {
-                <div class="toast-title">@Title</div>
-            }
-            <div class="toast-description">@Description</div>
-        </div>
+        @if (HasMessageContent)
+        {
+            <div class="toast-message">
+                @if (!string.IsNullOrWhiteSpace(_title))
+                {
+                    <div class="toast-title">@_title</div>
+                }
+                @if (!string.IsNullOrWhiteSpace(_description))
+                {
+                    <div class="toast-description">@_description</div>
+                }
+            </div>
+        }
     </div>
     @if (ShowCloseButton)
     {
-        <button type="button" class="toast-close" @onclick="Close" aria-label="Close">
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <button type="button"
+                class="toast-close"
+                @onclick="Close"
+                disabled="@(!_isVisible)"
+                aria-disabled="@AriaBool(!_isVisible)"
+                aria-label="@EffectiveCloseButtonAriaLabel">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
                 <path
                     d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.80708 2.99385 3.44301 2.99385 3.21846 3.2184C2.99391 3.44295 2.99391 3.80702 3.21846 4.03157L6.68688 7.49999L3.21846 10.9684C2.99391 11.193 2.99391 11.557 3.21846 11.7816C3.44301 12.0061 3.80708 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31322 7.49999L11.7816 4.03157Z"
                     fill="currentColor" fill-rule="evenodd" clip-rule="evenodd"></path>
             </svg>
         </button>
     }
-    @if (ShowProgress && Duration > 0)
+    @if (ShowProgress && _effectiveDuration > 0 && _isVisible)
     {
-        <div class="toast-progress">
-            <div class="toast-progress-bar" style="animation-duration: @(Duration)ms;"></div>
+        <div class="toast-progress" aria-hidden="true">
+            <div class="toast-progress-bar" style="@ProgressBarStyle"></div>
         </div>
     }
 </div>
 
 @code {
+    private const string DefaultRole = "alert";
+    private const string DefaultAriaLive = "assertive";
+    private const string DefaultVariant = "default";
+    private const string DefaultCloseButtonAriaLabel = "Close";
+    private const string DefaultEmptyAriaLabel = "Notification";
+
+    private string? _title;
+    private string? _description;
+    private string? _icon;
+    private string _variant = DefaultVariant;
+    private string _role = DefaultRole;
+    private string _ariaLive = DefaultAriaLive;
+    private string _closeButtonAriaLabel = DefaultCloseButtonAriaLabel;
+    private int _effectiveDuration;
+    private string? _parameterSnapshot;
+    private bool _hasParameterSnapshot;
+    private bool _isVisible = true;
+    private bool _closeRequested;
+    private bool _disposed;
+    private CancellationTokenSource? _autoDismissCancellation;
+    private Task? _autoDismissTask;
+    private string? _autoDismissSnapshot;
+
     /// <summary>
     /// Gets or sets the title of the toast.
     /// </summary>
@@ -57,10 +98,11 @@
     /// Gets or sets the variant of the toast.
     /// </summary>
     [Parameter]
-    public string Variant { get; set; } = "default";
+    public string Variant { get; set; } = DefaultVariant;
 
     /// <summary>
     /// Gets or sets the duration in milliseconds before the toast disappears.
+    /// Set to 0 or less to disable auto-dismiss.
     /// </summary>
     [Parameter]
     public int Duration { get; set; } = 5000;
@@ -78,6 +120,30 @@
     public bool ShowProgress { get; set; } = true;
 
     /// <summary>
+    /// Gets or sets the role used for assistive technology announcements.
+    /// </summary>
+    [Parameter]
+    public string? Role { get; set; } = DefaultRole;
+
+    /// <summary>
+    /// Gets or sets the aria-live politeness value used for the toast.
+    /// </summary>
+    [Parameter]
+    public string? AriaLive { get; set; } = DefaultAriaLive;
+
+    /// <summary>
+    /// Gets or sets an accessible label for icon-only or otherwise custom toast content.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the accessible label for the close button.
+    /// </summary>
+    [Parameter]
+    public string? CloseButtonAriaLabel { get; set; } = DefaultCloseButtonAriaLabel;
+
+    /// <summary>
     /// Gets or sets the callback when the toast is closed.
     /// </summary>
     [Parameter]
@@ -86,70 +152,199 @@
     /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
-    protected override string ComponentClass => "vibe-toast";
+    protected override string ComponentClass => CombineClasses(
+        "vibe-toast",
+        $"toast-{_variant}",
+        _isVisible ? "visible toast-visible" : "toast-hidden");
 
-    /// <summary>
-    /// Gets the CSS class for the variant.
-    /// </summary>
-    private string VariantClass => $"toast-{Variant}";
+    private bool HasMessageContent =>
+        !string.IsNullOrWhiteSpace(_title) ||
+        !string.IsNullOrWhiteSpace(_description);
 
-    /// <summary>
-    /// Flag to track if the toast is visible.
-    /// </summary>
-    private bool IsVisible { get; set; } = true;
+    private string StateName => _isVisible ? "open" : "closed";
 
-    /// <summary>
-    /// Timer for auto-dismissing the toast.
-    /// </summary>
-    private System.Timers.Timer? _dismissTimer;
+    private string EffectiveRole => _role;
 
-    /// <summary>
-    /// Initializes the component.
-    /// </summary>
-    protected override void OnInitialized()
+    private string EffectiveAriaLive => _ariaLive;
+
+    private string? EffectiveAriaLabel
     {
-        base.OnInitialized();
-
-        if (Duration > 0)
+        get
         {
-            _dismissTimer = new System.Timers.Timer(Duration);
-            _dismissTimer.Elapsed += OnTimerElapsed;
-            _dismissTimer.AutoReset = false;
-            _dismissTimer.Start();
+            if (!string.IsNullOrWhiteSpace(AriaLabel))
+            {
+                return AriaLabel.Trim();
+            }
+
+            return HasMessageContent ? null : DefaultEmptyAriaLabel;
         }
     }
 
-    /// <summary>
-    /// Handles the timer elapsed event with proper Blazor Server thread safety.
-    /// </summary>
-    private async void OnTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    private string EffectiveCloseButtonAriaLabel => _closeButtonAriaLabel;
+
+    private string ProgressBarStyle =>
+        $"animation-duration: {_effectiveDuration.ToString(System.Globalization.CultureInfo.InvariantCulture)}ms;";
+
+    protected override void OnParametersSet()
     {
-        // Use InvokeAsync to ensure StateHasChanged is called on the UI thread
-        // This is critical for Blazor Server where the timer runs on a background thread
-        await InvokeAsync(async () =>
+        var normalizedTitle = NormalizeOptionalText(Title);
+        var normalizedDescription = NormalizeOptionalText(Description);
+        var normalizedIcon = NormalizeOptionalText(Icon);
+        var normalizedVariant = NormalizeVariant(Variant);
+        var normalizedRole = NormalizeRole(Role);
+        var normalizedAriaLive = NormalizeAriaLive(AriaLive);
+        var normalizedCloseButtonAriaLabel = NormalizeRequiredText(CloseButtonAriaLabel, DefaultCloseButtonAriaLabel);
+        var normalizedDuration = Math.Max(0, Duration);
+        var snapshot = string.Join('\u001f',
+            normalizedTitle,
+            normalizedDescription,
+            normalizedIcon,
+            normalizedVariant,
+            normalizedDuration.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+        if (_hasParameterSnapshot && !string.Equals(snapshot, _parameterSnapshot, StringComparison.Ordinal))
         {
-            IsVisible = false;
-            StateHasChanged();
-            await OnClose.InvokeAsync();
-        });
+            _isVisible = true;
+            _closeRequested = false;
+        }
+
+        _hasParameterSnapshot = true;
+        _parameterSnapshot = snapshot;
+        _title = normalizedTitle;
+        _description = normalizedDescription;
+        _icon = normalizedIcon;
+        _variant = normalizedVariant;
+        _role = normalizedRole;
+        _ariaLive = normalizedAriaLive;
+        _closeButtonAriaLabel = normalizedCloseButtonAriaLabel;
+        _effectiveDuration = normalizedDuration;
+
+        if (_isVisible && _effectiveDuration > 0)
+        {
+            if (_autoDismissCancellation == null ||
+                !string.Equals(_autoDismissSnapshot, snapshot, StringComparison.Ordinal))
+            {
+                StartAutoDismiss(snapshot);
+            }
+        }
+        else
+        {
+            CancelAutoDismiss();
+        }
     }
 
-    /// <summary>
-    /// Closes the toast.
-    /// </summary>
     private async Task Close()
     {
-        _dismissTimer?.Stop();
-        IsVisible = false;
-        StateHasChanged();
-        await OnClose.InvokeAsync();
+        await CloseAsync();
     }
 
-    /// <summary>
-    /// Disposes the component.
-    /// </summary>
+    private async Task CloseAsync()
+    {
+        if (_disposed || _closeRequested)
+        {
+            return;
+        }
+
+        _closeRequested = true;
+        CancelAutoDismiss();
+        _isVisible = false;
+        await OnClose.InvokeAsync();
+
+        if (!_disposed)
+        {
+            StateHasChanged();
+        }
+    }
+
+    private void StartAutoDismiss(string snapshot)
+    {
+        CancelAutoDismiss();
+        _autoDismissCancellation = new CancellationTokenSource();
+        _autoDismissSnapshot = snapshot;
+        _autoDismissTask = AutoDismissAsync(_autoDismissCancellation.Token);
+    }
+
+    private async Task AutoDismissAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(_effectiveDuration, cancellationToken);
+            await InvokeAsync(CloseAsync);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception)
+        {
+            if (!_disposed)
+            {
+                await DispatchExceptionAsync(exception);
+            }
+        }
+    }
+
+    private void CancelAutoDismiss()
+    {
+        if (_autoDismissCancellation == null)
+        {
+            return;
+        }
+
+        _autoDismissCancellation.Cancel();
+        _autoDismissCancellation.Dispose();
+        _autoDismissCancellation = null;
+        _autoDismissSnapshot = null;
+    }
+
     public void Dispose()
     {
-        _dismissTimer?.Dispose();
+        DisposeCore();
     }
+
+    public ValueTask DisposeAsync()
+    {
+        DisposeCore();
+        return ValueTask.CompletedTask;
+    }
+
+    private void DisposeCore()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        CancelAutoDismiss();
+    }
+
+    private static string? NormalizeOptionalText(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string NormalizeRequiredText(string? value, string fallback) =>
+        string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+
+    private static string NormalizeRole(string? role)
+    {
+        var normalizedRole = NormalizeRequiredText(role, DefaultRole).ToLowerInvariant();
+        return normalizedRole is "alert" or "status" or "log" ? normalizedRole : DefaultRole;
+    }
+
+    private static string NormalizeAriaLive(string? ariaLive)
+    {
+        var normalizedAriaLive = NormalizeRequiredText(ariaLive, DefaultAriaLive).ToLowerInvariant();
+        return normalizedAriaLive is "assertive" or "polite" or "off" ? normalizedAriaLive : DefaultAriaLive;
+    }
+
+    private static string NormalizeVariant(string? variant)
+    {
+        var normalizedVariant = NormalizeRequiredText(variant, DefaultVariant).ToLowerInvariant();
+
+        return normalizedVariant.All(static character =>
+            char.IsAsciiLetterOrDigit(character) || character == '-' || character == '_')
+            ? normalizedVariant
+            : DefaultVariant;
+    }
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
 }

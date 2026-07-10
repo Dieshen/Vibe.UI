@@ -1,0 +1,108 @@
+namespace Vibe.UI.Tests.Components.Overlay;
+
+public class DialogCloseTests : TestBase
+{
+    [Fact]
+    public void DialogClose_RendersDefaultAccessibleButton()
+    {
+        var cut = Render<DialogClose>();
+
+        var button = cut.Find("button.vibe-dialog-close");
+        button.GetAttribute("type").ShouldBe("button");
+        button.GetAttribute("aria-label").ShouldBe("Close");
+        button.GetAttribute("aria-disabled").ShouldBe("false");
+        cut.Find(".vibe-dialog-close-icon").GetAttribute("aria-hidden").ShouldBe("true");
+    }
+
+    [Fact]
+    public void DialogClose_RendersCustomAriaLabel()
+    {
+        var cut = Render<DialogClose>(parameters => parameters
+            .Add(p => p.AriaLabel, "Dismiss modal"));
+
+        cut.Find(".vibe-dialog-close").GetAttribute("aria-label").ShouldBe("Dismiss modal");
+    }
+
+    [Fact]
+    public void DialogClose_RendersCustomContentAndAttributes()
+    {
+        var cut = Render<DialogClose>(parameters => parameters
+            .Add(p => p.Class, "close-button")
+            .AddUnmatched("data-close", "dialog")
+            .AddChildContent("Dismiss"));
+
+        var button = cut.Find(".vibe-dialog-close");
+        button.TextContent.ShouldBe("Dismiss");
+        button.ClassList.ShouldContain("close-button");
+        button.GetAttribute("data-close").ShouldBe("dialog");
+    }
+
+    [Fact]
+    public void DialogClose_InvokesClickCallback()
+    {
+        var clicked = false;
+        var cut = Render<DialogClose>(parameters => parameters
+            .Add(p => p.OnClick, EventCallback.Factory.Create(this, () => clicked = true)));
+
+        cut.Find(".vibe-dialog-close").Click();
+
+        clicked.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void DialogClose_DoesNotInvokeClickCallback_WhenDisabled()
+    {
+        var clicked = false;
+        var cut = Render<DialogClose>(parameters => parameters
+            .Add(p => p.Disabled, true)
+            .Add(p => p.OnClick, EventCallback.Factory.Create(this, () => clicked = true)));
+
+        var button = cut.Find(".vibe-dialog-close");
+        button.HasAttribute("disabled").ShouldBeTrue();
+        button.GetAttribute("aria-disabled").ShouldBe("true");
+        button.ClassList.ShouldContain("vibe-dialog-close-disabled");
+
+        button.Click();
+
+        clicked.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void DialogClose_ClosesParentDialog()
+    {
+        bool? changed = null;
+        var cut = Render<DialogRoot>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.IsOpenChanged, EventCallback.Factory.Create<bool>(this, value => changed = value))
+            .AddChildContent(builder =>
+            {
+                builder.OpenComponent<DialogClose>(0);
+                builder.CloseComponent();
+            }));
+
+        cut.Find(".vibe-dialog-close").Click();
+
+        changed.ShouldBe(false);
+        cut.FindAll(".vibe-dialog").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void DialogClose_DoesNotCloseParentDialog_WhenDisabled()
+    {
+        bool? changed = null;
+        var cut = Render<DialogRoot>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.IsOpenChanged, EventCallback.Factory.Create<bool>(this, value => changed = value))
+            .AddChildContent(builder =>
+            {
+                builder.OpenComponent<DialogClose>(0);
+                builder.AddAttribute(1, "Disabled", true);
+                builder.CloseComponent();
+            }));
+
+        cut.Find(".vibe-dialog-close").Click();
+
+        changed.ShouldBeNull();
+        cut.Find(".vibe-dialog").ShouldNotBeNull();
+    }
+}

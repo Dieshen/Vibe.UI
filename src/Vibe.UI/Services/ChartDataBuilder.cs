@@ -10,6 +10,9 @@ public class ChartDataBuilder
 {
     private readonly ChartData _chartData;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChartDataBuilder"/> class.
+    /// </summary>
     public ChartDataBuilder()
     {
         _chartData = new ChartData();
@@ -101,23 +104,16 @@ public class ChartDataBuilder
     public static ChartData CreatePieChart(string[] labels, double[] values, string[]? colors = null)
     {
         var builder = new ChartDataBuilder().WithLabels(labels);
+        var sliceColors = (colors is { Length: > 0 } ? colors : values.Select((_, i) => GetDefaultColor(i)).ToArray())
+            .ToList();
 
         builder.AddDataset(dataset =>
         {
             dataset.Label = "Data";
             dataset.Data = values.ToList();
-
-            if (colors != null && colors.Length > 0)
-            {
-                // For pie/doughnut charts, we need multiple background colors
-                dataset.BackgroundColor = string.Join(",", colors);
-            }
-            else
-            {
-                // Generate default colors for each slice
-                var defaultColors = values.Select((_, i) => GetDefaultColor(i)).ToArray();
-                dataset.BackgroundColor = string.Join(",", defaultColors);
-            }
+            dataset.Color = sliceColors.FirstOrDefault() ?? GetDefaultColor(0);
+            dataset.BackgroundColors = sliceColors;
+            dataset.BorderColors = sliceColors.ToList();
         });
 
         return builder.Build();

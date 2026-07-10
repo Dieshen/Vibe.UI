@@ -6,3 +6,27 @@
   gap: 0.5rem;
 }
 
+:global(.vibe-color-picker-preview[role="button"]) {
+  cursor: pointer;
+}
+
+:global(.vibe-color-picker-preview[role="button"]:focus-visible) {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+:global(.vibe-color-picker-preview[aria-disabled="true"]) {
+  cursor: not-allowed;
+}
+
+:global(.vibe-color-picker-sr-only) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

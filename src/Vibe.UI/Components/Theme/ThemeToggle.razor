@@ -9,8 +9,8 @@
     No complex service layer - just pure CSS and minimal JS.
 *@
 
-<button type="button" class="@CombinedClass" @onclick="ToggleTheme" aria-label="Toggle theme" title="@GetTooltip()"
-    @attributes="AdditionalAttributes">
+<button type="button" class="@ButtonClass" @onclick="ToggleTheme" aria-label="Toggle theme" aria-pressed="@AriaPressed"
+    title="@GetTooltip()" disabled="@Disabled" @attributes="AdditionalAttributes">
     @if (_isDark)
     {
         @if (LightIcon != null)
@@ -98,11 +98,21 @@
     [Parameter]
     public string StorageKey { get; set; } = "vibe-theme";
 
+    /// <summary>
+    /// Gets or sets whether the toggle is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
     private bool _isDark = false;
     private IJSObjectReference? _themeModule;
     private bool _initialized;
 
     protected override string ComponentClass => "vibe-theme-toggle";
+
+    private string ButtonClass => CombineClasses(CombinedClass, Disabled ? "vibe-theme-toggle-disabled" : null);
+    private string AriaPressed => _isDark ? "true" : "false";
+    private string EffectiveStorageKey => string.IsNullOrWhiteSpace(StorageKey) ? "vibe-theme" : StorageKey;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -113,54 +123,29 @@
 
         _initialized = true;
 
-        try
+        var synced = await TrySyncThemeAsync();
+        if (synced)
         {
-            _themeModule = await JS.InvokeAsync<IJSObjectReference>(
-                "import", "./_content/Vibe.UI/js/vibe-theme.js");
-
-            _isDark = await _themeModule.InvokeAsync<bool>("VibeTheme.getTheme", StorageKey);
-            await _themeModule.InvokeVoidAsync("VibeTheme.setTheme", StorageKey, _isDark);
-
             StateHasChanged();
-        }
-        catch
-        {
-            // Ignore: JS may not be available (e.g., prerendering).
         }
     }
 
     private async Task ToggleTheme()
     {
+        if (Disabled)
+        {
+            return;
+        }
+
         // Keep local state in sync with the DOM/localStorage in case something else changed theme.
-        try
-        {
-            _themeModule ??= await JS.InvokeAsync<IJSObjectReference>(
-                "import", "./_content/Vibe.UI/js/vibe-theme.js");
-
-            _isDark = await _themeModule.InvokeAsync<bool>("VibeTheme.getTheme", StorageKey);
-        }
-        catch
-        {
-            // Ignore: if JS isn't available, we just toggle local state.
-        }
-
+        await TryReadThemeAsync();
         _isDark = !_isDark;
         await ApplyTheme(true);
     }
 
     private async Task ApplyTheme(bool stateChanged)
     {
-        try
-        {
-            _themeModule ??= await JS.InvokeAsync<IJSObjectReference>(
-                "import", "./_content/Vibe.UI/js/vibe-theme.js");
-
-            await _themeModule.InvokeVoidAsync("VibeTheme.setTheme", StorageKey, _isDark);
-        }
-        catch
-        {
-            // Ignore: if JS isn't available, we just update local state.
-        }
+        await TryWriteThemeAsync();
 
         if (stateChanged)
         {
@@ -184,10 +169,83 @@
             {
                 await _themeModule.DisposeAsync();
             }
-            catch
+            catch (JSDisconnectedException)
             {
-                // Ignore disposal errors
+                // Ignore: the circuit may already be gone in Blazor Server.
+            }
+            catch (JSException)
+            {
+                // Ignore: the browser module may already be unavailable.
             }
         }
+    }
+
+    private async Task<bool> TrySyncThemeAsync()
+    {
+        var read = await TryReadThemeAsync();
+        var wrote = await TryWriteThemeAsync();
+        return read || wrote;
+    }
+
+    private async Task<bool> TryReadThemeAsync()
+    {
+        try
+        {
+            var module = await GetThemeModuleAsync();
+            if (module is null)
+            {
+                return false;
+            }
+
+            _isDark = await module.InvokeAsync<bool>("VibeTheme.getTheme", EffectiveStorageKey);
+            return true;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
+        catch (JSDisconnectedException)
+        {
+            return false;
+        }
+        catch (JSException)
+        {
+            return false;
+        }
+    }
+
+    private async Task<bool> TryWriteThemeAsync()
+    {
+        try
+        {
+            var module = await GetThemeModuleAsync();
+            if (module is null)
+            {
+                return false;
+            }
+
+            await module.InvokeVoidAsync("VibeTheme.setTheme", EffectiveStorageKey, _isDark);
+            return true;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
+        catch (JSDisconnectedException)
+        {
+            return false;
+        }
+        catch (JSException)
+        {
+            return false;
+        }
+    }
+
+    private async ValueTask<IJSObjectReference?> GetThemeModuleAsync()
+    {
+        _themeModule ??= await JS.InvokeAsync<IJSObjectReference>(
+            "import", "./_content/Vibe.UI/js/vibe-theme.js");
+
+        return _themeModule;
     }
 }

@@ -17,6 +17,10 @@
    TAB LIST
    ---------------------------------------- */
 
+.vibe-tabs-registration {
+    display: none;
+}
+
 .vibe-tabs-list {
     display: flex;
     border-bottom: 1px solid var(--vibe-border);
@@ -39,6 +43,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: var(--vibe-spacing-2);
     padding: var(--vibe-spacing-3) var(--vibe-spacing-4);
     background-color: transparent;
     border: none;
@@ -52,6 +57,17 @@
     user-select: none;
     outline: none;
     white-space: nowrap;
+}
+
+.vibe-tabs-trigger-icon {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+.vibe-tabs-trigger-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Hover State */

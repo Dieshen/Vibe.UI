@@ -12,35 +12,46 @@
             ReadOnly="true"
             Placeholder="@Placeholder"
             Disabled="@Disabled"
+            aria-label="@Placeholder"
+            aria-haspopup="dialog"
+            aria-expanded="@IsOpen.ToString().ToLowerInvariant()"
+            aria-controls="@_popupId"
             @onclick="ToggleCalendar" />
             
-        <div class="date-icon" @onclick="ToggleCalendar">
+        <button type="button"
+                class="date-icon"
+                disabled="@Disabled"
+                aria-label="Open calendar"
+                aria-haspopup="dialog"
+                aria-expanded="@IsOpen.ToString().ToLowerInvariant()"
+                aria-controls="@_popupId"
+                @onclick="ToggleCalendar">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
-        </div>
+        </button>
     </div>
     
     @if (IsOpen)
     {
-        <div class="date-popup">
+        <div id="@_popupId" class="date-popup" role="dialog" aria-label="Choose date">
             <div class="date-header">
-                <button type="button" class="date-nav-btn" @onclick="PreviousMonth">
+                <button type="button" class="date-nav-btn" aria-label="Previous month" @onclick="PreviousMonth">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
                 </button>
                 <div class="date-header-label">
-                    <select class="date-month-select" value="@CurrentMonth" @onchange="HandleMonthChange">
+                    <select class="date-month-select" value="@CurrentMonth" aria-label="Month" @onchange="HandleMonthChange">
                         @for (int i = 0; i < 12; i++)
                         {
                             <option value="@i">@DateTimeFormatInfo.CurrentInfo.GetMonthName(i + 1)</option>
                         }
                     </select>
-                    <select class="date-year-select" value="@CurrentYear" @onchange="HandleYearChange">
+                    <select class="date-year-select" value="@CurrentYear" aria-label="Year" @onchange="HandleYearChange">
                         @for (int i = MinYear; i <= MaxYear; i++)
                         {
                             <option value="@i">@i</option>
                         }
                     </select>
                 </div>
-                <button type="button" class="date-nav-btn" @onclick="NextMonth">
+                <button type="button" class="date-nav-btn" aria-label="Next month" @onclick="NextMonth">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
                 </button>
             </div>
@@ -63,6 +74,9 @@
                                     type="button"
                                     class="@GetDayClass(day)"
                                     disabled="@(!day.IsCurrentMonth || !IsInRange(day.Date) || Disabled)"
+                                    aria-label="@GetDayAriaLabel(day)"
+                                    aria-current="@(day.IsToday ? "date" : null)"
+                                    aria-pressed="@IsSelected(day).ToString().ToLowerInvariant()"
                                     @onclick="() => SelectDate(day.Date)">
                                     @day.DayNumber
                                 </button>
@@ -73,7 +87,7 @@
             </div>
             
             <div class="date-footer">
-                <button type="button" class="date-today-btn" @onclick="SelectToday">Today</button>
+                <button type="button" class="date-today-btn" disabled="@(!IsInRange(DateTime.Today) || Disabled)" @onclick="SelectToday">Today</button>
             </div>
         </div>
         
@@ -92,6 +106,8 @@
         public bool IsCurrentMonth { get; set; }
         public bool IsToday { get; set; }
     }
+
+    private readonly string _popupId = $"datepicker-{Guid.NewGuid():N}-popup";
 
     /// <summary>
     /// Gets or sets the selected date.
@@ -257,7 +273,7 @@
     /// </summary>
     private void HandleMonthChange(ChangeEventArgs e)
     {
-        if (int.TryParse(e.Value.ToString(), out int month))
+        if (int.TryParse(e.Value!.ToString(), out int month))
         {
             CurrentMonth = month;
         }
@@ -268,7 +284,7 @@
     /// </summary>
     private void HandleYearChange(ChangeEventArgs e)
     {
-        if (int.TryParse(e.Value.ToString(), out int year))
+        if (int.TryParse(e.Value!.ToString(), out int year))
         {
             CurrentYear = year;
         }
@@ -324,6 +340,16 @@
         }
 
         return string.Join(" ", classes);
+    }
+
+    private bool IsSelected(CalendarDay day)
+    {
+        return Date.HasValue && day.Date.Date == Date.Value.Date;
+    }
+
+    private static string GetDayAriaLabel(CalendarDay day)
+    {
+        return day.Date.ToString("D", CultureInfo.CurrentCulture);
     }
 
     /// <summary>

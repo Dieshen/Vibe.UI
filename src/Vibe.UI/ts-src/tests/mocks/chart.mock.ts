@@ -71,7 +71,7 @@ let chartInstances: MockChartInstance[] = [];
 let lastChartInstance: MockChartInstance | null = null;
 
 // Mock Chart constructor
-export const MockChart = vi.fn((ctx: CanvasRenderingContext2D, config: ChartConfig) => {
+export const MockChart = vi.fn(function (ctx: CanvasRenderingContext2D, config: ChartConfig) {
   const instance = new MockChartInstance(ctx, config);
   chartInstances.push(instance);
   lastChartInstance = instance;

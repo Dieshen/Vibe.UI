@@ -7,7 +7,7 @@ This guide explains how to include and configure Vibe.UI CSS in your Blazor appl
 Vibe.UI uses a multi-layered CSS architecture:
 
 1. **Base Styles** (`vibe-base.css`) - Required foundation styles
-2. **Component Scoped Styles** (`Vibe.UI.styles.css`) - Automatically bundled component styles
+2. **Component Scoped Styles** (`Vibe.UI.bundle.scp.css`) - Automatically bundled component styles
 3. **Utility Classes** (`vibe-utilities.css`) - Optional helper classes
 
 ## Quick Start
@@ -22,7 +22,7 @@ Include only the essential CSS files in your app's `_Host.cshtml`, `_Layout.csht
     <link href="_content/Vibe.UI/css/vibe-base.css" rel="stylesheet" />
 
     <!-- Vibe.UI Component Styles (REQUIRED) -->
-    <link href="_content/Vibe.UI/Vibe.UI.styles.css" rel="stylesheet" />
+    <link href="_content/Vibe.UI/Vibe.UI.bundle.scp.css" rel="stylesheet" />
 </head>
 ```
 
@@ -32,15 +32,16 @@ If you want to use utility classes for quick styling:
 
 ```html
 <head>
-    <!-- Vibe.UI Complete Bundle -->
-    <link href="_content/Vibe.UI/css/vibe-all.css" rel="stylesheet" />
+    <!-- Vibe.UI Base Styles (REQUIRED) -->
+    <link href="_content/Vibe.UI/css/vibe-base.css" rel="stylesheet" />
+
+    <!-- Vibe.UI Utility Classes (OPTIONAL) -->
+    <link href="_content/Vibe.UI/css/vibe-utilities.css" rel="stylesheet" />
 
     <!-- Vibe.UI Component Styles (REQUIRED) -->
-    <link href="_content/Vibe.UI/Vibe.UI.styles.css" rel="stylesheet" />
+    <link href="_content/Vibe.UI/Vibe.UI.bundle.scp.css" rel="stylesheet" />
 </head>
 ```
-
-Note: `vibe-all.css` imports both `vibe-base.css` and `vibe-utilities.css`.
 
 ### Option 3: Granular Control
 
@@ -55,7 +56,7 @@ For maximum control over what CSS is loaded:
     <link href="_content/Vibe.UI/css/vibe-utilities.css" rel="stylesheet" />
 
     <!-- Component Styles (Required) -->
-    <link href="_content/Vibe.UI/Vibe.UI.styles.css" rel="stylesheet" />
+    <link href="_content/Vibe.UI/Vibe.UI.bundle.scp.css" rel="stylesheet" />
 </head>
 ```
 
@@ -76,7 +77,7 @@ For maximum control over what CSS is loaded:
 
 **Size:** ~10KB
 
-### 2. Component Scoped Styles (`Vibe.UI.styles.css`)
+### 2. Component Scoped Styles (`Vibe.UI.bundle.scp.css`)
 
 **Status:** REQUIRED
 
@@ -118,18 +119,9 @@ Blazor automatically bundles all component-specific CSS files at build time. Eac
 
 **Size:** ~15KB
 
-### 4. Combined Bundle (`vibe-all.css`)
+### 4. Combined Bundle
 
-**Status:** CONVENIENCE FILE
-
-**Contains:**
-- Imports `vibe-base.css`
-- Imports `vibe-utilities.css`
-- Documentation about scoped styles
-
-**Purpose:** Single import for base + utilities. Still requires separate import of `Vibe.UI.styles.css`.
-
-**Note:** This does NOT include component scoped styles. You must still reference `Vibe.UI.styles.css`.
+Vibe.UI does not currently ship a combined `vibe-all.css` bundle. Reference `vibe-base.css` and, when needed, `vibe-utilities.css` explicitly, then load the scoped component bundle.
 
 ## Blazor Server vs Blazor WebAssembly
 
@@ -144,7 +136,7 @@ Add CSS links to `_Host.cshtml` or `_Layout.cshtml`:
 <html>
 <head>
     <link href="_content/Vibe.UI/css/vibe-base.css" rel="stylesheet" />
-    <link href="_content/Vibe.UI/Vibe.UI.styles.css" rel="stylesheet" />
+    <link href="_content/Vibe.UI/Vibe.UI.bundle.scp.css" rel="stylesheet" />
 </head>
 <body>
     @RenderBody()
@@ -161,7 +153,7 @@ Add CSS links to `wwwroot/index.html`:
 <html>
 <head>
     <link href="_content/Vibe.UI/css/vibe-base.css" rel="stylesheet" />
-    <link href="_content/Vibe.UI/Vibe.UI.styles.css" rel="stylesheet" />
+    <link href="_content/Vibe.UI/Vibe.UI.bundle.scp.css" rel="stylesheet" />
 </head>
 <body>
     <div id="app"></div>
@@ -179,7 +171,7 @@ Add CSS links to `Components/App.razor`:
 <head>
     <HeadOutlet />
     <link href="_content/Vibe.UI/css/vibe-base.css" rel="stylesheet" />
-    <link href="_content/Vibe.UI/Vibe.UI.styles.css" rel="stylesheet" />
+    <link href="_content/Vibe.UI/Vibe.UI.bundle.scp.css" rel="stylesheet" />
 </head>
 <body>
     <Routes />
@@ -331,13 +323,13 @@ Typical CSS sizes when using Vibe.UI:
 |------|---------------------|----------------|
 | `vibe-base.css` | ~10KB | ~2KB |
 | `vibe-utilities.css` | ~15KB | ~3KB |
-| `Vibe.UI.styles.css` | ~30KB | ~5KB |
+| `Vibe.UI.bundle.scp.css` | ~30KB | ~5KB |
 | **Total (Base + Scoped)** | **~40KB** | **~7KB** |
 | **Total (All CSS)** | **~55KB** | **~10KB** |
 
 ### Optimization Tips
 
-1. **Use minimal setup** - Only include `vibe-base.css` and `Vibe.UI.styles.css` if you don't need utilities
+1. **Use minimal setup** - Only include `vibe-base.css` and `Vibe.UI.bundle.scp.css` if you don't need utilities
 2. **Enable HTTP compression** - CSS compresses extremely well (70-80% reduction)
 3. **Use CDN caching** - Static CSS files cache well
 4. **Tree-shaking** - Blazor only includes scoped CSS for components you actually use
@@ -355,7 +347,7 @@ Always load CSS in this order for best performance:
 <link href="_content/Vibe.UI/css/vibe-utilities.css" rel="stylesheet" />
 
 <!-- 3. Component scoped styles -->
-<link href="_content/Vibe.UI/Vibe.UI.styles.css" rel="stylesheet" />
+<link href="_content/Vibe.UI/Vibe.UI.bundle.scp.css" rel="stylesheet" />
 
 <!-- 4. Your custom overrides -->
 <link href="css/custom-theme.css" rel="stylesheet" />
@@ -377,13 +369,13 @@ Always load CSS in this order for best performance:
 
 **Problem:** Component-specific styles aren't working.
 
-**Solution:** Make sure `Vibe.UI.styles.css` is included:
+**Solution:** Make sure `Vibe.UI.bundle.scp.css` is included:
 
 ```html
-<link href="_content/Vibe.UI/Vibe.UI.styles.css" rel="stylesheet" />
+<link href="_content/Vibe.UI/Vibe.UI.bundle.scp.css" rel="stylesheet" />
 ```
 
-Verify the file exists at `_content/Vibe.UI/Vibe.UI.styles.css` in your published output.
+Verify the file exists at `_content/Vibe.UI/Vibe.UI.bundle.scp.css` in your published output.
 
 ### Dark mode not working
 
@@ -427,7 +419,7 @@ document.documentElement.classList.add('dark');
 ## Best Practices
 
 1. **Always include base styles** - `vibe-base.css` is required for all components
-2. **Always include scoped styles** - `Vibe.UI.styles.css` is required for component-specific styles
+2. **Always include scoped styles** - `Vibe.UI.bundle.scp.css` is required for component-specific styles
 3. **Load utilities conditionally** - Only include `vibe-utilities.css` if you use utility classes
 4. **Override with custom CSS** - Load your theme customizations after Vibe.UI styles
 5. **Use CSS variables** - Customize themes by overriding CSS variables rather than component styles
@@ -449,7 +441,7 @@ document.documentElement.classList.add('dark');
     <title>My App</title>
     <base href="~/" />
     <link href="_content/Vibe.UI/css/vibe-base.css" rel="stylesheet" />
-    <link href="_content/Vibe.UI/Vibe.UI.styles.css" rel="stylesheet" />
+    <link href="_content/Vibe.UI/Vibe.UI.bundle.scp.css" rel="stylesheet" />
     <link href="css/site.css" rel="stylesheet" />
 </head>
 <body>
@@ -470,7 +462,7 @@ document.documentElement.classList.add('dark');
     <title>My App</title>
     <base href="/" />
     <link href="_content/Vibe.UI/css/vibe-base.css" rel="stylesheet" />
-    <link href="_content/Vibe.UI/Vibe.UI.styles.css" rel="stylesheet" />
+    <link href="_content/Vibe.UI/Vibe.UI.bundle.scp.css" rel="stylesheet" />
 </head>
 <body>
     <div id="app">Loading...</div>
@@ -485,7 +477,7 @@ document.documentElement.classList.add('dark');
 <head>
     <!-- Vibe.UI styles -->
     <link href="_content/Vibe.UI/css/vibe-base.css" rel="stylesheet" />
-    <link href="_content/Vibe.UI/Vibe.UI.styles.css" rel="stylesheet" />
+    <link href="_content/Vibe.UI/Vibe.UI.bundle.scp.css" rel="stylesheet" />
 
     <!-- Custom theme overrides -->
     <link href="css/brand-theme.css" rel="stylesheet" />
@@ -513,7 +505,7 @@ CSS files are included in the package and referenced via `_content/Vibe.UI/...`:
 
 ```html
 <link href="_content/Vibe.UI/css/vibe-base.css" rel="stylesheet" />
-<link href="_content/Vibe.UI/Vibe.UI.styles.css" rel="stylesheet" />
+<link href="_content/Vibe.UI/Vibe.UI.bundle.scp.css" rel="stylesheet" />
 ```
 
 ### CLI Approach
@@ -539,13 +531,14 @@ No scoped styles bundle needed with CLI - styles are integrated directly into yo
 **Minimal setup (recommended):**
 ```html
 <link href="_content/Vibe.UI/css/vibe-base.css" rel="stylesheet" />
-<link href="_content/Vibe.UI/Vibe.UI.styles.css" rel="stylesheet" />
+<link href="_content/Vibe.UI/Vibe.UI.bundle.scp.css" rel="stylesheet" />
 ```
 
 **Full setup with utilities:**
 ```html
-<link href="_content/Vibe.UI/css/vibe-all.css" rel="stylesheet" />
-<link href="_content/Vibe.UI/Vibe.UI.styles.css" rel="stylesheet" />
+<link href="_content/Vibe.UI/css/vibe-base.css" rel="stylesheet" />
+<link href="_content/Vibe.UI/css/vibe-utilities.css" rel="stylesheet" />
+<link href="_content/Vibe.UI/Vibe.UI.bundle.scp.css" rel="stylesheet" />
 ```
 
 Choose the setup that best fits your needs and follow Blazor best practices for optimal performance.

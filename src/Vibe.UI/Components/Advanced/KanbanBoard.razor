@@ -1,13 +1,24 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
-    @if (Columns != null && Columns.Any())
+<div @attributes="AdditionalAttributes"
+     class="@CombinedCssClass"
+     role="region"
+     aria-label="@EffectiveAriaLabel"
+     aria-disabled="@AriaBool(Disabled)"
+     data-readonly="@AriaBool(ReadOnly)">
+    @if (VisibleColumns.Count > 0)
     {
-        <div class="kanban-columns">
-            @foreach (var column in Columns)
+        <div class="kanban-columns" role="list" aria-label="Kanban columns">
+            @foreach (var column in VisibleColumns)
             {
-                <div class="kanban-column" @key="column.Id">
+                var cards = GetCards(column);
+
+                <div class="@GetColumnCssClass(column)"
+                     role="listitem"
+                     aria-label="@GetColumnAriaLabel(column, cards.Count)"
+                     aria-disabled="@AriaBool(IsColumnInteractionBlocked(column))"
+                     @key="column">
                     <div class="kanban-column-header">
                         @if (ColumnHeaderTemplate != null)
                         {
@@ -15,65 +26,82 @@
                         }
                         else
                         {
-                            <h3 class="column-title">@column.Title</h3>
+                            <h3 class="column-title">@GetColumnTitle(column)</h3>
                             @if (column.Badge != null)
                             {
                                 <span class="column-badge">@column.Badge</span>
                             }
                             else
                             {
-                                <span class="column-count">@column.Cards.Count</span>
+                                <span class="column-count" aria-label="@GetColumnCountLabel(cards.Count)">@cards.Count</span>
                             }
                             @if (AllowAddCard)
                             {
                                 <button type="button"
                                         class="column-add-btn"
-                                        @onclick="() => OnAddCardRequested.InvokeAsync(column.Id)"
-                                        title="Add card">
-                                    +
+                                        disabled="@(!CanRequestAddCard(column))"
+                                        @onclick="() => HandleAddCardRequested(column)"
+                                        title="@GetAddCardLabel(column)"
+                                        aria-label="@GetAddCardLabel(column)">
+                                    <span aria-hidden="true">+</span>
                                 </button>
                             }
                         }
                     </div>
 
-                    <div class="kanban-cards">
-                        @foreach (var card in column.Cards)
+                    <div class="kanban-cards" role="list" aria-label="@GetCardListLabel(column)">
+                        @if (cards.Count == 0)
                         {
-                            <div class="kanban-card"
-                                 @key="card.Id"
-                                 draggable="@AllowDragDrop"
-                                 @onclick="() => HandleCardClick(card)">
-                                @if (CardTemplate != null)
-                                {
-                                    @CardTemplate(card)
-                                }
-                                else
-                                {
-                                    <div class="card-content">
-                                        @if (!string.IsNullOrEmpty(card.Title))
+                            <div class="kanban-column-empty" role="status">@EmptyColumnText</div>
+                        }
+                        else
+                        {
+                            @foreach (var card in cards)
+                            {
+                                var tags = GetTags(card);
+
+                                <div class="kanban-card-shell" role="listitem" @key="card">
+                                    <div class="@GetCardCssClass(card)"
+                                         role="@GetCardRole(card)"
+                                         tabindex="@GetCardTabIndex(card)"
+                                         aria-label="@GetCardAriaLabel(card)"
+                                         aria-disabled="@GetCardAriaDisabled(card)"
+                                         draggable="@AriaBool(CanDragCard(card, column))"
+                                         @onclick="() => HandleCardClick(card)"
+                                         @onkeydown="args => HandleCardKeyDown(args, card)">
+                                        @if (CardTemplate != null)
                                         {
-                                            <h4 class="card-title">@card.Title</h4>
+                                            @CardTemplate(card)
                                         }
-                                        @if (!string.IsNullOrEmpty(card.Description))
+                                        else
                                         {
-                                            <p class="card-description">@card.Description</p>
-                                        }
-                                        @if (card.Tags != null && card.Tags.Any())
-                                        {
-                                            <div class="card-tags">
-                                                @foreach (var tag in card.Tags)
+                                            <div class="card-content">
+                                                @if (!string.IsNullOrWhiteSpace(card.Title))
                                                 {
-                                                    <span class="card-tag" @key="tag">@tag</span>
+                                                    <h4 class="card-title">@card.Title</h4>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(card.Description))
+                                                {
+                                                    <p class="card-description">@card.Description</p>
+                                                }
+                                                @if (tags.Count > 0)
+                                                {
+                                                    <div class="card-tags" aria-label="Card tags">
+                                                        @foreach (var tag in tags)
+                                                        {
+                                                            <span class="card-tag">@tag</span>
+                                                        }
+                                                    </div>
+                                                }
+                                                @if (card.Footer != null)
+                                                {
+                                                    <div class="card-footer">@card.Footer</div>
                                                 }
                                             </div>
                                         }
-                                        @if (card.Footer != null)
-                                        {
-                                            <div class="card-footer">@card.Footer</div>
-                                        }
                                     </div>
-                                }
-                            </div>
+                                </div>
+                            }
                         }
                     </div>
 
@@ -87,15 +115,26 @@
             }
         </div>
     }
-    else if (EmptyContent != null)
+    else
     {
-        <div class="kanban-empty">
-            @EmptyContent
+        <div class="kanban-empty" role="status">
+            @if (EmptyContent != null)
+            {
+                @EmptyContent
+            }
+            else
+            {
+                <span>@EmptyText</span>
+            }
         </div>
     }
 </div>
 
 @code {
+    private const string DefaultAriaLabel = "Kanban board";
+    private const string UntitledColumn = "Untitled column";
+    private const string UntitledCard = "Untitled card";
+
     [Parameter]
     public List<KanbanColumn>? Columns { get; set; }
 
@@ -115,6 +154,21 @@
     public bool AllowAddCard { get; set; } = true;
 
     [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    [Parameter]
+    public string AriaLabel { get; set; } = DefaultAriaLabel;
+
+    [Parameter]
+    public string EmptyText { get; set; } = "No columns";
+
+    [Parameter]
+    public string EmptyColumnText { get; set; } = "No cards";
+
+    [Parameter]
     public EventCallback<KanbanCard> OnCardClicked { get; set; }
 
     [Parameter]
@@ -128,29 +182,91 @@
 
     private string CombinedCssClass => CombineClasses(
         "vibe-kanban",
-        CssClass
+        Disabled ? "vibe-kanban-disabled" : null,
+        ReadOnly ? "vibe-kanban-readonly" : null,
+        CssClass,
+        Class
     );
 
     protected override string ComponentClass => CombinedCssClass;
 
+    private IReadOnlyList<KanbanColumn> VisibleColumns =>
+        Columns?.OfType<KanbanColumn>().ToList() ?? [];
+
+    private string EffectiveAriaLabel =>
+        string.IsNullOrWhiteSpace(AriaLabel) ? DefaultAriaLabel : AriaLabel.Trim();
+
+    private bool InteractionsBlocked => Disabled || ReadOnly;
+
     private async Task HandleCardClick(KanbanCard card)
     {
+        if (!CanClickCard(card))
+        {
+            return;
+        }
+
         await OnCardClicked.InvokeAsync(card);
+    }
+
+    private async Task HandleCardKeyDown(KeyboardEventArgs args, KanbanCard card)
+    {
+        if (!CanClickCard(card) || !IsActivationKey(args.Key))
+        {
+            return;
+        }
+
+        await OnCardClicked.InvokeAsync(card);
+    }
+
+    private async Task HandleAddCardRequested(KanbanColumn column)
+    {
+        if (!CanRequestAddCard(column))
+        {
+            return;
+        }
+
+        await OnAddCardRequested.InvokeAsync(column.Id);
     }
 
     public async Task MoveCard(string cardId, string fromColumnId, string toColumnId)
     {
-        var fromColumn = Columns?.FirstOrDefault(c => c.Id == fromColumnId);
-        var toColumn = Columns?.FirstOrDefault(c => c.Id == toColumnId);
-
-        if (fromColumn == null || toColumn == null)
+        if (InteractionsBlocked ||
+            string.IsNullOrWhiteSpace(cardId) ||
+            string.IsNullOrWhiteSpace(fromColumnId) ||
+            string.IsNullOrWhiteSpace(toColumnId) ||
+            string.Equals(fromColumnId, toColumnId, StringComparison.Ordinal))
+        {
             return;
+        }
 
-        var card = fromColumn.Cards.FirstOrDefault(c => c.Id == cardId);
-        if (card == null)
+        var fromColumn = FindColumn(fromColumnId);
+        var toColumn = FindColumn(toColumnId);
+
+        if (fromColumn == null ||
+            toColumn == null ||
+            IsColumnInteractionBlocked(fromColumn) ||
+            IsColumnInteractionBlocked(toColumn) ||
+            fromColumn.Cards == null)
+        {
             return;
+        }
 
-        fromColumn.Cards.Remove(card);
+        var card = fromColumn.Cards
+            .OfType<KanbanCard>()
+            .FirstOrDefault(candidate => string.Equals(candidate.Id, cardId, StringComparison.Ordinal));
+
+        if (card == null || IsCardInteractionBlocked(card))
+        {
+            return;
+        }
+
+        toColumn.Cards ??= [];
+
+        if (!fromColumn.Cards.Remove(card))
+        {
+            return;
+        }
+
         toColumn.Cards.Add(card);
 
         await OnCardMoved.InvokeAsync(new CardMovedEventArgs
@@ -163,6 +279,85 @@
         StateHasChanged();
     }
 
+    private KanbanColumn? FindColumn(string columnId) =>
+        VisibleColumns.FirstOrDefault(column => string.Equals(column.Id, columnId, StringComparison.Ordinal));
+
+    private static IReadOnlyList<KanbanCard> GetCards(KanbanColumn column) =>
+        column.Cards?.OfType<KanbanCard>().ToList() ?? [];
+
+    private static IReadOnlyList<string> GetTags(KanbanCard card) =>
+        card.Tags?
+            .Where(tag => !string.IsNullOrWhiteSpace(tag))
+            .Select(tag => tag.Trim())
+            .ToList() ?? [];
+
+    private static string GetColumnTitle(KanbanColumn column) =>
+        string.IsNullOrWhiteSpace(column.Title) ? UntitledColumn : column.Title.Trim();
+
+    private static string GetCardTitle(KanbanCard card) =>
+        string.IsNullOrWhiteSpace(card.Title) ? UntitledCard : card.Title.Trim();
+
+    private static string GetColumnCountLabel(int count) =>
+        count == 1 ? "1 card" : $"{count} cards";
+
+    private static string GetColumnAriaLabel(KanbanColumn column, int count) =>
+        $"{GetColumnTitle(column)}, {GetColumnCountLabel(count)}";
+
+    private static string GetCardListLabel(KanbanColumn column) =>
+        $"{GetColumnTitle(column)} cards";
+
+    private static string GetAddCardLabel(KanbanColumn column) =>
+        $"Add card to {GetColumnTitle(column)}";
+
+    private static string GetCardAriaLabel(KanbanCard card) =>
+        GetCardTitle(card);
+
+    private string GetColumnCssClass(KanbanColumn column) =>
+        CombineClasses(
+            "kanban-column",
+            IsColumnInteractionBlocked(column) ? "kanban-column-disabled" : null
+        );
+
+    private string GetCardCssClass(KanbanCard card) =>
+        CombineClasses(
+            "kanban-card",
+            IsCardInteractionBlocked(card) ? "kanban-card-disabled" : null,
+            CanClickCard(card) ? "kanban-card-clickable" : null
+        );
+
+    private string GetCardRole(KanbanCard card) =>
+        OnCardClicked.HasDelegate ? "button" : "group";
+
+    private string? GetCardTabIndex(KanbanCard card) =>
+        CanClickCard(card) ? "0" : null;
+
+    private string? GetCardAriaDisabled(KanbanCard card) =>
+        OnCardClicked.HasDelegate ? AriaBool(IsCardInteractionBlocked(card)) : null;
+
+    private bool CanClickCard(KanbanCard card) =>
+        OnCardClicked.HasDelegate && !IsCardInteractionBlocked(card);
+
+    private bool CanDragCard(KanbanCard card, KanbanColumn column) =>
+        AllowDragDrop && !IsColumnInteractionBlocked(column) && !IsCardInteractionBlocked(card);
+
+    private bool CanRequestAddCard(KanbanColumn column) =>
+        AllowAddCard &&
+        OnAddCardRequested.HasDelegate &&
+        !IsColumnInteractionBlocked(column) &&
+        !string.IsNullOrWhiteSpace(column.Id);
+
+    private bool IsColumnInteractionBlocked(KanbanColumn column) =>
+        InteractionsBlocked || column.IsDisabled;
+
+    private bool IsCardInteractionBlocked(KanbanCard card) =>
+        InteractionsBlocked || card.IsDisabled;
+
+    private static bool IsActivationKey(string? key) =>
+        key is "Enter" or " ";
+
+    private static string AriaBool(bool value) =>
+        value ? "true" : "false";
+
     public class KanbanColumn
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
@@ -170,6 +365,7 @@
         public List<KanbanCard> Cards { get; set; } = new();
         public RenderFragment? Badge { get; set; }
         public RenderFragment? Footer { get; set; }
+        public bool IsDisabled { get; set; }
         public string? Color { get; set; }
     }
 
@@ -180,6 +376,7 @@
         public string? Description { get; set; }
         public List<string>? Tags { get; set; }
         public RenderFragment? Footer { get; set; }
+        public bool IsDisabled { get; set; }
         public object? Data { get; set; }
     }
 

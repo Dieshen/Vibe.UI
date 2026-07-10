@@ -5,3 +5,49 @@
   display: block;
 }
 
+.mentions-input-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.mention-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.mention-remove {
+  cursor: pointer;
+}
+
+.mentions-input {
+  min-width: 8rem;
+  flex: 1 1 8rem;
+}
+
+.mentions-suggestions {
+  position: absolute;
+  z-index: 10;
+  width: 100%;
+}
+
+.mention-suggestion {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: left;
+}
+
+.mention-suggestion.active,
+.mention-suggestion:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+}
+
+.mentions-disabled,
+.mentions-readonly {
+  cursor: not-allowed;
+}

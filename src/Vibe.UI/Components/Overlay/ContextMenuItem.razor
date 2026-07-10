@@ -1,10 +1,16 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<div class="@CombinedClass @(Disabled ? "disabled" : "")" @onclick="OnClick">
+<div class="@CombinedClass @(Disabled ? "disabled" : "")"
+     role="menuitem"
+     tabindex="@(Disabled ? "-1" : "0")"
+     aria-disabled="@Disabled.ToString().ToLowerInvariant()"
+     @onclick="OnClick"
+     @onkeydown="OnKeyDown"
+     @attributes="AdditionalAttributes">
     @if (!string.IsNullOrEmpty(Icon))
     {
-        <span class="context-item-icon">@((MarkupString)Icon)</span>
+        <span class="context-item-icon" aria-hidden="true">@((MarkupString)Icon)</span>
     }
     <span class="context-item-content">@ChildContent</span>
     @if (!string.IsNullOrEmpty(Shortcut))
@@ -24,13 +30,13 @@
     /// Gets or sets the icon (HTML) for the context menu item.
     /// </summary>
     [Parameter]
-    public string Icon { get; set; }
+    public string? Icon { get; set; }
 
     /// <summary>
     /// Gets or sets the keyboard shortcut text.
     /// </summary>
     [Parameter]
-    public string Shortcut { get; set; }
+    public string? Shortcut { get; set; }
 
     /// <summary>
     /// Gets or sets whether the context menu item is disabled.
@@ -59,5 +65,13 @@
         {
             await OnItemClick.InvokeAsync(e);
         }
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (Disabled || e.Key is not ("Enter" or " " or "Spacebar"))
+            return;
+
+        await OnItemClick.InvokeAsync(new MouseEventArgs());
     }
 }

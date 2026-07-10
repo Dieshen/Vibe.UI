@@ -6,7 +6,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Checkbox>();
+        var cut = Render<Checkbox>();
 
         // Assert
         var checkbox = cut.Find("input[type='checkbox']");
@@ -18,7 +18,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_Renders_WithLabel()
     {
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .AddChildContent("Accept terms"));
 
         // Assert
@@ -30,7 +30,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_Renders_AsChecked()
     {
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Checked, true));
 
         // Assert
@@ -42,7 +42,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_Applies_Disabled_Attribute()
     {
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Disabled, true));
 
         // Assert
@@ -56,7 +56,7 @@ public class CheckboxTests : TestBase
     {
         // Arrange
         var checkedValue = false;
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.CheckedChanged, newValue => checkedValue = newValue));
 
         // Act
@@ -70,11 +70,14 @@ public class CheckboxTests : TestBase
     public void Checkbox_DoesNotInvokeCallback_WhenNoDelegate()
     {
         // Arrange
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Checked, false));
 
-        // Act & Assert - Should not throw
+        // Act
         cut.Find("input[type='checkbox']").Change(true);
+
+        // Assert
+        cut.Find("input[type='checkbox']").HasAttribute("checked").ShouldBeTrue();
     }
 
     // === Edge Cases ===
@@ -83,7 +86,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_WithNullChildContent_RendersWithoutLabel()
     {
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.ChildContent, (RenderFragment?)null));
 
         // Assert
@@ -94,7 +97,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_WithEmptyChildContent_RendersWithEmptyLabel()
     {
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .AddChildContent(string.Empty));
 
         // Assert
@@ -106,7 +109,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_WithComplexChildContent_RendersCorrectly()
     {
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .AddChildContent("<strong>Bold</strong> label text"));
 
         // Assert
@@ -121,7 +124,7 @@ public class CheckboxTests : TestBase
         var longLabel = new string('A', 500);
 
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .AddChildContent(longLabel));
 
         // Assert
@@ -135,7 +138,7 @@ public class CheckboxTests : TestBase
     {
         // Arrange
         var checkedValue = true;
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Checked, true)
             .Add(p => p.CheckedChanged, newValue => checkedValue = newValue));
 
@@ -151,7 +154,7 @@ public class CheckboxTests : TestBase
     {
         // Arrange
         var checkedValue = false;
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Checked, false)
             .Add(p => p.CheckedChanged, newValue => checkedValue = newValue));
 
@@ -169,20 +172,24 @@ public class CheckboxTests : TestBase
     {
         // Arrange
         var checkedValue = false;
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Checked, false)
             .Add(p => p.Disabled, true)
             .Add(p => p.CheckedChanged, newValue => checkedValue = newValue));
 
-        // Act - bUnit doesn't prevent disabled checkbox change, but we verify the disabled attribute
+        // Act - bUnit can dispatch directly even when the element is disabled.
+        cut.Find("input[type='checkbox']").Change(true);
+
+        // Assert
         cut.Find("input[type='checkbox']").HasAttribute("disabled").ShouldBeTrue();
+        checkedValue.ShouldBeFalse();
     }
 
     [Fact]
     public void Checkbox_DisabledWithChecked_RendersCorrectly()
     {
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Checked, true)
             .Add(p => p.Disabled, true)
             .AddChildContent("Disabled and Checked"));
@@ -200,7 +207,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_WithNonBooleanValue_HandlesGracefully()
     {
         // Arrange
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Checked, false)
             .Add(p => p.CheckedChanged, EventCallback.Factory.Create<bool>(this, _ => { })));
 
@@ -214,7 +221,7 @@ public class CheckboxTests : TestBase
     {
         // Arrange
         var toggleCount = 0;
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.CheckedChanged, newValue => toggleCount++));
 
         var checkbox = cut.Find("input[type='checkbox']");
@@ -235,7 +242,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_HasBaseClass()
     {
         // Act
-        var cut = RenderComponent<Checkbox>();
+        var cut = Render<Checkbox>();
 
         // Assert
         cut.Find("label").ClassList.ShouldContain("vibe-checkbox");
@@ -245,7 +252,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_WhenNotDisabled_DoesNotHaveDisabledClass()
     {
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .Add(p => p.Disabled, false));
 
         // Assert
@@ -258,7 +265,7 @@ public class CheckboxTests : TestBase
     public void Checkbox_WithAdditionalAttributes_MergesCorrectly()
     {
         // Act
-        var cut = RenderComponent<Checkbox>(parameters => parameters
+        var cut = Render<Checkbox>(parameters => parameters
             .AddChildContent("Custom")
             .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
             {
@@ -270,5 +277,65 @@ public class CheckboxTests : TestBase
         var label = cut.Find("label");
         label.GetAttribute("data-testid")!.ShouldBe("my-checkbox");
         label.GetAttribute("aria-label")!.ShouldBe("Custom Checkbox");
+    }
+
+    [Fact]
+    public void Checkbox_WithClassParameter_AppendsCustomClassToLabel()
+    {
+        // Act
+        var cut = Render<Checkbox>(parameters => parameters
+            .Add(p => p.Class, "terms-checkbox")
+            .AddChildContent("Terms"));
+
+        // Assert
+        var label = cut.Find("label");
+        label.ClassList.ShouldContain("vibe-checkbox");
+        label.ClassList.ShouldContain("terms-checkbox");
+    }
+
+    [Fact]
+    public void Checkbox_ForwardsFormSemantics_ToNativeInput()
+    {
+        // Act
+        var cut = Render<Checkbox>(parameters => parameters
+            .Add(p => p.Id, "terms")
+            .Add(p => p.Name, "acceptedTerms")
+            .Add(p => p.Value, "yes")
+            .Add(p => p.Required, true)
+            .AddChildContent("Accept terms"));
+
+        // Assert
+        var checkbox = cut.Find("input[type='checkbox']");
+        checkbox.GetAttribute("id")!.ShouldBe("terms");
+        checkbox.GetAttribute("name")!.ShouldBe("acceptedTerms");
+        checkbox.GetAttribute("value")!.ShouldBe("yes");
+        checkbox.HasAttribute("required").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Checkbox_WhenDisabled_SetsAriaDisabledOnLabel()
+    {
+        // Act
+        var cut = Render<Checkbox>(parameters => parameters
+            .Add(p => p.Disabled, true)
+            .AddChildContent("Disabled"));
+
+        // Assert
+        cut.Find("label").GetAttribute("aria-disabled")!.ShouldBe("true");
+    }
+
+    [Fact]
+    public void Checkbox_WithNonBooleanValue_DoesNotInvokeCallback()
+    {
+        // Arrange
+        var invoked = false;
+        var cut = Render<Checkbox>(parameters => parameters
+            .Add(p => p.CheckedChanged, _ => invoked = true));
+
+        // Act
+        cut.Find("input[type='checkbox']").Change("not a boolean");
+
+        // Assert
+        invoked.ShouldBeFalse();
     }
 }

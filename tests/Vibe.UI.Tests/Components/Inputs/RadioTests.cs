@@ -6,7 +6,7 @@ public class RadioTests : TestBase
     public void Radio_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Radio>();
+        var cut = Render<Radio>();
 
         // Assert
         var radio = cut.Find("input[type='radio']");
@@ -17,7 +17,7 @@ public class RadioTests : TestBase
     public void Radio_Renders_WithLabel()
     {
         // Act
-        var cut = RenderComponent<Radio>(parameters => parameters
+        var cut = Render<Radio>(parameters => parameters
             .AddChildContent("Option 1"));
 
         // Assert
@@ -29,7 +29,7 @@ public class RadioTests : TestBase
     public void Radio_Renders_AsChecked()
     {
         // Act
-        var cut = RenderComponent<Radio>(parameters => parameters
+        var cut = Render<Radio>(parameters => parameters
             .Add(p => p.Checked, true));
 
         // Assert
@@ -41,7 +41,7 @@ public class RadioTests : TestBase
     public void Radio_Applies_Disabled_Attribute()
     {
         // Act
-        var cut = RenderComponent<Radio>(parameters => parameters
+        var cut = Render<Radio>(parameters => parameters
             .Add(p => p.Disabled, true));
 
         // Assert
@@ -54,7 +54,7 @@ public class RadioTests : TestBase
     public void Radio_Applies_Name_Attribute()
     {
         // Act
-        var cut = RenderComponent<Radio>(parameters => parameters
+        var cut = Render<Radio>(parameters => parameters
             .Add(p => p.Name, "option-group"));
 
         // Assert
@@ -66,7 +66,7 @@ public class RadioTests : TestBase
     public void Radio_Applies_Value_Attribute()
     {
         // Act
-        var cut = RenderComponent<Radio>(parameters => parameters
+        var cut = Render<Radio>(parameters => parameters
             .Add(p => p.Value, "option1"));
 
         // Assert
@@ -79,7 +79,7 @@ public class RadioTests : TestBase
     {
         // Arrange
         var wasChecked = false;
-        var cut = RenderComponent<Radio>(parameters => parameters
+        var cut = Render<Radio>(parameters => parameters
             .Add(p => p.CheckedChanged, isChecked => wasChecked = isChecked));
 
         // Act
@@ -93,11 +93,11 @@ public class RadioTests : TestBase
     public void Radio_Unchecked_ToChecked_Transition()
     {
         // Arrange
-        var cut = RenderComponent<Radio>(parameters => parameters
+        var cut = Render<Radio>(parameters => parameters
             .Add(p => p.Checked, false));
 
         // Act
-        cut.SetParametersAndRender(parameters => parameters.Add(p => p.Checked, true));
+        cut.Render(parameters => parameters.Add(p => p.Checked, true));
 
         // Assert
         var radio = cut.Find("input[type='radio']");
@@ -109,7 +109,7 @@ public class RadioTests : TestBase
     {
         // Arrange
         var wasChecked = false;
-        var cut = RenderComponent<Radio>(parameters => parameters
+        var cut = Render<Radio>(parameters => parameters
             .Add(p => p.Disabled, true)
             .Add(p => p.CheckedChanged, isChecked => wasChecked = isChecked));
 
@@ -126,7 +126,7 @@ public class RadioTests : TestBase
     public void Radio_WithoutLabel_OnlyRendersInput()
     {
         // Act
-        var cut = RenderComponent<Radio>(parameters => parameters
+        var cut = Render<Radio>(parameters => parameters
             .Add(p => p.Value, "test"));
 
         // Assert
@@ -138,12 +138,12 @@ public class RadioTests : TestBase
     public void Radio_MultipleRadiosSameName_MutexBehavior()
     {
         // Arrange & Act
-        var cut1 = RenderComponent<Radio>(parameters => parameters
+        var cut1 = Render<Radio>(parameters => parameters
             .Add(p => p.Name, "same-group")
             .Add(p => p.Value, "option1")
             .Add(p => p.Checked, true));
 
-        var cut2 = RenderComponent<Radio>(parameters => parameters
+        var cut2 = Render<Radio>(parameters => parameters
             .Add(p => p.Name, "same-group")
             .Add(p => p.Value, "option2")
             .Add(p => p.Checked, false));
@@ -157,11 +157,11 @@ public class RadioTests : TestBase
     public void Radio_DifferentNames_IndependentSelection()
     {
         // Arrange & Act
-        var cut1 = RenderComponent<Radio>(parameters => parameters
+        var cut1 = Render<Radio>(parameters => parameters
             .Add(p => p.Name, "group1")
             .Add(p => p.Checked, true));
 
-        var cut2 = RenderComponent<Radio>(parameters => parameters
+        var cut2 = Render<Radio>(parameters => parameters
             .Add(p => p.Name, "group2")
             .Add(p => p.Checked, true));
 
@@ -174,7 +174,7 @@ public class RadioTests : TestBase
     public void Radio_Renders_ControlSpan()
     {
         // Act
-        var cut = RenderComponent<Radio>();
+        var cut = Render<Radio>();
 
         // Assert
         var control = cut.Find(".vibe-radio-control");
@@ -185,7 +185,7 @@ public class RadioTests : TestBase
     public void Radio_CheckedProp_ReflectsInDom()
     {
         // Act
-        var cut = RenderComponent<Radio>(parameters => parameters
+        var cut = Render<Radio>(parameters => parameters
             .Add(p => p.Checked, true));
 
         // Assert
@@ -197,24 +197,74 @@ public class RadioTests : TestBase
     public void Radio_ChangeEvent_UpdatesCheckedState()
     {
         // Arrange
-        var cut = RenderComponent<Radio>(parameters => parameters
-            .Add(p => p.Checked, false));
+        bool? changedTo = null;
+        var cut = Render<Radio>(parameters => parameters
+            .Add(p => p.Checked, false)
+            .Add(p => p.CheckedChanged, isChecked => changedTo = isChecked));
 
         // Act
         cut.Find("input[type='radio']").Change(true);
 
         // Assert
-        cut.Instance.Checked.ShouldBeTrue();
+        changedTo.ShouldBe(true);
+        cut.Find("input[type='radio']").HasAttribute("checked").ShouldBeTrue();
     }
 
     [Fact]
     public void Radio_EmptyValue_ValidAttribute()
     {
         // Act
-        var cut = RenderComponent<Radio>(parameters => parameters
+        var cut = Render<Radio>(parameters => parameters
             .Add(p => p.Value, ""));
 
         // Assert
         cut.Find("input[type='radio']").GetAttribute("value")!.ShouldBe("");
+    }
+
+    [Fact]
+    public void Radio_ForwardsIdAndAriaDisabled()
+    {
+        // Act
+        var cut = Render<Radio>(parameters => parameters
+            .Add(p => p.Id, "email-radio")
+            .Add(p => p.Disabled, true)
+            .AddChildContent("Email"));
+
+        // Assert
+        cut.Find("input[type='radio']").GetAttribute("id")!.ShouldBe("email-radio");
+        cut.Find("label").GetAttribute("aria-disabled")!.ShouldBe("true");
+    }
+
+    [Fact]
+    public void Radio_DisabledSyntheticChange_DoesNotInvokeCallbackOrUpdateState()
+    {
+        // Arrange
+        var wasChecked = false;
+        var cut = Render<Radio>(parameters => parameters
+            .Add(p => p.Disabled, true)
+            .Add(p => p.CheckedChanged, isChecked => wasChecked = isChecked));
+
+        // Act
+        cut.Find("input[type='radio']").Change(true);
+
+        // Assert
+        wasChecked.ShouldBeFalse();
+        cut.Find("input[type='radio']").HasAttribute("checked").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Radio_FalseSyntheticChange_DoesNotCheckOrInvokeCallback()
+    {
+        // Arrange
+        var invoked = false;
+        var cut = Render<Radio>(parameters => parameters
+            .Add(p => p.CheckedChanged, _ => invoked = true));
+
+        // Act
+        cut.Find("input[type='radio']").Change(false);
+
+        // Assert
+        invoked.ShouldBeFalse();
+        cut.Find("input[type='radio']").HasAttribute("checked").ShouldBeFalse();
     }
 }

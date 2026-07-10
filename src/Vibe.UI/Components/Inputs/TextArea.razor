@@ -1,21 +1,23 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
 
-<textarea class="@CombinedClass" placeholder="@Placeholder" disabled="@Disabled" readonly="@ReadOnly" rows="@Rows"
-    @attributes="AdditionalAttributes" @oninput="OnInputHandler" @onchange="OnChangeHandler">@Value</textarea>
+<textarea @attributes="AdditionalAttributes" class="@CombinedClass" placeholder="@Placeholder" disabled="@Disabled" readonly="@ReadOnly" rows="@Rows"
+    aria-disabled="@(Disabled ? "true" : null)" @oninput="OnInputHandler" @onchange="OnChangeHandler">@currentValue</textarea>
 
 @code {
+    private string currentValue = string.Empty;
+
     /// <summary>
     /// Gets or sets the textarea value
     /// </summary>
     [Parameter]
-    public string Value { get; set; }
+    public string? Value { get; set; }
 
     /// <summary>
     /// Gets or sets the placeholder text
     /// </summary>
     [Parameter]
-    public string Placeholder { get; set; }
+    public string? Placeholder { get; set; }
 
     /// <summary>
     /// Gets or sets whether the textarea is disabled
@@ -39,7 +41,7 @@
     /// Gets or sets the callback for when the textarea value changes
     /// </summary>
     [Parameter]
-    public EventCallback<string> ValueChanged { get; set; }
+    public EventCallback<string?> ValueChanged { get; set; }
 
     /// <summary>
     /// Gets or sets the callback for when the input event occurs
@@ -56,21 +58,41 @@
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-textarea";
 
+    protected override void OnParametersSet()
+    {
+        currentValue = Value ?? string.Empty;
+    }
+
     private async Task OnInputHandler(ChangeEventArgs args)
     {
+        if (Disabled || ReadOnly)
+        {
+            return;
+        }
+
         if (OnInput.HasDelegate)
         {
             await OnInput.InvokeAsync(args);
         }
 
-        if (ValueChanged.HasDelegate && args.Value is string value)
+        if (args.Value is string value)
         {
-            await ValueChanged.InvokeAsync(value);
+            currentValue = value;
+
+            if (ValueChanged.HasDelegate)
+            {
+                await ValueChanged.InvokeAsync(value);
+            }
         }
     }
 
     private async Task OnChangeHandler(ChangeEventArgs args)
     {
+        if (Disabled || ReadOnly)
+        {
+            return;
+        }
+
         if (OnChange.HasDelegate)
         {
             await OnChange.InvokeAsync(args);

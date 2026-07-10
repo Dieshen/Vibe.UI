@@ -1,18 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageId>Vibe.UI</PackageId>
-    <Version>1.0.0-alpha</Version>
+    <Version>1.0.0-beta</Version>
     <Title>Vibe.UI - Modern Blazor Component Library</Title>
     <Authors>Narcoleptic Fox</Authors>
-    <Description>Pre-built Blazor component library with 93+ components (theming, forms, charts, and
+    <Description>Pre-built Blazor component library with 110 components (theming, forms, charts, and
       more).
 
       PREFER CLI APPROACH? Use Vibe.UI.CLI for source code control:
-      dotnet tool install -g Vibe.UI.CLI
+      dotnet tool install -g Vibe.UI.CLI --version 1.0.0-beta
       vibe init
 
       This package is for users who prefer package references over managing source code.</Description>
@@ -33,9 +33,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.9" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"
-      Version="9.0.3" />
+      Version="10.0.9" />
   </ItemGroup>
 
   <ItemGroup>

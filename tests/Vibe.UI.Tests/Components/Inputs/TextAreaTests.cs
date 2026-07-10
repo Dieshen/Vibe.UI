@@ -6,7 +6,7 @@ public class TextAreaTests : TestBase
     public void TextArea_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<TextArea>();
+        var cut = Render<TextArea>();
 
         // Assert
         var textarea = cut.Find("textarea");
@@ -19,7 +19,7 @@ public class TextAreaTests : TestBase
     public void TextArea_Renders_WithValue()
     {
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.Value, "Test content"));
 
         // Assert
@@ -31,7 +31,7 @@ public class TextAreaTests : TestBase
     public void TextArea_Renders_WithPlaceholder()
     {
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.Placeholder, "Enter text..."));
 
         // Assert
@@ -43,7 +43,7 @@ public class TextAreaTests : TestBase
     public void TextArea_Applies_Disabled_Attribute()
     {
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.Disabled, true));
 
         // Assert
@@ -55,7 +55,7 @@ public class TextAreaTests : TestBase
     public void TextArea_Applies_ReadOnly_Attribute()
     {
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.ReadOnly, true));
 
         // Assert
@@ -67,7 +67,7 @@ public class TextAreaTests : TestBase
     public void TextArea_Applies_Custom_Rows()
     {
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.Rows, 10));
 
         // Assert
@@ -80,7 +80,7 @@ public class TextAreaTests : TestBase
     {
         // Arrange
         string? newValue = null;
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.ValueChanged, value => newValue = value));
 
         // Act
@@ -95,7 +95,7 @@ public class TextAreaTests : TestBase
     {
         // Arrange
         ChangeEventArgs? capturedArgs = null;
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.OnInput, args => capturedArgs = args));
 
         // Act
@@ -111,7 +111,7 @@ public class TextAreaTests : TestBase
     {
         // Arrange
         ChangeEventArgs? capturedArgs = null;
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.OnChange, args => capturedArgs = args));
 
         // Act
@@ -128,7 +128,7 @@ public class TextAreaTests : TestBase
     public void TextArea_WithNullValue_RendersEmpty()
     {
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.Value, null));
 
         // Assert
@@ -139,7 +139,7 @@ public class TextAreaTests : TestBase
     public void TextArea_WithEmptyValue_RendersEmpty()
     {
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.Value, string.Empty));
 
         // Assert
@@ -153,7 +153,7 @@ public class TextAreaTests : TestBase
         var longText = new string('A', 10000);
 
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.Value, longText));
 
         // Assert
@@ -167,7 +167,7 @@ public class TextAreaTests : TestBase
         var multilineText = "Line 1\nLine 2\nLine 3\n\nLine 5";
 
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.Value, multilineText));
 
         // Assert
@@ -181,7 +181,7 @@ public class TextAreaTests : TestBase
         var specialChars = "<>&\"'`\n\t";
 
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.Value, specialChars));
 
         // Assert
@@ -195,7 +195,7 @@ public class TextAreaTests : TestBase
         var unicode = "Hello 世界 🚀 emoji\n日本語テキスト";
 
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.Value, unicode));
 
         // Assert
@@ -208,7 +208,7 @@ public class TextAreaTests : TestBase
     public void TextArea_WithZeroRows_RendersZeroRows()
     {
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.Rows, 0));
 
         // Assert
@@ -219,7 +219,7 @@ public class TextAreaTests : TestBase
     public void TextArea_WithLargeRowCount_RendersCorrectly()
     {
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.Rows, 50));
 
         // Assert
@@ -232,7 +232,7 @@ public class TextAreaTests : TestBase
     public void TextArea_WithNullPlaceholder_RendersEmpty()
     {
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.Placeholder, null));
 
         // Assert
@@ -243,7 +243,7 @@ public class TextAreaTests : TestBase
     public void TextArea_WithEmptyPlaceholder_RendersEmpty()
     {
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.Placeholder, string.Empty));
 
         // Assert
@@ -256,7 +256,7 @@ public class TextAreaTests : TestBase
     public void TextArea_WithNoCallbacks_DoesNotThrow()
     {
         // Act
-        var cut = RenderComponent<TextArea>();
+        var cut = Render<TextArea>();
 
         // Act & Assert - Should not throw
         cut.Find("textarea").Input("Test");
@@ -267,8 +267,8 @@ public class TextAreaTests : TestBase
     public void TextArea_WithNullValueInEvent_HandlesGracefully()
     {
         // Arrange
-        string capturedValue = "initial";
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        string? capturedValue = "initial";
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.ValueChanged, value => capturedValue = value));
 
         // Act - Pass ChangeEventArgs with null Value
@@ -284,7 +284,7 @@ public class TextAreaTests : TestBase
     {
         // Arrange
         var inputCount = 0;
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.OnInput, args => inputCount++));
 
         var textarea = cut.Find("textarea");
@@ -303,7 +303,7 @@ public class TextAreaTests : TestBase
     {
         // Arrange
         string? capturedValue = null;
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.ValueChanged, value => capturedValue = value));
 
         // Act
@@ -319,7 +319,7 @@ public class TextAreaTests : TestBase
     public void TextArea_BothDisabledAndReadOnly_AppliesBothAttributes()
     {
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.Disabled, true)
             .Add(p => p.ReadOnly, true));
 
@@ -333,7 +333,7 @@ public class TextAreaTests : TestBase
     public void TextArea_WhenDisabled_HasDisabledAttribute()
     {
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.Disabled, true));
 
         // Assert
@@ -344,7 +344,7 @@ public class TextAreaTests : TestBase
     public void TextArea_WhenReadOnly_HasReadOnlyAttribute()
     {
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.ReadOnly, true));
 
         // Assert
@@ -357,7 +357,7 @@ public class TextAreaTests : TestBase
     public void TextArea_HasBaseClass()
     {
         // Act
-        var cut = RenderComponent<TextArea>();
+        var cut = Render<TextArea>();
 
         // Assert
         cut.Find("textarea").ClassList.ShouldContain("vibe-textarea");
@@ -369,7 +369,7 @@ public class TextAreaTests : TestBase
     public void TextArea_WithAdditionalAttributes_MergesCorrectly()
     {
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
             {
                 { "data-testid", "my-textarea" },
@@ -390,7 +390,7 @@ public class TextAreaTests : TestBase
     public void TextArea_WithAllProperties_RendersCorrectly()
     {
         // Act
-        var cut = RenderComponent<TextArea>(parameters => parameters
+        var cut = Render<TextArea>(parameters => parameters
             .Add(p => p.Value, "Initial text")
             .Add(p => p.Placeholder, "Enter text...")
             .Add(p => p.Rows, 8)
@@ -404,5 +404,72 @@ public class TextAreaTests : TestBase
         textarea.GetAttribute("rows")!.ShouldBe("8");
         textarea.HasAttribute("disabled").ShouldBeFalse();
         textarea.HasAttribute("readonly").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void TextArea_WhenDisabled_IgnoresSyntheticInputAndChangeCallbacks()
+    {
+        // Arrange
+        string? changedValue = null;
+        var inputCount = 0;
+        var changeCount = 0;
+        var cut = Render<TextArea>(parameters => parameters
+            .Add(p => p.Value, "Initial")
+            .Add(p => p.Disabled, true)
+            .Add(p => p.ValueChanged, value => changedValue = value)
+            .Add(p => p.OnInput, _ => inputCount++)
+            .Add(p => p.OnChange, _ => changeCount++));
+
+        var textarea = cut.Find("textarea");
+
+        // Act
+        textarea.Input("Changed");
+        textarea.Change("Changed");
+
+        // Assert
+        changedValue.ShouldBeNull();
+        inputCount.ShouldBe(0);
+        changeCount.ShouldBe(0);
+        cut.Find("textarea").TextContent.ShouldBe("Initial");
+        cut.Find("textarea").GetAttribute("aria-disabled")!.ShouldBe("true");
+    }
+
+    [Fact]
+    public void TextArea_WhenReadOnly_IgnoresSyntheticInputAndChangeCallbacks()
+    {
+        // Arrange
+        string? changedValue = null;
+        var inputCount = 0;
+        var changeCount = 0;
+        var cut = Render<TextArea>(parameters => parameters
+            .Add(p => p.Value, "Initial")
+            .Add(p => p.ReadOnly, true)
+            .Add(p => p.ValueChanged, value => changedValue = value)
+            .Add(p => p.OnInput, _ => inputCount++)
+            .Add(p => p.OnChange, _ => changeCount++));
+
+        var textarea = cut.Find("textarea");
+
+        // Act
+        textarea.Input("Changed");
+        textarea.Change("Changed");
+
+        // Assert
+        changedValue.ShouldBeNull();
+        inputCount.ShouldBe(0);
+        changeCount.ShouldBe(0);
+        cut.Find("textarea").TextContent.ShouldBe("Initial");
+    }
+
+    [Fact]
+    public void TextArea_WithNoValueChangedDelegate_StillUpdatesRenderedValueOnInput()
+    {
+        // Act
+        var cut = Render<TextArea>();
+
+        cut.Find("textarea").Input("Typed");
+
+        // Assert
+        cut.Find("textarea").TextContent.ShouldBe("Typed");
     }
 }

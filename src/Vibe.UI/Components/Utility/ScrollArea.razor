@@ -1,9 +1,16 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 @implements IDisposable
+@implements IAsyncDisposable
 
-<div class="@CombinedClass" style="@HeightStyle">
-    <div class="scroll-viewport" @ref="ViewportRef" @onscroll="OnScroll">
+<div @attributes="RootAttributes"
+     class="@RootClass"
+     style="@RootStyle"
+     role="@EffectiveRole"
+     aria-label="@EffectiveAriaLabel"
+     data-state="@ScrollbarState"
+     data-scrollbar="@ScrollbarMode">
+    <div class="scroll-viewport" @ref="ViewportRef" @onscroll="OnScroll" tabindex="@ViewportTabIndex">
         <div class="scroll-content">
             @ChildContent
         </div>
@@ -11,7 +18,7 @@
 
     @if (ShowScrollbar && !HideScrollbars)
     {
-        <div class="scrollbar vertical @(IsScrollbarVisible ? "visible" : "")">
+        <div class="scrollbar vertical @(IsScrollbarVisible ? "visible" : "")" aria-hidden="true">
             <div class="scrollbar-thumb" style="height: @ThumbHeight; top: @ThumbTop;"
                 @onmousedown="OnScrollbarThumbMouseDown"></div>
         </div>
@@ -50,14 +57,80 @@
     public bool HideScrollbars { get; set; }
 
     /// <summary>
+    /// Gets or sets the auto-hide delay in milliseconds.
+    /// </summary>
+    [Parameter]
+    public int AutoHideDelay { get; set; } = 1000;
+
+    /// <summary>
+    /// Gets or sets an accessible label when the scroll area is a named region.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the ARIA role. Defaults to region only when an accessible name is provided.
+    /// </summary>
+    [Parameter]
+    public string? Role { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the viewport should be keyboard-focusable.
+    /// </summary>
+    [Parameter]
+    public bool Focusable { get; set; }
+
+    /// <summary>
+    /// Gets or sets additional CSS classes to apply to the root element.
+    /// </summary>
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
-    protected override string ComponentClass => "vibe-scroll-area";
+    protected override string ComponentClass => CombineClasses(
+        "vibe-scroll-area",
+        AutoHide ? "auto-hide" : null,
+        HideScrollbars ? "hide-scrollbar" : null,
+        CssClass);
 
     /// <summary>
     /// Gets the height style for the scroll area.
     /// </summary>
-    private string HeightStyle => !string.IsNullOrEmpty(Height) ? $"height: {Height};" : "";
+    private string? HeightStyle => NormalizeAttributeValue(Height) is { } height ? $"height: {height}" : null;
+
+    private string RootClass => CombineClasses(ComponentClass, Class?.Trim(), AdditionalClass);
+
+    private string? RootStyle => CombineStyles(AdditionalStyle, HeightStyle);
+
+    private Dictionary<string, object>? RootAttributes => GetUnhandledAttributes();
+
+    private string? EffectiveRole =>
+        GetAdditionalAttributeValue("role")
+        ?? NormalizeAttributeValue(Role)
+        ?? (HasAccessibleName ? "region" : null);
+
+    private string? EffectiveAriaLabel =>
+        GetAdditionalAttributeValue("aria-label")
+        ?? (HasAdditionalAttribute("aria-labelledby") ? null : NormalizeAttributeValue(AriaLabel));
+
+    private bool HasAccessibleName =>
+        !string.IsNullOrWhiteSpace(AriaLabel)
+        || HasAdditionalAttribute("aria-label")
+        || HasAdditionalAttribute("aria-labelledby");
+
+    private int? ViewportTabIndex => Focusable ? 0 : null;
+
+    private string ScrollbarState => IsScrollbarVisible ? "visible" : "hidden";
+
+    private string ScrollbarMode => HideScrollbars ? "hidden" : ShowScrollbar ? "custom" : "native";
+
+    private int EffectiveAutoHideDelay => Math.Max(0, AutoHideDelay);
+
+    private string? AdditionalClass => GetAdditionalAttributeValue("class");
+
+    private string? AdditionalStyle => GetAdditionalAttributeValue("style");
 
     /// <summary>
     /// Reference to the viewport element.
@@ -80,30 +153,18 @@
     private string ThumbTop = "0%";
 
     /// <summary>
-    /// Timer for auto-hiding the scrollbar.
+    /// Cancellation source for auto-hiding the scrollbar.
     /// </summary>
-    private System.Timers.Timer _hideTimer;
+    private CancellationTokenSource? _autoHideCancellation;
+
+    private bool _disposed;
 
     /// <summary>
-    /// Set up the timer for auto-hiding the scrollbar.
+    /// Updates component state when parameters change.
     /// </summary>
-    protected override void OnInitialized()
+    protected override void OnParametersSet()
     {
-        base.OnInitialized();
-
-        if (AutoHide)
-        {
-            _hideTimer = new System.Timers.Timer(1000);
-            _hideTimer.Elapsed += (sender, e) =>
-            {
-                InvokeAsync(() =>
-    {
-                IsScrollbarVisible = false;
-                StateHasChanged();
-            });
-            };
-            _hideTimer.AutoReset = false;
-        }
+        IsScrollbarVisible = !AutoHide || IsScrollbarVisible;
     }
 
     /// <summary>
@@ -114,8 +175,7 @@
         if (AutoHide)
         {
             IsScrollbarVisible = true;
-            _hideTimer?.Stop();
-            _hideTimer?.Start();
+            RestartAutoHide();
         }
 
         // In a real implementation, you would use JS interop to calculate these values
@@ -142,11 +202,135 @@
         // In a real implementation, you would use JS interop for drag functionality
     }
 
+    private void RestartAutoHide()
+    {
+        CancelAutoHide();
+
+        var cancellation = new CancellationTokenSource();
+        _autoHideCancellation = cancellation;
+
+        var hideTask = HideScrollbarAfterDelayAsync(cancellation);
+        if (!hideTask.IsCompletedSuccessfully)
+        {
+            _ = ObserveAutoHideAsync(hideTask);
+        }
+    }
+
+    private async Task HideScrollbarAfterDelayAsync(CancellationTokenSource cancellation)
+    {
+        await Task.Delay(EffectiveAutoHideDelay, cancellation.Token);
+        cancellation.Token.ThrowIfCancellationRequested();
+
+        if (_disposed || !ReferenceEquals(_autoHideCancellation, cancellation))
+        {
+            return;
+        }
+
+        await InvokeAsync(() =>
+        {
+            IsScrollbarVisible = false;
+            StateHasChanged();
+        });
+    }
+
+    private async Task ObserveAutoHideAsync(Task hideTask)
+    {
+        try
+        {
+            await hideTask;
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception exception) when (!_disposed)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    }
+
+    private void CancelAutoHide()
+    {
+        _autoHideCancellation?.Cancel();
+        _autoHideCancellation?.Dispose();
+        _autoHideCancellation = null;
+    }
+
+    private Dictionary<string, object>? GetUnhandledAttributes()
+    {
+        if (AdditionalAttributes is null || AdditionalAttributes.Count == 0)
+        {
+            return null;
+        }
+
+        var attributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (IsHandledRootAttribute(attribute.Key))
+            {
+                continue;
+            }
+
+            attributes[attribute.Key] = attribute.Value;
+        }
+
+        return attributes.Count == 0 ? null : attributes;
+    }
+
+    private static bool IsHandledRootAttribute(string attributeName) =>
+        string.Equals(attributeName, "class", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(attributeName, "style", StringComparison.OrdinalIgnoreCase);
+
+    private string? GetAdditionalAttributeValue(string attributeName)
+    {
+        if (AdditionalAttributes is null)
+        {
+            return null;
+        }
+
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (string.Equals(attribute.Key, attributeName, StringComparison.OrdinalIgnoreCase))
+            {
+                return NormalizeAttributeValue(attribute.Value?.ToString());
+            }
+        }
+
+        return null;
+    }
+
+    private bool HasAdditionalAttribute(string attributeName) =>
+        AdditionalAttributes?.Keys.Any(key => string.Equals(key, attributeName, StringComparison.OrdinalIgnoreCase)) == true;
+
+    private static string? NormalizeAttributeValue(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string? CombineStyles(params string?[] styles)
+    {
+        var normalizedStyles = styles
+            .Select(style => NormalizeAttributeValue(style)?.TrimEnd(';'))
+            .Where(style => !string.IsNullOrWhiteSpace(style))
+            .ToArray();
+
+        return normalizedStyles.Length == 0 ? null : string.Join("; ", normalizedStyles);
+    }
+
     /// <summary>
     /// Disposes the component.
     /// </summary>
     public void Dispose()
     {
-        _hideTimer?.Dispose();
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        CancelAutoHide();
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        Dispose();
+        return ValueTask.CompletedTask;
     }
 }

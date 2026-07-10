@@ -1,0 +1,93 @@
+@page "/server"
+@rendermode InteractiveServer
+
+<PageTitle>Vibe.UI Interactive Server compatibility</PageTitle>
+
+<section class="compat-page" data-testid="webapp-server-smoke">
+    <div class="compat-page-header">
+        <div>
+            <Badge Variant="default">Interactive Server</Badge>
+            <h1>Server interactivity</h1>
+            <p>
+                This page runs Vibe.UI components over the Blazor Server circuit inside a Blazor Web App.
+            </p>
+        </div>
+
+        <ThemeToggle ShowLabel="true" />
+    </div>
+
+    <Card>
+        <CardTitle>Server runtime active</CardTitle>
+        <CardDescription>Button clicks, input events, checkbox changes, and dialog state use Interactive Server.</CardDescription>
+
+        <ChildContent>
+            <Alert Title="Server component state" Variant="AlertVariant.Default">
+                Current interaction count: @_clickCount. Name value: @_name.
+            </Alert>
+
+            <div class="compat-grid">
+                <Input Id="server-name"
+                       Label="Name"
+                       Value="@_name"
+                       ValueChanged="OnNameChanged"
+                       HelperText="Updates through server interactivity." />
+
+                <Checkbox Checked="@_confirmed" CheckedChanged="OnConfirmedChanged">
+                    Server checkbox state: @(_confirmed ? "checked" : "unchecked")
+                </Checkbox>
+            </div>
+
+            <div class="compat-actions">
+                <Button OnClick="Increment" data-testid="server-increment">Increment server state</Button>
+                <Button Variant="ButtonVariant.Outline" OnClick="OpenDialog" data-testid="server-dialog">Open dialog</Button>
+                <Button Href="/" Variant="ButtonVariant.Ghost">Back to static page</Button>
+            </div>
+        </ChildContent>
+    </Card>
+
+    <Dialog @bind-IsOpen="_dialogOpen">
+        <Header>
+            <strong>Server dialog</strong>
+        </Header>
+        <ChildContent>
+            The dialog rendered and opened from an Interactive Server event.
+        </ChildContent>
+        <Footer>
+            <Button Variant="ButtonVariant.Secondary" OnClick="CloseDialog">Close</Button>
+        </Footer>
+    </Dialog>
+</section>
+
+@code {
+    private int _clickCount;
+    private string _name = "Server";
+    private bool _confirmed = true;
+    private bool _dialogOpen;
+
+    private void Increment(MouseEventArgs _)
+    {
+        _clickCount++;
+    }
+
+    private Task OnNameChanged(string value)
+    {
+        _name = value;
+        return Task.CompletedTask;
+    }
+
+    private Task OnConfirmedChanged(bool value)
+    {
+        _confirmed = value;
+        return Task.CompletedTask;
+    }
+
+    private void OpenDialog(MouseEventArgs _)
+    {
+        _dialogOpen = true;
+    }
+
+    private void CloseDialog(MouseEventArgs _)
+    {
+        _dialogOpen = false;
+    }
+}

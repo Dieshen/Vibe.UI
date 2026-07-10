@@ -125,7 +125,7 @@
     [Inject]
     private NavigationManager Navigation { get; set; } = default!;
 
-    private string InstallCliCode => "dotnet tool install -g Vibe.UI.CLI";
+    private string InstallCliCode => "dotnet tool install -g Vibe.UI.CLI --version 1.0.0-beta";
 
     private string InitProjectCode => @"cd MyBlazorApp
 vibe init";

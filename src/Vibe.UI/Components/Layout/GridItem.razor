@@ -1,7 +1,7 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
 
-<div class="@CombinedClass" style="@GridItemStyle" @attributes="AdditionalAttributes">
+<div class="@RootClass" style="@GridItemStyle" @attributes="RootAttributes">
     @ChildContent
 </div>
 
@@ -39,26 +39,110 @@
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-grid-item";
 
+    private string RootClass => CombineClasses(
+        ComponentClass,
+        HasResponsiveSpan ? "vibe-grid-item-responsive" : null,
+        Class?.Trim(),
+        AdditionalClass);
+
+    private Dictionary<string, object>? RootAttributes => GetUnhandledAttributes();
+
     /// <summary>
     /// Generates the inline style for grid item spanning
     /// </summary>
-    private string GridItemStyle
+    private string? GridItemStyle
     {
         get
         {
             var styles = new List<string>();
 
-            if (ColSpan > 1)
+            var additionalStyle = AdditionalStyle;
+            if (!string.IsNullOrWhiteSpace(additionalStyle))
             {
-                styles.Add($"grid-column: span {ColSpan}");
+                styles.Add(additionalStyle);
             }
 
-            if (RowSpan > 1)
+            if (EffectiveColSpan > 1)
             {
-                styles.Add($"grid-row: span {RowSpan}");
+                styles.Add($"grid-column: span {EffectiveColSpan}");
             }
 
-            return styles.Count > 0 ? string.Join("; ", styles) : string.Empty;
+            if (EffectiveRowSpan > 1)
+            {
+                styles.Add($"grid-row: span {EffectiveRowSpan}");
+            }
+
+            var colSpanMd = NormalizeSpan(ColSpanMd);
+            if (colSpanMd is not null)
+            {
+                styles.Add($"--vibe-grid-item-col-span-md: {colSpanMd.Value}");
+            }
+
+            var colSpanLg = NormalizeSpan(ColSpanLg);
+            if (colSpanLg is not null)
+            {
+                styles.Add($"--vibe-grid-item-col-span-lg: {colSpanLg.Value}");
+            }
+
+            return styles.Count > 0 ? string.Join("; ", styles) : null;
         }
     }
+
+    private int EffectiveColSpan => ColSpan > 0 ? ColSpan : 1;
+
+    private int EffectiveRowSpan => RowSpan > 0 ? RowSpan : 1;
+
+    private bool HasResponsiveSpan => NormalizeSpan(ColSpanMd) is not null || NormalizeSpan(ColSpanLg) is not null;
+
+    private static int? NormalizeSpan(int? value) => value > 0 ? value.Value : null;
+
+    private string? AdditionalClass => GetAdditionalAttributeValue("class");
+
+    private string? AdditionalStyle => GetAdditionalAttributeValue("style")?.TrimEnd(';');
+
+    private Dictionary<string, object>? GetUnhandledAttributes()
+    {
+        if (AdditionalAttributes is null || AdditionalAttributes.Count == 0)
+        {
+            return null;
+        }
+
+        var attributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (IsHandledRootAttribute(attribute.Key))
+            {
+                continue;
+            }
+
+            attributes[attribute.Key] = attribute.Value;
+        }
+
+        return attributes.Count == 0 ? null : attributes;
+    }
+
+    private static bool IsHandledRootAttribute(string attributeName) =>
+        string.Equals(attributeName, "class", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(attributeName, "style", StringComparison.OrdinalIgnoreCase);
+
+    private string? GetAdditionalAttributeValue(string attributeName)
+    {
+        if (AdditionalAttributes is null)
+        {
+            return null;
+        }
+
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (string.Equals(attribute.Key, attributeName, StringComparison.OrdinalIgnoreCase))
+            {
+                return NormalizeAttributeValue(attribute.Value?.ToString());
+            }
+        }
+
+        return null;
+    }
+
+    private static string? NormalizeAttributeValue(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

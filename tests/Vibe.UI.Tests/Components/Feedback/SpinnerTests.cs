@@ -6,7 +6,7 @@ public class SpinnerTests : TestBase
     public void Spinner_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Spinner>();
+        var cut = Render<Spinner>();
 
         // Assert
         var spinner = cut.Find(".vibe-spinner");
@@ -18,7 +18,7 @@ public class SpinnerTests : TestBase
     public void Spinner_Applies_Size_Class()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.Size, Spinner.SpinnerSize.Large));
 
         // Assert
@@ -29,7 +29,7 @@ public class SpinnerTests : TestBase
     public void Spinner_Renders_Label_WhenShowLabelIsTrue()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.Label, "Loading data...")
             .Add(p => p.ShowLabel, true));
 
@@ -43,7 +43,7 @@ public class SpinnerTests : TestBase
     public void Spinner_DoesNotRenderLabel_WhenShowLabelIsFalse()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.Label, "Loading...")
             .Add(p => p.ShowLabel, false));
 
@@ -55,7 +55,7 @@ public class SpinnerTests : TestBase
     public void Spinner_HasAccessibilityLabel()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.Label, "Processing"));
 
         // Assert
@@ -67,7 +67,7 @@ public class SpinnerTests : TestBase
     public void Spinner_HasDefaultAccessibilityLabel()
     {
         // Act
-        var cut = RenderComponent<Spinner>();
+        var cut = Render<Spinner>();
 
         // Assert
         var srOnly = cut.Find(".sr-only");
@@ -78,7 +78,7 @@ public class SpinnerTests : TestBase
     public void Spinner_Applies_CustomCssClass()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.CssClass, "my-custom-spinner"));
 
         // Assert
@@ -91,7 +91,7 @@ public class SpinnerTests : TestBase
     public void Spinner_SmallSize_HasSmallClass()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.Size, Spinner.SpinnerSize.Small));
 
         // Assert
@@ -102,7 +102,7 @@ public class SpinnerTests : TestBase
     public void Spinner_DefaultSize_HasDefaultClass()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.Size, Spinner.SpinnerSize.Default));
 
         // Assert
@@ -113,7 +113,7 @@ public class SpinnerTests : TestBase
     public void Spinner_MediumSize_HasMediumClass()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.Size, Spinner.SpinnerSize.Medium));
 
         // Assert
@@ -124,7 +124,7 @@ public class SpinnerTests : TestBase
     public void Spinner_LargeSize_HasLargeClass()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.Size, Spinner.SpinnerSize.Large));
 
         // Assert
@@ -137,7 +137,7 @@ public class SpinnerTests : TestBase
     public void Spinner_WithNullLabel_UsesDefaultAccessibilityText()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.Label, (string?)null));
 
         // Assert
@@ -149,20 +149,19 @@ public class SpinnerTests : TestBase
     public void Spinner_WithEmptyLabel_UsesDefaultAccessibilityText()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.Label, string.Empty));
 
-        // Assert - Empty string is not null, so component uses empty string
-        // Component code: @(Label ?? "Loading...") - ?? operator only checks for null
+        // Assert
         var srOnly = cut.Find(".sr-only");
-        srOnly.TextContent.ShouldBe(string.Empty);
+        srOnly.TextContent.ShouldBe("Loading...");
     }
 
     [Fact]
     public void Spinner_ShowLabel_WithNullLabel_DoesNotRenderVisibleLabel()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.Label, (string?)null)
             .Add(p => p.ShowLabel, true));
 
@@ -174,7 +173,7 @@ public class SpinnerTests : TestBase
     public void Spinner_ShowLabel_WithEmptyLabel_DoesNotRenderVisibleLabel()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.Label, string.Empty)
             .Add(p => p.ShowLabel, true));
 
@@ -186,7 +185,7 @@ public class SpinnerTests : TestBase
     public void Spinner_WithLabel_ShowLabelFalse_OnlyRendersScreenReaderText()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.Label, "Processing data")
             .Add(p => p.ShowLabel, false));
 
@@ -202,7 +201,7 @@ public class SpinnerTests : TestBase
     public void Spinner_AriaLabel_MatchesLabelParameter()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.Label, "Custom loading message"));
 
         // Assert
@@ -211,10 +210,70 @@ public class SpinnerTests : TestBase
     }
 
     [Fact]
+    public void Spinner_AriaLabel_OverridesAssistiveText()
+    {
+        // Act
+        var cut = Render<Spinner>(parameters => parameters
+            .Add(p => p.Label, "Visible loading")
+            .Add(p => p.AriaLabel, "Background job running")
+            .Add(p => p.ShowLabel, true));
+
+        // Assert
+        var spinner = cut.Find(".vibe-spinner");
+        spinner.GetAttribute("aria-label")!.ShouldBe("Background job running");
+        cut.Find(".sr-only").TextContent.ShouldBe("Background job running");
+        cut.Find(".spinner-label").TextContent.ShouldBe("Visible loading");
+    }
+
+    [Fact]
+    public void Spinner_HasLiveRegionAttributes()
+    {
+        // Act
+        var cut = Render<Spinner>();
+
+        // Assert
+        var spinner = cut.Find(".vibe-spinner");
+        spinner.GetAttribute("aria-live")!.ShouldBe("polite");
+        spinner.GetAttribute("aria-atomic")!.ShouldBe("true");
+        spinner.GetAttribute("aria-busy")!.ShouldBe("true");
+        spinner.GetAttribute("aria-disabled")!.ShouldBe("false");
+    }
+
+    [Fact]
+    public void Spinner_CustomRoleAndAriaLive_AreApplied()
+    {
+        // Act
+        var cut = Render<Spinner>(parameters => parameters
+            .Add(p => p.Role, "alert")
+            .Add(p => p.AriaLive, "assertive")
+            .Add(p => p.AriaAtomic, false));
+
+        // Assert
+        var spinner = cut.Find(".vibe-spinner");
+        spinner.GetAttribute("role")!.ShouldBe("alert");
+        spinner.GetAttribute("aria-live")!.ShouldBe("assertive");
+        spinner.GetAttribute("aria-atomic")!.ShouldBe("false");
+    }
+
+    [Fact]
+    public void Spinner_Disabled_AppliesNonBusyState()
+    {
+        // Act
+        var cut = Render<Spinner>(parameters => parameters
+            .Add(p => p.Disabled, true));
+
+        // Assert
+        var spinner = cut.Find(".vibe-spinner");
+        spinner.ClassList.ShouldContain("spinner-disabled");
+        spinner.GetAttribute("aria-disabled")!.ShouldBe("true");
+        spinner.GetAttribute("aria-busy")!.ShouldBe("false");
+    }
+
+    [Fact]
     public void Spinner_RoleStatus_IsPresent()
     {
         // Act
-        var cut = RenderComponent<Spinner>();
+        var cut = Render<Spinner>();
 
         // Assert
         var spinner = cut.Find(".vibe-spinner");
@@ -225,7 +284,7 @@ public class SpinnerTests : TestBase
     public void Spinner_ScreenReaderText_AlwaysPresent()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.Label, "Loading"));
 
         // Assert
@@ -240,7 +299,7 @@ public class SpinnerTests : TestBase
     public void Spinner_WithMultipleClasses_CombinesCorrectly()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.Size, Spinner.SpinnerSize.Large)
             .Add(p => p.CssClass, "custom-class another-class"));
 
@@ -256,7 +315,7 @@ public class SpinnerTests : TestBase
     public void Spinner_WithoutCustomClass_OnlyHasBaseClasses()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.Size, Spinner.SpinnerSize.Medium));
 
         // Assert
@@ -265,13 +324,43 @@ public class SpinnerTests : TestBase
         spinner.ClassList.ShouldContain("spinner-medium");
     }
 
+    [Fact]
+    public void Spinner_ClassParameter_IsIncluded()
+    {
+        // Act
+        var cut = Render<Spinner>(parameters => parameters
+            .Add(p => p.Class, "base-class")
+            .Add(p => p.CssClass, "legacy-class")
+            .AddUnmatched("data-testid", "spinner-root"));
+
+        // Assert
+        var spinner = cut.Find(".vibe-spinner");
+        spinner.ClassList.ShouldContain("base-class");
+        spinner.ClassList.ShouldContain("legacy-class");
+        spinner.GetAttribute("data-testid")!.ShouldBe("spinner-root");
+    }
+
+    [Fact]
+    public void Spinner_BlankAndUnsafeColor_FallsBackToPrimaryClass()
+    {
+        // Act
+        var blank = Render<Spinner>(parameters => parameters
+            .Add(p => p.Color, "   "));
+        var unsafeColor = Render<Spinner>(parameters => parameters
+            .Add(p => p.Color, "danger extra"));
+
+        // Assert
+        blank.Find(".vibe-spinner").ClassList.ShouldContain("spinner-primary");
+        unsafeColor.Find(".vibe-spinner").ClassList.ShouldContain("spinner-primary");
+    }
+
     // ===== Combined Feature Tests =====
 
     [Fact]
     public void Spinner_AllFeaturesCombined_RendersCorrectly()
     {
         // Act
-        var cut = RenderComponent<Spinner>(parameters => parameters
+        var cut = Render<Spinner>(parameters => parameters
             .Add(p => p.Size, Spinner.SpinnerSize.Large)
             .Add(p => p.Label, "Loading user data")
             .Add(p => p.ShowLabel, true)

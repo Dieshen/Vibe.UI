@@ -176,7 +176,23 @@ public class AllComponentsRenderTests : E2ETestBase
             await NavigateAndWaitForBlazorAsync($"/components/{path}");
 
             // Verify page has a title
-            var title = await Page.Locator("h1, .component-title, [class*='title']").First.TextContentAsync();
+            var titleLocator = Page.Locator("h1").First;
+            try
+            {
+                await titleLocator.WaitForAsync(new()
+                {
+                    State = Microsoft.Playwright.WaitForSelectorState.Visible,
+                    Timeout = 30000
+                });
+            }
+            catch (TimeoutException ex)
+            {
+                throw new TimeoutException(
+                    $"Timed out waiting for title on component page {path}. Current URL: {Page.Url}",
+                    ex);
+            }
+
+            var title = await titleLocator.TextContentAsync();
             title.ShouldNotBeNullOrWhiteSpace($"Component page {path} should have a title");
         }
     }

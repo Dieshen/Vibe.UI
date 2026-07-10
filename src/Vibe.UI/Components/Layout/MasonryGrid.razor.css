@@ -1,7 +1,19 @@
 /* MasonryGrid baseline styles */
 
-:global(.vibe-masonry-grid) {
-  display: grid;
-  gap: 1rem;
+:global(.vibe-masonry) {
+  display: flex;
+  width: 100%;
+  align-items: flex-start;
 }
 
+:global(.vibe-masonry .masonry-column) {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  gap: inherit;
+}
+
+:global(.vibe-masonry .masonry-empty) {
+  width: 100%;
+}

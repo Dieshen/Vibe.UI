@@ -13,40 +13,107 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7.0.0
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5.4.0
       with:
-        dotnet-version: '9.0.x'
+        dotnet-version: '10.0.x'
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v6.4.0
+      with:
+        node-version: '26'
+        cache: npm
+        cache-dependency-path: |
+          src/Vibe.UI/ts-src/package-lock.json
+          samples/Vibe.UI.Docs/ts-src/package-lock.json
+
+    - name: Validate Vibe.UI TypeScript
+      working-directory: src/Vibe.UI/ts-src
+      run: |
+        npm ci
+        npm test
+        npm run deploy
+
+    - name: Validate docs TypeScript
+      working-directory: samples/Vibe.UI.Docs/ts-src
+      run: |
+        npm ci
+        npm test
+        npm run deploy
+
+    - name: Verify generated JavaScript is committed
+      run: git diff --exit-code -- src/Vibe.UI/wwwroot/js/vibe-chart.js samples/Vibe.UI.Docs/wwwroot/js/chart.umd.js samples/Vibe.UI.Docs/wwwroot/js/shiki-interop.js samples/Vibe.UI.Docs/wwwroot/js/docs.js
 
     - name: Restore dependencies
       run: |
         dotnet restore src/Vibe.UI.CSS/Vibe.UI.CSS.csproj
         dotnet restore src/Vibe.UI/Vibe.UI.csproj
         dotnet restore src/Vibe.UI.CLI/Vibe.UI.CLI.csproj
+        dotnet restore samples/Vibe.UI.Docs/Vibe.UI.Docs.csproj
+        dotnet restore samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj
+        dotnet restore samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj
         dotnet restore tests/Vibe.UI.CSS.Tests/Vibe.UI.CSS.Tests.csproj
         dotnet restore tests/Vibe.UI.Tests/Vibe.UI.Tests.csproj
         dotnet restore tests/Vibe.UI.CLI.Tests/Vibe.UI.CLI.Tests.csproj
+        dotnet restore tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj
 
     - name: Build
       run: |
-        # TODO(beta): Re-enable TreatWarningsAsErrors after warning cleanup.
-        dotnet build src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=false
-        dotnet build src/Vibe.UI/Vibe.UI.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=false
-        dotnet build src/Vibe.UI.CLI/Vibe.UI.CLI.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=false
-        dotnet build tests/Vibe.UI.CSS.Tests/Vibe.UI.CSS.Tests.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=false
-        dotnet build tests/Vibe.UI.Tests/Vibe.UI.Tests.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=false
-        dotnet build tests/Vibe.UI.CLI.Tests/Vibe.UI.CLI.Tests.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=false
+        dotnet build src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+        dotnet build src/Vibe.UI/Vibe.UI.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+        dotnet build src/Vibe.UI.CLI/Vibe.UI.CLI.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+        dotnet build samples/Vibe.UI.Docs/Vibe.UI.Docs.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+        dotnet build samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+        dotnet build samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+        dotnet build tests/Vibe.UI.CSS.Tests/Vibe.UI.CSS.Tests.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+        dotnet build tests/Vibe.UI.Tests/Vibe.UI.Tests.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+        dotnet build tests/Vibe.UI.CLI.Tests/Vibe.UI.CLI.Tests.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+        dotnet build tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+
+    - name: Pack shipping packages
+      run: |
+        dotnet pack src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build --output ./packages
+        dotnet pack src/Vibe.UI/Vibe.UI.csproj --configuration Release --no-build --output ./packages
+        dotnet pack src/Vibe.UI.CLI/Vibe.UI.CLI.csproj --configuration Release --no-build --output ./packages
+
+    - name: Validate local packages
+      run: pwsh scripts/Validate-LocalPackages.ps1 -PackagesPath ./packages
+
+    - name: Rebuild compatibility fixtures from local packages
+      run: |
+        PACKAGE_VERSION="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' src/Vibe.UI/Vibe.UI.csproj | head -n 1)"
+        dotnet restore samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --source ./packages --source https://api.nuget.org/v3/index.json -p:VibeUsePackageReferences=true -p:VibePackageVersion="${PACKAGE_VERSION}"
+        dotnet restore samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --source ./packages --source https://api.nuget.org/v3/index.json -p:VibeUsePackageReferences=true -p:VibePackageVersion="${PACKAGE_VERSION}"
+        dotnet build samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion="${PACKAGE_VERSION}"
+        dotnet build samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion="${PACKAGE_VERSION}"
+        dotnet build samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion="${PACKAGE_VERSION}"
+
+    - name: Install Playwright browsers
+      run: pwsh tests/Vibe.UI.Docs.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium firefox webkit
 
     - name: Run tests with coverage
       run: |
-        dotnet test tests/Vibe.UI.CSS.Tests/Vibe.UI.CSS.Tests.csproj --configuration Release --no-build --verbosity normal -p:TreatWarningsAsErrors=false --collect:"XPlat Code Coverage" --results-directory ./coverage
-        dotnet test tests/Vibe.UI.Tests/Vibe.UI.Tests.csproj --configuration Release --no-build --verbosity normal -p:TreatWarningsAsErrors=false --collect:"XPlat Code Coverage" --results-directory ./coverage
-        dotnet test tests/Vibe.UI.CLI.Tests/Vibe.UI.CLI.Tests.csproj --configuration Release --no-build --verbosity normal -p:TreatWarningsAsErrors=false --collect:"XPlat Code Coverage" --results-directory ./coverage
+        dotnet test tests/Vibe.UI.CSS.Tests/Vibe.UI.CSS.Tests.csproj --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+        dotnet test tests/Vibe.UI.Tests/Vibe.UI.Tests.csproj --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+        dotnet test tests/Vibe.UI.CLI.Tests/Vibe.UI.CLI.Tests.csproj --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+
+    - name: Run docs integration browser tests
+      run: BROWSER=chromium dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Integration -- RunConfiguration.TestSessionTimeout=300000
+
+    - name: Run docs smoke browser tests
+      run: BROWSER=chromium dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Smoke -- RunConfiguration.TestSessionTimeout=600000
+
+    - name: Run compatibility browser tests
+      run: |
+        for browser in chromium firefox webkit; do
+          echo "Running compatibility browser tests with ${browser}"
+          BROWSER="${browser}" dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Compatibility -- RunConfiguration.TestSessionTimeout=600000
+        done
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v7.0.0
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage/**/coverage.cobertura.xml

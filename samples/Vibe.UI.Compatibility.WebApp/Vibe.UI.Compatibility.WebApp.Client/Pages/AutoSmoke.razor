@@ -1,0 +1,93 @@
+@page "/auto"
+@rendermode InteractiveAuto
+
+<PageTitle>Vibe.UI Interactive Auto compatibility</PageTitle>
+
+<section class="compat-page" data-testid="webapp-auto-smoke">
+    <div class="compat-page-header">
+        <div>
+            <Badge Variant="default">Interactive Auto</Badge>
+            <h1>Auto interactivity</h1>
+            <p>
+                This .Client page prerenders on the server and becomes interactive through Auto mode.
+            </p>
+        </div>
+
+        <ThemeToggle ShowLabel="true" />
+    </div>
+
+    <Card>
+        <CardTitle>Auto runtime active</CardTitle>
+        <CardDescription>Both server prerendering and WebAssembly activation must have Vibe.UI services.</CardDescription>
+
+        <ChildContent>
+            <Alert Title="Auto component state" Variant="AlertVariant.Default">
+                Current interaction count: @_clickCount. Name value: @_name.
+            </Alert>
+
+            <div class="compat-grid">
+                <Input Id="auto-name"
+                       Label="Name"
+                       Value="@_name"
+                       ValueChanged="OnNameChanged"
+                       HelperText="Validates the prerender-to-client handoff shape." />
+
+                <Checkbox Checked="@_confirmed" CheckedChanged="OnConfirmedChanged">
+                    Auto checkbox state: @(_confirmed ? "checked" : "unchecked")
+                </Checkbox>
+            </div>
+
+            <div class="compat-actions">
+                <Button OnClick="Increment" data-testid="auto-increment">Increment auto state</Button>
+                <Button Variant="ButtonVariant.Outline" OnClick="OpenDialog" data-testid="auto-dialog">Open dialog</Button>
+                <Button Href="/" Variant="ButtonVariant.Ghost">Back to static page</Button>
+            </div>
+        </ChildContent>
+    </Card>
+
+    <Dialog @bind-IsOpen="_dialogOpen">
+        <Header>
+            <strong>Auto dialog</strong>
+        </Header>
+        <ChildContent>
+            The dialog rendered and opened from an Interactive Auto event.
+        </ChildContent>
+        <Footer>
+            <Button Variant="ButtonVariant.Secondary" OnClick="CloseDialog">Close</Button>
+        </Footer>
+    </Dialog>
+</section>
+
+@code {
+    private int _clickCount;
+    private string _name = "Auto";
+    private bool _confirmed = true;
+    private bool _dialogOpen;
+
+    private void Increment(MouseEventArgs _)
+    {
+        _clickCount++;
+    }
+
+    private Task OnNameChanged(string value)
+    {
+        _name = value;
+        return Task.CompletedTask;
+    }
+
+    private Task OnConfirmedChanged(bool value)
+    {
+        _confirmed = value;
+        return Task.CompletedTask;
+    }
+
+    private void OpenDialog(MouseEventArgs _)
+    {
+        _dialogOpen = true;
+    }
+
+    private void CloseDialog(MouseEventArgs _)
+    {
+        _dialogOpen = false;
+    }
+}

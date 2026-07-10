@@ -1,11 +1,55 @@
 /* DateRangePicker baseline styles */
 
-:global(.date-range-picker) {
+:global(.vibe-daterange-picker) {
   position: relative;
   display: block;
 }
 
-:global(.date-range-popup) {
+:global(.daterange-input-wrapper) {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+:global(.daterange-inputs) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: center;
+  width: 100%;
+}
+
+:global(.daterange-start-input),
+:global(.daterange-end-input) {
+  min-width: 0;
+}
+
+:global(.daterange-separator) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--vibe-muted-foreground);
+}
+
+:global(.daterange-icon) {
+  position: absolute;
+  right: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--vibe-muted-foreground);
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+:global(.daterange-icon:disabled) {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+:global(.daterange-popup) {
   position: absolute;
   z-index: 50;
   margin-top: 0.5rem;
@@ -14,11 +58,161 @@
   border: 1px solid var(--vibe-border);
   border-radius: var(--vibe-radius);
   box-shadow: var(--vibe-shadow-md);
+  padding: 0.75rem;
 }
 
-:global(.date-range-backdrop) {
+:global(.daterange-backdrop) {
   position: fixed;
   inset: 0;
   z-index: 40;
 }
 
+:global(.daterange-header) {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+:global(.daterange-header-section) {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+:global(.daterange-header-label) {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+:global(.daterange-month-select),
+:global(.daterange-year-select) {
+  border: 1px solid var(--vibe-border);
+  background: var(--vibe-background);
+  color: var(--vibe-foreground);
+  border-radius: 0.375rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+:global(.daterange-nav-btn) {
+  border: 1px solid var(--vibe-border);
+  background: transparent;
+  color: var(--vibe-foreground);
+  border-radius: 0.375rem;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+}
+
+:global(.daterange-calendars) {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+:global(.daterange-day-names),
+:global(.daterange-week) {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+}
+
+:global(.daterange-day-names) {
+  margin-bottom: 0.25rem;
+}
+
+:global(.daterange-week) {
+  margin-bottom: 0.25rem;
+}
+
+:global(.daterange-day-name) {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--vibe-muted-foreground);
+  padding: 0.25rem 0;
+}
+
+:global(.daterange-day) {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--vibe-foreground);
+  border-radius: 0.375rem;
+  padding: 0.4rem 0;
+  cursor: pointer;
+}
+
+:global(.daterange-day:hover:not(:disabled)) {
+  background: var(--vibe-muted);
+}
+
+:global(.daterange-day:disabled) {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+:global(.daterange-day.today) {
+  border-color: var(--vibe-ring);
+}
+
+:global(.daterange-day.outside-month) {
+  opacity: 0.5;
+}
+
+:global(.daterange-day.in-range) {
+  background: var(--vibe-muted);
+}
+
+:global(.daterange-day.selected),
+:global(.daterange-day.range-start),
+:global(.daterange-day.range-end) {
+  background: var(--vibe-primary);
+  color: var(--vibe-primary-foreground);
+}
+
+:global(.daterange-footer) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+:global(.daterange-presets) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+:global(.daterange-preset-btn),
+:global(.daterange-apply-btn) {
+  border: 1px solid var(--vibe-border);
+  background: transparent;
+  color: var(--vibe-foreground);
+  border-radius: 0.375rem;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+}
+
+:global(.daterange-apply-btn) {
+  background: var(--vibe-primary);
+  color: var(--vibe-primary-foreground);
+  border-color: var(--vibe-primary);
+}
+
+@media (max-width: 640px) {
+  :global(.daterange-popup) {
+    left: 0;
+    right: 0;
+  }
+
+  :global(.daterange-calendars) {
+    grid-template-columns: 1fr;
+  }
+
+  :global(.daterange-footer) {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

@@ -3,24 +3,38 @@
 @using Microsoft.AspNetCore.Components.Forms
 @typeparam TValue
 @inherits Base.VibeComponent
+@implements IDisposable
 
-<div class="@CombinedClass">
+<div @attributes="RootAttributes" class="@CombinedClass">
     <div class="form-field-container @ValidationClass">
-        @if (!string.IsNullOrEmpty(Label))
+        @if (HasLabel)
         {
-            <label class="form-field-label" for="@Id">@Label</label>
+            <label class="form-field-label" id="@LabelId" for="@EffectiveId">@Label</label>
         }
 
         <div class="form-field-input">
             @ChildContent
         </div>
 
-        @if (!string.IsNullOrEmpty(Description))
+        @if (HasDescription)
         {
-            <div class="form-field-description">@Description</div>
+            <div class="form-field-description" id="@DescriptionId">@Description</div>
         }
 
-        @if (ValidationFor != null)
+        @if (HasExplicitError)
+        {
+            <div class="form-validation-message" id="@ErrorId" role="alert">@ErrorMessage</div>
+        }
+        else if (ValidationMessages.Count > 0)
+        {
+            <div class="form-validation-message" id="@ErrorId" role="alert">
+                @foreach (var message in ValidationMessages)
+                {
+                    <div>@message</div>
+                }
+            </div>
+        }
+        else if (ValidationFor != null && CurrentEditContext != null)
         {
             <ValidationMessage For="@ValidationFor" class="form-validation-message" />
         }
@@ -28,23 +42,36 @@
 </div>
 
 @code {
+    private readonly string _generatedId = "form-field-" + Guid.NewGuid().ToString("N");
+    private EditContext? _previousEditContext;
+    private FieldIdentifier? _fieldIdentifier;
+
+    [CascadingParameter]
+    private EditContext? CurrentEditContext { get; set; }
+
     /// <summary>
     /// Gets or sets the field label.
     /// </summary>
     [Parameter]
-    public string Label { get; set; }
+    public string? Label { get; set; }
 
     /// <summary>
     /// Gets or sets the field description.
     /// </summary>
     [Parameter]
-    public string Description { get; set; }
+    public string? Description { get; set; }
+
+    /// <summary>
+    /// Gets or sets an explicit error message.
+    /// </summary>
+    [Parameter]
+    public string? ErrorMessage { get; set; }
 
     /// <summary>
     /// Gets or sets the field validation expression.
     /// </summary>
     [Parameter]
-    public Expression<Func<TValue>> ValidationFor { get; set; }
+    public Expression<Func<TValue>>? ValidationFor { get; set; }
 
     /// <summary>
     /// Gets or sets the field content.
@@ -56,13 +83,19 @@
     /// Gets or sets the field ID.
     /// </summary>
     [Parameter]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     /// <summary>
     /// Gets or sets whether the field has validation errors.
     /// </summary>
     [Parameter]
     public bool HasError { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the field is required.
+    /// </summary>
+    [Parameter]
+    public bool Required { get; set; }
 
     /// <summary>
     /// Gets the component CSS class name.
@@ -72,18 +105,137 @@
     /// <summary>
     /// Gets the validation CSS class.
     /// </summary>
-    private string ValidationClass => HasError ? "has-error" : "";
+    private string ValidationClass => EffectiveHasError ? "has-error" : "";
 
-    /// <summary>
-    /// Initialize the component.
-    /// </summary>
-    protected override void OnInitialized()
+    private string EffectiveId => string.IsNullOrWhiteSpace(Id) ? _generatedId : Id!;
+
+    private string LabelId => $"{EffectiveId}-label";
+
+    private string DescriptionId => $"{EffectiveId}-description";
+
+    private string ErrorId => $"{EffectiveId}-error";
+
+    private bool HasLabel => !string.IsNullOrWhiteSpace(Label);
+
+    private bool HasDescription => !string.IsNullOrWhiteSpace(Description);
+
+    private bool HasExplicitError => !string.IsNullOrWhiteSpace(ErrorMessage);
+
+    private bool EffectiveHasError => HasError || HasExplicitError || ValidationMessages.Count > 0;
+
+    private IReadOnlyList<string> ValidationMessages => GetValidationMessages();
+
+    private Dictionary<string, object>? RootAttributes => BuildRootAttributes();
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
     {
-        base.OnInitialized();
+        base.OnParametersSet();
 
-        if (string.IsNullOrEmpty(Id))
+        if (!ReferenceEquals(_previousEditContext, CurrentEditContext))
         {
-            Id = "form-field-" + Guid.NewGuid().ToString("N");
+            if (_previousEditContext != null)
+            {
+                _previousEditContext.OnValidationStateChanged -= HandleValidationStateChanged;
+            }
+
+            if (CurrentEditContext != null)
+            {
+                CurrentEditContext.OnValidationStateChanged += HandleValidationStateChanged;
+            }
+
+            _previousEditContext = CurrentEditContext;
         }
+
+        _fieldIdentifier = ValidationFor == null ? null : FieldIdentifier.Create(ValidationFor);
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (_previousEditContext != null)
+        {
+            _previousEditContext.OnValidationStateChanged -= HandleValidationStateChanged;
+        }
+    }
+
+    private async void HandleValidationStateChanged(object? sender, ValidationStateChangedEventArgs e)
+    {
+        try
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception exception)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    }
+
+    private IReadOnlyList<string> GetValidationMessages()
+    {
+        if (CurrentEditContext == null || _fieldIdentifier == null)
+        {
+            return Array.Empty<string>();
+        }
+
+        return CurrentEditContext.GetValidationMessages(_fieldIdentifier.Value).ToArray();
+    }
+
+    private Dictionary<string, object>? BuildRootAttributes()
+    {
+        var attributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+        if (AdditionalAttributes != null)
+        {
+            foreach (var attribute in AdditionalAttributes)
+            {
+                if (!attribute.Key.Equals("class", StringComparison.OrdinalIgnoreCase))
+                {
+                    attributes[attribute.Key] = attribute.Value;
+                }
+            }
+        }
+
+        if (!attributes.ContainsKey("role"))
+        {
+            attributes["role"] = "group";
+        }
+
+        if (HasLabel && !attributes.ContainsKey("aria-labelledby"))
+        {
+            attributes["aria-labelledby"] = LabelId;
+        }
+
+        var describedBy = CombineIds(
+            attributes.TryGetValue("aria-describedby", out var existingDescribedBy) ? existingDescribedBy?.ToString() : null,
+            HasDescription ? DescriptionId : null,
+            EffectiveHasError && (HasExplicitError || ValidationMessages.Count > 0) ? ErrorId : null);
+
+        if (!string.IsNullOrEmpty(describedBy))
+        {
+            attributes["aria-describedby"] = describedBy;
+        }
+
+        if (EffectiveHasError && !attributes.ContainsKey("aria-invalid"))
+        {
+            attributes["aria-invalid"] = "true";
+        }
+
+        if (Required && !attributes.ContainsKey("aria-required"))
+        {
+            attributes["aria-required"] = "true";
+        }
+
+        return attributes.Count == 0 ? null : attributes;
+    }
+
+    private static string? CombineIds(params string?[] ids)
+    {
+        var combined = ids
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Select(id => id!.Trim())
+            .ToList();
+
+        return combined.Count == 0 ? null : string.Join(" ", combined);
     }
 }

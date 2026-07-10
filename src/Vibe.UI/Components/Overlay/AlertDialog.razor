@@ -5,22 +5,15 @@
 
 @if (IsOpen)
 {
-    <div class="@CombinedClass"
-        @attributes="AdditionalAttributes"
-        @onkeydown="HandleKeyDown"
-        tabindex="-1"
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="@_titleId"
-        aria-describedby="@_descriptionId">
+    <div @attributes="DialogAttributes" @onkeydown="HandleKeyDown">
         <div class="vibe-alert-dialog-backdrop" @onclick="OnBackdropClicked"></div>
 
         <div class="vibe-alert-dialog-content" @ref="_contentRef">
-            @if (!string.IsNullOrEmpty(Title))
+            @if (HasTitle)
             {
                 <div class="vibe-alert-dialog-header">
                     <h2 class="vibe-alert-dialog-title" id="@_titleId">@Title</h2>
-                    @if (!string.IsNullOrEmpty(Description))
+                    @if (HasDescription)
                     {
                         <p class="vibe-alert-dialog-description" id="@_descriptionId">@Description</p>
                     }
@@ -112,6 +105,34 @@
     private readonly string _dialogKey = $"vibe-alert-dialog-{Guid.NewGuid():N}";
     private readonly string _titleId = $"vibe-alert-dialog-title-{Guid.NewGuid():N}";
     private readonly string _descriptionId = $"vibe-alert-dialog-description-{Guid.NewGuid():N}";
+    private bool HasTitle => !string.IsNullOrEmpty(Title);
+    private bool HasDescription => HasTitle && !string.IsNullOrEmpty(Description);
+    private Dictionary<string, object> DialogAttributes
+    {
+        get
+        {
+            var attributes = AdditionalAttributes is null
+                ? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                : new Dictionary<string, object>(AdditionalAttributes, StringComparer.OrdinalIgnoreCase);
+
+            attributes["class"] = CombinedClass;
+            attributes["tabindex"] = "-1";
+            attributes["role"] = "alertdialog";
+            attributes["aria-modal"] = "true";
+
+            if (HasTitle)
+            {
+                attributes["aria-labelledby"] = _titleId;
+            }
+
+            if (HasDescription)
+            {
+                attributes["aria-describedby"] = _descriptionId;
+            }
+
+            return attributes;
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

@@ -1,0 +1,33 @@
+@page "/"
+
+<PageTitle>Vibe.UI Blazor Web App compatibility</PageTitle>
+
+<section class="compat-page" data-testid="webapp-static-smoke">
+    <div class="compat-page-header">
+        <div>
+            <Badge Variant="secondary">Static SSR</Badge>
+            <h1>Vibe.UI Blazor Web App smoke test</h1>
+            <p>
+                This static server-rendered page verifies that package assets and non-interactive
+                components render before any interactive runtime attaches.
+            </p>
+        </div>
+    </div>
+
+    <Card>
+        <CardTitle>Render-mode coverage</CardTitle>
+        <CardDescription>Use these pages to validate the server and client runtime paths.</CardDescription>
+
+        <ChildContent>
+            <Alert Title="Static render path" Variant="AlertVariant.Default">
+                This card, badge, alert, and links are rendered through static SSR.
+            </Alert>
+
+            <div class="compat-actions">
+                <Button Href="/server" Variant="ButtonVariant.Primary">Interactive Server</Button>
+                <Button Href="/client" Variant="ButtonVariant.Outline">Interactive WebAssembly</Button>
+                <Button Href="/auto" Variant="ButtonVariant.Secondary">Interactive Auto</Button>
+            </div>
+        </ChildContent>
+    </Card>
+</section>

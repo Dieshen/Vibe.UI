@@ -6,7 +6,7 @@ public class TimelineTests : TestBase
     public void Timeline_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Timeline>();
+        var cut = Render<Timeline>();
 
         // Assert
         cut.Find(".vibe-timeline").ShouldNotBeNull();
@@ -16,7 +16,7 @@ public class TimelineTests : TestBase
     public void Timeline_Has_DefaultLeftPosition()
     {
         // Act
-        var cut = RenderComponent<Timeline>();
+        var cut = Render<Timeline>();
 
         // Assert
         cut.Find(".vibe-timeline").ClassList.ShouldContain("timeline-left");
@@ -26,7 +26,7 @@ public class TimelineTests : TestBase
     public void Timeline_Applies_PositionClass()
     {
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.Position, Timeline.TimelinePosition.Right));
 
         // Assert
@@ -37,7 +37,7 @@ public class TimelineTests : TestBase
     public void Timeline_Renders_NoItems_WhenListIsNull()
     {
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.Items, (List<Timeline.TimelineItem>?)null));
 
         // Assert
@@ -55,7 +55,7 @@ public class TimelineTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.Items, items));
 
         // Assert
@@ -73,7 +73,7 @@ public class TimelineTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.Items, items));
 
         // Assert
@@ -91,7 +91,7 @@ public class TimelineTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.Items, items));
 
         // Assert
@@ -109,7 +109,7 @@ public class TimelineTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.Items, items));
 
         // Assert
@@ -129,7 +129,7 @@ public class TimelineTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.Items, items));
 
         // Assert
@@ -148,7 +148,7 @@ public class TimelineTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.Items, items));
 
         // Assert
@@ -166,7 +166,7 @@ public class TimelineTests : TestBase
         };
 
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
+        var cut = Render<Timeline>(parameters => parameters
             .Add(p => p.Items, items));
 
         // Assert
@@ -179,10 +179,88 @@ public class TimelineTests : TestBase
     public void Timeline_Applies_CustomCssClass()
     {
         // Act
-        var cut = RenderComponent<Timeline>(parameters => parameters
-            .Add(p => p.CssClass, "custom-timeline"));
+        var cut = Render<Timeline>(parameters => parameters
+            .Add(p => p.CssClass, "custom-timeline")
+            .Add(p => p.Class, "outer-timeline"));
 
         // Assert
-        cut.Find(".vibe-timeline").ClassList.ShouldContain("custom-timeline");
+        var timeline = cut.Find(".vibe-timeline");
+        timeline.ClassList.ShouldContain("custom-timeline");
+        timeline.ClassList.ShouldContain("outer-timeline");
+    }
+
+    [Fact]
+    public void Timeline_AppliesAdditionalAttributesAndAriaLabel()
+    {
+        // Act
+        var cut = Render<Timeline>(parameters => parameters
+            .Add(p => p.AriaLabel, "Deployment history")
+            .AddUnmatched("data-testid", "deployment-timeline"));
+
+        // Assert
+        var timeline = cut.Find(".vibe-timeline");
+        timeline.GetAttribute("role")!.ShouldBe("list");
+        timeline.GetAttribute("aria-label")!.ShouldBe("Deployment history");
+        timeline.GetAttribute("data-testid")!.ShouldBe("deployment-timeline");
+    }
+
+    [Fact]
+    public void Timeline_FiltersNullItems()
+    {
+        // Arrange
+        var items = new List<Timeline.TimelineItem>
+        {
+            null!,
+            new() { Title = "Event" }
+        };
+
+        // Act
+        var cut = Render<Timeline>(parameters => parameters
+            .Add(p => p.Items, items));
+
+        // Assert
+        var timelineItems = cut.FindAll(".timeline-item");
+        timelineItems.Count.ShouldBe(1);
+        timelineItems[0].TextContent.ShouldContain("Event");
+    }
+
+    [Fact]
+    public void Timeline_InvalidEnumsFallBackToDefaultClasses()
+    {
+        // Arrange
+        var items = new List<Timeline.TimelineItem>
+        {
+            new() { Title = "Event", Status = (Timeline.TimelineStatus)999 }
+        };
+
+        // Act
+        var cut = Render<Timeline>(parameters => parameters
+            .Add(p => p.Items, items)
+            .Add(p => p.Position, (Timeline.TimelinePosition)999));
+
+        // Assert
+        var timeline = cut.Find(".vibe-timeline");
+        timeline.ClassList.ShouldContain("timeline-left");
+        timeline.ClassList.ShouldNotContain("timeline-999");
+
+        var marker = cut.Find(".timeline-marker");
+        marker.ClassList.ShouldContain("marker-default");
+        marker.ClassList.ShouldNotContain("marker-999");
+    }
+
+    [Fact]
+    public void Timeline_DuplicateItemReferences_RenderCorrectConnectorCount()
+    {
+        // Arrange
+        var item = new Timeline.TimelineItem { Title = "Repeated event" };
+        var items = new List<Timeline.TimelineItem> { item, item };
+
+        // Act
+        var cut = Render<Timeline>(parameters => parameters
+            .Add(p => p.Items, items));
+
+        // Assert
+        cut.FindAll(".timeline-item").Count.ShouldBe(2);
+        cut.FindAll(".timeline-connector").Count.ShouldBe(1);
     }
 }

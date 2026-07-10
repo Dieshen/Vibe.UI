@@ -18,6 +18,11 @@
     animation: vibe-skeleton-shimmer 2s ease-in-out infinite;
 }
 
+.vibe-skeleton-static {
+    animation: none;
+    background: var(--vibe-muted);
+}
+
 /* Shimmer Animation
    ========================================================================== */
 
@@ -38,10 +43,26 @@
     border-radius: var(--vibe-radius-md);
 }
 
+.vibe-skeleton.vibe-skeleton-rounded {
+    border-radius: var(--vibe-radius-md);
+}
+
 /* Circle variant - perfect for avatars */
 .vibe-skeleton.circle {
     border-radius: 9999px;
     aspect-ratio: 1 / 1;
+}
+
+.vibe-skeleton.vibe-skeleton-circle {
+    border-radius: 9999px;
+    aspect-ratio: 1 / 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vibe-skeleton {
+        animation: none;
+        background: var(--vibe-muted);
+    }
 }
 
 /* Alternative: Pulse Animation

@@ -6,7 +6,10 @@ namespace Vibe.UI.CLI.Commands;
 
 public class ListCommand : Command
 {
-    public override int Execute(CommandContext context)
+    public int Execute(CommandContext context) =>
+        Execute(context, CancellationToken.None);
+
+    protected override int Execute(CommandContext context, CancellationToken cancellationToken)
     {
         var componentService = new ComponentService();
         var components = componentService.GetAvailableComponents();

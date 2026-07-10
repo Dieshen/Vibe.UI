@@ -24,12 +24,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.0
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5.4.0
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Restore dependencies
         run: dotnet restore samples/Vibe.UI.Docs/Vibe.UI.Docs.csproj
@@ -63,10 +63,10 @@ jobs:
         run: cp release/wwwroot/index.html release/wwwroot/404.html
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5.0.0
         with:
           path: 'release/wwwroot'
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5.0.0

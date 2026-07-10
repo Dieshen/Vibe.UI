@@ -96,7 +96,11 @@ public class JSInteropErrorTests : E2ETestBase
         // Act - Check if highlighter is available
         var isHighlighterReady = await Page.EvaluateAsync<bool>(@"
             () => {
-                return window.isHighlighterReady === true ||
+                const highlighterReady = typeof window.isHighlighterReady === 'function'
+                    ? window.isHighlighterReady()
+                    : window.isHighlighterReady === true;
+
+                return highlighterReady ||
                        typeof window.highlightCode === 'function' ||
                        document.querySelector('.shiki, pre code span') !== null;
             }

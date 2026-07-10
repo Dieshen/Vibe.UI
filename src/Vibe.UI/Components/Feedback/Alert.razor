@@ -1,17 +1,21 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
-@using Vibe.UI.Base
-@using Vibe.UI.Enums
 
-<div class="@CombinedClass" role="alert" @attributes="AdditionalAttributes">
+<div @attributes="AdditionalAttributes"
+     class="@CombinedClass"
+     role="@EffectiveRole"
+     aria-live="@EffectiveAriaLive"
+     aria-atomic="@AriaAtomicValue"
+     aria-disabled="@AriaDisabledValue"
+     aria-label="@AlertAriaLabel">
     @if (Icon != null)
     {
-        <div class="vibe-alert-icon">
+        <div class="vibe-alert-icon" aria-hidden="@IconAriaHiddenValue">
             @Icon
         </div>
     }
     <div class="vibe-alert-content">
-        @if (!string.IsNullOrEmpty(Title))
+        @if (!string.IsNullOrWhiteSpace(Title))
         {
             <h5 class="vibe-alert-title">@Title</h5>
         }
@@ -21,7 +25,12 @@
     </div>
     @if (Dismissible)
     {
-        <button type="button" class="vibe-alert-close" aria-label="Close" @onclick="OnDismissClick">
+        <button type="button"
+                class="vibe-alert-close"
+                aria-label="@EffectiveCloseButtonAriaLabel"
+                aria-disabled="@AriaDisabledValue"
+                disabled="@Disabled"
+                @onclick="OnDismissClick">
             <span class="vibe-alert-close-icon"></span>
         </button>
     }
@@ -53,10 +62,52 @@
     public AlertVariant Variant { get; set; } = AlertVariant.Default;
 
     /// <summary>
+    /// Gets or sets the ARIA role for the alert container.
+    /// </summary>
+    [Parameter]
+    public string? Role { get; set; } = "alert";
+
+    /// <summary>
+    /// Gets or sets the live-region politeness value for screen reader announcements.
+    /// </summary>
+    [Parameter]
+    public string? AriaLive { get; set; } = "assertive";
+
+    /// <summary>
+    /// Gets or sets whether assistive technologies should announce the alert as an atomic update.
+    /// </summary>
+    [Parameter]
+    public bool AriaAtomic { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets an optional accessible label for the alert container.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether custom icon content is hidden from assistive technologies.
+    /// </summary>
+    [Parameter]
+    public bool IconAriaHidden { get; set; } = true;
+
+    /// <summary>
     /// Gets or sets whether the alert is dismissible
     /// </summary>
     [Parameter]
     public bool Dismissible { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether dismiss controls are disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets the accessible label for the dismiss button.
+    /// </summary>
+    [Parameter]
+    public string? CloseButtonAriaLabel { get; set; } = "Close";
 
     /// <summary>
     /// Gets or sets the callback for when the alert is dismissed
@@ -69,16 +120,39 @@
         .Add("vibe-alert")
         .AddVariant("vibe-alert", Variant)
         .AddIf("vibe-alert-dismissible", Dismissible)
+        .AddIf("vibe-alert-disabled", Disabled)
         .Build();
+
+    private string EffectiveRole => string.IsNullOrWhiteSpace(Role) ? "alert" : Role.Trim();
+
+    private string EffectiveAriaLive => string.IsNullOrWhiteSpace(AriaLive) ? "assertive" : AriaLive.Trim();
+
+    private string AriaAtomicValue => AriaBool(AriaAtomic);
+
+    private string AriaDisabledValue => AriaBool(Disabled);
+
+    private string IconAriaHiddenValue => AriaBool(IconAriaHidden);
+
+    private string? AlertAriaLabel => string.IsNullOrWhiteSpace(AriaLabel) ? null : AriaLabel.Trim();
+
+    private string EffectiveCloseButtonAriaLabel =>
+        string.IsNullOrWhiteSpace(CloseButtonAriaLabel) ? "Close" : CloseButtonAriaLabel.Trim();
 
     /// <summary>
     /// Handles the dismiss button click
     /// </summary>
     private async Task OnDismissClick()
     {
+        if (Disabled)
+        {
+            return;
+        }
+
         if (OnDismiss.HasDelegate)
         {
             await OnDismiss.InvokeAsync();
         }
     }
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
 }

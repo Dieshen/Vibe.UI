@@ -6,7 +6,7 @@ public class ProgressTests : TestBase
     public void Progress_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Progress>();
+        var cut = Render<Progress>();
 
         // Assert
         var progress = cut.Find(".vibe-progress");
@@ -18,7 +18,7 @@ public class ProgressTests : TestBase
     public void Progress_Renders_WithValue()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Value, 50));
 
         // Assert
@@ -32,7 +32,7 @@ public class ProgressTests : TestBase
     public void Progress_ClampsValueTo100()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Value, 150));
 
         // Assert
@@ -44,7 +44,7 @@ public class ProgressTests : TestBase
     public void Progress_ClampsValueTo0()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Value, -50));
 
         // Assert
@@ -56,7 +56,7 @@ public class ProgressTests : TestBase
     public void Progress_ShowsIndeterminateAnimation()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.IndeterminateAnimation, true));
 
         // Assert
@@ -69,7 +69,7 @@ public class ProgressTests : TestBase
     public void Progress_Applies_Variant_Class()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Variant, "success")
             .Add(p => p.Value, 75));
 
@@ -81,7 +81,7 @@ public class ProgressTests : TestBase
     public void Progress_HasAccessibilityAttributes()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Value, 30));
 
         // Assert
@@ -97,7 +97,7 @@ public class ProgressTests : TestBase
     public void Progress_Value0_RendersEmpty()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Value, 0));
 
         // Assert
@@ -110,7 +110,7 @@ public class ProgressTests : TestBase
     public void Progress_Value100_RendersFull()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Value, 100));
 
         // Assert
@@ -123,7 +123,7 @@ public class ProgressTests : TestBase
     public void Progress_Value1_RendersMinimalProgress()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Value, 1));
 
         // Assert
@@ -136,7 +136,7 @@ public class ProgressTests : TestBase
     public void Progress_Value99_RendersNearComplete()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Value, 99));
 
         // Assert
@@ -149,26 +149,26 @@ public class ProgressTests : TestBase
     public void Progress_NegativeValue_ClampsToZero()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Value, -100));
 
         // Assert
         var indicator = cut.Find(".progress-indicator");
         indicator.GetAttribute("style")!.ShouldContain("width: 0%");
-        cut.Find(".vibe-progress").GetAttribute("aria-valuenow")!.ShouldBe("-100");
+        cut.Find(".vibe-progress").GetAttribute("aria-valuenow")!.ShouldBe("0");
     }
 
     [Fact]
     public void Progress_OverMaxValue_ClampsTo100()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Value, 500));
 
         // Assert
         var indicator = cut.Find(".progress-indicator");
         indicator.GetAttribute("style")!.ShouldContain("width: 100%");
-        cut.Find(".vibe-progress").GetAttribute("aria-valuenow")!.ShouldBe("500");
+        cut.Find(".vibe-progress").GetAttribute("aria-valuenow")!.ShouldBe("100");
     }
 
     // === Variant Tests ===
@@ -177,7 +177,7 @@ public class ProgressTests : TestBase
     public void Progress_DefaultVariant_HasDefaultClass()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Value, 50));
 
         // Assert
@@ -188,7 +188,7 @@ public class ProgressTests : TestBase
     public void Progress_SuccessVariant_HasSuccessClass()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Variant, "success")
             .Add(p => p.Value, 80));
 
@@ -200,7 +200,7 @@ public class ProgressTests : TestBase
     public void Progress_WarningVariant_HasWarningClass()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Variant, "warning")
             .Add(p => p.Value, 50));
 
@@ -212,7 +212,7 @@ public class ProgressTests : TestBase
     public void Progress_ErrorVariant_HasErrorClass()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Variant, "error")
             .Add(p => p.Value, 20));
 
@@ -224,7 +224,7 @@ public class ProgressTests : TestBase
     public void Progress_InfoVariant_HasInfoClass()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Variant, "info")
             .Add(p => p.Value, 60));
 
@@ -236,7 +236,7 @@ public class ProgressTests : TestBase
     public void Progress_PrimaryVariant_HasPrimaryClass()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Variant, "primary")
             .Add(p => p.Value, 75));
 
@@ -250,7 +250,7 @@ public class ProgressTests : TestBase
     public void Progress_IndeterminateMode_FullWidth()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.IndeterminateAnimation, true));
 
         // Assert
@@ -262,7 +262,7 @@ public class ProgressTests : TestBase
     public void Progress_IndeterminateMode_IgnoresValue()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.IndeterminateAnimation, true)
             .Add(p => p.Value, 30));
 
@@ -275,7 +275,7 @@ public class ProgressTests : TestBase
     public void Progress_DeterminateMode_NoAnimateClass()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.IndeterminateAnimation, false)
             .Add(p => p.Value, 50));
 
@@ -289,7 +289,7 @@ public class ProgressTests : TestBase
     public void Progress_AriaAttributes_SetCorrectly()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Value, 45));
 
         // Assert
@@ -304,11 +304,11 @@ public class ProgressTests : TestBase
     public void Progress_AriaAttributes_UpdateWithValue()
     {
         // Arrange
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Value, 25));
 
         // Act
-        cut.SetParametersAndRender(parameters => parameters
+        cut.Render(parameters => parameters
             .Add(p => p.Value, 75));
 
         // Assert
@@ -322,7 +322,7 @@ public class ProgressTests : TestBase
     public void Progress_AriaAttributes_IndeterminateMode()
     {
         // Act
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.IndeterminateAnimation, true));
 
         // Assert
@@ -330,6 +330,7 @@ public class ProgressTests : TestBase
         progress.GetAttribute("role")!.ShouldBe("progressbar");
         progress.GetAttribute("aria-valuemin")!.ShouldBe("0");
         progress.GetAttribute("aria-valuemax")!.ShouldBe("100");
+        progress.HasAttribute("aria-valuenow").ShouldBeFalse();
     }
 
     // === State Update Tests ===
@@ -338,14 +339,14 @@ public class ProgressTests : TestBase
     public void Progress_ValueUpdate_UpdatesWidth()
     {
         // Arrange
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Value, 10));
 
         var indicator = cut.Find(".progress-indicator");
         indicator.GetAttribute("style")!.ShouldContain("width: 10%");
 
         // Act
-        cut.SetParametersAndRender(parameters => parameters
+        cut.Render(parameters => parameters
             .Add(p => p.Value, 90));
 
         // Assert
@@ -357,14 +358,14 @@ public class ProgressTests : TestBase
     public void Progress_VariantUpdate_UpdatesClass()
     {
         // Arrange
-        var cut = RenderComponent<Progress>(parameters => parameters
+        var cut = Render<Progress>(parameters => parameters
             .Add(p => p.Variant, "default")
             .Add(p => p.Value, 50));
 
         cut.Find(".vibe-progress").ClassList.ShouldContain("vibe-progress-default");
 
         // Act
-        cut.SetParametersAndRender(parameters => parameters
+        cut.Render(parameters => parameters
             .Add(p => p.Variant, "success")
             .Add(p => p.Value, 50));
 
@@ -372,5 +373,51 @@ public class ProgressTests : TestBase
         var progress = cut.Find(".vibe-progress");
         progress.ClassList.ShouldContain("vibe-progress-success");
         progress.ClassList.ShouldNotContain("vibe-progress-default");
+    }
+
+    [Fact]
+    public void Progress_AppliesCustomClassAdditionalAttributesAndAriaLabel()
+    {
+        // Act
+        var cut = Render<Progress>(parameters => parameters
+            .Add(p => p.Value, 40)
+            .Add(p => p.Class, "upload-progress")
+            .Add(p => p.AriaLabel, "Upload progress")
+            .AddUnmatched("data-testid", "upload"));
+
+        // Assert
+        var progress = cut.Find(".vibe-progress");
+        progress.ClassList.ShouldContain("upload-progress");
+        progress.GetAttribute("aria-label")!.ShouldBe("Upload progress");
+        progress.GetAttribute("data-testid")!.ShouldBe("upload");
+    }
+
+    [Fact]
+    public void Progress_TrimsAndNormalizesVariantClass()
+    {
+        // Act
+        var cut = Render<Progress>(parameters => parameters
+            .Add(p => p.Variant, "  Success  ")
+            .Add(p => p.Value, 50));
+
+        // Assert
+        var progress = cut.Find(".vibe-progress");
+        progress.ClassList.ShouldContain("vibe-progress-success");
+        progress.ClassList.ShouldNotContain("vibe-progress-default");
+    }
+
+    [Fact]
+    public void Progress_InvalidVariantFallsBackToDefault()
+    {
+        // Act
+        var cut = Render<Progress>(parameters => parameters
+            .Add(p => p.Variant, "success injected")
+            .Add(p => p.Value, 50));
+
+        // Assert
+        var classList = cut.Find(".vibe-progress").ClassList;
+        classList.ShouldContain("vibe-progress-default");
+        classList.ShouldNotContain("vibe-progress-success");
+        classList.ShouldNotContain("injected");
     }
 }

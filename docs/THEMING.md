@@ -56,7 +56,7 @@ vibe add card
 ### Installation
 
 ```bash
-dotnet add package Vibe.UI
+dotnet add package Vibe.UI --version 1.0.0-beta
 ```
 
 ### Basic Setup (No Theme Configuration)

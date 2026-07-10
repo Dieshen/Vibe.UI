@@ -11,13 +11,31 @@
     display: inline-block;
 }
 
+.vibe-context-menu.context-disabled {
+    cursor: not-allowed;
+}
+
 /* ----------------------------------------
    Trigger Area
    ---------------------------------------- */
 
 ::deep .context-trigger {
     display: inline-flex;
+    align-items: center;
+    border-radius: var(--vibe-radius-sm, 0.25rem);
+    cursor: context-menu;
+    outline: none;
     user-select: none;
+}
+
+::deep .context-trigger:focus-visible {
+    outline: 2px solid var(--vibe-ring);
+    outline-offset: 2px;
+}
+
+::deep .context-trigger[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.5;
 }
 
 /* ----------------------------------------
@@ -36,6 +54,12 @@
     box-shadow: var(--vibe-shadow-md, 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1));
     animation: contextMenuIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
     padding: var(--vibe-spacing-1, 0.25rem);
+    outline: none;
+}
+
+::deep .context-content:focus-visible {
+    outline: 2px solid var(--vibe-ring);
+    outline-offset: 2px;
 }
 
 /* ----------------------------------------
@@ -47,6 +71,7 @@
     inset: 0;
     z-index: 49;
     background-color: transparent;
+    cursor: default;
 }
 
 /* ----------------------------------------
@@ -74,6 +99,12 @@
     to {
         opacity: 0;
         transform: scale(0.95);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::deep .context-content {
+        animation: none;
     }
 }
 

@@ -1,14 +1,23 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
+@implements IAsyncDisposable
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
-    @if (_isActive)
+<div @attributes="AdditionalAttributes"
+     class="@CombinedClass"
+     aria-hidden="@AriaHiddenValue"
+     role="@StatusRole"
+     aria-live="@AriaLiveValue"
+     aria-label="@EffectiveAriaLabel"
+     data-state="@StateName"
+     data-particle-count="@ParticleCountText"
+     data-origin="@OriginName"
+     data-pattern="@PatternName">
+    @if (_isActive && _particles.Count > 0)
     {
-        <div class="confetti-container">
-            @for (int i = 0; i < ParticleCount; i++)
+        <div class="@ContainerClass" aria-hidden="true">
+            @foreach (var particle in _particles)
             {
-                var particle = _particles[i];
-                <div class="confetti-particle" style="@particle.Style" @key="i">
+                <div class="confetti-particle" style="@particle.Style" @key="particle.Id">
                 </div>
             }
         </div>
@@ -16,9 +25,31 @@
 </div>
 
 @code {
-    private bool _isActive = false;
-    private List<ConfettiParticle> _particles = new();
-    private Random _random = new();
+    private const int MaxParticleCount = 500;
+    private const string DefaultAriaLabel = "Celebration";
+
+    private static readonly string[] DefaultColors =
+    [
+        "#FF6B6B",
+        "#4ECDC4",
+        "#45B7D1",
+        "#FFA07A",
+        "#98D8C8",
+        "#F7DC6F",
+        "#BB8FCE",
+        "#85C1E2"
+    ];
+
+    private readonly Random _random = new();
+    private readonly List<ConfettiParticle> _particles = new();
+    private List<string> _effectiveColors = DefaultColors.ToList();
+    private CancellationTokenSource? _triggerCancellation;
+    private bool _isActive;
+    private bool _disposed;
+    private int _effectiveParticleCount = 50;
+    private int _effectiveDuration = 3000;
+    private ConfettiOrigin _effectiveOrigin = ConfettiOrigin.Center;
+    private ConfettiPattern _effectivePattern = ConfettiPattern.Explosion;
 
     [Parameter]
     public bool Active { get; set; }
@@ -30,11 +61,7 @@
     public int Duration { get; set; } = 3000;
 
     [Parameter]
-    public List<string> Colors { get; set; } = new()
-{
-"#FF6B6B", "#4ECDC4", "#45B7D1", "#FFA07A",
-"#98D8C8", "#F7DC6F", "#BB8FCE", "#85C1E2"
-};
+    public List<string> Colors { get; set; } = DefaultColors.ToList();
 
     [Parameter]
     public ConfettiOrigin Origin { get; set; } = ConfettiOrigin.Center;
@@ -46,71 +73,176 @@
     public EventCallback OnComplete { get; set; }
 
     [Parameter]
+    public bool Announce { get; set; }
+
+    [Parameter]
+    public string? AriaLabel { get; set; } = DefaultAriaLabel;
+
+    [Parameter]
     public string? CssClass { get; set; }
 
-    private string CombinedCssClass => CombineClasses(
-    "vibe-confetti",
-    _isActive ? "active" : null,
-    CssClass
+    protected override string ComponentClass => CombineClasses(
+        "vibe-confetti",
+        _isActive ? "active" : null,
+        CssClass
     );
 
-    protected override string ComponentClass => CombinedCssClass;
+    private string ContainerClass => CombineClasses(
+        "confetti-container",
+        $"confetti-{PatternName}"
+    );
+
+    private string StateName => _isActive ? "active" : "idle";
+
+    private string ParticleCountText => _effectiveParticleCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    private string OriginName => _effectiveOrigin.ToString().ToLowerInvariant();
+
+    private string PatternName => _effectivePattern.ToString().ToLowerInvariant();
+
+    private string AriaHiddenValue => AriaBool(!Announce);
+
+    private string? StatusRole => Announce ? "status" : null;
+
+    private string? AriaLiveValue => Announce ? "polite" : null;
+
+    private string? EffectiveAriaLabel =>
+        Announce
+            ? (string.IsNullOrWhiteSpace(AriaLabel) ? DefaultAriaLabel : AriaLabel.Trim())
+            : null;
 
     protected override void OnParametersSet()
     {
+        _effectiveParticleCount = Math.Clamp(ParticleCount, 0, MaxParticleCount);
+        _effectiveDuration = Math.Max(0, Duration);
+        _effectiveColors = NormalizeColors(Colors);
+        _effectiveOrigin = NormalizeOrigin(Origin);
+        _effectivePattern = NormalizePattern(Pattern);
+
+        if (_disposed)
+        {
+            return;
+        }
+
         if (Active && !_isActive)
         {
-            _ = Trigger(); // Fire-and-forget: animation runs independently
+            StartTrigger();
         }
         else if (!Active && _isActive)
         {
+            CancelTrigger();
             _isActive = false;
+            _particles.Clear();
         }
     }
 
     public async Task Trigger()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
+        CancelTrigger();
+        var cancellation = new CancellationTokenSource();
+        _triggerCancellation = cancellation;
+
         _isActive = true;
         GenerateParticles();
-        StateHasChanged();
 
-        await Task.Delay(Duration);
-        _isActive = false;
-        await OnComplete.InvokeAsync();
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            if (_effectiveDuration > 0)
+            {
+                await Task.Delay(_effectiveDuration, cancellation.Token);
+            }
+
+            cancellation.Token.ThrowIfCancellationRequested();
+            _isActive = false;
+            _particles.Clear();
+            await OnComplete.InvokeAsync();
+
+            if (!_disposed)
+            {
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+        }
+        finally
+        {
+            if (ReferenceEquals(_triggerCancellation, cancellation))
+            {
+                _triggerCancellation = null;
+            }
+
+            cancellation.Dispose();
+        }
+    }
+
+    private void StartTrigger()
+    {
+        var triggerTask = Trigger();
+        if (!triggerTask.IsCompletedSuccessfully)
+        {
+            _ = ObserveTriggerAsync(triggerTask);
+        }
+    }
+
+    private async Task ObserveTriggerAsync(Task triggerTask)
+    {
+        try
+        {
+            await triggerTask;
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception exception) when (!_disposed)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    }
+
+    private void CancelTrigger()
+    {
+        _triggerCancellation?.Cancel();
+        _triggerCancellation = null;
     }
 
     private void GenerateParticles()
     {
         _particles.Clear();
 
-        for (int i = 0; i < ParticleCount; i++)
+        for (int i = 0; i < _effectiveParticleCount; i++)
         {
-            var color = Colors[_random.Next(Colors.Count)];
+            var color = _effectiveColors[_random.Next(_effectiveColors.Count)];
+            var size = _random.Next(8, 15);
+            var rotation = _random.Next(0, 360);
             var particle = new ConfettiParticle
             {
+                Id = i,
                 Color = color,
-                Size = _random.Next(8, 15),
-                Rotation = _random.Next(0, 360),
-                Style = GenerateParticleStyle(i)
+                Size = size,
+                Rotation = rotation,
+                Style = GenerateParticleStyle(color, size, rotation)
             };
 
             _particles.Add(particle);
         }
     }
 
-    private string GenerateParticleStyle(int index)
+    private string GenerateParticleStyle(string color, int size, int rotation)
     {
-        var color = Colors[_random.Next(Colors.Count)];
-        var size = _random.Next(8, 15);
-        var rotation = _random.Next(0, 360);
-
         var (startX, startY) = GetStartPosition();
         var endX = _random.Next(-200, 200);
         var endY = _random.Next(100, 300);
 
         var delay = _random.Next(0, 200);
-        var duration = Duration;
+        var duration = _effectiveDuration;
 
         var style = $@"
 --confetti-color: {color};
@@ -129,7 +261,7 @@
 
     private (int x, int y) GetStartPosition()
     {
-        return Origin switch
+        return _effectiveOrigin switch
         {
             ConfettiOrigin.Top => (50, 0),
             ConfettiOrigin.Bottom => (50, 100),
@@ -143,8 +275,56 @@
         };
     }
 
+    public ValueTask DisposeAsync()
+    {
+        if (_disposed)
+        {
+            return ValueTask.CompletedTask;
+        }
+
+        _disposed = true;
+        CancelTrigger();
+        _particles.Clear();
+        return ValueTask.CompletedTask;
+    }
+
+    private static List<string> NormalizeColors(IEnumerable<string>? colors)
+    {
+        var normalizedColors = colors?
+            .Where(static color => !string.IsNullOrWhiteSpace(color))
+            .Select(static color => color.Trim())
+            .Where(IsSafeCssColorValue)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+
+        return normalizedColors is { Count: > 0 }
+            ? normalizedColors
+            : DefaultColors.ToList();
+    }
+
+    private static bool IsSafeCssColorValue(string value)
+    {
+        if (value.Length is 0 or > 64)
+        {
+            return false;
+        }
+
+        return value.All(static character =>
+            char.IsAsciiLetterOrDigit(character) ||
+            character is '#' or ' ' or ',' or '.' or '%' or '(' or ')' or '-' or '_' or '/');
+    }
+
+    private static ConfettiOrigin NormalizeOrigin(ConfettiOrigin origin) =>
+        Enum.IsDefined(typeof(ConfettiOrigin), origin) ? origin : ConfettiOrigin.Center;
+
+    private static ConfettiPattern NormalizePattern(ConfettiPattern pattern) =>
+        Enum.IsDefined(typeof(ConfettiPattern), pattern) ? pattern : ConfettiPattern.Explosion;
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
+
     private class ConfettiParticle
     {
+        public int Id { get; set; }
         public string Color { get; set; } = string.Empty;
         public int Size { get; set; }
         public int Rotation { get; set; }

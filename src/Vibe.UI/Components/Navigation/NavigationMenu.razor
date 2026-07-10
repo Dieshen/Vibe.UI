@@ -1,8 +1,8 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<nav class="@CombinedClass">
-    <div class="navigation-menu-list">
+<nav class="@CombinedClass" aria-label="@EffectiveAriaLabel" @attributes="AdditionalAttributes">
+    <div class="navigation-menu-list" role="list">
         @if (ChildContent != null)
         {
             <CascadingValue Value="this" IsFixed="true">
@@ -18,7 +18,7 @@
 
     @if (ViewportContent != null)
     {
-        <div class="navigation-menu-viewport">
+        <div class="navigation-menu-viewport" role="region" aria-label="@EffectiveViewportAriaLabel">
             @ViewportContent
         </div>
     }
@@ -35,7 +35,19 @@
     /// Gets or sets the content to display in the viewport.
     /// </summary>
     [Parameter]
-    public RenderFragment ViewportContent { get; set; }
+    public RenderFragment? ViewportContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets the accessible label for the navigation menu.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; } = "Navigation menu";
+
+    /// <summary>
+    /// Gets or sets the accessible label for the optional viewport region.
+    /// </summary>
+    [Parameter]
+    public string? ViewportAriaLabel { get; set; } = "Navigation menu viewport";
 
     /// <summary>
     /// Dictionary tracking the position and size of menu items.
@@ -45,13 +57,21 @@
     /// <summary>
     /// Gets or sets the active menu item's ID.
     /// </summary>
-    private string ActiveItemId { get; set; }
+    private string? ActiveItemId { get; set; }
 
     /// <summary>
     /// Gets whether the viewport indicator should be visible.
     /// </summary>
     private bool IsViewportIndicatorVisible => !string.IsNullOrEmpty(ActiveItemId) &&
     ItemPositions.ContainsKey(ActiveItemId);
+
+    private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel)
+        ? "Navigation menu"
+        : AriaLabel.Trim();
+
+    private string EffectiveViewportAriaLabel => string.IsNullOrWhiteSpace(ViewportAriaLabel)
+        ? "Navigation menu viewport"
+        : ViewportAriaLabel.Trim();
 
     /// <summary>
     /// Gets the style for the viewport indicator.
@@ -60,9 +80,9 @@
     {
         get
         {
-            if (IsViewportIndicatorVisible && ItemPositions.TryGetValue(ActiveItemId, out var position))
+            if (!string.IsNullOrEmpty(ActiveItemId) && ItemPositions.TryGetValue(ActiveItemId, out var position))
             {
-                return $"left: {position.Left}px; width: {position.Width}px";
+                return FormattableString.Invariant($"left: {position.Left}px; width: {position.Width}px");
             }
 
             return string.Empty;
@@ -82,7 +102,24 @@
     /// <param name="width">The menu item's width.</param>
     public void RegisterItem(string id, double left, double width)
     {
-        ItemPositions[id] = (left, width);
+        var itemId = NormalizeItemId(id);
+        if (itemId == null)
+        {
+            return;
+        }
+
+        if (!double.IsFinite(left) || !double.IsFinite(width) || width <= 0)
+        {
+            if (ItemPositions.Remove(itemId) && ActiveItemId == itemId)
+            {
+                ActiveItemId = null;
+            }
+
+            StateHasChanged();
+            return;
+        }
+
+        ItemPositions[itemId] = (Math.Max(0, left), width);
         StateHasChanged();
     }
 
@@ -92,7 +129,7 @@
     /// <param name="id">The menu item's ID.</param>
     public void ActivateItem(string id)
     {
-        ActiveItemId = id;
+        ActiveItemId = NormalizeItemId(id);
         StateHasChanged();
     }
 
@@ -101,7 +138,18 @@
     /// </summary>
     public void DeactivateItem()
     {
+        if (ActiveItemId == null)
+        {
+            return;
+        }
+
         ActiveItemId = null;
         StateHasChanged();
+    }
+
+    private static string? NormalizeItemId(string? id)
+    {
+        var normalizedId = id?.Trim();
+        return string.IsNullOrEmpty(normalizedId) ? null : normalizedId;
     }
 }

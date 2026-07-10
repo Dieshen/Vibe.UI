@@ -1,8 +1,15 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
 
-<aside @attributes="AdditionalAttributes" class="@CombinedCssClass" style="@SidebarStyle"
-    data-state="@(IsOpen ? "open" : "closed")">
+<aside @attributes="AdditionalAttributes"
+    id="@_sidebarId"
+    class="@CombinedCssClass"
+    style="@SidebarStyle"
+    role="complementary"
+    aria-label="@EffectiveAriaLabel"
+    aria-disabled="@AriaBool(Disabled)"
+    data-state="@CurrentState"
+    @onkeydown="HandleKeyDown">
 
     @if (ShowHeader)
     {
@@ -18,14 +25,21 @@
 
             @if (Collapsible)
             {
-                <button class="sidebar-toggle" @onclick="Toggle" aria-label="Toggle sidebar">
-                    <span class="sidebar-toggle-icon">@(IsOpen ? "◀" : "▶")</span>
+                <button type="button"
+                    class="sidebar-toggle"
+                    @onclick="Toggle"
+                    disabled="@Disabled"
+                    aria-label="@ToggleAriaLabel"
+                    aria-controls="@_sidebarId"
+                    aria-expanded="@AriaBool(IsOpen)"
+                    aria-disabled="@AriaBool(Disabled)">
+                    <span class="sidebar-toggle-icon" aria-hidden="true">@(IsOpen ? "◀" : "▶")</span>
                 </button>
             }
         </div>
     }
 
-    <div class="sidebar-content">
+    <div class="sidebar-content" role="region" aria-label="@EffectiveContentAriaLabel">
         @ChildContent
     </div>
 
@@ -38,28 +52,33 @@
 
     @if (Resizable)
     {
-        <div class="sidebar-resize-handle" @onmousedown="StartResize"></div>
+        <div class="sidebar-resize-handle"
+             role="separator"
+             aria-orientation="vertical"
+             aria-label="@ResizeHandleAriaLabel"
+             aria-disabled="@AriaBool(Disabled)"
+             @onmousedown="StartResize"></div>
     }
 </aside>
 
 @code {
-    private bool _isOpen = true;
-    private int _width = 280;
-    private bool _isResizing;
+    private readonly string _sidebarId = $"vibe-sidebar-{Guid.NewGuid():N}";
+    private int EffectiveMinWidth => Math.Max(0, MinWidth);
+    private int EffectiveMaxWidth => Math.Max(EffectiveMinWidth, MaxWidth);
+    private int EffectiveWidth => Math.Clamp(Width, EffectiveMinWidth, EffectiveMaxWidth);
+    private int EffectiveCollapsedWidth => Math.Clamp(CollapsedWidth, 0, EffectiveWidth);
+    private string CurrentState => IsOpen ? "open" : "closed";
+    private string ToggleAriaLabel => IsOpen ? "Collapse sidebar" : "Expand sidebar";
+    private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel)
+        ? (!string.IsNullOrWhiteSpace(Title) ? Title! : "Sidebar")
+        : AriaLabel!;
+    private string EffectiveContentAriaLabel => string.IsNullOrWhiteSpace(ContentAriaLabel)
+        ? "Sidebar content"
+        : ContentAriaLabel;
+    private static string AriaBool(bool value) => value ? "true" : "false";
 
     [Parameter]
-    public bool IsOpen
-    {
-        get => _isOpen;
-        set
-        {
-            if (_isOpen != value)
-            {
-                _isOpen = value;
-                IsOpenChanged.InvokeAsync(value);
-            }
-        }
-    }
+    public bool IsOpen { get; set; } = true;
 
     [Parameter]
     public EventCallback<bool> IsOpenChanged { get; set; }
@@ -89,14 +108,28 @@
     public SidebarPosition Position { get; set; } = SidebarPosition.Left;
 
     [Parameter]
-    public int Width
-    {
-        get => _width;
-        set => _width = Math.Clamp(value, 200, 600);
-    }
+    public int Width { get; set; } = 280;
 
     [Parameter]
     public int CollapsedWidth { get; set; } = 60;
+
+    [Parameter]
+    public int MinWidth { get; set; } = 200;
+
+    [Parameter]
+    public int MaxWidth { get; set; } = 600;
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    [Parameter]
+    public string ContentAriaLabel { get; set; } = "Sidebar content";
+
+    [Parameter]
+    public string ResizeHandleAriaLabel { get; set; } = "Resize sidebar";
 
     [Parameter]
     public bool PersistState { get; set; } = true;
@@ -109,26 +142,57 @@
     $"sidebar-{Position.ToString().ToLower()}",
     IsOpen ? "sidebar-open" : "sidebar-closed",
     Resizable ? "sidebar-resizable" : null,
-    CssClass
+    Disabled ? "sidebar-disabled" : null,
+    CssClass,
+    Class
     );
 
     protected override string ComponentClass => CombinedCssClass;
 
     private string SidebarStyle => IsOpen
-    ? $"width: {Width}px;"
-    : $"width: {CollapsedWidth}px;";
+    ? $"width: {EffectiveWidth}px;"
+    : $"width: {EffectiveCollapsedWidth}px;";
 
-    public void Toggle()
+    public Task Toggle()
     {
-        IsOpen = !IsOpen;
+        if (!Collapsible || Disabled)
+        {
+            return Task.CompletedTask;
+        }
+
+        return SetIsOpenAsync(!IsOpen);
     }
 
-    public void Open() => IsOpen = true;
-    public void Close() => IsOpen = false;
+    public Task Open() => SetIsOpenAsync(true);
+    public Task Close() => SetIsOpenAsync(false);
+
+    private async Task SetIsOpenAsync(bool isOpen)
+    {
+        if (Disabled || IsOpen == isOpen)
+        {
+            return;
+        }
+
+        IsOpen = isOpen;
+        await IsOpenChanged.InvokeAsync(isOpen);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape" && Collapsible && IsOpen)
+        {
+            await Close();
+        }
+    }
 
     private void StartResize(MouseEventArgs e)
     {
-        _isResizing = true;
+        if (Disabled)
+        {
+            return;
+        }
+
         // Would need JS interop for actual drag handling
     }
 

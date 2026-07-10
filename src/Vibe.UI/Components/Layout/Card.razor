@@ -1,14 +1,18 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
-@using Vibe.UI.Enums
 
-<div class="@CombinedClass" @attributes="AdditionalAttributes">
+<div class="@RootClass"
+     style="@RootStyle"
+     role="@EffectiveRole"
+     aria-label="@EffectiveAriaLabel"
+     aria-labelledby="@EffectiveAriaLabelledBy"
+     @attributes="RootAttributes">
     @if (Header != null || CardTitle != null || CardDescription != null)
     {
         <div class="vibe-card-header">
             @if (CardTitle != null)
             {
-                <div class="vibe-card-title">
+                <div class="vibe-card-title" id="@TitleElementId">
                     @CardTitle
                 </div>
             }
@@ -48,25 +52,25 @@
     /// Gets or sets the card header (legacy - use CardTitle/CardDescription for composition style)
     /// </summary>
     [Parameter]
-    public RenderFragment Header { get; set; }
+    public RenderFragment? Header { get; set; }
 
     /// <summary>
     /// Gets or sets the card footer
     /// </summary>
     [Parameter]
-    public RenderFragment Footer { get; set; }
+    public RenderFragment? Footer { get; set; }
 
     /// <summary>
     /// Gets or sets the card title (composition style)
     /// </summary>
     [Parameter]
-    public RenderFragment CardTitle { get; set; }
+    public RenderFragment? CardTitle { get; set; }
 
     /// <summary>
     /// Gets or sets the card description (composition style)
     /// </summary>
     [Parameter]
-    public RenderFragment CardDescription { get; set; }
+    public RenderFragment? CardDescription { get; set; }
 
     /// <summary>
     /// Gets or sets the card variant style.
@@ -81,10 +85,111 @@
     [Parameter]
     public bool Compact { get; set; }
 
+    /// <summary>
+    /// Gets or sets an accessible label for the card when the visible content is not enough.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the ARIA role for the card. Defaults to group when the card has an accessible name.
+    /// </summary>
+    [Parameter]
+    public string? Role { get; set; }
+
     /// <inheritdoc/>
     protected override string ComponentClass => new ClassBuilder()
         .Add("vibe-card")
-        .AddVariant("vibe-card", Variant)
+        .AddVariant("vibe-card", NormalizedVariant)
         .AddIf("vibe-card-compact", Compact)
         .Build();
+
+    private readonly string _titleElementId = $"vibe-card-title-{Guid.NewGuid():N}";
+
+    private string TitleElementId => _titleElementId;
+
+    private CardVariant NormalizedVariant =>
+        Enum.IsDefined(typeof(CardVariant), Variant) ? Variant : CardVariant.Default;
+
+    private string RootClass => CombineClasses(ComponentClass, Class?.Trim(), AdditionalClass);
+
+    private string? RootStyle => AdditionalStyle;
+
+    private Dictionary<string, object>? RootAttributes => GetUnhandledAttributes();
+
+    private string? EffectiveRole =>
+        GetAdditionalAttributeValue("role")
+        ?? NormalizeAttributeValue(Role)
+        ?? (HasAccessibleName ? "group" : null);
+
+    private string? EffectiveAriaLabel =>
+        GetAdditionalAttributeValue("aria-label")
+        ?? (HasAdditionalAttribute("aria-labelledby") ? null : NormalizeAttributeValue(AriaLabel));
+
+    private string? EffectiveAriaLabelledBy =>
+        GetAdditionalAttributeValue("aria-labelledby")
+        ?? (HasAdditionalAttribute("aria-label")
+        || !string.IsNullOrWhiteSpace(AriaLabel)
+        || CardTitle is null
+            ? null
+            : TitleElementId);
+
+    private bool HasAccessibleName =>
+        !string.IsNullOrWhiteSpace(AriaLabel)
+        || CardTitle is not null
+        || HasAdditionalAttribute("aria-label")
+        || HasAdditionalAttribute("aria-labelledby");
+
+    private string? AdditionalClass => GetAdditionalAttributeValue("class");
+
+    private string? AdditionalStyle => GetAdditionalAttributeValue("style")?.TrimEnd(';');
+
+    private Dictionary<string, object>? GetUnhandledAttributes()
+    {
+        if (AdditionalAttributes is null || AdditionalAttributes.Count == 0)
+        {
+            return null;
+        }
+
+        var attributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (IsHandledRootAttribute(attribute.Key))
+            {
+                continue;
+            }
+
+            attributes[attribute.Key] = attribute.Value;
+        }
+
+        return attributes.Count == 0 ? null : attributes;
+    }
+
+    private static bool IsHandledRootAttribute(string attributeName) =>
+        string.Equals(attributeName, "class", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(attributeName, "style", StringComparison.OrdinalIgnoreCase);
+
+    private string? GetAdditionalAttributeValue(string attributeName)
+    {
+        if (AdditionalAttributes is null)
+        {
+            return null;
+        }
+
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (string.Equals(attribute.Key, attributeName, StringComparison.OrdinalIgnoreCase))
+            {
+                return NormalizeAttributeValue(attribute.Value?.ToString());
+            }
+        }
+
+        return null;
+    }
+
+    private bool HasAdditionalAttribute(string attributeName) =>
+        AdditionalAttributes?.Keys.Any(key => string.Equals(key, attributeName, StringComparison.OrdinalIgnoreCase)) == true;
+
+    private static string? NormalizeAttributeValue(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

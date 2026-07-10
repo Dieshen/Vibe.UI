@@ -6,12 +6,13 @@ public class SeparatorTests : TestBase
     public void Separator_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Separator>();
+        var cut = Render<Separator>();
 
         // Assert
         var separator = cut.Find(".vibe-separator");
         separator.ShouldNotBeNull();
         separator.GetAttribute("role")!.ShouldBe("separator");
+        separator.GetAttribute("aria-orientation")!.ShouldBe("horizontal");
         separator.ClassList.ShouldContain("separator-horizontal");
     }
 
@@ -19,18 +20,20 @@ public class SeparatorTests : TestBase
     public void Separator_Applies_Vertical_Orientation()
     {
         // Act
-        var cut = RenderComponent<Separator>(parameters => parameters
+        var cut = Render<Separator>(parameters => parameters
             .Add(p => p.Orientation, "vertical"));
 
         // Assert
-        cut.Find(".vibe-separator").ClassList.ShouldContain("separator-vertical");
+        var separator = cut.Find(".vibe-separator");
+        separator.ClassList.ShouldContain("separator-vertical");
+        separator.GetAttribute("aria-orientation")!.ShouldBe("vertical");
     }
 
     [Fact]
     public void Separator_HasSeparatorRole()
     {
         // Act
-        var cut = RenderComponent<Separator>();
+        var cut = Render<Separator>();
 
         // Assert
         cut.Find("[role='separator']").ShouldNotBeNull();
@@ -40,7 +43,7 @@ public class SeparatorTests : TestBase
     public void Separator_Horizontal_IsDefaultOrientation()
     {
         // Act
-        var cut = RenderComponent<Separator>();
+        var cut = Render<Separator>();
 
         // Assert
         var separator = cut.Find(".vibe-separator");
@@ -52,7 +55,7 @@ public class SeparatorTests : TestBase
     public void Separator_WithCustomClass_AppliesCorrectly()
     {
         // Act
-        var cut = RenderComponent<Separator>(parameters => parameters
+        var cut = Render<Separator>(parameters => parameters
             .Add(p => p.Class, "custom-separator-class"));
 
         // Assert
@@ -60,30 +63,49 @@ public class SeparatorTests : TestBase
         separator.ClassList.ShouldContain("custom-separator-class");
     }
 
-    // NOTE: Separator component doesn't apply @attributes in markup
-    // Removing this test as it tests unimplemented functionality
-    // [Fact]
-    // public void Separator_WithAdditionalAttributes_AppliesCorrectly()
+    [Fact]
+    public void Separator_WithAdditionalAttributes_MergesRootAttributes()
+    {
+        var cut = Render<Separator>(parameters => parameters
+            .Add(p => p.Class, "custom-separator-class")
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                ["class"] = "attribute-separator",
+                ["style"] = "margin-block: 0;",
+                ["role"] = "presentation",
+                ["aria-hidden"] = "true",
+                ["data-testid"] = "separator"
+            }));
+
+        var separator = cut.Find(".vibe-separator");
+        separator.ClassList.ShouldContain("custom-separator-class");
+        separator.ClassList.ShouldContain("attribute-separator");
+        separator.GetAttribute("style").ShouldBe("margin-block: 0;");
+        separator.GetAttribute("role").ShouldBe("presentation");
+        separator.GetAttribute("aria-hidden").ShouldBe("true");
+        separator.GetAttribute("data-testid").ShouldBe("separator");
+    }
 
     [Fact]
     public void Separator_Decorative_AppliesCorrectly()
     {
         // Act
-        var cut = RenderComponent<Separator>(parameters => parameters
+        var cut = Render<Separator>(parameters => parameters
             .Add(p => p.Decorative, true));
 
         // Assert
         var separator = cut.Find(".vibe-separator");
         separator.ShouldNotBeNull();
-        // Decorative separator should still have separator role
-        separator.GetAttribute("role")!.ShouldBe("separator");
+        separator.GetAttribute("role").ShouldBeNull();
+        separator.GetAttribute("aria-orientation").ShouldBeNull();
+        separator.GetAttribute("aria-hidden").ShouldBe("true");
     }
 
     [Fact]
     public void Separator_NonDecorativeIsDefault()
     {
         // Act
-        var cut = RenderComponent<Separator>();
+        var cut = Render<Separator>();
 
         // Assert
         var separator = cut.Find(".vibe-separator");
@@ -94,34 +116,37 @@ public class SeparatorTests : TestBase
     public void Separator_WithInvalidOrientation_DefaultsToHorizontal()
     {
         // Act
-        var cut = RenderComponent<Separator>(parameters => parameters
+        var cut = Render<Separator>(parameters => parameters
             .Add(p => p.Orientation, "invalid"));
 
         // Assert
         var separator = cut.Find(".vibe-separator");
-        separator.ClassList.ShouldContain("separator-invalid");
+        separator.ClassList.ShouldContain("separator-horizontal");
+        separator.ClassList.ShouldNotContain("separator-invalid");
+        separator.GetAttribute("aria-orientation").ShouldBe("horizontal");
     }
 
     [Fact]
     public void Separator_WithEmptyOrientation_DefaultsToHorizontal()
     {
         // Act
-        var cut = RenderComponent<Separator>(parameters => parameters
+        var cut = Render<Separator>(parameters => parameters
             .Add(p => p.Orientation, ""));
 
         // Assert
         var separator = cut.Find(".vibe-separator");
-        separator.ClassList.ShouldContain("separator-");
+        separator.ClassList.ShouldContain("separator-horizontal");
+        separator.GetAttribute("aria-orientation").ShouldBe("horizontal");
     }
 
     [Fact]
     public void Separator_BothOrientations_CanBeRenderedSeparately()
     {
         // Act
-        var cutHorizontal = RenderComponent<Separator>(parameters => parameters
+        var cutHorizontal = Render<Separator>(parameters => parameters
             .Add(p => p.Orientation, "horizontal"));
 
-        var cutVertical = RenderComponent<Separator>(parameters => parameters
+        var cutVertical = Render<Separator>(parameters => parameters
             .Add(p => p.Orientation, "vertical"));
 
         // Assert
@@ -129,19 +154,14 @@ public class SeparatorTests : TestBase
         cutVertical.Find(".separator-vertical").ShouldNotBeNull();
     }
 
-    // NOTE: Separator component doesn't apply @attributes in markup
-    // Removing this test as it tests unimplemented functionality
-    // [Fact]
-    // public void Separator_WithAriaLabel_AppliesCorrectly()
-
     [Fact]
     public void Separator_MultipleInstances_RenderIndependently()
     {
         // Act
-        var cut1 = RenderComponent<Separator>(parameters => parameters
+        var cut1 = Render<Separator>(parameters => parameters
             .Add(p => p.Orientation, "horizontal"));
 
-        var cut2 = RenderComponent<Separator>(parameters => parameters
+        var cut2 = Render<Separator>(parameters => parameters
             .Add(p => p.Orientation, "vertical"));
 
         // Assert

@@ -1,8 +1,12 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<div class="@CombinedClass">
-    <table class="table-root">
+<div @attributes="AdditionalAttributes" class="@CombinedClass">
+    <table class="table-root" aria-label="@EffectiveAriaLabel">
+        @if (NormalizedCaption is not null)
+        {
+            <caption class="table-caption">@NormalizedCaption</caption>
+        }
         @if (HeaderContent != null)
         {
             <thead class="table-header">
@@ -32,13 +36,25 @@
     /// Gets or sets the header content of the table.
     /// </summary>
     [Parameter]
-    public RenderFragment HeaderContent { get; set; }
+    public RenderFragment? HeaderContent { get; set; }
 
     /// <summary>
     /// Gets or sets the footer content of the table.
     /// </summary>
     [Parameter]
-    public RenderFragment FooterContent { get; set; }
+    public RenderFragment? FooterContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets a visible caption for the table.
+    /// </summary>
+    [Parameter]
+    public string? Caption { get; set; }
+
+    /// <summary>
+    /// Gets or sets the accessible label used when no caption is provided.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
 
     /// <summary>
     /// Gets or sets whether the table has borders.
@@ -67,35 +83,18 @@
     /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
-    protected override string ComponentClass => GetTableClass();
+    protected override string ComponentClass => new ClassBuilder()
+        .Add("vibe-table")
+        .AddIf("bordered", Bordered)
+        .AddIf("striped", Striped)
+        .AddIf("compact", Compact)
+        .AddIf("hover", Hover)
+        .Build();
 
-    /// <summary>
-    /// Gets the CSS classes for the table based on properties.
-    /// </summary>
-    private string GetTableClass()
-    {
-        var classes = new List<string> { "vibe-table" };
-        
-        if (Bordered)
-        {
-            classes.Add("bordered");
-        }
-        
-        if (Striped)
-        {
-            classes.Add("striped");
-        }
-        
-        if (Compact)
-        {
-            classes.Add("compact");
-        }
-        
-        if (Hover)
-        {
-            classes.Add("hover");
-        }
-        
-        return string.Join(" ", classes);
-    }
+    private string? NormalizedCaption => NormalizeOptionalText(Caption);
+
+    private string? EffectiveAriaLabel => NormalizedCaption is not null ? null : NormalizeOptionalText(AriaLabel);
+
+    private static string? NormalizeOptionalText(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

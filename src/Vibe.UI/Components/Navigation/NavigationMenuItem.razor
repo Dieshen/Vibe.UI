@@ -3,15 +3,43 @@
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
 
-<div class="@CombinedClass" id="@Id" @onmouseenter="HandleMouseEnter" @onmouseleave="HandleMouseLeave"
-    @ref="_elementReference">
-    <button type="button" class="navigation-menu-item-trigger" disabled="@Disabled" @onclick="HandleClick">
-        @TriggerContent
+<div @attributes="AdditionalAttributes"
+     class="@CombinedClass"
+     id="@EffectiveId"
+     role="none"
+     data-state="@StateName"
+     aria-disabled="@AriaBool(Disabled)"
+     @onmouseenter="HandleMouseEnter"
+     @onmouseleave="HandleMouseLeave"
+     @ref="_elementReference">
+    <button type="button"
+            class="navigation-menu-item-trigger"
+            disabled="@Disabled"
+            aria-disabled="@AriaBool(Disabled)"
+            aria-haspopup="@AriaHasPopup"
+            aria-expanded="@AriaExpanded"
+            aria-controls="@AriaControls"
+            aria-label="@EffectiveTriggerAriaLabel"
+            @onclick="HandleClick"
+            @onkeydown="HandleTriggerKeyDown">
+        @if (TriggerContent != null)
+        {
+            @TriggerContent
+        }
+        else
+        {
+            <span class="navigation-menu-item-trigger-fallback">@FallbackTriggerText</span>
+        }
     </button>
 
     @if (Content != null && IsActive)
     {
-        <div class="navigation-menu-item-content">
+        <div id="@ContentElementId"
+             class="navigation-menu-item-content"
+             role="region"
+             aria-label="@EffectiveContentAriaLabel"
+             data-state="open"
+             @onkeydown="HandleContentKeyDown">
             @Content
         </div>
     }
@@ -22,25 +50,49 @@
     /// Gets or sets the ID of the menu item.
     /// </summary>
     [Parameter]
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string Id { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the content of the trigger button.
     /// </summary>
     [Parameter]
-    public RenderFragment TriggerContent { get; set; }
+    public RenderFragment? TriggerContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets fallback trigger text rendered when <see cref="TriggerContent"/> is omitted.
+    /// </summary>
+    [Parameter]
+    public string FallbackTriggerText { get; set; } = "Navigation item";
 
     /// <summary>
     /// Gets or sets the content to display when the item is active.
     /// </summary>
     [Parameter]
-    public RenderFragment Content { get; set; }
+    public RenderFragment? Content { get; set; }
 
     /// <summary>
     /// Gets or sets whether the menu item is disabled.
     /// </summary>
     [Parameter]
     public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether clicking the trigger opens or closes inline content.
+    /// </summary>
+    [Parameter]
+    public bool OpenOnClick { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets an accessible label for the trigger button.
+    /// </summary>
+    [Parameter]
+    public string? TriggerAriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets an accessible label for the disclosed content region.
+    /// </summary>
+    [Parameter]
+    public string? ContentAriaLabel { get; set; }
 
     /// <summary>
     /// Gets or sets the callback when the menu item is clicked.
@@ -58,12 +110,34 @@
     /// Gets or sets the parent navigation menu.
     /// </summary>
     [CascadingParameter]
-    public NavigationMenu ParentMenu { get; set; }
+    public NavigationMenu? ParentMenu { get; set; }
 
     /// <summary>
     /// Gets whether the menu item is active.
     /// </summary>
     private bool IsActive { get; set; }
+
+    private readonly string _generatedId = $"vibe-navigation-menu-item-{Guid.NewGuid():N}";
+
+    private bool HasContent => Content != null;
+
+    private string EffectiveId => string.IsNullOrWhiteSpace(Id) ? _generatedId : Id.Trim();
+
+    private string ContentElementId => $"{EffectiveId}-content";
+
+    private string StateName => IsActive ? "open" : "closed";
+
+    private string? AriaHasPopup => HasContent ? "true" : null;
+
+    private string? AriaExpanded => HasContent ? AriaBool(IsActive) : null;
+
+    private string? AriaControls => HasContent ? ContentElementId : null;
+
+    private string? EffectiveTriggerAriaLabel =>
+        string.IsNullOrWhiteSpace(TriggerAriaLabel) ? null : TriggerAriaLabel.Trim();
+
+    private string EffectiveContentAriaLabel =>
+        string.IsNullOrWhiteSpace(ContentAriaLabel) ? "Navigation menu content" : ContentAriaLabel.Trim();
 
     /// <summary>
     /// Reference to the menu item element.
@@ -76,16 +150,17 @@
     protected override string ComponentClass => "vibe-navigation-menu-item";
 
     /// <summary>
-    /// Initializes the component.
+    /// Gets the combined CSS class.
     /// </summary>
-    protected override void OnInitialized()
+    protected override string GetCombinedClass()
     {
-        base.OnInitialized();
-
-        if (string.IsNullOrEmpty(Id))
-        {
-            Id = Guid.NewGuid().ToString();
-        }
+        return CombineClasses(
+            ComponentClass,
+            IsActive ? "navigation-menu-item-open" : null,
+            Disabled ? "navigation-menu-item-disabled" : null,
+            HasContent ? "navigation-menu-item-has-content" : null,
+            UseViewport ? "navigation-menu-item-viewport" : null,
+            Class);
     }
 
     /// <summary>
@@ -108,19 +183,24 @@
     /// </summary>
     private async Task UpdatePosition()
     {
+        if (ParentMenu == null)
+        {
+            return;
+        }
+
         try
         {
             // Import DOM utilities module if not already loaded
             _domModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
                 "import", "./_content/Vibe.UI/js/vibe-dom.js");
 
-            var boundingRect = await _domModule.InvokeAsync<DOMRect?>("getBoundingRect", Id);
-            var parentRect = await _domModule.InvokeAsync<DOMRect?>("getParentBoundingRect", Id);
+            var boundingRect = await _domModule.InvokeAsync<DOMRect?>("getBoundingRect", EffectiveId);
+            var parentRect = await _domModule.InvokeAsync<DOMRect?>("getParentBoundingRect", EffectiveId);
 
             if (boundingRect != null && parentRect != null)
             {
                 var leftPosition = boundingRect.Left - parentRect.Left;
-                ParentMenu?.RegisterItem(Id, leftPosition, boundingRect.Width);
+                ParentMenu.RegisterItem(EffectiveId, leftPosition, boundingRect.Width);
             }
         }
         catch
@@ -134,17 +214,7 @@
     /// </summary>
     private void HandleMouseEnter()
     {
-        if (!Disabled)
-        {
-            IsActive = true;
-
-            if (UseViewport && Content != null)
-            {
-                ParentMenu.ActivateItem(Id);
-            }
-
-            StateHasChanged();
-        }
+        SetActive(true);
     }
 
     /// <summary>
@@ -152,17 +222,7 @@
     /// </summary>
     private void HandleMouseLeave()
     {
-        if (!Disabled)
-        {
-            IsActive = false;
-
-            if (UseViewport && Content != null)
-            {
-                ParentMenu.DeactivateItem();
-            }
-
-            StateHasChanged();
-        }
+        SetActive(false);
     }
 
     /// <summary>
@@ -170,10 +230,66 @@
     /// </summary>
     private async Task HandleClick(MouseEventArgs args)
     {
-        if (!Disabled)
+        if (Disabled)
         {
-            await OnClick.InvokeAsync(args);
+            return;
         }
+
+        if (OpenOnClick && HasContent)
+        {
+            SetActive(!IsActive);
+        }
+
+        await OnClick.InvokeAsync(args);
+    }
+
+    private void HandleTriggerKeyDown(KeyboardEventArgs args)
+    {
+        if (Disabled)
+        {
+            return;
+        }
+
+        if (HasContent && args.Key is "ArrowDown" or "ArrowUp")
+        {
+            SetActive(true);
+        }
+        else if (args.Key == "Escape")
+        {
+            SetActive(false);
+        }
+    }
+
+    private void HandleContentKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Escape")
+        {
+            SetActive(false);
+        }
+    }
+
+    private void SetActive(bool active)
+    {
+        if (Disabled || !HasContent || IsActive == active)
+        {
+            return;
+        }
+
+        IsActive = active;
+
+        if (UseViewport)
+        {
+            if (active)
+            {
+                ParentMenu?.ActivateItem(EffectiveId);
+            }
+            else
+            {
+                ParentMenu?.DeactivateItem();
+            }
+        }
+
+        StateHasChanged();
     }
 
     /// <summary>
@@ -194,6 +310,8 @@
         }
         GC.SuppressFinalize(this);
     }
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
 
     /// <summary>
     /// DOM rectangle structure for JS interop.

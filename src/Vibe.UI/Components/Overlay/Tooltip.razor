@@ -1,32 +1,44 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
-@inject IJSRuntime JSRuntime
-@implements IDisposable
+@implements IAsyncDisposable
 
-<div class="@CombinedClass"
-    @onmouseenter="OnMouseEnter" @onmouseleave="OnMouseLeave"
-    @onfocusin="OnFocusIn" @onfocusout="OnFocusOut"
-    @onkeydown="OnKeyDown">
-    <div class="trigger">
+<div @attributes="RootAttributes"
+    @onmouseenter="OnMouseEnterAsync" @onmouseleave="OnMouseLeave"
+    @onfocusin="OnFocusInAsync" @onfocusout="OnFocusOut">
+    <div class="trigger"
+         tabindex="@TriggerTabIndex"
+         aria-describedby="@TooltipId"
+         aria-disabled="@AriaDisabled"
+         data-state="@CurrentState"
+         @onkeydown="OnKeyDown">
         @TriggerContent
     </div>
-    <div class="tooltip-content @(IsVisible ? "visible" : "")" id="@TooltipId" role="tooltip">
+    <div class="tooltip-content @(_isVisible ? "visible" : "")"
+         id="@TooltipId"
+         role="tooltip"
+         aria-hidden="@AriaHidden"
+         data-state="@CurrentState">
         @Content
     </div>
 </div>
 
 @code {
+    private readonly string TooltipId = $"vibe-tooltip-{Guid.NewGuid():N}";
+    private bool _isDisposed;
+    private bool _isVisible;
+    private CancellationTokenSource? _showDelayCts;
+
     /// <summary>
     /// Gets or sets the trigger content.
     /// </summary>
     [Parameter]
-    public RenderFragment TriggerContent { get; set; }
+    public RenderFragment? TriggerContent { get; set; }
 
     /// <summary>
     /// Gets or sets the tooltip content.
     /// </summary>
     [Parameter]
-    public RenderFragment Content { get; set; }
+    public RenderFragment? Content { get; set; }
 
     /// <summary>
     /// Gets or sets the placement of the tooltip.
@@ -41,33 +53,87 @@
     public int DelayMS { get; set; } = 200;
 
     /// <summary>
+    /// Gets or sets whether the tooltip is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
-    protected override string ComponentClass => $"vibe-tooltip vibe-tooltip-{Placement}";
+    protected override string ComponentClass => $"vibe-tooltip vibe-tooltip-{NormalizedPlacement}";
 
     /// <summary>
-    /// Flag to track if the tooltip is visible.
+    /// Gets attributes for the root element while preserving required class/state values.
     /// </summary>
-    private bool IsVisible = false;
+    private Dictionary<string, object?> RootAttributes
+    {
+        get
+        {
+            var attributes = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
-    /// <summary>
-    /// Timer for delayed showing of the tooltip.
-    /// </summary>
-    private System.Timers.Timer? _showTimer;
+            if (AdditionalAttributes is not null)
+            {
+                foreach (var attribute in AdditionalAttributes)
+                {
+                    attributes[attribute.Key] = attribute.Value;
+                }
+            }
 
-    private readonly string TooltipId = $"vibe-tooltip-{Guid.NewGuid():N}";
+            attributes["class"] = RootClass;
+            attributes["data-state"] = CurrentState;
+
+            if (Disabled)
+            {
+                attributes["data-disabled"] = string.Empty;
+            }
+
+            return attributes;
+        }
+    }
+
+    private string RootClass => CombineClasses(
+        ComponentClass,
+        _isVisible ? "tooltip-open" : null,
+        Disabled ? "tooltip-disabled" : null,
+        Class);
+
+    private string CurrentState => _isVisible ? "open" : "closed";
+
+    private string AriaHidden => _isVisible ? "false" : "true";
+
+    private string AriaDisabled => Disabled ? "true" : "false";
+
+    private string TriggerTabIndex => Disabled ? "-1" : "0";
+
+    private string NormalizedPlacement => Placement?.Trim().ToLowerInvariant() switch
+    {
+        "bottom" => "bottom",
+        "left" => "left",
+        "right" => "right",
+        _ => "top"
+    };
+
+    /// <inheritdoc/>
+    protected override void OnParametersSet()
+    {
+        if (Disabled && _isVisible)
+        {
+            HideTooltip();
+        }
+    }
 
     /// <summary>
     /// Handles when the mouse enters the tooltip trigger.
     /// </summary>
-    private void OnMouseEnter()
+    private async Task OnMouseEnterAsync()
     {
-        StartShowTimer();
+        await ShowTooltipAfterDelayAsync();
     }
 
-    private void OnFocusIn(FocusEventArgs e)
+    private async Task OnFocusInAsync(FocusEventArgs e)
     {
-        StartShowTimer();
+        await ShowTooltipAfterDelayAsync();
     }
 
     /// <summary>
@@ -91,35 +157,75 @@
         }
     }
 
-    private void StartShowTimer()
+    private async Task ShowTooltipAfterDelayAsync()
     {
-        _showTimer?.Dispose();
-        _showTimer = new System.Timers.Timer(DelayMS);
-        _showTimer.Elapsed += (_, _) =>
+        if (Disabled || _isDisposed)
         {
-            _ = InvokeAsync(() =>
-            {
-                IsVisible = true;
-                StateHasChanged();
-            });
-        };
-        _showTimer.AutoReset = false;
-        _showTimer.Start();
+            return;
+        }
+
+        var showDelayCts = ResetShowDelay();
+
+        try
+        {
+            await Task.Delay(NormalizeDelay(DelayMS), showDelayCts.Token);
+        }
+        catch (OperationCanceledException) when (showDelayCts.IsCancellationRequested)
+        {
+            return;
+        }
+
+        if (Disabled || _isDisposed)
+        {
+            return;
+        }
+
+        _isVisible = true;
+        StateHasChanged();
     }
 
     private void HideTooltip()
     {
-        _showTimer?.Dispose();
-        _showTimer = null;
-        IsVisible = false;
-        StateHasChanged();
+        CancelShowDelay();
+
+        if (!_isVisible)
+        {
+            return;
+        }
+
+        _isVisible = false;
+
+        if (!_isDisposed)
+        {
+            StateHasChanged();
+        }
     }
 
-    /// <summary>
-    /// Disposes the component.
-    /// </summary>
-    public void Dispose()
+    public ValueTask DisposeAsync()
     {
-        _showTimer?.Dispose();
+        _isDisposed = true;
+        CancelShowDelay();
+        return ValueTask.CompletedTask;
     }
+
+    private CancellationTokenSource ResetShowDelay()
+    {
+        CancelShowDelay();
+        _showDelayCts = new CancellationTokenSource();
+        return _showDelayCts;
+    }
+
+    private void CancelShowDelay()
+    {
+        if (_showDelayCts is null)
+        {
+            return;
+        }
+
+        _showDelayCts.Cancel();
+        _showDelayCts.Dispose();
+        _showDelayCts = null;
+    }
+
+    private static int NormalizeDelay(int delay) => Math.Max(0, delay);
 }

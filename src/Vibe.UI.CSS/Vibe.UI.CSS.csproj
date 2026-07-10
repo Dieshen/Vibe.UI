@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UseSharedCompilation>false</UseSharedCompilation>
     <PackageId>Vibe.UI.CSS</PackageId>
-    <Version>1.0.0-alpha</Version>
+    <Version>1.0.0-beta</Version>
     <Title>Vibe.UI.CSS - .NET-Native CSS Framework</Title>
     <Authors>Narcoleptic Fox</Authors>
     <Description>A .NET-native CSS utility framework with JIT generation. No Node.js required.
@@ -19,13 +19,17 @@
     - Hot reload compatible: Works with dotnet watch</Description>
     <PackageTags>css;tailwind;blazor;dotnet;utility-css;jit</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/Dieshen/Vibe.UI</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/Dieshen/Vibe.UI</PackageProjectUrl>
+    <PackageReadmeFile>README.css.md</PackageReadmeFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <!-- Include MSBuild targets in package -->
     <BuildOutputTargetFolder>tools</BuildOutputTargetFolder>
     <DevelopmentDependency>true</DevelopmentDependency>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 
   <!-- Embed vibe-base.css as resource -->
@@ -37,6 +41,9 @@
   <ItemGroup>
     <None Include="Build\Vibe.UI.CSS.targets" Pack="true" PackagePath="build" />
     <None Include="Build\Vibe.UI.CSS.targets" Pack="true" PackagePath="buildTransitive" />
+    <None Include="README.css.md" Pack="true" PackagePath="" />
+    <None Include="../../icon.png" Pack="true" PackagePath="" Condition="Exists('../../icon.png')" />
+    <None Include="../../assets/icon.png" Pack="true" PackagePath="" Condition="!Exists('../../icon.png') And Exists('../../assets/icon.png')" />
   </ItemGroup>
 
 </Project>

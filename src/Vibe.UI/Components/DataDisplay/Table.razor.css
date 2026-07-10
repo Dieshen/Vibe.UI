@@ -2,6 +2,11 @@
 
 :global(.vibe-table) {
   width: 100%;
+  overflow-x: auto;
+}
+
+:global(.vibe-table .table-root) {
+  width: 100%;
   border-collapse: collapse;
 }
 
@@ -18,3 +23,27 @@
   font-weight: 600;
 }
 
+:global(.vibe-table .table-caption) {
+  padding: 0.5rem 0.75rem;
+  color: var(--vibe-muted-foreground);
+  font-size: 0.875rem;
+  text-align: left;
+}
+
+:global(.vibe-table.bordered th),
+:global(.vibe-table.bordered td) {
+  border: 1px solid var(--vibe-border);
+}
+
+:global(.vibe-table.striped tbody tr:nth-child(odd)) {
+  background: var(--vibe-muted);
+}
+
+:global(.vibe-table.compact th),
+:global(.vibe-table.compact td) {
+  padding: 0.35rem 0.5rem;
+}
+
+:global(.vibe-table.hover tbody tr:hover) {
+  background: var(--vibe-accent);
+}

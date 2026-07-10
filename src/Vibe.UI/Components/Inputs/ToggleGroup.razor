@@ -1,13 +1,17 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="group" aria-label="@AriaLabel">
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="group" aria-label="@AriaLabel"
+    aria-orientation="@EffectiveOrientation.ToString().ToLowerInvariant()" aria-disabled="@AriaBool(Disabled)">
     <CascadingValue Value="this">
         @ChildContent
     </CascadingValue>
 </div>
 
 @code {
+    private string? _value;
+    private List<string> _values = new();
+
     /// <summary>
     /// The content of the toggle group (ToggleGroupItem components).
     /// </summary>
@@ -76,45 +80,64 @@
 
     private string CombinedCssClass => CombineClasses(
     "vibe-toggle-group",
-    $"vibe-toggle-group-{Orientation.ToString().ToLower()}",
-    $"vibe-toggle-group-{Size.ToString().ToLower()}",
+    $"vibe-toggle-group-{EffectiveOrientation.ToString().ToLowerInvariant()}",
+    $"vibe-toggle-group-{EffectiveSize.ToString().ToLowerInvariant()}",
     Disabled ? "vibe-toggle-group-disabled" : null,
+    Class,
     CssClass
     );
 
     protected override string ComponentClass => CombinedCssClass;
 
+    private ToggleGroupType EffectiveType => Enum.IsDefined(typeof(ToggleGroupType), Type) ? Type : ToggleGroupType.Single;
+
+    private ToggleGroupOrientation EffectiveOrientation
+        => Enum.IsDefined(typeof(ToggleGroupOrientation), Orientation) ? Orientation : ToggleGroupOrientation.Horizontal;
+
+    private ToggleGroupSize EffectiveSize => Enum.IsDefined(typeof(ToggleGroupSize), Size) ? Size : ToggleGroupSize.Default;
+
+    protected override void OnParametersSet()
+    {
+        _value = Value;
+        _values = Values?.Where(value => value is not null).Select(value => value!).ToList() ?? new List<string>();
+    }
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
+
     internal async Task HandleItemToggle(string itemValue)
     {
         if (Disabled) return;
 
-        if (Type == ToggleGroupType.Single)
+        if (EffectiveType == ToggleGroupType.Single)
         {
-            // Single selection: toggle off if same, otherwise set new value
-            var newValue = Value == itemValue ? null : itemValue;
-            Value = newValue;
+            var newValue = _value == itemValue ? null : itemValue;
+            _value = newValue;
             await ValueChanged.InvokeAsync(newValue);
         }
         else
         {
-            // Multiple selection: add/remove from list
-            if (Values.Contains(itemValue))
+            var updatedValues = _values.ToList();
+            if (updatedValues.Contains(itemValue))
             {
-                Values.Remove(itemValue);
+                updatedValues.Remove(itemValue);
             }
             else
             {
-                Values.Add(itemValue);
+                updatedValues.Add(itemValue);
             }
-            await ValuesChanged.InvokeAsync(Values);
+
+            _values = updatedValues;
+            await ValuesChanged.InvokeAsync(updatedValues);
         }
+
+        await InvokeAsync(StateHasChanged);
     }
 
     internal bool IsSelected(string itemValue)
     {
-        return Type == ToggleGroupType.Single
-        ? Value == itemValue
-        : Values.Contains(itemValue);
+        return EffectiveType == ToggleGroupType.Single
+        ? _value == itemValue
+        : _values.Contains(itemValue);
     }
 
     public enum ToggleGroupType

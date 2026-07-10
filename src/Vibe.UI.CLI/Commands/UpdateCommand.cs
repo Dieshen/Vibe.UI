@@ -24,12 +24,23 @@ public class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
         public string ProjectPath { get; init; } = ".";
     }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    public Task<int> ExecuteAsync(CommandContext context, Settings settings) =>
+        ExecuteAsync(context, settings, CancellationToken.None);
+
+    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         var configService = new ConfigService();
         var componentService = new ComponentService();
+        var projectService = new ProjectService();
+        var requestedProjectPath = Path.GetFullPath(settings.ProjectPath);
+        var projectPath = await projectService.ResolveInitializedProjectPathAsync(requestedProjectPath);
 
-        var config = await configService.LoadConfigAsync(settings.ProjectPath);
+        if (!PathsEqual(requestedProjectPath, projectPath))
+        {
+            AnsiConsole.WriteLine($"Using initialized project: {projectPath}");
+        }
+
+        var config = await configService.LoadConfigAsync(projectPath);
         if (config == null)
         {
             AnsiConsole.MarkupLine("[red]Error:[/] Vibe.UI is not initialized in this project.");
@@ -41,10 +52,11 @@ public class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
             // Update specific component
             AnsiConsole.MarkupLine($"[blue]Updating {settings.Component}...[/]");
             await componentService.InstallComponentAsync(
-                settings.ProjectPath,
+                projectPath,
                 config.ComponentsDirectory,
                 settings.Component,
                 overwrite: true);
+            await RazorImportsService.EnsureVibeImportsAsync(projectPath, includeComponents: true);
 
             AnsiConsole.MarkupLine($"[green]✓[/] {settings.Component} updated successfully!");
         }
@@ -60,7 +72,7 @@ public class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
             }
 
             var installedComponents = componentService.GetInstalledComponents(
-                settings.ProjectPath,
+                projectPath,
                 config.ComponentsDirectory);
 
             await AnsiConsole.Progress()
@@ -72,16 +84,24 @@ public class UpdateCommand : AsyncCommand<UpdateCommand.Settings>
                     {
                         task.Increment(1);
                         await componentService.InstallComponentAsync(
-                            settings.ProjectPath,
+                            projectPath,
                             config.ComponentsDirectory,
                             component,
                             overwrite: true);
                     }
                 });
 
+            if (installedComponents.Count > 0)
+            {
+                await RazorImportsService.EnsureVibeImportsAsync(projectPath, includeComponents: true);
+            }
+
             AnsiConsole.MarkupLine($"\n[green]✓[/] All components updated successfully!");
         }
 
         return 0;
     }
+
+    private static bool PathsEqual(string left, string right) =>
+        string.Equals(Path.GetFullPath(left), Path.GetFullPath(right), StringComparison.OrdinalIgnoreCase);
 }

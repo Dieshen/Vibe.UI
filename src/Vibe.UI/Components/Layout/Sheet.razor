@@ -4,8 +4,19 @@
 @if (IsOpen || IsClosing)
 {
     <div class="@CombinedClass @(IsClosing ? "closing" : "") @SideClass">
-        <div class="sheet-overlay" @onclick="OnOverlayClick"></div>
-        <div class="sheet-content" style="@ContentStyle">
+        @if (ShowOverlay)
+        {
+            <div class="sheet-overlay" @onclick="OnOverlayClick"></div>
+        }
+        <div class="sheet-content"
+             style="@ContentStyle"
+             role="dialog"
+             aria-modal="true"
+             aria-labelledby="@TitleId"
+             aria-describedby="@DescriptionId"
+             tabindex="-1"
+             @onkeydown="HandleKeyDown"
+             @attributes="AdditionalAttributes">
             @if (ShowCloseButton)
             {
                 <button type="button" class="sheet-close" @onclick="Close" aria-label="Close">
@@ -20,11 +31,11 @@
             <div class="sheet-header">
                 @if (!string.IsNullOrEmpty(Title))
                 {
-                    <h3 class="sheet-title">@Title</h3>
+                    <h3 class="sheet-title" id="@TitleId">@Title</h3>
                 }
                 @if (!string.IsNullOrEmpty(Description))
                 {
-                    <p class="sheet-description">@Description</p>
+                    <p class="sheet-description" id="@DescriptionId">@Description</p>
                 }
             </div>
 
@@ -53,19 +64,19 @@
     /// Gets or sets the title of the sheet.
     /// </summary>
     [Parameter]
-    public string Title { get; set; }
+    public string? Title { get; set; }
 
     /// <summary>
     /// Gets or sets the description of the sheet.
     /// </summary>
     [Parameter]
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     /// <summary>
     /// Gets or sets the footer content of the sheet.
     /// </summary>
     [Parameter]
-    public RenderFragment Footer { get; set; }
+    public RenderFragment? Footer { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the sheet is open.
@@ -90,6 +101,12 @@
     /// </summary>
     [Parameter]
     public bool CloseOnOverlayClick { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether pressing Escape should close the sheet.
+    /// </summary>
+    [Parameter]
+    public bool CloseOnEscape { get; set; } = true;
 
     /// <summary>
     /// Gets or sets a value indicating whether the close button should be shown.
@@ -118,6 +135,19 @@
     /// Gets a value indicating whether the sheet is in the process of closing.
     /// </summary>
     private bool IsClosing { get; set; }
+
+    private readonly string _titleId = $"vibe-sheet-title-{Guid.NewGuid():N}";
+    private readonly string _descriptionId = $"vibe-sheet-description-{Guid.NewGuid():N}";
+
+    /// <summary>
+    /// Gets the title element id when a title is rendered.
+    /// </summary>
+    private string? TitleId => string.IsNullOrEmpty(Title) ? null : _titleId;
+
+    /// <summary>
+    /// Gets the description element id when a description is rendered.
+    /// </summary>
+    private string? DescriptionId => string.IsNullOrEmpty(Description) ? null : _descriptionId;
 
     /// <summary>
     /// Gets the CSS class for the sheet side.
@@ -161,6 +191,17 @@
     private async Task OnOverlayClick()
     {
         if (CloseOnOverlayClick)
+        {
+            await Close();
+        }
+    }
+
+    /// <summary>
+    /// Handles key down events for keyboard dismissal.
+    /// </summary>
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape" && CloseOnEscape)
         {
             await Close();
         }

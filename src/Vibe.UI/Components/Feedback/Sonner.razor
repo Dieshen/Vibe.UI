@@ -1,34 +1,63 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
 @implements IDisposable
+@implements IAsyncDisposable
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+<div @attributes="AdditionalAttributes"
+     class="@CombinedClass"
+     role="region"
+     aria-label="@EffectiveAriaLabel"
+     aria-disabled="@AriaBool(Disabled)"
+     data-state="@ContainerState"
+     data-position="@PositionName"
+     data-toast-count="@ToastCountText">
     @foreach (var toast in _toasts)
     {
-        <div class="@GetToastClass(toast)" style="@GetToastStyle(toast)" @key="toast.Id">
+        <div class="@GetToastClass(toast)"
+             style="@GetToastStyle(toast)"
+             role="@toast.Role"
+             aria-live="@toast.AriaLive"
+             aria-atomic="true"
+             aria-label="@GetToastAriaLabel(toast)"
+             data-state="open"
+             data-type="@GetToastTypeName(toast)"
+             data-dismissible="@AriaBool(toast.Dismissible)"
+             @key="toast.Id">
             @if (toast.Icon != null)
             {
-                <div class="sonner-icon">@toast.Icon</div>
+                <div class="sonner-icon" aria-hidden="true">@toast.Icon</div>
             }
-            <div class="sonner-content">
-                @if (!string.IsNullOrEmpty(toast.Title))
-                {
-                    <div class="sonner-title">@toast.Title</div>
-                }
-                @if (toast.Description != null)
-                {
-                    <div class="sonner-description">@toast.Description</div>
-                }
-                @if (toast.Action != null)
-                {
-                    <button class="sonner-action" @onclick="() => toast.Action.OnClick?.Invoke()">
-                        @toast.Action.Label
-                    </button>
-                }
-            </div>
+            @if (HasToastContent(toast) || HasAction(toast))
+            {
+                <div class="sonner-content">
+                    @if (!string.IsNullOrWhiteSpace(toast.Title))
+                    {
+                        <div class="sonner-title">@toast.Title</div>
+                    }
+                    @if (toast.Description != null)
+                    {
+                        <div class="sonner-description">@toast.Description</div>
+                    }
+                    @if (HasAction(toast))
+                    {
+                        <button type="button"
+                                class="sonner-action"
+                                @onclick="() => InvokeToastActionAsync(toast)"
+                                disabled="@ControlsDisabled"
+                                aria-disabled="@AriaBool(ControlsDisabled)">
+                            @toast.Action!.Label
+                        </button>
+                    }
+                </div>
+            }
             @if (toast.Dismissible)
             {
-                <button class="sonner-close" @onclick="() => RemoveToast(toast.Id)">
+                <button type="button"
+                        class="sonner-close"
+                        @onclick="() => DismissToastAsync(toast.Id, SonnerDismissReason.User)"
+                        disabled="@ControlsDisabled"
+                        aria-disabled="@AriaBool(ControlsDisabled)"
+                        aria-label="@GetDismissAriaLabel(toast)">
                     <span aria-hidden="true">&times;</span>
                 </button>
             }
@@ -37,8 +66,14 @@
 </div>
 
 @code {
-    private List<SonnerToast> _toasts = new();
-    private Timer? _timer;
+    private const int ExpirationPollMilliseconds = 100;
+    private const string DefaultAriaLabel = "Notifications";
+    private const string DefaultCloseButtonAriaLabel = "Dismiss notification";
+
+    private readonly List<SonnerToast> _toasts = new();
+    private CancellationTokenSource? _expirationCancellation;
+    private Task? _expirationTask;
+    private bool _disposed;
 
     [Parameter]
     public SonnerPosition Position { get; set; } = SonnerPosition.BottomRight;
@@ -53,142 +88,538 @@
     public bool RichColors { get; set; } = true;
 
     [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    [Parameter]
+    public string? AriaLabel { get; set; } = DefaultAriaLabel;
+
+    [Parameter]
+    public string? CloseButtonAriaLabel { get; set; } = DefaultCloseButtonAriaLabel;
+
+    [Parameter]
+    public EventCallback<SonnerDismissEventArgs> OnDismiss { get; set; }
+
+    [Parameter]
     public string? CssClass { get; set; }
 
-    private string CombinedCssClass => CombineClasses(
-    "sonner-container",
-    $"sonner-{Position.ToString().ToLower()}",
-    RichColors ? "sonner-rich" : null,
-    CssClass
-    );
+    public IReadOnlyList<SonnerToast> Toasts => _toasts.Select(CloneToast).ToList();
 
-    protected override string ComponentClass => CombinedCssClass;
+    protected override string ComponentClass => CombineClasses(
+        "sonner-container",
+        $"sonner-{PositionName}",
+        RichColors ? "sonner-rich" : null,
+        Disabled ? "sonner-disabled" : null,
+        ReadOnly ? "sonner-readonly" : null,
+        CssClass);
+
+    private bool ControlsDisabled => Disabled || ReadOnly;
+
+    private string PositionName => Position.ToString().ToLowerInvariant();
+
+    private string ContainerState => _toasts.Count == 0 ? "empty" : "open";
+
+    private string ToastCountText => _toasts.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    private string EffectiveAriaLabel => NormalizeRequiredText(AriaLabel, DefaultAriaLabel);
+
+    private int EffectiveMaxToasts => MaxToasts < 1 ? 1 : MaxToasts;
 
     protected override void OnInitialized()
     {
-        _timer = new Timer(CheckExpiredToasts, null, 100, 100);
+        _expirationCancellation = new CancellationTokenSource();
+        _expirationTask = ExpirationLoopAsync(_expirationCancellation.Token);
     }
 
-    public void Toast(string message, SonnerType type = SonnerType.Default)
+    public void Toast(string? message, SonnerType type = SonnerType.Default)
     {
         ShowToast(new SonnerToast
         {
-            Description = builder => builder.AddContent(0, message),
+            Description = CreateMessageFragment(message),
             Type = type
         });
     }
 
-    public void Success(string message) => Toast(message, SonnerType.Success);
-    public void Error(string message) => Toast(message, SonnerType.Error);
-    public void Warning(string message) => Toast(message, SonnerType.Warning);
-    public void Info(string message) => Toast(message, SonnerType.Info);
-    public void Loading(string message) => Toast(message, SonnerType.Loading);
+    public void Success(string? message) => Toast(message, SonnerType.Success);
+    public void Error(string? message) => Toast(message, SonnerType.Error);
+    public void Warning(string? message) => Toast(message, SonnerType.Warning);
+    public void Info(string? message) => Toast(message, SonnerType.Info);
+    public void Loading(string? message) => Toast(message, SonnerType.Loading);
 
-    public void Promise<T>(Task<T> promise, string loading, string success, string error)
+    public void Promise<T>(Task<T>? promise, string? loading, string? success, string? error)
     {
+        if (promise == null)
+        {
+            Error(error);
+            return;
+        }
+
         var toastId = ShowToast(new SonnerToast
         {
-            Description = builder => builder.AddContent(0, loading),
+            Description = CreateMessageFragment(NormalizeRequiredText(loading, "Loading")),
             Type = SonnerType.Loading,
-            Duration = int.MaxValue
+            Duration = 0
         });
 
-        _ = HandlePromise(promise, toastId, success, error);
+        if (!string.IsNullOrEmpty(toastId))
+        {
+            _ = HandlePromiseAsync(promise, toastId, success, error);
+        }
     }
 
-    private async Task HandlePromise<T>(Task<T> promise, string toastId, string success, string error)
+    private async Task HandlePromiseAsync<T>(Task<T> promise, string toastId, string? success, string? error)
     {
+        SonnerType completionType;
+        string completionMessage;
+
         try
         {
             await promise;
-            UpdateToast(toastId, new SonnerToast
-            {
-                Description = builder => builder.AddContent(0, success),
-                Type = SonnerType.Success
-            });
+            completionType = SonnerType.Success;
+            completionMessage = NormalizeRequiredText(success, "Success");
         }
         catch
         {
-            UpdateToast(toastId, new SonnerToast
+            completionType = SonnerType.Error;
+            completionMessage = NormalizeRequiredText(error, "Error");
+        }
+
+        if (_disposed)
+        {
+            return;
+        }
+
+        try
+        {
+            await InvokeAsync(() => UpdateToast(toastId, new SonnerToast
             {
-                Description = builder => builder.AddContent(0, error),
-                Type = SonnerType.Error
-            });
+                Description = CreateMessageFragment(completionMessage),
+                Type = completionType
+            }));
+        }
+        catch (Exception exception) when (!_disposed)
+        {
+            await DispatchExceptionAsync(exception);
         }
     }
 
-    public string ShowToast(SonnerToast toast)
+    public string ShowToast(SonnerToast? toast)
     {
-        toast.Id = Guid.NewGuid().ToString();
-        toast.CreatedAt = DateTime.Now;
-        toast.Duration ??= DefaultDuration;
-
-        _toasts.Insert(0, toast);
-
-        if (_toasts.Count > MaxToasts)
+        if (_disposed || Disabled)
         {
-            _toasts.RemoveAt(_toasts.Count - 1);
+            return string.Empty;
         }
 
-        InvokeAsync(StateHasChanged);
-        return toast.Id;
+        var normalizedToast = NormalizeToast(toast);
+        _toasts.Insert(0, normalizedToast);
+
+        var overflowToasts = RemoveOverflowToasts();
+        foreach (var overflowToast in overflowToasts)
+        {
+            DispatchDismissCallback(overflowToast, SonnerDismissReason.Capacity);
+        }
+
+        RequestRender();
+        return normalizedToast.Id;
     }
 
-    public void UpdateToast(string id, SonnerToast updates)
+    public void UpdateToast(string? id, SonnerToast? updates)
     {
-        var toast = _toasts.FirstOrDefault(t => t.Id == id);
-        if (toast != null)
+        if (_disposed || Disabled || string.IsNullOrWhiteSpace(id) || updates == null)
         {
-            toast.Title = updates.Title ?? toast.Title;
-            toast.Description = updates.Description ?? toast.Description;
-            toast.Type = updates.Type;
-            toast.CreatedAt = DateTime.Now;
-            InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        var toast = _toasts.FirstOrDefault(t => string.Equals(t.Id, id, StringComparison.Ordinal));
+        if (toast == null)
+        {
+            return;
+        }
+
+        toast.Title = updates.Title == null ? toast.Title : NormalizeOptionalText(updates.Title);
+        toast.Description = updates.Description ?? toast.Description;
+        toast.Icon = updates.Icon ?? toast.Icon;
+        toast.Type = NormalizeType(updates.Type);
+        toast.Duration = updates.Duration.HasValue ? NormalizeDuration(updates.Duration.Value) : toast.Duration;
+        toast.Action = updates.Action == null ? toast.Action : NormalizeAction(updates.Action);
+        toast.AriaLabel = updates.AriaLabel == null ? toast.AriaLabel : NormalizeOptionalText(updates.AriaLabel);
+        toast.Role = NormalizeRole(updates.Role, toast.Type);
+        toast.AriaLive = NormalizeAriaLive(updates.AriaLive, toast.Role);
+        toast.CreatedAt = DateTime.UtcNow;
+
+        RequestRender();
+    }
+
+    public void RemoveToast(string? id)
+    {
+        if (_disposed || Disabled || string.IsNullOrWhiteSpace(id))
+        {
+            return;
+        }
+
+        var removedToast = RemoveToastCore(id);
+        if (removedToast == null)
+        {
+            return;
+        }
+
+        DispatchDismissCallback(removedToast, SonnerDismissReason.Programmatic);
+        RequestRender();
+    }
+
+    private async Task DismissToastAsync(string? id, SonnerDismissReason reason)
+    {
+        if (_disposed || string.IsNullOrWhiteSpace(id) || (reason == SonnerDismissReason.User && ControlsDisabled))
+        {
+            return;
+        }
+
+        var removedToast = RemoveToastCore(id);
+        if (removedToast == null)
+        {
+            return;
+        }
+
+        if (OnDismiss.HasDelegate)
+        {
+            await OnDismiss.InvokeAsync(new SonnerDismissEventArgs(CloneToast(removedToast), reason));
+        }
+
+        if (!_disposed)
+        {
+            StateHasChanged();
         }
     }
 
-    public void RemoveToast(string id)
+    private SonnerToast? RemoveToastCore(string id)
     {
-        _toasts.RemoveAll(t => t.Id == id);
-        InvokeAsync(StateHasChanged);
+        var index = _toasts.FindIndex(t => string.Equals(t.Id, id, StringComparison.Ordinal));
+        if (index < 0)
+        {
+            return null;
+        }
+
+        var removedToast = _toasts[index];
+        _toasts.RemoveAt(index);
+        return removedToast;
     }
 
-    private void CheckExpiredToasts(object? state)
+    private List<SonnerToast> RemoveOverflowToasts()
     {
-        var now = DateTime.Now;
-        var expired = _toasts.Where(t =>
-        t.Duration.HasValue &&
-        (now - t.CreatedAt).TotalMilliseconds > t.Duration.Value
-        ).ToList();
-
-        if (expired.Any())
+        var removedToasts = new List<SonnerToast>();
+        while (_toasts.Count > EffectiveMaxToasts)
         {
-            foreach (var toast in expired)
+            var index = _toasts.Count - 1;
+            removedToasts.Add(_toasts[index]);
+            _toasts.RemoveAt(index);
+        }
+
+        return removedToasts;
+    }
+
+    private async Task ExpirationLoopAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            while (!cancellationToken.IsCancellationRequested)
             {
-                _toasts.Remove(toast);
+                await Task.Delay(ExpirationPollMilliseconds, cancellationToken);
+                await InvokeAsync(() => DismissExpiredToastsAsync(cancellationToken));
             }
-            InvokeAsync(StateHasChanged);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception) when (!_disposed)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    }
+
+    private async Task DismissExpiredToastsAsync(CancellationToken cancellationToken)
+    {
+        if (_disposed || Disabled)
+        {
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+        var expiredToastIds = _toasts
+            .Where(toast => IsExpired(toast, now))
+            .Select(toast => toast.Id)
+            .ToList();
+
+        foreach (var toastId in expiredToastIds)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await DismissToastAsync(toastId, SonnerDismissReason.Timeout);
+        }
+    }
+
+    private static bool IsExpired(SonnerToast toast, DateTime now) =>
+        toast.Duration.HasValue &&
+        toast.Duration.Value > 0 &&
+        (now - toast.CreatedAt).TotalMilliseconds >= toast.Duration.Value;
+
+    private async Task InvokeToastActionAsync(SonnerToast toast)
+    {
+        if (_disposed || ControlsDisabled || !HasAction(toast))
+        {
+            return;
+        }
+
+        toast.Action!.OnClick?.Invoke();
+
+        if (toast.Action.OnClickAsync.HasDelegate)
+        {
+            await toast.Action.OnClickAsync.InvokeAsync();
+        }
+    }
+
+    private void DispatchDismissCallback(SonnerToast toast, SonnerDismissReason reason)
+    {
+        if (!OnDismiss.HasDelegate)
+        {
+            return;
+        }
+
+        try
+        {
+            var callbackTask = OnDismiss.InvokeAsync(new SonnerDismissEventArgs(CloneToast(toast), reason));
+            if (!callbackTask.IsCompletedSuccessfully)
+            {
+                _ = AwaitDismissCallbackAsync(callbackTask);
+            }
+        }
+        catch (Exception exception) when (!_disposed)
+        {
+            _ = DispatchExceptionAsync(exception);
+        }
+    }
+
+    private async Task AwaitDismissCallbackAsync(Task callbackTask)
+    {
+        try
+        {
+            await callbackTask;
+        }
+        catch (Exception exception) when (!_disposed)
+        {
+            await DispatchExceptionAsync(exception);
+        }
+    }
+
+    private void RequestRender()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        try
+        {
+            var renderTask = InvokeAsync(StateHasChanged);
+            if (!renderTask.IsCompletedSuccessfully)
+            {
+                _ = AwaitRenderAsync(renderTask);
+            }
+        }
+        catch (Exception exception) when (!_disposed)
+        {
+            _ = DispatchExceptionAsync(exception);
+        }
+    }
+
+    private async Task AwaitRenderAsync(Task renderTask)
+    {
+        try
+        {
+            await renderTask;
+        }
+        catch (Exception exception) when (!_disposed)
+        {
+            await DispatchExceptionAsync(exception);
         }
     }
 
     private string GetToastClass(SonnerToast toast)
     {
         return CombineClasses(
-        "sonner-toast",
-        $"sonner-{toast.Type.ToString().ToLower()}",
-        toast.Dismissible ? "sonner-dismissible" : null
+            "sonner-toast",
+            $"sonner-{GetToastTypeName(toast)}",
+            toast.Dismissible ? "sonner-dismissible" : null,
+            HasAction(toast) ? "sonner-has-action" : null
         );
     }
 
     private string GetToastStyle(SonnerToast toast)
     {
         var index = _toasts.IndexOf(toast);
-        return $"--index: {index};";
+        return $"--index: {index.ToString(System.Globalization.CultureInfo.InvariantCulture)};";
     }
+
+    private static bool HasToastContent(SonnerToast toast) =>
+        !string.IsNullOrWhiteSpace(toast.Title) || toast.Description != null;
+
+    private static bool HasAction(SonnerToast toast) =>
+        toast.Action != null && !string.IsNullOrWhiteSpace(toast.Action.Label);
+
+    private string? GetToastAriaLabel(SonnerToast toast)
+    {
+        if (!string.IsNullOrWhiteSpace(toast.AriaLabel))
+        {
+            return toast.AriaLabel;
+        }
+
+        return HasToastContent(toast) ? null : "Notification";
+    }
+
+    private string GetDismissAriaLabel(SonnerToast toast)
+    {
+        var label = NormalizeRequiredText(CloseButtonAriaLabel, DefaultCloseButtonAriaLabel);
+        if (!string.Equals(label, DefaultCloseButtonAriaLabel, StringComparison.Ordinal))
+        {
+            return label;
+        }
+
+        return $"Dismiss {GetToastSummary(toast)}";
+    }
+
+    private static string GetToastSummary(SonnerToast toast)
+    {
+        if (!string.IsNullOrWhiteSpace(toast.Title))
+        {
+            return toast.Title;
+        }
+
+        if (!string.IsNullOrWhiteSpace(toast.AriaLabel))
+        {
+            return toast.AriaLabel;
+        }
+
+        return "notification";
+    }
+
+    private static string GetToastTypeName(SonnerToast toast) =>
+        NormalizeType(toast.Type).ToString().ToLowerInvariant();
+
+    private SonnerToast NormalizeToast(SonnerToast? toast)
+    {
+        var normalizedToast = toast == null ? new SonnerToast() : CloneToast(toast);
+        normalizedToast.Id = Guid.NewGuid().ToString("N");
+        normalizedToast.Title = NormalizeOptionalText(normalizedToast.Title);
+        normalizedToast.Type = NormalizeType(normalizedToast.Type);
+        normalizedToast.Duration = NormalizeDuration(normalizedToast.Duration ?? DefaultDuration);
+        normalizedToast.Action = NormalizeAction(normalizedToast.Action);
+        normalizedToast.AriaLabel = NormalizeOptionalText(normalizedToast.AriaLabel);
+        normalizedToast.Role = NormalizeRole(normalizedToast.Role, normalizedToast.Type);
+        normalizedToast.AriaLive = NormalizeAriaLive(normalizedToast.AriaLive, normalizedToast.Role);
+        normalizedToast.CreatedAt = DateTime.UtcNow;
+        return normalizedToast;
+    }
+
+    private static SonnerAction? NormalizeAction(SonnerAction? action)
+    {
+        if (action == null)
+        {
+            return null;
+        }
+
+        return new SonnerAction
+        {
+            Label = NormalizeOptionalText(action.Label) ?? string.Empty,
+            OnClick = action.OnClick,
+            OnClickAsync = action.OnClickAsync
+        };
+    }
+
+    private static SonnerToast CloneToast(SonnerToast toast)
+    {
+        return new SonnerToast
+        {
+            Id = toast.Id,
+            Title = toast.Title,
+            Description = toast.Description,
+            Icon = toast.Icon,
+            Type = toast.Type,
+            Duration = toast.Duration,
+            Dismissible = toast.Dismissible,
+            CreatedAt = toast.CreatedAt,
+            Action = NormalizeAction(toast.Action),
+            AriaLabel = toast.AriaLabel,
+            Role = toast.Role,
+            AriaLive = toast.AriaLive
+        };
+    }
+
+    private static RenderFragment? CreateMessageFragment(string? message)
+    {
+        var normalizedMessage = NormalizeOptionalText(message);
+        return normalizedMessage == null
+            ? null
+            : builder => builder.AddContent(0, normalizedMessage);
+    }
+
+    private static string? NormalizeOptionalText(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string NormalizeRequiredText(string? value, string fallback) =>
+        NormalizeOptionalText(value) ?? fallback;
+
+    private static int NormalizeDuration(int duration) => duration <= 0 ? 0 : duration;
+
+    private static SonnerType NormalizeType(SonnerType type) =>
+        Enum.IsDefined(typeof(SonnerType), type) ? type : SonnerType.Default;
+
+    private static string NormalizeRole(string? role, SonnerType type)
+    {
+        var normalizedRole = NormalizeOptionalText(role)?.ToLowerInvariant();
+        if (normalizedRole is "alert" or "status" or "log")
+        {
+            return normalizedRole;
+        }
+
+        return type is SonnerType.Error or SonnerType.Warning ? "alert" : "status";
+    }
+
+    private static string NormalizeAriaLive(string? ariaLive, string role)
+    {
+        var normalizedAriaLive = NormalizeOptionalText(ariaLive)?.ToLowerInvariant();
+        if (normalizedAriaLive is "assertive" or "polite" or "off")
+        {
+            return normalizedAriaLive;
+        }
+
+        return role == "alert" ? "assertive" : "polite";
+    }
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
 
     public void Dispose()
     {
-        _timer?.Dispose();
+        DisposeCore();
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        DisposeCore();
+        return ValueTask.CompletedTask;
+    }
+
+    private void DisposeCore()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        _expirationCancellation?.Cancel();
+        _expirationCancellation?.Dispose();
+        _expirationCancellation = null;
+        _expirationTask = null;
     }
 
     public class SonnerToast
@@ -202,12 +633,39 @@
         public bool Dismissible { get; set; } = true;
         public DateTime CreatedAt { get; set; }
         public SonnerAction? Action { get; set; }
+        public string? AriaLabel { get; set; }
+        public string? Role { get; set; }
+        public string? AriaLive { get; set; }
     }
 
     public class SonnerAction
     {
         public string Label { get; set; } = string.Empty;
         public Action? OnClick { get; set; }
+        public EventCallback OnClickAsync { get; set; }
+    }
+
+    public class SonnerDismissEventArgs
+    {
+        public SonnerDismissEventArgs(SonnerToast toast, SonnerDismissReason reason)
+        {
+            Toast = toast;
+            Reason = reason;
+        }
+
+        public SonnerToast Toast { get; }
+
+        public string ToastId => Toast.Id;
+
+        public SonnerDismissReason Reason { get; }
+    }
+
+    public enum SonnerDismissReason
+    {
+        User,
+        Timeout,
+        Programmatic,
+        Capacity
     }
 
     public enum SonnerType

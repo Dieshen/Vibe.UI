@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <VibePackageVersion Condition="'$(VibePackageVersion)' == ''">1.0.0-beta</VibePackageVersion>
+    <VibeCssScanRoot Condition="'$(VibeCssScanRoot)' == ''">$(MSBuildProjectDirectory)/..</VibeCssScanRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Vibe.UI.Compatibility.WebApp.Client\Vibe.UI.Compatibility.WebApp.Client.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.9" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(VibeUsePackageReferences)' != 'true'">
+    <ProjectReference Include="..\..\..\src\Vibe.UI\Vibe.UI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(VibeUsePackageReferences)' == 'true'">
+    <PackageReference Include="Vibe.UI" Version="$(VibePackageVersion)" />
+    <PackageReference Include="Vibe.UI.CSS" Version="$(VibePackageVersion)" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

@@ -1,14 +1,24 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+<div class="@RootClass" style="@RootStyle" @attributes="RootAttributes">
     <div class="splitter-pane splitter-pane-first" style="@FirstPaneStyle">
         @FirstPane
     </div>
 
-    <div class="splitter-divider" @onmousedown="HandleMouseDown" @ontouchstart="HandleTouchStart">
+    <div class="splitter-divider"
+         style="@DividerStyle"
+         role="separator"
+         aria-orientation="@DividerAriaOrientation"
+         aria-valuenow="@CurrentSizeValue"
+         aria-valuemin="@MinSizeValue"
+         aria-valuemax="@MaxSizeValue"
+         tabindex="0"
+         @onmousedown="HandleMouseDown"
+         @ontouchstart="HandleTouchStart"
+         @onkeydown="HandleDividerKeyDown">
         <div class="divider-handle">
-            @if (Orientation == SplitterOrientation.Horizontal)
+            @if (NormalizedOrientation == SplitterOrientation.Horizontal)
             {
                 <span class="handle-icon">⋮</span>
             }
@@ -25,8 +35,16 @@
 </div>
 
 @code {
+    private const double DefaultInitialSize = 50;
+    private const double DefaultMinSize = 10;
+    private const double DefaultMaxSize = 90;
+    private const int DefaultDividerSize = 4;
+    private const double KeyboardStep = 1;
+
     private bool _isDragging = false;
     private double _currentSize = 50;
+    private bool _hasInitializedParameters;
+    private double _lastInitialSize;
 
     [Parameter]
     public RenderFragment? FirstPane { get; set; }
@@ -55,23 +73,37 @@
     [Parameter]
     public string? CssClass { get; set; }
 
-    private string CombinedCssClass => CombineClasses(
-    "vibe-splitter",
-    $"splitter-{Orientation.ToString().ToLower()}",
-    _isDragging ? "dragging" : null,
-    CssClass
-    );
+    protected override string ComponentClass => "vibe-splitter";
 
-    protected override string ComponentClass => CombinedCssClass;
+    private string RootClass => CombineClasses(
+        ComponentClass,
+        OrientationClass,
+        _isDragging ? "dragging" : null,
+        Class?.Trim(),
+        CssClass?.Trim(),
+        AdditionalClass);
+
+    private string? RootStyle => AdditionalStyle;
+
+    private Dictionary<string, object>? RootAttributes => GetUnhandledAttributes();
+
+    private string OrientationClass => NormalizedOrientation == SplitterOrientation.Vertical
+        ? "splitter-vertical"
+        : "splitter-horizontal";
+
+    private SplitterOrientation NormalizedOrientation =>
+        Enum.IsDefined(typeof(SplitterOrientation), Orientation)
+            ? Orientation
+            : SplitterOrientation.Horizontal;
 
     private string FirstPaneStyle
     {
         get
         {
-            if (Orientation == SplitterOrientation.Horizontal)
-                return $"width: {_currentSize}%;";
+            if (NormalizedOrientation == SplitterOrientation.Horizontal)
+                return $"width: {FormatSize(_currentSize)}%;";
             else
-                return $"height: {_currentSize}%;";
+                return $"height: {FormatSize(_currentSize)}%;";
         }
     }
 
@@ -80,16 +112,51 @@
         get
         {
             var remainingSize = 100 - _currentSize;
-            if (Orientation == SplitterOrientation.Horizontal)
-                return $"width: {remainingSize}%;";
+            if (NormalizedOrientation == SplitterOrientation.Horizontal)
+                return $"width: {FormatSize(remainingSize)}%;";
             else
-                return $"height: {remainingSize}%;";
+                return $"height: {FormatSize(remainingSize)}%;";
         }
     }
 
-    protected override void OnInitialized()
+    private string DividerStyle => NormalizedOrientation == SplitterOrientation.Horizontal
+        ? $"width: {EffectiveDividerSize}px;"
+        : $"height: {EffectiveDividerSize}px;";
+
+    private string DividerAriaOrientation => NormalizedOrientation == SplitterOrientation.Horizontal
+        ? "vertical"
+        : "horizontal";
+
+    private string CurrentSizeValue => FormatSize(_currentSize);
+
+    private string MinSizeValue => FormatSize(EffectiveMinSize);
+
+    private string MaxSizeValue => FormatSize(EffectiveMaxSize);
+
+    private double EffectiveMinSize => NormalizePercent(MinSize, DefaultMinSize);
+
+    private double EffectiveMaxSize => Math.Max(EffectiveMinSize, NormalizePercent(MaxSize, DefaultMaxSize));
+
+    private double NormalizedInitialSize => NormalizeSize(InitialSize, DefaultInitialSize);
+
+    private int EffectiveDividerSize => DividerSize > 0 ? DividerSize : DefaultDividerSize;
+
+    protected override void OnParametersSet()
     {
-        _currentSize = Math.Clamp(InitialSize, MinSize, MaxSize);
+        base.OnParametersSet();
+
+        var normalizedInitialSize = NormalizedInitialSize;
+        if (!_hasInitializedParameters || !AreClose(_lastInitialSize, normalizedInitialSize))
+        {
+            _currentSize = normalizedInitialSize;
+        }
+        else
+        {
+            _currentSize = NormalizeSize(_currentSize, normalizedInitialSize);
+        }
+
+        _lastInitialSize = normalizedInitialSize;
+        _hasInitializedParameters = true;
     }
 
     private void HandleMouseDown(MouseEventArgs e)
@@ -106,7 +173,7 @@
 
     public async Task SetSize(double size)
     {
-        var newSize = Math.Clamp(size, MinSize, MaxSize);
+        var newSize = NormalizeSize(size, _currentSize);
         if (newSize != _currentSize)
         {
             _currentSize = newSize;
@@ -117,9 +184,94 @@
 
     public void ResetSize()
     {
-        _currentSize = InitialSize;
+        _currentSize = NormalizedInitialSize;
         StateHasChanged();
     }
+
+    private async Task HandleDividerKeyDown(KeyboardEventArgs e)
+    {
+        var delta = e.Key switch
+        {
+            "ArrowLeft" when NormalizedOrientation == SplitterOrientation.Horizontal => -KeyboardStep,
+            "ArrowRight" when NormalizedOrientation == SplitterOrientation.Horizontal => KeyboardStep,
+            "ArrowUp" when NormalizedOrientation == SplitterOrientation.Vertical => -KeyboardStep,
+            "ArrowDown" when NormalizedOrientation == SplitterOrientation.Vertical => KeyboardStep,
+            _ => 0
+        };
+
+        if (delta != 0)
+        {
+            await SetSize(_currentSize + delta);
+        }
+    }
+
+    private double NormalizeSize(double value, double fallback)
+    {
+        var finiteValue = double.IsFinite(value) ? value : fallback;
+        return Math.Clamp(finiteValue, EffectiveMinSize, EffectiveMaxSize);
+    }
+
+    private static double NormalizePercent(double value, double fallback)
+    {
+        var finiteValue = double.IsFinite(value) ? value : fallback;
+        return Math.Clamp(finiteValue, 0, 100);
+    }
+
+    private static bool AreClose(double left, double right) =>
+        Math.Abs(left - right) < 0.0001;
+
+    private static string FormatSize(double value) =>
+        FormattableString.Invariant($"{value:0.##}");
+
+    private string? AdditionalClass => GetAdditionalAttributeValue("class");
+
+    private string? AdditionalStyle => GetAdditionalAttributeValue("style")?.TrimEnd(';');
+
+    private Dictionary<string, object>? GetUnhandledAttributes()
+    {
+        if (AdditionalAttributes is null || AdditionalAttributes.Count == 0)
+        {
+            return null;
+        }
+
+        var attributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (IsHandledRootAttribute(attribute.Key))
+            {
+                continue;
+            }
+
+            attributes[attribute.Key] = attribute.Value;
+        }
+
+        return attributes.Count == 0 ? null : attributes;
+    }
+
+    private static bool IsHandledRootAttribute(string attributeName) =>
+        string.Equals(attributeName, "class", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(attributeName, "style", StringComparison.OrdinalIgnoreCase);
+
+    private string? GetAdditionalAttributeValue(string attributeName)
+    {
+        if (AdditionalAttributes is null)
+        {
+            return null;
+        }
+
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (string.Equals(attribute.Key, attributeName, StringComparison.OrdinalIgnoreCase))
+            {
+                return NormalizeAttributeValue(attribute.Value?.ToString());
+            }
+        }
+
+        return null;
+    }
+
+    private static string? NormalizeAttributeValue(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     public enum SplitterOrientation
     {

@@ -1,47 +1,90 @@
+@using Microsoft.AspNetCore.Components.Forms
 @namespace Vibe.UI.Components
 @inherits VibeComponent
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass" @ondrop="HandleDrop" @ondragover:preventDefault
-    @ondragenter="() => _isDragging = true" @ondragleave="() => _isDragging = false">
+<div @attributes="AdditionalAttributes"
+     class="@CombinedCssClass"
+     role="group"
+     aria-label="@AriaLabel"
+     aria-describedby="@RootDescribedBy"
+     aria-disabled="@Disabled.ToString().ToLowerInvariant()"
+     @ondragenter="HandleDragEnter"
+     @ondragleave="HandleDragLeave"
+     @ondrop="HandleDrop"
+     @ondragover:preventDefault="@(!Disabled)">
 
-    <input type="file" @ref="_fileInput" style="display: none;" multiple="@Multiple" accept="@Accept"
-        @onchange="HandleFileSelect" />
-
-    @if (Files.Count == 0)
+    @if (_files.Count == 0)
     {
-        <div class="file-upload-empty" @onclick="OpenFilePicker">
-            <div class="file-upload-icon">📁</div>
-            <div class="file-upload-text">
-                <p class="file-upload-title">@DropText</p>
-                <p class="file-upload-hint">@HintText</p>
+        <div class="file-upload-empty">
+            <InputFile id="@_inputId"
+                       class="file-upload-input"
+                       multiple="@Multiple"
+                       accept="@Accept"
+                       disabled="@IsFileInputDisabled"
+                       OnChange="HandleFileSelect"
+                       aria-label="@AriaLabel"
+                       aria-describedby="@InputDescribedBy" />
+            <div class="file-upload-empty-content">
+                <div class="file-upload-icon" aria-hidden="true">📁</div>
+                <div class="file-upload-text">
+                    <p class="file-upload-title">@DropText</p>
+                    <p id="@_hintId" class="file-upload-hint">@HintText</p>
+                </div>
+                <span class="file-upload-button" aria-hidden="true">Browse Files</span>
             </div>
-            <button type="button" class="file-upload-button">Browse Files</button>
         </div>
     }
     else
     {
-        <div class="file-upload-list">
-            @foreach (var file in Files)
+        <div class="file-upload-list" aria-live="polite">
+            @foreach (var file in _files)
             {
-                <div class="file-upload-item" @key="file.Name">
-                    <div class="file-item-icon">📄</div>
+                <div class="file-upload-item" @key="file">
+                    <div class="file-item-icon" aria-hidden="true">📄</div>
                     <div class="file-item-info">
                         <div class="file-item-name">@file.Name</div>
                         <div class="file-item-size">@FormatFileSize(file.Size)</div>
                     </div>
-                    <button type="button" class="file-item-remove" @onclick="() => RemoveFile(file)">×</button>
+                    @if (!Disabled)
+                    {
+                        <button type="button" class="file-item-remove" aria-label="@($"Remove {file.Name}")" @onclick="() => RemoveFile(file)">×</button>
+                    }
                 </div>
             }
-            <button type="button" class="file-upload-add" @onclick="OpenFilePicker">
-                + Add More Files
-            </button>
+            @if (CanAddMoreFiles)
+            {
+                <div class="file-upload-add-wrapper">
+                    <InputFile id="@_inputId"
+                               class="file-upload-input"
+                               multiple="@Multiple"
+                               accept="@Accept"
+                               disabled="@IsFileInputDisabled"
+                               OnChange="HandleFileSelect"
+                               aria-label="Add more files"
+                               aria-describedby="@InputDescribedBy" />
+                    <span class="file-upload-add" aria-hidden="true">+ Add More Files</span>
+                </div>
+            }
+            else if (!Disabled)
+            {
+                <div class="file-upload-limit" role="status">@MaxFilesMessage</div>
+            }
         </div>
+    }
+
+    @if (HasError)
+    {
+        <div id="@_errorId" class="file-upload-error-message" role="alert">@ActiveErrorMessage</div>
     }
 </div>
 
 @code {
-    private ElementReference _fileInput;
+    private List<UploadedFile> _files = new();
     private bool _isDragging;
+    private readonly string _inputId = $"vibe-file-upload-{Guid.NewGuid():N}";
+    private readonly string _hintId = $"vibe-file-upload-hint-{Guid.NewGuid():N}";
+    private readonly string _errorId = $"vibe-file-upload-error-{Guid.NewGuid():N}";
+    private string? _validationMessage;
 
     [Parameter]
     public List<UploadedFile> Files { get; set; } = new();
@@ -62,10 +105,19 @@
     public int MaxFiles { get; set; } = 10;
 
     [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
     public string DropText { get; set; } = "Drop files here or click to browse";
 
     [Parameter]
     public string HintText { get; set; } = "Supports: Images, PDFs, Documents";
+
+    [Parameter]
+    public string AriaLabel { get; set; } = "File upload";
+
+    [Parameter]
+    public string? ErrorMessage { get; set; }
 
     [Parameter]
     public EventCallback<UploadedFile> OnFileAdded { get; set; }
@@ -76,44 +128,209 @@
     [Parameter]
     public string? CssClass { get; set; }
 
+    private string? ActiveErrorMessage => !string.IsNullOrWhiteSpace(ErrorMessage) ? ErrorMessage : _validationMessage;
+    private bool HasError => !string.IsNullOrWhiteSpace(ActiveErrorMessage);
+    private int EffectiveMaxFiles => Math.Max(0, Multiple ? MaxFiles : Math.Min(MaxFiles, 1));
+    private bool CanAddMoreFiles => !Disabled && _files.Count < EffectiveMaxFiles;
+    private bool IsFileInputDisabled => Disabled || _files.Count >= EffectiveMaxFiles;
+    private string MaxFilesMessage => EffectiveMaxFiles == 1 ? "Maximum 1 file selected" : $"Maximum {EffectiveMaxFiles} files selected";
+    private string? InputDescribedBy => CombineIds(_files.Count == 0 ? _hintId : null, HasError ? _errorId : null);
+    private string? RootDescribedBy => HasError ? _errorId : null;
+
     private string CombinedCssClass => CombineClasses(
     "vibe-file-upload",
     _isDragging ? "file-upload-dragging" : null,
-    CssClass
+    Disabled ? "vibe-file-upload-disabled" : null,
+    HasError ? "file-upload-error" : null,
+    CssClass,
+    Class
     );
 
     protected override string ComponentClass => CombinedCssClass;
 
-    private async Task OpenFilePicker()
+    protected override void OnParametersSet()
     {
-        // Would need JS interop to trigger file input click
-        await Task.CompletedTask;
+        _files = Files?.ToList() ?? new();
     }
 
-    private async Task HandleFileSelect(ChangeEventArgs e)
+    private void HandleDragEnter(DragEventArgs _)
     {
-        // File handling would need actual implementation
-        await Task.CompletedTask;
+        if (!Disabled)
+        {
+            _isDragging = true;
+        }
     }
 
-    private async Task HandleDrop(DragEventArgs e)
+    private void HandleDragLeave(DragEventArgs _)
     {
         _isDragging = false;
-        // Would need JS interop for actual file drop handling
-        await Task.CompletedTask;
+    }
+
+    private void HandleDrop(DragEventArgs _)
+    {
+        _isDragging = false;
+    }
+
+    private async Task HandleFileSelect(InputFileChangeEventArgs e)
+    {
+        if (Disabled)
+        {
+            return;
+        }
+
+        var selectedFiles = e.GetMultipleFiles(e.FileCount);
+        var filesToProcess = Multiple ? selectedFiles : selectedFiles.Take(1).ToList();
+        var filesToAdd = new List<UploadedFile>();
+        string? validationMessage = null;
+
+        foreach (var file in filesToProcess)
+        {
+            if (_files.Count + filesToAdd.Count >= EffectiveMaxFiles)
+            {
+                validationMessage ??= MaxFilesMessage;
+                break;
+            }
+
+            var fileName = NormalizeFileName(file.Name);
+            var fileValidationMessage = ValidateFile(fileName, file.Size, file.ContentType);
+            if (fileValidationMessage is not null)
+            {
+                validationMessage ??= fileValidationMessage;
+                continue;
+            }
+
+            filesToAdd.Add(await CreateUploadedFile(file, fileName));
+        }
+
+        _validationMessage = validationMessage;
+
+        if (filesToAdd.Count == 0)
+        {
+            return;
+        }
+
+        var updatedFiles = _files.Concat(filesToAdd).ToList();
+        Files = updatedFiles;
+        _files = updatedFiles;
+        await FilesChanged.InvokeAsync(updatedFiles);
+
+        foreach (var file in filesToAdd)
+        {
+            await OnFileAdded.InvokeAsync(file);
+        }
     }
 
     private async Task RemoveFile(UploadedFile file)
     {
-        Files.Remove(file);
-        await FilesChanged.InvokeAsync(Files);
+        if (Disabled)
+        {
+            return;
+        }
+
+        var updatedFiles = _files.ToList();
+        if (!updatedFiles.Remove(file))
+        {
+            return;
+        }
+
+        _validationMessage = null;
+        Files = updatedFiles;
+        _files = updatedFiles;
+        await FilesChanged.InvokeAsync(updatedFiles);
         await OnFileRemoved.InvokeAsync(file);
+    }
+
+    private async Task<UploadedFile> CreateUploadedFile(IBrowserFile file, string fileName)
+    {
+        await using var stream = file.OpenReadStream(Math.Max(0, MaxFileSize));
+        using var memory = new MemoryStream();
+        await stream.CopyToAsync(memory);
+
+        return new UploadedFile
+        {
+            Name = fileName,
+            Size = file.Size,
+            ContentType = file.ContentType,
+            UploadedAt = DateTime.Now,
+            Data = memory.ToArray()
+        };
+    }
+
+    private string? ValidateFile(string fileName, long size, string contentType)
+    {
+        if (size > Math.Max(0, MaxFileSize))
+        {
+            return $"{fileName} is larger than the {FormatFileSize(MaxFileSize)} limit.";
+        }
+
+        if (!IsAcceptedFileType(fileName, contentType))
+        {
+            return $"{fileName} is not an accepted file type.";
+        }
+
+        return null;
+    }
+
+    private bool IsAcceptedFileType(string fileName, string contentType)
+    {
+        if (string.IsNullOrWhiteSpace(Accept))
+        {
+            return true;
+        }
+
+        var acceptedTypes = Accept.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (acceptedTypes.Length == 0)
+        {
+            return true;
+        }
+
+        var normalizedContentType = contentType.Split(';', 2)[0].Trim();
+        return acceptedTypes.Any(type => AcceptTokenMatches(type, fileName, normalizedContentType));
+    }
+
+    private static bool AcceptTokenMatches(string acceptToken, string fileName, string contentType)
+    {
+        if (acceptToken == "*/*")
+        {
+            return true;
+        }
+
+        if (acceptToken.StartsWith(".", StringComparison.Ordinal))
+        {
+            return string.Equals(Path.GetExtension(fileName), acceptToken, StringComparison.OrdinalIgnoreCase);
+        }
+
+        if (acceptToken.EndsWith("/*", StringComparison.Ordinal))
+        {
+            var typePrefix = acceptToken[..^1];
+            return contentType.StartsWith(typePrefix, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return acceptToken.Contains('/', StringComparison.Ordinal)
+            && string.Equals(contentType, acceptToken, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string NormalizeFileName(string fileName)
+    {
+        var trimmedFileName = fileName.Trim();
+        var separatorIndex = trimmedFileName.LastIndexOfAny(new[] { (char)92, '/' });
+        var normalizedFileName = separatorIndex >= 0
+            ? trimmedFileName[(separatorIndex + 1)..]
+            : trimmedFileName;
+
+        return string.IsNullOrWhiteSpace(normalizedFileName) ? "unnamed" : normalizedFileName;
+    }
+
+    private static string? CombineIds(params string?[] ids)
+    {
+        var renderedIds = ids.Where(id => !string.IsNullOrWhiteSpace(id)).ToList();
+        return renderedIds.Count == 0 ? null : string.Join(" ", renderedIds);
     }
 
     private string FormatFileSize(long bytes)
     {
         string[] sizes = { "B", "KB", "MB", "GB" };
-        double len = bytes;
+        double len = Math.Max(0, bytes);
         int order = 0;
         while (len >= 1024 && order < sizes.Length - 1)
         {

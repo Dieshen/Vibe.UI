@@ -1,11 +1,15 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
+@implements IDisposable
 
-<p class="@CombinedClass" id="@Id" @attributes="AdditionalAttributes">
+<p class="@CombinedClass" id="@EffectiveId" @attributes="AdditionalAttributes">
     @ChildContent
 </p>
 
 @code {
+    private readonly string _generatedId = $"vibe-dialog-description-{Guid.NewGuid():N}";
+    private string? _registeredId;
+
     /// <summary>
     /// Gets or sets the description text or content for the dialog.
     /// Provides additional context or instructions to the user.
@@ -23,14 +27,19 @@
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-dialog-description";
 
-    protected override void OnInitialized()
-    {
-        if (string.IsNullOrWhiteSpace(Id))
-        {
-            Id = $"vibe-dialog-description-{Guid.NewGuid():N}";
-        }
+    private string EffectiveId => string.IsNullOrWhiteSpace(Id) ? _generatedId : Id.Trim();
 
-        Context?.SetDescriptionId(Id);
-        base.OnInitialized();
+    protected override void OnParametersSet()
+    {
+        _registeredId = EffectiveId;
+        Context?.SetDescriptionId(_registeredId);
+    }
+
+    public void Dispose()
+    {
+        if (_registeredId is not null)
+        {
+            Context?.ClearDescriptionId(_registeredId);
+        }
     }
 }

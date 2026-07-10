@@ -1,192 +1,484 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
 <div @attributes="AdditionalAttributes" class="@CombinedCssClass">
     @if (ShowToolbar)
     {
-        <div class="richtext-toolbar">
-            <div class="toolbar-group">
-                <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("bold"))" title="Bold">
+        <div class="richtext-toolbar" role="toolbar" aria-label="@EffectiveToolbarAriaLabel">
+            <div class="toolbar-group" role="group" aria-label="Text formatting">
+                <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("bold"))"
+                    title="Bold" aria-label="Bold" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
                     <strong>B</strong>
                 </button>
-                <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("italic"))" title="Italic">
+                <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("italic"))"
+                    title="Italic" aria-label="Italic" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
                     <em>I</em>
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("underline"))"
-                    title="Underline">
+                    title="Underline" aria-label="Underline" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
                     <u>U</u>
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("strikeThrough"))"
-                    title="Strikethrough">
+                    title="Strikethrough" aria-label="Strikethrough" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
                     <s>S</s>
                 </button>
             </div>
 
-            <div class="toolbar-separator"></div>
+            <div class="toolbar-separator" role="separator" aria-orientation="vertical"></div>
 
-            <div class="toolbar-group">
+            <div class="toolbar-group" role="group" aria-label="Block formatting">
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("formatBlock", "h1"))"
-                    title="Heading 1">
+                    title="Heading 1" aria-label="Heading 1" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
                     H1
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("formatBlock", "h2"))"
-                    title="Heading 2">
+                    title="Heading 2" aria-label="Heading 2" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
                     H2
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("formatBlock", "p"))"
-                    title="Paragraph">
+                    title="Paragraph" aria-label="Paragraph" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
                     P
                 </button>
             </div>
 
-            <div class="toolbar-separator"></div>
+            <div class="toolbar-separator" role="separator" aria-orientation="vertical"></div>
 
-            <div class="toolbar-group">
+            <div class="toolbar-group" role="group" aria-label="Lists">
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("insertUnorderedList"))"
-                    title="Bullet List">
-                    •
+                    title="Bullet list" aria-label="Bullet list" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
+                    UL
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("insertOrderedList"))"
-                    title="Numbered List">
-                    1.
+                    title="Numbered list" aria-label="Numbered list" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
+                    OL
                 </button>
             </div>
 
-            <div class="toolbar-separator"></div>
+            <div class="toolbar-separator" role="separator" aria-orientation="vertical"></div>
 
-            <div class="toolbar-group">
+            <div class="toolbar-group" role="group" aria-label="Alignment">
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("justifyLeft"))"
-                    title="Align Left">
-                    ≡
+                    title="Align left" aria-label="Align left" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
+                    L
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("justifyCenter"))"
-                    title="Align Center">
-                    ≡
+                    title="Align center" aria-label="Align center" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
+                    C
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("justifyRight"))"
-                    title="Align Right">
-                    ≡
+                    title="Align right" aria-label="Align right" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
+                    R
                 </button>
             </div>
 
             @if (AllowLinks)
             {
-                <div class="toolbar-separator"></div>
-                <div class="toolbar-group">
-                    <button type="button" class="toolbar-button" @onclick="InsertLink" title="Insert Link">
-                        🔗
+                <div class="toolbar-separator" role="separator" aria-orientation="vertical"></div>
+                <div class="toolbar-group" role="group" aria-label="Links">
+                    <button type="button" class="toolbar-button" @onclick="InsertLink"
+                        title="Insert link" aria-label="Insert link" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
+                        Link
                     </button>
                 </div>
             }
 
             @if (AllowImages)
             {
-                <div class="toolbar-separator"></div>
-                <div class="toolbar-group">
-                    <button type="button" class="toolbar-button" @onclick="InsertImage" title="Insert Image">
-                        🖼️
+                <div class="toolbar-separator" role="separator" aria-orientation="vertical"></div>
+                <div class="toolbar-group" role="group" aria-label="Images">
+                    <button type="button" class="toolbar-button" @onclick="InsertImage"
+                        title="Insert image" aria-label="Insert image" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
+                        Img
                     </button>
                 </div>
             }
         </div>
     }
 
-    <div class="richtext-editor" contenteditable="@((!ReadOnly).ToString().ToLower())" @ref="_editorRef"
-        @oninput="HandleInput" placeholder="@Placeholder" role="textbox" aria-label="@AriaLabel">
-        @((MarkupString)Content)
+    <div class="richtext-editor" contenteditable="@IsEditableContentEditableValue" @ref="_editorRef"
+        @oninput="HandleInput" @onfocus="HandleFocus" @onblur="HandleBlur"
+        data-placeholder="@Placeholder" aria-placeholder="@Placeholder" role="textbox" aria-multiline="true"
+        aria-label="@EffectiveAriaLabel" aria-readonly="@ReadOnlyAriaValue" aria-disabled="@DisabledAriaValue"
+        tabindex="@EditorTabIndex" spellcheck="@IsEditableContentEditableValue" style="@EditorStyle">
+        @if (RenderTrustedHtml)
+        {
+            @((MarkupString)_content)
+        }
+        else
+        {
+            @_content
+        }
     </div>
 
     @if (ShowCharCount)
     {
         <div class="richtext-footer">
-            <span class="char-count">@GetCharCount() characters</span>
+            <span class="char-count" aria-live="polite">@GetCharCount() characters</span>
         </div>
     }
 </div>
 
 @code {
+    private const string DefaultAriaLabel = "Rich text editor";
+    private const string DefaultToolbarAriaLabel = "Rich text formatting";
+
     private ElementReference _editorRef;
+    private RichTextEditorInterop? _interop;
     private string _content = string.Empty;
 
+    /// <summary>
+    /// Gets or sets the editor content. By default this value is rendered as encoded text.
+    /// Set <see cref="RenderTrustedHtml" /> only when the content is already trusted or sanitized.
+    /// </summary>
     [Parameter]
-    public string Content
-    {
-        get => _content;
-        set
-        {
-            if (_content != value)
-            {
-                _content = value ?? string.Empty;
-            }
-        }
-    }
+    public string? Content { get; set; }
 
+    /// <summary>
+    /// Gets or sets a Value alias for consumers that use the common @bind-Value pattern.
+    /// </summary>
+    [Parameter]
+    public string? Value { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback for Content changes.
+    /// </summary>
     [Parameter]
     public EventCallback<string> ContentChanged { get; set; }
 
+    /// <summary>
+    /// Gets or sets the callback for Value changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the formatting toolbar is rendered.
+    /// </summary>
     [Parameter]
     public bool ShowToolbar { get; set; } = true;
 
+    /// <summary>
+    /// Gets or sets whether editing and toolbar commands are disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the content is read-only.
+    /// </summary>
     [Parameter]
     public bool ReadOnly { get; set; }
 
+    /// <summary>
+    /// Gets or sets whether link insertion is available.
+    /// </summary>
     [Parameter]
     public bool AllowLinks { get; set; } = true;
 
+    /// <summary>
+    /// Gets or sets whether image insertion is available.
+    /// </summary>
     [Parameter]
     public bool AllowImages { get; set; } = true;
 
+    /// <summary>
+    /// Gets or sets whether to render the character count footer.
+    /// </summary>
     [Parameter]
     public bool ShowCharCount { get; set; }
 
+    /// <summary>
+    /// Gets or sets placeholder text for the editable area.
+    /// </summary>
     [Parameter]
     public string? Placeholder { get; set; }
 
+    /// <summary>
+    /// Gets or sets the minimum editor height in pixels.
+    /// </summary>
     [Parameter]
     public int MinHeight { get; set; } = 200;
 
+    /// <summary>
+    /// Gets or sets the maximum editor height in pixels. Set to 0 or less to omit a maximum height.
+    /// </summary>
     [Parameter]
     public int MaxHeight { get; set; } = 500;
 
+    /// <summary>
+    /// Gets or sets the accessible name for the editor textbox.
+    /// </summary>
     [Parameter]
-    public string? AriaLabel { get; set; } = "Rich text editor";
+    public string? AriaLabel { get; set; } = DefaultAriaLabel;
 
+    /// <summary>
+    /// Gets or sets the accessible name for the formatting toolbar.
+    /// </summary>
+    [Parameter]
+    public string? ToolbarAriaLabel { get; set; } = DefaultToolbarAriaLabel;
+
+    /// <summary>
+    /// Gets or sets a legacy custom CSS class for the root element.
+    /// Prefer the inherited Class parameter for new code.
+    /// </summary>
     [Parameter]
     public string? CssClass { get; set; }
 
+    /// <summary>
+    /// Gets or sets whether Content/Value is rendered as trusted HTML.
+    /// Keep this false for untrusted user or remote content.
+    /// </summary>
+    [Parameter]
+    public bool RenderTrustedHtml { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback for focus events on the editor.
+    /// </summary>
+    [Parameter]
+    public EventCallback<FocusEventArgs> OnFocus { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback for blur events on the editor.
+    /// </summary>
+    [Parameter]
+    public EventCallback<FocusEventArgs> OnBlur { get; set; }
+
+    private bool IsEditable => !Disabled && !ReadOnly;
+    private string IsEditableContentEditableValue => IsEditable ? "true" : "false";
+    private string? DisabledAriaValue => Disabled ? "true" : null;
+    private string? ReadOnlyAriaValue => ReadOnly ? "true" : null;
+    private int EditorTabIndex => Disabled ? -1 : 0;
+    private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel) ? DefaultAriaLabel : AriaLabel!;
+    private string EffectiveToolbarAriaLabel => string.IsNullOrWhiteSpace(ToolbarAriaLabel) ? DefaultToolbarAriaLabel : ToolbarAriaLabel!;
+
     private string CombinedCssClass => CombineClasses(
-    "vibe-richtext",
-    ReadOnly ? "richtext-readonly" : null,
-    CssClass
+        "vibe-richtext",
+        Disabled ? "richtext-disabled" : null,
+        ReadOnly ? "richtext-readonly" : null,
+        CssClass,
+        Class
     );
+
+    private string EditorStyle
+    {
+        get
+        {
+            var minHeight = Math.Max(0, MinHeight);
+            var styles = new List<string> { $"--richtext-min-height: {minHeight}px" };
+
+            if (MaxHeight > 0)
+            {
+                styles.Add($"--richtext-max-height: {Math.Max(minHeight, MaxHeight)}px");
+            }
+
+            return string.Join("; ", styles);
+        }
+    }
 
     protected override string ComponentClass => CombinedCssClass;
 
+    protected override void OnParametersSet()
+    {
+        _content = Content ?? Value ?? string.Empty;
+    }
+
     private async Task HandleInput(ChangeEventArgs e)
     {
-        _content = e.Value?.ToString() ?? string.Empty;
-        await ContentChanged.InvokeAsync(_content);
+        if (!IsEditable)
+        {
+            return;
+        }
+
+        var newContent = e.Value as string;
+        if (newContent is null)
+        {
+            newContent = await GetInterop().GetHtmlAsync(_editorRef);
+        }
+
+        _content = newContent;
+        await NotifyContentChanged(_content);
     }
 
-    private void ExecuteCommand(string command, string? value = null)
+    private Task HandleFocus(FocusEventArgs args)
     {
-        // Would need JS interop: document.execCommand(command, false, value)
+        return OnFocus.HasDelegate ? OnFocus.InvokeAsync(args) : Task.CompletedTask;
     }
 
-    private void InsertLink()
+    private Task HandleBlur(FocusEventArgs args)
     {
-        // Would need JS interop to prompt for URL and insert link
+        return OnBlur.HasDelegate ? OnBlur.InvokeAsync(args) : Task.CompletedTask;
     }
 
-    private void InsertImage()
+    private async Task ExecuteCommand(string command, string? value = null)
     {
-        // Would need JS interop to prompt for image URL and insert
+        if (!IsEditable)
+        {
+            return;
+        }
+
+        await GetInterop().ExecuteCommandAsync(_editorRef, command, value);
+    }
+
+    private async Task InsertLink()
+    {
+        if (!IsEditable)
+        {
+            return;
+        }
+
+        var url = await GetInterop().PromptForUrlAsync("Enter link URL");
+        if (IsSafeLinkUrl(url))
+        {
+            await ExecuteCommand("createLink", url!.Trim());
+        }
+    }
+
+    private async Task InsertImage()
+    {
+        if (!IsEditable)
+        {
+            return;
+        }
+
+        var url = await GetInterop().PromptForUrlAsync("Enter image URL");
+        if (IsSafeImageUrl(url))
+        {
+            await ExecuteCommand("insertImage", url!.Trim());
+        }
+    }
+
+    private async Task NotifyContentChanged(string content)
+    {
+        if (ContentChanged.HasDelegate)
+        {
+            await ContentChanged.InvokeAsync(content);
+        }
+
+        if (ValueChanged.HasDelegate)
+        {
+            await ValueChanged.InvokeAsync(content);
+        }
     }
 
     private int GetCharCount()
     {
-        // Strip HTML tags for char count
-        var plainText = System.Text.RegularExpressions.Regex.Replace(_content, "<.*?>", string.Empty);
-        return plainText.Length;
+        return GetVisibleText(_content).Length;
+    }
+
+    private string GetVisibleText(string content)
+    {
+        if (!RenderTrustedHtml || string.IsNullOrEmpty(content))
+        {
+            return content;
+        }
+
+        var withoutTags = System.Text.RegularExpressions.Regex.Replace(content, "<[^>]*>", string.Empty);
+        return System.Net.WebUtility.HtmlDecode(withoutTags);
+    }
+
+    private static bool IsSafeLinkUrl(string? url)
+    {
+        return IsSafeUrl(url, allowMailAndTel: true);
+    }
+
+    private static bool IsSafeImageUrl(string? url)
+    {
+        return IsSafeUrl(url, allowMailAndTel: false);
+    }
+
+    private static bool IsSafeUrl(string? url, bool allowMailAndTel)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return false;
+        }
+
+        var trimmed = url.Trim();
+        if (trimmed.StartsWith("#", StringComparison.Ordinal) ||
+            trimmed.StartsWith("/", StringComparison.Ordinal) ||
+            trimmed.StartsWith("./", StringComparison.Ordinal) ||
+            trimmed.StartsWith("../", StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        if (!Uri.TryCreate(trimmed, UriKind.Absolute, out var uri))
+        {
+            return false;
+        }
+
+        return string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) ||
+            (allowMailAndTel &&
+                (string.Equals(uri.Scheme, Uri.UriSchemeMailto, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(uri.Scheme, "tel", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    private RichTextEditorInterop GetInterop()
+    {
+        return _interop ??= new RichTextEditorInterop(JSRuntime);
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (_interop is not null)
+        {
+            await _interop.DisposeAsync();
+        }
+    }
+
+    private sealed class RichTextEditorInterop : IAsyncDisposable
+    {
+        internal const string ModulePath = "./_content/Vibe.UI/js/vibe-richtext.js";
+        internal const string ExecuteCommandMethod = "executeCommand";
+        internal const string PromptForUrlMethod = "promptForUrl";
+        internal const string GetHtmlMethod = "getHtml";
+
+        private readonly IJSRuntime _jsRuntime;
+        private IJSObjectReference? _module;
+
+        public RichTextEditorInterop(IJSRuntime jsRuntime)
+        {
+            _jsRuntime = jsRuntime;
+        }
+
+        private async ValueTask<IJSObjectReference> GetModuleAsync()
+        {
+            return _module ??= await _jsRuntime.InvokeAsync<IJSObjectReference>("import", ModulePath);
+        }
+
+        public async ValueTask ExecuteCommandAsync(ElementReference editor, string command, string? value)
+        {
+            var module = await GetModuleAsync();
+            await module.InvokeVoidAsync(ExecuteCommandMethod, editor, command, value);
+        }
+
+        public async ValueTask<string?> PromptForUrlAsync(string message)
+        {
+            var module = await GetModuleAsync();
+            return await module.InvokeAsync<string?>(PromptForUrlMethod, message);
+        }
+
+        public async ValueTask<string> GetHtmlAsync(ElementReference editor)
+        {
+            var module = await GetModuleAsync();
+            return await module.InvokeAsync<string>(GetHtmlMethod, editor);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            try
+            {
+                if (_module is not null)
+                {
+                    await _module.DisposeAsync();
+                }
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+        }
     }
 }

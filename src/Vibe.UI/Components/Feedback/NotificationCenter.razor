@@ -1,85 +1,124 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
-    <button type="button" class="notification-trigger" @onclick="TogglePanel" aria-label="Notifications">
-        <svg class="bell-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<div @attributes="AdditionalAttributes" class="@CombinedClass">
+    <button type="button"
+            class="notification-trigger"
+            @onclick="TogglePanel"
+            disabled="@Disabled"
+            aria-label="@EffectiveAriaLabel"
+            aria-haspopup="dialog"
+            aria-expanded="@AriaBool(_isOpen)"
+            aria-controls="@_panelId"
+            aria-disabled="@AriaBool(Disabled)">
+        <svg class="bell-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
         </svg>
         @if (UnreadCount > 0)
         {
-            <span class="notification-badge">@(UnreadCount > 99 ? "99+" : UnreadCount.ToString())</span>
+            <span class="notification-badge" aria-hidden="true">@UnreadBadgeText</span>
         }
     </button>
 
+    <span class="notification-live-region" role="status" aria-live="polite">@LiveRegionText</span>
+
     @if (_isOpen)
     {
-        <div class="notification-panel">
+        <section id="@_panelId"
+                 class="notification-panel"
+                 role="dialog"
+                 aria-modal="false"
+                 aria-labelledby="@_titleId"
+                 tabindex="-1"
+                 @onkeydown="HandlePanelKeyDown">
             <div class="panel-header">
-                <h3 class="panel-title">Notifications</h3>
+                <h3 id="@_titleId" class="panel-title">Notifications</h3>
                 @if (UnreadCount > 0)
                 {
-                    <button type="button" class="panel-action" @onclick="MarkAllAsRead">
+                    <button type="button"
+                            class="panel-action"
+                            @onclick="MarkAllAsRead"
+                            disabled="@ReadOnly"
+                            aria-disabled="@AriaBool(ReadOnly)">
                         Mark all read
                     </button>
                 }
             </div>
 
-            @if (ShowFilters && Filters.Any())
+            @if (ShouldShowFilters)
             {
-                <div class="panel-filters">
-                    @foreach (var filter in Filters)
+                <div class="panel-filters" role="group" aria-label="Notification filters">
+                    @foreach (var filter in _filters)
                     {
-                        <button type="button" class="filter-btn @(_activeFilter == filter ? "active" : "")"
-                            @onclick="() => SetFilter(filter)">
+                        <button type="button"
+                                class="@GetFilterButtonClass(filter)"
+                                aria-pressed="@AriaBool(IsActiveFilter(filter))"
+                                @onclick="() => SetFilter(filter)">
                             @filter
                         </button>
                     }
                 </div>
             }
 
-            <div class="notification-list">
-                @if (FilteredNotifications.Any())
+            <div class="notification-list" role="list" aria-label="Notification list">
+                @if (DisplayedNotifications.Count > 0)
                 {
-                    @foreach (var notification in FilteredNotifications.Take(MaxDisplayCount))
+                    @foreach (var notification in DisplayedNotifications)
                     {
-                        <div class="notification-item @(notification.IsRead ? "read" : "unread") @($"type-{notification.Type.ToString().ToLower()}")"
-                            @key="notification.Id" @onclick="() => HandleNotificationClick(notification)">
-                            <div class="notification-icon">
-                                @if (notification.Icon != null)
-                                {
-                                    @notification.Icon
-                                }
-                                else
-                                {
-                                    @GetDefaultIcon(notification.Type)
-                                }
-                            </div>
+                        <div class="@GetNotificationItemClass(notification)" role="listitem" @key="notification">
+                            <button type="button"
+                                    class="notification-content-button"
+                                    @onclick="() => HandleNotificationClick(notification)"
+                                    aria-label="@GetNotificationAriaLabel(notification)">
+                                <div class="notification-icon" aria-hidden="true">
+                                    @if (notification.Icon != null)
+                                    {
+                                        @notification.Icon
+                                    }
+                                    else
+                                    {
+                                        @GetDefaultIcon(notification.Type)
+                                    }
+                                </div>
 
-                            <div class="notification-content">
-                                @if (!string.IsNullOrEmpty(notification.Title))
-                                {
-                                    <h4 class="notification-title">@notification.Title</h4>
-                                }
-                                @if (!string.IsNullOrEmpty(notification.Message))
-                                {
-                                    <p class="notification-message">@notification.Message</p>
-                                }
-                                @if (notification.Timestamp.HasValue)
-                                {
-                                    <time class="notification-time">@FormatTimestamp(notification.Timestamp.Value)</time>
-                                }
-                            </div>
+                                <div class="notification-content">
+                                    @if (!string.IsNullOrWhiteSpace(notification.Title))
+                                    {
+                                        <h4 class="notification-title">@notification.Title</h4>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(notification.Message))
+                                    {
+                                        <p class="notification-message">@notification.Message</p>
+                                    }
+                                    @if (string.IsNullOrWhiteSpace(notification.Title) && string.IsNullOrWhiteSpace(notification.Message))
+                                    {
+                                        <p class="notification-message notification-message-empty">Untitled notification</p>
+                                    }
+                                    @if (notification.Timestamp.HasValue)
+                                    {
+                                        <time class="notification-time"
+                                              datetime="@notification.Timestamp.Value.ToString("O", System.Globalization.CultureInfo.InvariantCulture)">
+                                            @FormatTimestamp(notification.Timestamp.Value)
+                                        </time>
+                                    }
+                                </div>
+                            </button>
 
                             <div class="notification-actions">
                                 @if (!notification.IsRead)
                                 {
-                                    <span class="unread-indicator"></span>
+                                    <span class="unread-indicator" aria-hidden="true"></span>
                                 }
-                                <button type="button" class="action-btn" @onclick:stopPropagation
-                                    @onclick="() => RemoveNotification(notification.Id)" title="Remove">
-                                    ×
+                                <button type="button"
+                                        class="action-btn notification-remove-btn"
+                                        @onclick:stopPropagation
+                                        @onclick="() => RemoveNotification(notification)"
+                                        title="Remove"
+                                        aria-label="@GetRemoveAriaLabel(notification)"
+                                        disabled="@ReadOnly"
+                                        aria-disabled="@AriaBool(ReadOnly)">
+                                    <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
                         </div>
@@ -87,46 +126,61 @@
                 }
                 else
                 {
-                    <div class="notification-empty">
+                    <div class="notification-empty" role="status" aria-live="polite">
                         @if (EmptyContent != null)
                         {
                             @EmptyContent
                         }
                         else
                         {
-                            <p>No notifications</p>
+                            <p>@EmptyMessage</p>
                         }
                     </div>
                 }
             </div>
 
-            @if (Notifications.Count > MaxDisplayCount)
+            @if (ShouldShowFooter)
             {
                 <div class="panel-footer">
-                    <button type="button" class="view-all-btn" @onclick="@(() => OnViewAll.InvokeAsync())">
-                        View all (@Notifications.Count)
-                    </button>
-                </div>
-            }
+                    @if (ShouldShowViewAll)
+                    {
+                        <button type="button" class="view-all-btn" @onclick="ViewAll">
+                            View all (@_notifications.Count)
+                        </button>
+                    }
 
-            @if (AllowClearAll && Notifications.Any())
-            {
-                <div class="panel-footer">
-                    <button type="button" class="clear-all-btn" @onclick="ClearAll">
-                        Clear all
-                    </button>
+                    @if (AllowClearAll && _notifications.Count > 0)
+                    {
+                        <button type="button"
+                                class="clear-all-btn"
+                                @onclick="ClearAll"
+                                disabled="@ReadOnly"
+                                aria-disabled="@AriaBool(ReadOnly)">
+                            Clear all
+                        </button>
+                    }
                 </div>
             }
-        </div>
+        </section>
     }
 </div>
 
 @code {
-    private bool _isOpen = false;
-    private string _activeFilter = "All";
+    private const string AllFilter = "All";
+    private const string UnreadFilter = "Unread";
+
+    private readonly string _panelId = $"notification-panel-{Guid.NewGuid():N}";
+    private readonly string _titleId = $"notification-title-{Guid.NewGuid():N}";
+    private bool _isOpen;
+    private string _activeFilter = AllFilter;
+    private List<NotificationItem> _notifications = [];
+    private List<string> _filters = [];
+    private readonly HashSet<string> _locallyReadNotificationIds = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _locallyRemovedNotificationIds = new(StringComparer.Ordinal);
+    private IReadOnlyList<string> _lastSourceNotificationIds = Array.Empty<string>();
 
     [Parameter]
-    public List<NotificationItem> Notifications { get; set; } = new();
+    public List<NotificationItem>? Notifications { get; set; } = new();
 
     [Parameter]
     public EventCallback<List<NotificationItem>> NotificationsChanged { get; set; }
@@ -135,13 +189,22 @@
     public bool ShowFilters { get; set; } = true;
 
     [Parameter]
-    public List<string> Filters { get; set; } = new() { "All", "Unread", "Info", "Success", "Warning", "Error" };
+    public List<string>? Filters { get; set; } = new() { "All", "Unread", "Info", "Success", "Warning", "Error" };
 
     [Parameter]
     public int MaxDisplayCount { get; set; } = 5;
 
     [Parameter]
     public bool AllowClearAll { get; set; } = true;
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    [Parameter]
+    public string AriaLabel { get; set; } = "Notifications";
 
     [Parameter]
     public EventCallback<NotificationItem> OnNotificationClicked { get; set; }
@@ -155,101 +218,399 @@
     [Parameter]
     public string? CssClass { get; set; }
 
-    private string CombinedCssClass => CombineClasses(
-    "vibe-notification-center",
-    _isOpen ? "open" : null,
-    CssClass
-    );
+    protected override string ComponentClass => CombineClasses(
+        "vibe-notification-center",
+        _isOpen ? "open" : null,
+        Disabled ? "vibe-notification-center-disabled" : null,
+        ReadOnly ? "vibe-notification-center-readonly" : null,
+        CssClass);
 
-    protected override string ComponentClass => CombinedCssClass;
+    private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel) ? "Notifications" : AriaLabel.Trim();
 
-    private int UnreadCount => Notifications.Count(n => !n.IsRead);
+    private int UnreadCount => _notifications.Count(n => !n.IsRead);
 
-    private IEnumerable<NotificationItem> FilteredNotifications
+    private string UnreadBadgeText => UnreadCount > 99 ? "99+" : UnreadCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    private string LiveRegionText => UnreadCount switch
     {
-        get
+        0 => "No unread notifications",
+        1 => "1 unread notification",
+        _ => $"{UnreadCount} unread notifications"
+    };
+
+    private int EffectiveMaxDisplayCount => MaxDisplayCount < 1 ? 1 : MaxDisplayCount;
+
+    private bool ShouldShowFilters => ShowFilters && _filters.Count > 0;
+
+    private string EffectiveFilter => ShouldShowFilters ? _activeFilter : AllFilter;
+
+    private IReadOnlyList<NotificationItem> FilteredNotifications => ApplyFilter()
+        .OrderByDescending(n => n.Timestamp ?? DateTime.MinValue)
+        .ToList();
+
+    private IReadOnlyList<NotificationItem> DisplayedNotifications => FilteredNotifications
+        .Take(EffectiveMaxDisplayCount)
+        .ToList();
+
+    private bool ShouldShowViewAll => _notifications.Count > EffectiveMaxDisplayCount;
+
+    private bool ShouldShowFooter => ShouldShowViewAll || (AllowClearAll && _notifications.Count > 0);
+
+    private string EmptyMessage => _notifications.Count == 0 ? "No notifications" : "No matching notifications";
+
+    protected override void OnParametersSet()
+    {
+        var normalizedNotifications = NormalizeNotifications(Notifications);
+        ReconcileLocalNotificationState(normalizedNotifications);
+        _notifications = ApplyLocalNotificationState(normalizedNotifications);
+        _filters = NormalizeFilters(Filters);
+
+        if (_filters.Count == 0)
         {
-            var filtered = _activeFilter switch
-            {
-                "Unread" => Notifications.Where(n => !n.IsRead),
-                "All" => Notifications,
-                _ => Notifications.Where(n => n.Type.ToString() == _activeFilter)
-            };
-            return filtered.OrderByDescending(n => n.Timestamp);
+            _filters.Add(AllFilter);
+        }
+
+        var matchingActiveFilter = _filters.FirstOrDefault(filter => FiltersMatch(filter, _activeFilter));
+        _activeFilter = matchingActiveFilter ?? _filters[0];
+
+        if (Disabled)
+        {
+            _isOpen = false;
         }
     }
 
     private void TogglePanel()
     {
+        if (Disabled)
+        {
+            return;
+        }
+
         _isOpen = !_isOpen;
+    }
+
+    private void HandlePanelKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            _isOpen = false;
+        }
     }
 
     private void SetFilter(string filter)
     {
-        _activeFilter = filter;
+        var matchingFilter = _filters.FirstOrDefault(candidate => FiltersMatch(candidate, filter));
+        if (matchingFilter != null)
+        {
+            _activeFilter = matchingFilter;
+        }
     }
 
     private async Task HandleNotificationClick(NotificationItem notification)
     {
-        if (!notification.IsRead)
+        var notificationIndex = _notifications.IndexOf(notification);
+        if (notificationIndex < 0)
         {
-            notification.IsRead = true;
-            await NotificationsChanged.InvokeAsync(Notifications);
+            return;
         }
-        await OnNotificationClicked.InvokeAsync(notification);
+
+        if (!ReadOnly && !notification.IsRead)
+        {
+            var updatedNotification = CloneNotification(notification);
+            updatedNotification.IsRead = true;
+            _notifications[notificationIndex] = updatedNotification;
+            notification = updatedNotification;
+            RememberNotificationRead(updatedNotification);
+
+            await NotifyNotificationsChangedAsync();
+        }
+
+        await OnNotificationClicked.InvokeAsync(CloneNotification(notification));
     }
 
     private async Task MarkAllAsRead()
     {
-        foreach (var notification in Notifications.Where(n => !n.IsRead))
+        if (ReadOnly)
         {
-            notification.IsRead = true;
+            return;
         }
-        await NotificationsChanged.InvokeAsync(Notifications);
+
+        var changed = false;
+        for (var i = 0; i < _notifications.Count; i++)
+        {
+            if (_notifications[i].IsRead)
+            {
+                continue;
+            }
+
+            var notification = CloneNotification(_notifications[i]);
+            notification.IsRead = true;
+            _notifications[i] = notification;
+            RememberNotificationRead(notification);
+            changed = true;
+        }
+
+        if (changed)
+        {
+            await NotifyNotificationsChangedAsync();
+        }
     }
 
-    private async Task RemoveNotification(string id)
+    private async Task RemoveNotification(NotificationItem notification)
     {
-        var notification = Notifications.FirstOrDefault(n => n.Id == id);
-        if (notification != null)
+        if (ReadOnly)
         {
-            Notifications.Remove(notification);
-            await NotificationsChanged.InvokeAsync(Notifications);
+            return;
         }
+
+        var index = _notifications.IndexOf(notification);
+        if (index < 0)
+        {
+            index = _notifications.FindIndex(candidate => string.Equals(candidate.Id, notification.Id, StringComparison.Ordinal));
+        }
+
+        if (index < 0)
+        {
+            return;
+        }
+
+        RememberNotificationRemoved(_notifications[index]);
+        _notifications.RemoveAt(index);
+        await NotifyNotificationsChangedAsync();
     }
 
     private async Task ClearAll()
     {
-        Notifications.Clear();
-        await NotificationsChanged.InvokeAsync(Notifications);
+        if (ReadOnly || _notifications.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var notification in _notifications)
+        {
+            RememberNotificationRemoved(notification);
+        }
+
+        _notifications.Clear();
+        await NotifyNotificationsChangedAsync();
         _isOpen = false;
     }
 
-    private string FormatTimestamp(DateTime timestamp)
+    private async Task ViewAll()
     {
-        var diff = DateTime.Now - timestamp;
+        await OnViewAll.InvokeAsync();
+    }
+
+    private async Task NotifyNotificationsChangedAsync()
+    {
+        await NotificationsChanged.InvokeAsync(_notifications.Select(notification => CloneNotification(notification)).ToList());
+    }
+
+    private void ReconcileLocalNotificationState(IReadOnlyList<NotificationItem> sourceNotifications)
+    {
+        var sourceIds = sourceNotifications.Select(notification => notification.Id).ToArray();
+
+        if (sourceIds.SequenceEqual(_lastSourceNotificationIds, StringComparer.Ordinal))
+        {
+            return;
+        }
+
+        var sourceIdSet = sourceIds.ToHashSet(StringComparer.Ordinal);
+        _locallyReadNotificationIds.IntersectWith(sourceIdSet);
+        _locallyRemovedNotificationIds.IntersectWith(sourceIdSet);
+        _lastSourceNotificationIds = sourceIds;
+    }
+
+    private List<NotificationItem> ApplyLocalNotificationState(IEnumerable<NotificationItem> sourceNotifications)
+    {
+        var notifications = new List<NotificationItem>();
+
+        foreach (var notification in sourceNotifications)
+        {
+            if (_locallyRemovedNotificationIds.Contains(notification.Id))
+            {
+                continue;
+            }
+
+            if (_locallyReadNotificationIds.Contains(notification.Id) && !notification.IsRead)
+            {
+                var readNotification = CloneNotification(notification);
+                readNotification.IsRead = true;
+                notifications.Add(readNotification);
+                continue;
+            }
+
+            notifications.Add(notification);
+        }
+
+        return notifications;
+    }
+
+    private void RememberNotificationRead(NotificationItem notification)
+    {
+        if (!string.IsNullOrWhiteSpace(notification.Id))
+        {
+            _locallyReadNotificationIds.Add(notification.Id);
+        }
+    }
+
+    private void RememberNotificationRemoved(NotificationItem notification)
+    {
+        if (!string.IsNullOrWhiteSpace(notification.Id))
+        {
+            _locallyRemovedNotificationIds.Add(notification.Id);
+        }
+    }
+
+    private IEnumerable<NotificationItem> ApplyFilter()
+    {
+        if (FiltersMatch(EffectiveFilter, AllFilter))
+        {
+            return _notifications;
+        }
+
+        if (FiltersMatch(EffectiveFilter, UnreadFilter))
+        {
+            return _notifications.Where(n => !n.IsRead);
+        }
+
+        return Enum.TryParse<NotificationType>(EffectiveFilter, ignoreCase: true, out var notificationType)
+            ? _notifications.Where(n => n.Type == notificationType)
+            : [];
+    }
+
+    private string GetFilterButtonClass(string filter) => CombineClasses(
+        "filter-btn",
+        IsActiveFilter(filter) ? "active" : null);
+
+    private bool IsActiveFilter(string filter) => FiltersMatch(_activeFilter, filter);
+
+    private string GetNotificationItemClass(NotificationItem notification) => CombineClasses(
+        "notification-item",
+        notification.IsRead ? "read" : "unread",
+        $"type-{notification.Type.ToString().ToLowerInvariant()}");
+
+    private static string GetNotificationAriaLabel(NotificationItem notification)
+    {
+        var state = notification.IsRead ? "read" : "unread";
+        return $"{notification.Type} notification, {GetNotificationSummary(notification)}, {state}";
+    }
+
+    private static string GetRemoveAriaLabel(NotificationItem notification) =>
+        $"Remove {GetNotificationSummary(notification)}";
+
+    private static string GetNotificationSummary(NotificationItem notification)
+    {
+        if (!string.IsNullOrWhiteSpace(notification.Title))
+        {
+            return notification.Title.Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(notification.Message))
+        {
+            return notification.Message.Trim();
+        }
+
+        return "Untitled notification";
+    }
+
+    private static string FormatTimestamp(DateTime timestamp)
+    {
+        var now = timestamp.Kind == DateTimeKind.Utc ? DateTime.UtcNow : DateTime.Now;
+        var diff = now - timestamp;
 
         if (diff.TotalMinutes < 1) return "Just now";
         if (diff.TotalHours < 1) return $"{(int)diff.TotalMinutes}m ago";
         if (diff.TotalDays < 1) return $"{(int)diff.TotalHours}h ago";
         if (diff.TotalDays < 7) return $"{(int)diff.TotalDays}d ago";
 
-        return timestamp.ToString("MMM d");
+        return timestamp.ToString("MMM d", System.Globalization.CultureInfo.InvariantCulture);
     }
 
-    private RenderFragment GetDefaultIcon(NotificationType type) => builder =>
+    private static RenderFragment GetDefaultIcon(NotificationType type) => builder =>
     {
         builder.OpenElement(0, "span");
-        builder.AddContent(1, type switch
+        builder.AddAttribute(1, "class", "notification-default-icon");
+        builder.AddAttribute(2, "aria-hidden", "true");
+        builder.AddContent(3, type switch
         {
-            NotificationType.Info => "ℹ️",
-            NotificationType.Success => "✓",
-            NotificationType.Warning => "⚠",
-            NotificationType.Error => "✕",
-            _ => "•"
+            NotificationType.Info => "i",
+            NotificationType.Success => "\u2713",
+            NotificationType.Warning => "!",
+            NotificationType.Error => "x",
+            _ => "\u2022"
         });
         builder.CloseElement();
     };
+
+    private static List<NotificationItem> NormalizeNotifications(IEnumerable<NotificationItem>? notifications)
+    {
+        if (notifications == null)
+        {
+            return [];
+        }
+
+        var normalized = new List<NotificationItem>();
+        var index = 0;
+        foreach (var notification in notifications)
+        {
+            if (notification != null)
+            {
+                normalized.Add(CloneNotification(notification, index));
+            }
+
+            index++;
+        }
+
+        return normalized;
+    }
+
+    private static List<string> NormalizeFilters(IEnumerable<string>? filters)
+    {
+        if (filters == null)
+        {
+            return [];
+        }
+
+        var normalized = new List<string>();
+        foreach (var filter in filters)
+        {
+            if (string.IsNullOrWhiteSpace(filter))
+            {
+                continue;
+            }
+
+            var trimmedFilter = filter.Trim();
+            if (!normalized.Any(existing => FiltersMatch(existing, trimmedFilter)))
+            {
+                normalized.Add(trimmedFilter);
+            }
+        }
+
+        return normalized;
+    }
+
+    private static NotificationItem CloneNotification(NotificationItem notification, int? fallbackIndex = null)
+    {
+        return new NotificationItem
+        {
+            Id = string.IsNullOrWhiteSpace(notification.Id)
+                ? fallbackIndex.HasValue ? $"notification-{fallbackIndex.Value}" : Guid.NewGuid().ToString("N")
+                : notification.Id,
+            Title = notification.Title,
+            Message = notification.Message,
+            Type = notification.Type,
+            Icon = notification.Icon,
+            Timestamp = notification.Timestamp,
+            IsRead = notification.IsRead,
+            Data = notification.Data
+        };
+    }
+
+    private static bool FiltersMatch(string? first, string? second) =>
+        string.Equals(first, second, StringComparison.OrdinalIgnoreCase);
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
 
     public class NotificationItem
     {
@@ -259,7 +620,7 @@
         public NotificationType Type { get; set; } = NotificationType.Info;
         public RenderFragment? Icon { get; set; }
         public DateTime? Timestamp { get; set; } = DateTime.Now;
-        public bool IsRead { get; set; } = false;
+        public bool IsRead { get; set; }
         public object? Data { get; set; }
     }
 

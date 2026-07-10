@@ -8,7 +8,23 @@
   color: var(--vibe-muted-foreground);
 }
 
-:global(.vibe-form-message-error) {
+:global(.form-message-icon) {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+:global(.form-message-error) {
   color: var(--vibe-destructive);
 }
 
+:global(.form-message-warning) {
+  color: var(--vibe-warning, var(--vibe-foreground));
+}
+
+:global(.form-message-success) {
+  color: var(--vibe-success, var(--vibe-foreground));
+}
+
+:global(.form-message-info) {
+  color: var(--vibe-info, var(--vibe-muted-foreground));
+}

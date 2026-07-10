@@ -93,7 +93,7 @@ Modern IDEs provide excellent search and autocomplete features. A flat directory
 
 #### 5. Scalability with Modern Tooling
 
-The flat structure scales well even with 90+ components because:
+The flat structure scales well even with 110 components because:
 
 - IDE search/filter handles large directories efficiently
 - Alphabetical sorting makes components easy to find
@@ -120,7 +120,7 @@ This design is **opinionated but not prescriptive**: we provide a sensible defau
 
 #### Potential Concern: Directory Clutter
 
-**Concern**: 90+ components in one directory might feel overwhelming.
+**Concern**: 110 components in one directory might feel overwhelming.
 
 **Mitigation**:
 - Modern IDEs handle this well with search/filter

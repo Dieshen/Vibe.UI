@@ -1,7 +1,11 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<div class="@CombinedClass @OrientationClass" role="separator"></div>
+<div class="@RootClass"
+     role="@EffectiveRole"
+     aria-orientation="@EffectiveAriaOrientation"
+     aria-hidden="@EffectiveAriaHidden"
+     @attributes="RootAttributes"></div>
 
 @code {
     /// <summary>
@@ -21,8 +25,75 @@
     /// </summary>
     protected override string ComponentClass => "vibe-separator";
 
+    private string RootClass => CombineClasses(ComponentClass, OrientationClass, Class?.Trim(), AdditionalClass);
+
     /// <summary>
     /// Gets the CSS class for the orientation.
     /// </summary>
-    private string OrientationClass => $"separator-{Orientation}";
+    private string OrientationClass => $"separator-{NormalizedOrientation}";
+
+    private string NormalizedOrientation =>
+        string.Equals(Orientation?.Trim(), "vertical", StringComparison.OrdinalIgnoreCase)
+            ? "vertical"
+            : "horizontal";
+
+    private string? EffectiveRole => GetAdditionalAttributeValue("role") ?? (Decorative ? null : "separator");
+
+    private string? EffectiveAriaOrientation =>
+        GetAdditionalAttributeValue("aria-orientation") ?? (Decorative ? null : NormalizedOrientation);
+
+    private string? EffectiveAriaHidden =>
+        GetAdditionalAttributeValue("aria-hidden") ?? (Decorative ? "true" : null);
+
+    private string? AdditionalClass => GetAdditionalAttributeValue("class");
+
+    private Dictionary<string, object>? RootAttributes => GetUnhandledAttributes();
+
+    private Dictionary<string, object>? GetUnhandledAttributes()
+    {
+        if (AdditionalAttributes is null || AdditionalAttributes.Count == 0)
+        {
+            return null;
+        }
+
+        var attributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (IsHandledRootAttribute(attribute.Key))
+            {
+                continue;
+            }
+
+            attributes[attribute.Key] = attribute.Value;
+        }
+
+        return attributes.Count == 0 ? null : attributes;
+    }
+
+    private static bool IsHandledRootAttribute(string attributeName) =>
+        string.Equals(attributeName, "class", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(attributeName, "role", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(attributeName, "aria-orientation", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(attributeName, "aria-hidden", StringComparison.OrdinalIgnoreCase);
+
+    private string? GetAdditionalAttributeValue(string attributeName)
+    {
+        if (AdditionalAttributes is null)
+        {
+            return null;
+        }
+
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (string.Equals(attribute.Key, attributeName, StringComparison.OrdinalIgnoreCase))
+            {
+                return NormalizeAttributeValue(attribute.Value?.ToString());
+            }
+        }
+
+        return null;
+    }
+
+    private static string? NormalizeAttributeValue(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

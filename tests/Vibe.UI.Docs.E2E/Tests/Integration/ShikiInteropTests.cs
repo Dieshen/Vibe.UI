@@ -100,7 +100,13 @@ public class ShikiInteropTests : E2ETestBase
 
         // Act - Check if Shiki highlighter is ready
         var isReady = await Page.EvaluateAsync<bool>(
-            "() => window.isHighlighterReady === true"
+            @"() => {
+                if (typeof window.isHighlighterReady === 'function') {
+                    return window.isHighlighterReady();
+                }
+
+                return window.isHighlighterReady === true;
+            }"
         );
 
         // If Shiki is not ready, wait and check again
@@ -110,7 +116,13 @@ public class ShikiInteropTests : E2ETestBase
             {
                 await Page.WaitForShikiReadyAsync(timeout: 10000);
                 isReady = await Page.EvaluateAsync<bool>(
-                    "() => window.isHighlighterReady === true"
+                    @"() => {
+                        if (typeof window.isHighlighterReady === 'function') {
+                            return window.isHighlighterReady();
+                        }
+
+                        return window.isHighlighterReady === true;
+                    }"
                 );
             }
             catch

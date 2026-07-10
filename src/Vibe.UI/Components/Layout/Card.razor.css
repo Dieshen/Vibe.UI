@@ -47,6 +47,11 @@
     box-shadow: var(--vibe-shadow-lg);
 }
 
+.vibe-card-interactive:focus-visible {
+    outline: 2px solid var(--vibe-ring);
+    outline-offset: 2px;
+}
+
 /* ========================================
    CARD SECTIONS
    ======================================== */
@@ -117,6 +122,12 @@
 
 .vibe-card-compact .vibe-card-body {
     padding: var(--vibe-spacing-4);
+}
+
+.vibe-card-compact .vibe-card-content {
+    gap: var(--vibe-spacing-4);
+    padding: 0 var(--vibe-spacing-4);
+    padding-bottom: var(--vibe-spacing-4);
 }
 
 .vibe-card-compact .vibe-card-footer {

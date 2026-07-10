@@ -2,6 +2,7 @@
 // Run with: dotnet run --project src/Vibe.UI.CSS
 // Or when packaged: dotnet Vibe.UI.CSS.dll generate <directory> -o <output.css>
 
+using System.Reflection;
 using Vibe.UI.CSS;
 using Vibe.UI.CSS.Generator;
 
@@ -56,7 +57,15 @@ static int PrintUsage()
 
 static int PrintVersion()
 {
-    Console.WriteLine("Vibe.UI.CSS version 1.0.0");
+    var informational = Assembly.GetExecutingAssembly()
+        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+        ?.InformationalVersion;
+
+    var version = !string.IsNullOrWhiteSpace(informational)
+        ? informational.Split('+', 2)[0]
+        : Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "0.0.0";
+
+    Console.WriteLine($"Vibe.UI.CSS version {version}");
     return 0;
 }
 

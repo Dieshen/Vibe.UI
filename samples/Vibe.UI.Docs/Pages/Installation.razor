@@ -179,7 +179,7 @@
     [Inject]
     private NavigationManager Navigation { get; set; } = default!;
 
-    private string InstallCliCode => "dotnet tool install -g Vibe.UI.CLI";
+    private string InstallCliCode => "dotnet tool install -g Vibe.UI.CLI --version 1.0.0-beta";
 
     private string InitCode => @"cd MyBlazorApp
 vibe init";
@@ -197,7 +197,7 @@ await builder.Build().RunAsync();";
 vibe add card
 vibe add input";
 
-    private string AddPackageCode => "dotnet add package Vibe.UI";
+    private string AddPackageCode => "dotnet add package Vibe.UI --version 1.0.0-beta";
 
     private string ImportsCode => "@using Vibe.UI.Components";
 

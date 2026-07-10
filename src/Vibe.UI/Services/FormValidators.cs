@@ -7,6 +7,9 @@ namespace Vibe.UI.Services;
 /// </summary>
 public static class FormValidators
 {
+    private const int MinCreditCardDigits = 12;
+    private const int MaxCreditCardDigits = 19;
+
     /// <summary>
     /// Validates that a value is not null or empty.
     /// </summary>
@@ -244,6 +247,11 @@ public static class FormValidators
             if (!cardNumber.All(char.IsDigit))
             {
                 return $"{fieldName ?? "Card number"} must contain only digits";
+            }
+
+            if (cardNumber.Length < MinCreditCardDigits || cardNumber.Length > MaxCreditCardDigits)
+            {
+                return $"{fieldName ?? "Card number"} must be between {MinCreditCardDigits} and {MaxCreditCardDigits} digits";
             }
 
             // Luhn algorithm

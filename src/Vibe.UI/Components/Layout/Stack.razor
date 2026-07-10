@@ -1,7 +1,7 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
 
-<div class="@CombinedClass @DirectionClass @WrapClass @AlignClass @JustifyClass" style="@StackStyle" @attributes="AdditionalAttributes">
+<div class="@RootClass" style="@StackStyle" @attributes="RootAttributes">
     @ChildContent
 </div>
 
@@ -45,7 +45,16 @@
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-stack";
 
-    private string DirectionClass => Direction switch
+    private string RootClass => CombineClasses(
+        ComponentClass,
+        DirectionClass,
+        WrapClass,
+        Class?.Trim(),
+        AdditionalClass);
+
+    private Dictionary<string, object>? RootAttributes => GetUnhandledAttributes();
+
+    private string DirectionClass => NormalizedDirection switch
     {
         StackDirection.Horizontal => "vibe-stack-horizontal",
         StackDirection.Vertical => "vibe-stack-vertical",
@@ -54,36 +63,21 @@
 
     private string WrapClass => Wrap ? "vibe-stack-wrap" : string.Empty;
 
-    private string AlignClass => Align switch
-    {
-        StackAlign.Start => "",
-        StackAlign.Center => "",
-        StackAlign.End => "",
-        StackAlign.Stretch => "",
-        _ => ""
-    };
-
-    private string JustifyClass => Justify switch
-    {
-        StackJustify.Start => "",
-        StackJustify.Center => "",
-        StackJustify.End => "",
-        StackJustify.SpaceBetween => "",
-        StackJustify.SpaceAround => "",
-        StackJustify.SpaceEvenly => "",
-        _ => ""
-    };
-
-    private string StackStyle
+    private string? StackStyle
     {
         get
         {
             var styles = new List<string>();
 
-            styles.Add($"gap: {Spacing}");
+            var additionalStyle = AdditionalStyle;
+            if (!string.IsNullOrWhiteSpace(additionalStyle))
+            {
+                styles.Add(additionalStyle);
+            }
 
-            // Align items (cross-axis)
-            styles.Add(Align switch
+            styles.Add($"gap: {EffectiveSpacing}");
+
+            styles.Add(NormalizedAlign switch
             {
                 StackAlign.Start => "align-items: flex-start",
                 StackAlign.Center => "align-items: center",
@@ -92,8 +86,7 @@
                 _ => "align-items: stretch"
             });
 
-            // Justify content (main-axis)
-            styles.Add(Justify switch
+            styles.Add(NormalizedJustify switch
             {
                 StackJustify.Start => "justify-content: flex-start",
                 StackJustify.Center => "justify-content: center",
@@ -107,6 +100,67 @@
             return string.Join("; ", styles);
         }
     }
+
+    private StackDirection NormalizedDirection =>
+        Enum.IsDefined(typeof(StackDirection), Direction) ? Direction : StackDirection.Vertical;
+
+    private StackAlign NormalizedAlign =>
+        Enum.IsDefined(typeof(StackAlign), Align) ? Align : StackAlign.Stretch;
+
+    private StackJustify NormalizedJustify =>
+        Enum.IsDefined(typeof(StackJustify), Justify) ? Justify : StackJustify.Start;
+
+    private string EffectiveSpacing => NormalizeAttributeValue(Spacing) ?? "1rem";
+
+    private string? AdditionalClass => GetAdditionalAttributeValue("class");
+
+    private string? AdditionalStyle => GetAdditionalAttributeValue("style")?.TrimEnd(';');
+
+    private Dictionary<string, object>? GetUnhandledAttributes()
+    {
+        if (AdditionalAttributes is null || AdditionalAttributes.Count == 0)
+        {
+            return null;
+        }
+
+        var attributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (IsHandledRootAttribute(attribute.Key))
+            {
+                continue;
+            }
+
+            attributes[attribute.Key] = attribute.Value;
+        }
+
+        return attributes.Count == 0 ? null : attributes;
+    }
+
+    private static bool IsHandledRootAttribute(string attributeName) =>
+        string.Equals(attributeName, "class", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(attributeName, "style", StringComparison.OrdinalIgnoreCase);
+
+    private string? GetAdditionalAttributeValue(string attributeName)
+    {
+        if (AdditionalAttributes is null)
+        {
+            return null;
+        }
+
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (string.Equals(attribute.Key, attributeName, StringComparison.OrdinalIgnoreCase))
+            {
+                return NormalizeAttributeValue(attribute.Value?.ToString());
+            }
+        }
+
+        return null;
+    }
+
+    private static string? NormalizeAttributeValue(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     public enum StackDirection
     {

@@ -6,7 +6,7 @@ namespace Vibe.UI.Tests;
 /// <summary>
 /// Base class for Vibe.UI component tests
 /// </summary>
-public abstract class TestBase : TestContext
+public abstract class TestBase : BunitContext
 {
     protected TestBase()
     {

@@ -2,28 +2,39 @@
 @inherits VibeComponent
 @typeparam TItem
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="group" aria-label="@AriaLabel">
     <div class="transfer-panel">
         <div class="transfer-panel-header">
-            <h4 class="panel-title">@SourceTitle</h4>
+            <h4 id="@_sourceTitleId" class="panel-title">@SourceTitle</h4>
             <span class="panel-count">@SourceItems.Count</span>
         </div>
         @if (ShowSearch)
         {
             <div class="transfer-search">
                 <input type="text" class="search-input" placeholder="@SearchPlaceholder" @bind="_sourceSearch"
-                    @bind:event="oninput" />
+                    @bind:event="oninput" aria-label="@($"{SourceTitle} search")" />
             </div>
         }
-        <div class="transfer-list">
-            @foreach (var item in GetFilteredSourceItems())
+        <div class="transfer-list" role="listbox" aria-multiselectable="true" aria-labelledby="@_sourceTitleId">
+            @{
+                var filteredSourceItems = GetFilteredSourceItems().ToList();
+            }
+            @if (filteredSourceItems.Count == 0)
+            {
+                <div class="transfer-empty" role="status">No @SourceTitle.ToLowerInvariant() items found</div>
+            }
+            @foreach (var item in filteredSourceItems)
             {
                 var isSelected = _selectedSource.Contains(item);
                 <div class="transfer-item @(isSelected ? "selected" : "")" @key="GetItemKey(item)"
-                    @onclick="() => ToggleSourceSelection(item)">
+                    role="option"
+                    tabindex="0"
+                    aria-selected="@isSelected.ToString().ToLowerInvariant()"
+                    @onclick="() => ToggleSourceSelection(item)"
+                    @onkeydown="(e) => HandleSourceItemKeyDown(e, item)">
                     @if (ShowCheckboxes)
                     {
-                        <input type="checkbox" checked="@isSelected" class="item-checkbox" />
+                        <input type="checkbox" checked="@isSelected" class="item-checkbox" tabindex="-1" aria-hidden="true" />
                     }
                     <div class="item-content">
                         @if (ItemTemplate != null)
@@ -42,18 +53,22 @@
 
     <div class="transfer-controls">
         <button type="button" class="transfer-btn" @onclick="MoveAllToTarget" disabled="@(!SourceItems.Any())"
+            aria-label="@($"Move all {SourceTitle} items to {TargetTitle}")"
             title="Move all to target">
             ≫
         </button>
         <button type="button" class="transfer-btn" @onclick="MoveToTarget" disabled="@(!_selectedSource.Any())"
+            aria-label="@($"Move selected {SourceTitle} items to {TargetTitle}")"
             title="Move selected to target">
             &gt;
         </button>
         <button type="button" class="transfer-btn" @onclick="MoveToSource" disabled="@(!_selectedTarget.Any())"
+            aria-label="@($"Move selected {TargetTitle} items to {SourceTitle}")"
             title="Move selected to source">
             &lt;
         </button>
         <button type="button" class="transfer-btn" @onclick="MoveAllToSource" disabled="@(!TargetItems.Any())"
+            aria-label="@($"Move all {TargetTitle} items to {SourceTitle}")"
             title="Move all to source">
             ≪
         </button>
@@ -61,25 +76,36 @@
 
     <div class="transfer-panel">
         <div class="transfer-panel-header">
-            <h4 class="panel-title">@TargetTitle</h4>
+            <h4 id="@_targetTitleId" class="panel-title">@TargetTitle</h4>
             <span class="panel-count">@TargetItems.Count</span>
         </div>
         @if (ShowSearch)
         {
             <div class="transfer-search">
                 <input type="text" class="search-input" placeholder="@SearchPlaceholder" @bind="_targetSearch"
-                    @bind:event="oninput" />
+                    @bind:event="oninput" aria-label="@($"{TargetTitle} search")" />
             </div>
         }
-        <div class="transfer-list">
-            @foreach (var item in GetFilteredTargetItems())
+        <div class="transfer-list" role="listbox" aria-multiselectable="true" aria-labelledby="@_targetTitleId">
+            @{
+                var filteredTargetItems = GetFilteredTargetItems().ToList();
+            }
+            @if (filteredTargetItems.Count == 0)
+            {
+                <div class="transfer-empty" role="status">No @TargetTitle.ToLowerInvariant() items found</div>
+            }
+            @foreach (var item in filteredTargetItems)
             {
                 var isSelected = _selectedTarget.Contains(item);
                 <div class="transfer-item @(isSelected ? "selected" : "")" @key="GetItemKey(item)"
-                    @onclick="() => ToggleTargetSelection(item)">
+                    role="option"
+                    tabindex="0"
+                    aria-selected="@isSelected.ToString().ToLowerInvariant()"
+                    @onclick="() => ToggleTargetSelection(item)"
+                    @onkeydown="(e) => HandleTargetItemKeyDown(e, item)">
                     @if (ShowCheckboxes)
                     {
-                        <input type="checkbox" checked="@isSelected" class="item-checkbox" />
+                        <input type="checkbox" checked="@isSelected" class="item-checkbox" tabindex="-1" aria-hidden="true" />
                     }
                     <div class="item-content">
                         @if (ItemTemplate != null)
@@ -102,6 +128,8 @@
     private HashSet<TItem> _selectedTarget = new();
     private string _sourceSearch = string.Empty;
     private string _targetSearch = string.Empty;
+    private readonly string _sourceTitleId = $"transfer-source-title-{Guid.NewGuid():N}";
+    private readonly string _targetTitleId = $"transfer-target-title-{Guid.NewGuid():N}";
 
     [Parameter]
     public List<TItem> SourceItems { get; set; } = new();
@@ -142,12 +170,20 @@
     [Parameter]
     public string? CssClass { get; set; }
 
+    [Parameter]
+    public string AriaLabel { get; set; } = "Transfer items";
+
     private string CombinedCssClass => CombineClasses(
     "vibe-transfer",
     CssClass
     );
 
     protected override string ComponentClass => CombinedCssClass;
+
+    protected override void OnParametersSet()
+    {
+        PruneSelections();
+    }
 
     private string GetItemKey(TItem item)
     {
@@ -197,9 +233,30 @@
             _selectedTarget.Add(item);
     }
 
+    private void HandleSourceItemKeyDown(KeyboardEventArgs e, TItem item)
+    {
+        if (IsSelectionKey(e.Key))
+            ToggleSourceSelection(item);
+    }
+
+    private void HandleTargetItemKeyDown(KeyboardEventArgs e, TItem item)
+    {
+        if (IsSelectionKey(e.Key))
+            ToggleTargetSelection(item);
+    }
+
+    private static bool IsSelectionKey(string key)
+    {
+        return key is "Enter" or " " or "Spacebar";
+    }
+
     private async Task MoveToTarget()
     {
-        foreach (var item in _selectedSource.ToList())
+        var selectedItems = SourceItems.Where(item => _selectedSource.Contains(item)).ToList();
+        if (selectedItems.Count == 0)
+            return;
+
+        foreach (var item in selectedItems)
         {
             SourceItems.Remove(item);
             TargetItems.Add(item);
@@ -212,7 +269,11 @@
 
     private async Task MoveToSource()
     {
-        foreach (var item in _selectedTarget.ToList())
+        var selectedItems = TargetItems.Where(item => _selectedTarget.Contains(item)).ToList();
+        if (selectedItems.Count == 0)
+            return;
+
+        foreach (var item in selectedItems)
         {
             TargetItems.Remove(item);
             SourceItems.Add(item);
@@ -225,6 +286,9 @@
 
     private async Task MoveAllToTarget()
     {
+        if (!SourceItems.Any())
+            return;
+
         TargetItems.AddRange(SourceItems);
         SourceItems.Clear();
         _selectedSource.Clear();
@@ -234,10 +298,19 @@
 
     private async Task MoveAllToSource()
     {
+        if (!TargetItems.Any())
+            return;
+
         SourceItems.AddRange(TargetItems);
         TargetItems.Clear();
         _selectedTarget.Clear();
         await SourceItemsChanged.InvokeAsync(SourceItems);
         await TargetItemsChanged.InvokeAsync(TargetItems);
+    }
+
+    private void PruneSelections()
+    {
+        _selectedSource.RemoveWhere(item => !SourceItems.Contains(item));
+        _selectedTarget.RemoveWhere(item => !TargetItems.Contains(item));
     }
 }

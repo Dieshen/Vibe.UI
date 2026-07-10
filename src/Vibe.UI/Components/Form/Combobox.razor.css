@@ -244,6 +244,33 @@
     cursor: not-allowed;
 }
 
+.vibe-combobox.readonly .combobox-trigger {
+    cursor: default;
+}
+
+.vibe-combobox.readonly .combobox-input {
+    cursor: default;
+}
+
+.vibe-combobox.has-error .combobox-trigger {
+    border-color: var(--vibe-destructive);
+}
+
+.combobox-helper,
+.combobox-error {
+    margin-top: 0.375rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+.combobox-helper {
+    color: var(--vibe-muted-foreground);
+}
+
+.combobox-error {
+    color: var(--vibe-destructive);
+}
+
 /* ----------------------------------------
    ANIMATIONS
    ---------------------------------------- */

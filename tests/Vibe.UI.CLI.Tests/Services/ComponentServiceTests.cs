@@ -156,6 +156,32 @@ public class ComponentServiceTests : IDisposable
         File.Exists(componentPath).Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData("dialog", "Dialog", "vibe-dialog.js")]
+    [InlineData("richtexteditor", "RichTextEditor", "vibe-richtext.js")]
+    [InlineData("resizable", "Resizable", "vibe-resizable.js")]
+    [InlineData("tabs", "Tabs", "vibe-dom.js")]
+    [InlineData("themetoggle", "ThemeToggle", "vibe-theme.js")]
+    public async Task InstallComponentAsync_RewritesPackageModulePathForSourceMode(
+        string componentName,
+        string outputName,
+        string moduleFile)
+    {
+        // Act
+        await _componentService.InstallComponentAsync(
+            _testProjectPath,
+            "Components",
+            componentName,
+            overwrite: false);
+
+        // Assert
+        var componentPath = Path.Combine(_testProjectPath, "Components", $"{outputName}.razor");
+        var content = await File.ReadAllTextAsync(componentPath);
+
+        content.Should().Contain($"./js/{moduleFile}");
+        content.Should().NotContain("./_content/Vibe.UI/js/");
+    }
+
     [Fact]
     public async Task InstallComponentAsync_ThrowsException_ForNonExistentComponent()
     {

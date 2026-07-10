@@ -4,14 +4,23 @@
 @implements IAsyncDisposable
 
 <div class="@CombinedClass" @attributes="AdditionalAttributes">
+    <CascadingValue Value="this">
+        <div class="vibe-tabs-registration" hidden aria-hidden="true">
+            @ChildContent
+        </div>
+    </CascadingValue>
+
     <div class="vibe-tabs-list" role="tablist" aria-orientation="horizontal">
         @foreach (var tab in _tabs)
         {
             var isActive = tab.Id == ActiveTabId;
-            <button type="button" class="vibe-tabs-trigger @(tab.Id == ActiveTabId ? "vibe-tabs-trigger-active" : "")"
+            <button @key="tab.Id"
+                type="button"
+                class="@GetTabTriggerClass(isActive)"
                 id="@GetTabTriggerId(tab.Id)"
                 role="tab"
                 aria-selected="@(isActive ? "true" : "false")"
+                aria-disabled="@(tab.Disabled ? "true" : "false")"
                 aria-controls="@GetTabPanelId(tab.Id)"
                 tabindex="@(isActive ? 0 : -1)"
                 disabled="@(tab.Disabled)"
@@ -25,12 +34,14 @@
         @foreach (var tab in _tabs)
         {
             var isActive = tab.Id == ActiveTabId;
-            <div class="vibe-tabs-panel @(isActive ? "vibe-tabs-panel-active" : "")"
+            <div @key="tab.Id"
+                @attributes="tab.AdditionalAttributes"
+                class="@GetTabPanelClass(tab, isActive)"
                 role="tabpanel"
                 id="@GetTabPanelId(tab.Id)"
                 aria-labelledby="@GetTabTriggerId(tab.Id)"
                 hidden="@(!isActive)"
-                tabindex="0">
+                tabindex="@(isActive ? 0 : -1)">
                 @tab.Content
             </div>
         }
@@ -40,18 +51,21 @@
 @code {
     private List<TabItem> _tabs = new();
     private IJSObjectReference? _domModule;
+    private bool _isDisposed;
+    private bool _activeTabWasAutoSelected;
+    private static readonly RenderFragment EmptyContent = _ => { };
 
     /// <summary>
     /// Gets or sets the active tab ID
     /// </summary>
     [Parameter]
-    public string ActiveTabId { get; set; }
+    public string? ActiveTabId { get; set; }
 
     /// <summary>
     /// Gets or sets the callback for when the active tab changes
     /// </summary>
     [Parameter]
-    public EventCallback<string> ActiveTabIdChanged { get; set; }
+    public EventCallback<string?> ActiveTabIdChanged { get; set; }
 
     /// <summary>
     /// Gets or sets the callback for when a tab is activated
@@ -68,6 +82,12 @@
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-tabs";
 
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        EnsureActiveTab();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -78,30 +98,46 @@
     }
 
     /// <summary>
-    /// Initializes the component
-    /// </summary>
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-    }
-
-    /// <summary>
     /// Adds a tab to the collection
     /// </summary>
     /// <param name="tab">The tab to add</param>
     internal void AddTab(TabItem tab)
     {
-        _tabs.Add(tab);
+        if (_isDisposed)
+            return;
 
-        // If this is the first tab or if it's set to be the default active tab,
-        // make it the active tab
-        if ((string.IsNullOrEmpty(ActiveTabId) && _tabs.Count == 1) ||
-        tab.DefaultActive)
+        var shouldRender = UpsertTab(tab);
+
+        if (tab.DefaultActive && !tab.Disabled && _activeTabWasAutoSelected && ActiveTabId != tab.Id)
         {
             ActiveTabId = tab.Id;
+            shouldRender = true;
         }
 
-        StateHasChanged();
+        shouldRender = EnsureActiveTab() || shouldRender;
+
+        if (shouldRender)
+        {
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>
+    /// Adds a declarative tab item to the collection
+    /// </summary>
+    /// <param name="tab">The declarative tab item to add</param>
+    internal void AddTab(global::Vibe.UI.Components.TabItem tab)
+    {
+        var title = tab.HeaderContent;
+        var content = tab.ChildContent ?? EmptyContent;
+        AddTab(new TabItem(
+            tab.ResolvedId,
+            title,
+            content,
+            tab.Disabled,
+            tab.DefaultActive,
+            tab.PanelClass,
+            tab.AdditionalAttributes));
     }
 
     /// <summary>
@@ -110,19 +146,19 @@
     /// <param name="tabId">The ID of the tab to remove</param>
     internal void RemoveTab(string tabId)
     {
+        if (_isDisposed)
+            return;
+
         var tab = _tabs.FirstOrDefault(t => t.Id == tabId);
         if (tab != null)
         {
             _tabs.Remove(tab);
 
             // If the removed tab was the active tab, activate the first tab that's not disabled
-            if (tabId == ActiveTabId && _tabs.Count > 0)
+            if (tabId == ActiveTabId)
             {
-                var nextTab = _tabs.FirstOrDefault(t => !t.Disabled);
-                if (nextTab != null)
-                {
-                    ActiveTabId = nextTab.Id;
-                }
+                ActiveTabId = _tabs.FirstOrDefault(t => !t.Disabled)?.Id;
+                _activeTabWasAutoSelected = ActiveTabId != null;
             }
 
             StateHasChanged();
@@ -139,6 +175,7 @@
         if (tab != null && !tab.Disabled && tabId != ActiveTabId)
         {
             ActiveTabId = tabId;
+            _activeTabWasAutoSelected = false;
 
             if (ActiveTabIdChanged.HasDelegate)
             {
@@ -164,9 +201,13 @@
         string? nextId = e.Key switch
         {
             "ArrowRight" => FindNextEnabledTabId(currentIndex, forward: true),
+            "ArrowDown" => FindNextEnabledTabId(currentIndex, forward: true),
             "ArrowLeft" => FindNextEnabledTabId(currentIndex, forward: false),
+            "ArrowUp" => FindNextEnabledTabId(currentIndex, forward: false),
             "Home" => FindNextEnabledTabId(startIndex: -1, forward: true),
             "End" => FindNextEnabledTabId(startIndex: _tabs.Count, forward: false),
+            "Enter" => currentTabId,
+            " " => currentTabId,
             _ => null
         };
 
@@ -201,11 +242,57 @@
         await _domModule.InvokeVoidAsync("focusElement", GetTabTriggerId(tabId));
     }
 
+    private bool UpsertTab(TabItem tab)
+    {
+        var existingIndex = _tabs.FindIndex(t => t.Id == tab.Id);
+        if (existingIndex < 0)
+        {
+            _tabs.Add(tab);
+            return true;
+        }
+
+        var existing = _tabs[existingIndex];
+        _tabs[existingIndex] = tab;
+        return existing.HasDifferentMetadata(tab);
+    }
+
+    private bool EnsureActiveTab()
+    {
+        if (_tabs.Count == 0)
+            return false;
+
+        var activeTab = _tabs.FirstOrDefault(t => t.Id == ActiveTabId);
+        if (activeTab != null && !activeTab.Disabled)
+            return false;
+
+        var nextActiveTab = _tabs.FirstOrDefault(t => t.DefaultActive && !t.Disabled)
+            ?? _tabs.FirstOrDefault(t => !t.Disabled);
+        var nextActiveTabId = nextActiveTab?.Id;
+
+        if (ActiveTabId == nextActiveTabId)
+            return false;
+
+        ActiveTabId = nextActiveTabId;
+        _activeTabWasAutoSelected = nextActiveTabId != null;
+        return true;
+    }
+
+    private static string GetTabTriggerClass(bool isActive) =>
+        CombineClasses("vibe-tabs-trigger", isActive ? "vibe-tabs-trigger-active" : null);
+
+    private static string GetTabPanelClass(TabItem tab, bool isActive) =>
+        CombineClasses(
+            "vibe-tabs-panel",
+            isActive ? "vibe-tabs-panel-active" : null,
+            tab.PanelClass);
+
     private static string GetTabPanelId(string tabId) => $"vibe-tabpanel-{tabId}";
     private static string GetTabTriggerId(string tabId) => $"vibe-tab-{tabId}";
 
     public async ValueTask DisposeAsync()
     {
+        _isDisposed = true;
+
         if (_domModule != null)
         {
             await _domModule.DisposeAsync();
@@ -243,6 +330,16 @@
         public bool DefaultActive { get; }
 
         /// <summary>
+        /// Gets the classes to apply to the rendered panel
+        /// </summary>
+        public string? PanelClass { get; }
+
+        /// <summary>
+        /// Gets additional attributes to apply to the rendered panel
+        /// </summary>
+        public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; }
+
+        /// <summary>
         /// Creates a new instance of <see cref="TabItem"/>
         /// </summary>
         /// <param name="id">The ID of the tab</param>
@@ -250,13 +347,54 @@
         /// <param name="content">The content of the tab</param>
         /// <param name="disabled">Whether the tab is disabled</param>
         /// <param name="defaultActive">Whether the tab should be active by default</param>
-        public TabItem(string id, RenderFragment title, RenderFragment content, bool disabled, bool defaultActive)
+        /// <param name="panelClass">The classes to apply to the rendered panel</param>
+        /// <param name="additionalAttributes">Additional attributes to apply to the rendered panel</param>
+        public TabItem(
+            string id,
+            RenderFragment title,
+            RenderFragment content,
+            bool disabled,
+            bool defaultActive,
+            string? panelClass = null,
+            IReadOnlyDictionary<string, object>? additionalAttributes = null)
         {
             Id = id;
             Title = title;
             Content = content;
             Disabled = disabled;
             DefaultActive = defaultActive;
+            PanelClass = panelClass;
+            AdditionalAttributes = additionalAttributes;
+        }
+
+        internal bool HasDifferentMetadata(TabItem other)
+        {
+            return Disabled != other.Disabled
+                || DefaultActive != other.DefaultActive
+                || PanelClass != other.PanelClass
+                || !AttributeDictionariesMatch(AdditionalAttributes, other.AdditionalAttributes);
+        }
+
+        private static bool AttributeDictionariesMatch(
+            IReadOnlyDictionary<string, object>? first,
+            IReadOnlyDictionary<string, object>? second)
+        {
+            if (ReferenceEquals(first, second))
+                return true;
+
+            if (first == null || second == null || first.Count != second.Count)
+                return false;
+
+            foreach (var (key, value) in first)
+            {
+                if (!second.TryGetValue(key, out var otherValue)
+                    || !Equals(value, otherValue))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 

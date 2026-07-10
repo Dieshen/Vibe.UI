@@ -2,7 +2,7 @@
 @inherits VibeComponent
 
 <div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="radiogroup" aria-label="@AriaLabel"
-    aria-required="@Required">
+    aria-required="@AriaRequired" aria-disabled="@AriaDisabled" aria-orientation="@AriaOrientation">
     <CascadingValue Value="this">
         @ChildContent
     </CascadingValue>
@@ -70,19 +70,36 @@
     CssClass
     );
 
+    private string? _currentValue;
+
+    private string? AriaRequired => Required ? "true" : null;
+    private string? AriaDisabled => Disabled ? "true" : null;
+    private string AriaOrientation => Orientation == RadioGroupOrientation.Horizontal ? "horizontal" : "vertical";
+
     protected override string ComponentClass => CombinedCssClass;
+
+    protected override void OnParametersSet()
+    {
+        _currentValue = Value;
+    }
 
     internal async Task HandleValueChange(string itemValue)
     {
         if (Disabled) return;
 
-        Value = itemValue;
+        if (_currentValue == itemValue)
+        {
+            return;
+        }
+
+        _currentValue = itemValue;
         await ValueChanged.InvokeAsync(itemValue);
+        await InvokeAsync(StateHasChanged);
     }
 
     internal bool IsSelected(string itemValue)
     {
-        return Value == itemValue;
+        return _currentValue == itemValue;
     }
 
     public enum RadioGroupOrientation

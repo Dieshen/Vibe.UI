@@ -6,7 +6,7 @@ public class MultiSelectTests : TestBase
     public void MultiSelect_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1", "Option 2", "Option 3" }));
 
         // Assert
@@ -18,7 +18,7 @@ public class MultiSelectTests : TestBase
     public void MultiSelect_Renders_Label()
     {
         // Act
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Label, "Select items")
             .Add(p => p.Items, new List<string> { "Option 1" }));
 
@@ -31,7 +31,7 @@ public class MultiSelectTests : TestBase
     public void MultiSelect_Shows_Placeholder_WhenNoSelection()
     {
         // Act
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Placeholder, "Choose options...")
             .Add(p => p.Items, new List<string> { "Option 1" }));
 
@@ -44,7 +44,7 @@ public class MultiSelectTests : TestBase
     public void MultiSelect_Renders_SearchInput()
     {
         // Act
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1" }));
 
         // Assert
@@ -56,7 +56,7 @@ public class MultiSelectTests : TestBase
     public void MultiSelect_Applies_DisabledState()
     {
         // Act
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1" })
             .Add(p => p.Disabled, true));
 
@@ -69,7 +69,7 @@ public class MultiSelectTests : TestBase
     public void MultiSelect_Renders_Chevron()
     {
         // Act
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1" }));
 
         // Assert
@@ -81,7 +81,7 @@ public class MultiSelectTests : TestBase
     public void MultiSelect_Opens_Dropdown_OnClick()
     {
         // Act
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1", "Option 2" }));
 
         var container = cut.Find(".multiselect-container");
@@ -95,7 +95,7 @@ public class MultiSelectTests : TestBase
     public void MultiSelect_Renders_Options_InDropdown()
     {
         // Act
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1", "Option 2", "Option 3" }));
 
         var container = cut.Find(".multiselect-container");
@@ -110,7 +110,7 @@ public class MultiSelectTests : TestBase
     public void MultiSelect_Shows_Checkboxes_ForOptions()
     {
         // Act
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1" }));
 
         var container = cut.Find(".multiselect-container");
@@ -124,7 +124,7 @@ public class MultiSelectTests : TestBase
     public void MultiSelect_Renders_Indicators()
     {
         // Act
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1" })
             .Add(p => p.AllowClear, true));
 
@@ -137,7 +137,7 @@ public class MultiSelectTests : TestBase
     public void MultiSelect_EmptySelection_ShowsPlaceholder()
     {
         // Act
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1", "Option 2" })
             .Add(p => p.SelectedItems, new List<string>())
             .Add(p => p.Placeholder, "Select items..."));
@@ -152,7 +152,7 @@ public class MultiSelectTests : TestBase
     {
         // Act
         var selectedItems = new List<string> { "Option 1" };
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1", "Option 2" })
             .Add(p => p.SelectedItems, selectedItems));
 
@@ -167,7 +167,7 @@ public class MultiSelectTests : TestBase
     {
         // Act
         var selectedItems = new List<string> { "Option 1", "Option 2", "Option 3" };
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1", "Option 2", "Option 3" })
             .Add(p => p.SelectedItems, selectedItems));
 
@@ -181,7 +181,7 @@ public class MultiSelectTests : TestBase
     {
         // Arrange
         var selectedItems = new List<string>();
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1", "Option 2" })
             .Add(p => p.SelectedItems, selectedItems)
             .Add(p => p.SelectedItemsChanged, items => selectedItems = items));
@@ -201,7 +201,7 @@ public class MultiSelectTests : TestBase
     {
         // Arrange
         var selectedItems = new List<string> { "Option 1" };
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1", "Option 2" })
             .Add(p => p.SelectedItems, selectedItems)
             .Add(p => p.SelectedItemsChanged, items => selectedItems = items));
@@ -220,7 +220,7 @@ public class MultiSelectTests : TestBase
     {
         // Arrange
         var selectedItems = new List<string> { "Option 1", "Option 2" };
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1", "Option 2", "Option 3" })
             .Add(p => p.SelectedItems, selectedItems)
             .Add(p => p.MaxSelectedItems, 2)
@@ -240,7 +240,7 @@ public class MultiSelectTests : TestBase
     {
         // Arrange
         var selectedItems = new List<string> { "Option 1", "Option 2" };
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1", "Option 2" })
             .Add(p => p.SelectedItems, selectedItems)
             .Add(p => p.SelectedItemsChanged, items => selectedItems = items));
@@ -258,7 +258,7 @@ public class MultiSelectTests : TestBase
     public void MultiSelect_HelperText_Displays()
     {
         // Act
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1" })
             .Add(p => p.HelperText, "Select one or more options"));
 
@@ -271,7 +271,7 @@ public class MultiSelectTests : TestBase
     public void MultiSelect_NoOptionsAvailable_ShowsMessage()
     {
         // Act
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string>()));
 
         // Act - Open dropdown
@@ -287,7 +287,7 @@ public class MultiSelectTests : TestBase
     {
         // Arrange
         var selectedItems = new List<string> { "Option 1" };
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1", "Option 2" })
             .Add(p => p.SelectedItems, selectedItems));
 
@@ -305,7 +305,7 @@ public class MultiSelectTests : TestBase
     {
         // Arrange
         var selectedItems = new List<string> { "Option 1" };
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1", "Option 2" })
             .Add(p => p.SelectedItems, selectedItems));
 
@@ -324,7 +324,7 @@ public class MultiSelectTests : TestBase
         var items = Enumerable.Range(1, 100).Select(i => $"Option {i}").ToList();
 
         // Act
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, items));
 
         cut.Find(".multiselect-container").Click();
@@ -338,7 +338,7 @@ public class MultiSelectTests : TestBase
     public void MultiSelect_Disabled_NoDropdownInteraction()
     {
         // Act
-        var cut = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1", "Option 2" })
             .Add(p => p.Disabled, true));
 
@@ -352,12 +352,124 @@ public class MultiSelectTests : TestBase
     public void MultiSelect_GeneratesUniqueId()
     {
         // Act
-        var cut1 = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut1 = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1" }));
-        var cut2 = RenderComponent<MultiSelect<string>>(parameters => parameters
+        var cut2 = Render<MultiSelect<string>>(parameters => parameters
             .Add(p => p.Items, new List<string> { "Option 1" }));
 
         // Assert - Each instance should have unique ID
         cut1.Instance.Id.ShouldNotBe(cut2.Instance.Id);
+    }
+
+    [Fact]
+    public void MultiSelect_ForwardsClassAndAdditionalAttributes_ToRoot()
+    {
+        // Act
+        var cut = Render<MultiSelect<string>>(parameters => parameters
+            .Add(p => p.Class, "people-picker")
+            .Add(p => p.Items, new List<string> { "Option 1" })
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                { "data-testid", "multi" }
+            }));
+
+        // Assert
+        var root = cut.Find(".vibe-multiselect");
+        root.ClassList.ShouldContain("people-picker");
+        root.GetAttribute("data-testid")!.ShouldBe("multi");
+    }
+
+    [Fact]
+    public void MultiSelect_ExposesComboboxAndListboxSemantics()
+    {
+        // Act
+        var cut = Render<MultiSelect<string>>(parameters => parameters
+            .Add(p => p.Id, "skills")
+            .Add(p => p.Label, "Skills")
+            .Add(p => p.HelperText, "Choose one or more skills")
+            .Add(p => p.Items, new List<string> { "C#", "F#" })
+            .Add(p => p.SelectedItems, new List<string> { "C#" }));
+
+        var input = cut.Find("input[role='combobox']");
+        input.GetAttribute("id")!.ShouldBe("skills");
+        input.GetAttribute("aria-expanded")!.ShouldBe("false");
+        input.GetAttribute("aria-describedby").ShouldNotBeNullOrEmpty();
+        cut.Find("label").GetAttribute("for")!.ShouldBe("skills");
+        cut.Find(".multiselect-helper-text").GetAttribute("id")!.ShouldBe(input.GetAttribute("aria-describedby"));
+
+        // Act
+        cut.Find(".multiselect-container").Click();
+
+        // Assert
+        input = cut.Find("input[role='combobox']");
+        input.GetAttribute("aria-expanded")!.ShouldBe("true");
+        cut.Find("[role='listbox']").GetAttribute("aria-multiselectable")!.ShouldBe("true");
+
+        var options = cut.FindAll("[role='option']");
+        options.Count.ShouldBe(2);
+        options[0].GetAttribute("aria-selected")!.ShouldBe("true");
+        options[1].GetAttribute("aria-selected")!.ShouldBe("false");
+    }
+
+    [Fact]
+    public void MultiSelect_ToggleItem_DoesNotMutateCallerOwnedSelectionList()
+    {
+        // Arrange
+        var originalSelection = new List<string> { "Option 1" };
+        List<string>? callbackSelection = null;
+        var cut = Render<MultiSelect<string>>(parameters => parameters
+            .Add(p => p.Items, new List<string> { "Option 1", "Option 2" })
+            .Add(p => p.SelectedItems, originalSelection)
+            .Add(p => p.SelectedItemsChanged, items => callbackSelection = items));
+
+        // Act
+        cut.Find(".multiselect-container").Click();
+        cut.FindAll(".multiselect-option")[1].Click();
+
+        // Assert
+        originalSelection.ShouldBe(new List<string> { "Option 1" });
+        callbackSelection.ShouldNotBeNull();
+        callbackSelection.ShouldBe(new List<string> { "Option 1", "Option 2" });
+        callbackSelection.ShouldNotBeSameAs(originalSelection);
+    }
+
+    [Fact]
+    public void MultiSelect_KeyboardNavigation_HighlightsAndSelectsOption()
+    {
+        // Arrange
+        List<string>? selectedItems = null;
+        var cut = Render<MultiSelect<string>>(parameters => parameters
+            .Add(p => p.Items, new List<string> { "Option 1", "Option 2" })
+            .Add(p => p.SelectedItemsChanged, items => selectedItems = items));
+
+        var input = cut.Find(".multiselect-input");
+
+        // Act
+        input.KeyDown("ArrowDown");
+        input.KeyDown("ArrowDown");
+
+        // Assert
+        cut.Find(".multiselect-option.highlighted").TextContent.ShouldContain("Option 1");
+        cut.Find(".multiselect-input").GetAttribute("aria-activedescendant").ShouldNotBeNullOrEmpty();
+
+        // Act
+        input.KeyDown("Enter");
+
+        // Assert
+        selectedItems.ShouldBe(new List<string> { "Option 1" });
+    }
+
+    [Fact]
+    public void MultiSelect_WithNullCollections_RendersEmptyDropdown()
+    {
+        // Act
+        var cut = Render<MultiSelect<string>>(parameters => parameters
+            .Add(p => p.Items, null!)
+            .Add(p => p.SelectedItems, null!));
+
+        cut.Find(".multiselect-container").Click();
+
+        // Assert
+        cut.Find(".multiselect-no-options").TextContent.ShouldBe("No options available");
     }
 }

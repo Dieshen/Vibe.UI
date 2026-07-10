@@ -33,7 +33,8 @@
             <ul>
                 <li><code>--minimal</code> - Install minimal infrastructure only</li>
                 <li><code>--no-theme</code> - Skip theme files</li>
-                <li><code>--with-charts</code> - Include chart.js dependencies</li>
+                <li><code>--with-charts</code> - Copy the chart interop script; load Chart.js separately</li>
+                <li><code>--with-css</code> - Add build-time CSS generation; hosted Web Apps use one server-owned output</li>
                 <li><code>-y, --yes</code> - Skip all prompts (use defaults)</li>
             </ul>
 
@@ -135,7 +136,7 @@
 
     <section>
         <h2>Available Components</h2>
-        <p>The CLI provides access to 93+ components across 11 categories:</p>
+        <p>The CLI provides access to 110 components across 11 categories:</p>
 
         <div class="vibe-grid md:vibe-grid-cols-2 vibe-gap-6">
             @foreach (var category in ComponentCategories)
@@ -183,7 +184,7 @@
     [Inject]
     private NavigationManager Navigation { get; set; } = default!;
 
-    private string InstallCode => "dotnet tool install -g Vibe.UI.CLI";
+    private string InstallCode => "dotnet tool install -g Vibe.UI.CLI --version 1.0.0-beta";
     private string UpdateCode => "dotnet tool update -g Vibe.UI.CLI";
     private string UninstallCode => "dotnet tool uninstall -g Vibe.UI.CLI";
 
@@ -251,7 +252,7 @@ dotnet new blazorwasm -n MyApp
 cd MyApp
 
 # 2. Install CLI tool
-dotnet tool install -g Vibe.UI.CLI
+dotnet tool install -g Vibe.UI.CLI --version 1.0.0-beta
 
 # 3. Initialize Vibe.UI
 vibe init
@@ -292,7 +293,7 @@ vibe update --all";
         ["Feedback"] = new() { "Alert", "Notification", "Progress", "Skeleton", "Spinner", "Toast" },
         ["Advanced"] = new() { "DragDrop", "FileUpload", "KanbanBoard", "RichTextEditor", "TreeView", "VirtualScroll" },
         ["Disclosure"] = new() { "Accordion", "Carousel", "Collapsible" },
-        ["DateTime"] = new() { "Calendar", "DatePicker", "DateRangePicker", "TimePicker" },
+        ["DateTime"] = new() { "Calendar", "DatePicker", "DateRangePicker" },
         ["Theme"] = new() { "ThemeToggle", "ThemeProvider" }
     };
 

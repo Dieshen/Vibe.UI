@@ -2,28 +2,47 @@
 @inherits VibeComponent
 @typeparam TItem
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass" style="@ContainerStyle" @ref="_containerRef">
-    <div class="virtual-scroll-spacer" style="@SpacerStyle">
-        @if (Items != null && Items.Any())
+<div @attributes="AdditionalAttributes"
+     class="@CombinedClass"
+     style="@ContainerStyle"
+     role="list"
+     aria-label="@EffectiveAriaLabel"
+     aria-rowcount="@ItemCount"
+     @ref="_containerRef">
+    <div class="virtual-scroll-spacer" style="@SpacerStyle" aria-hidden="@AriaBool(ItemCount == 0)">
+        @if (ItemCount > 0)
         {
-            @foreach (var item in GetVisibleItems())
+            var visibleItems = GetVisibleItems();
+            @for (var index = 0; index < visibleItems.Count; index++)
             {
-                <div class="virtual-scroll-item" @key="GetItemKey(item)">
+                var visibleItem = visibleItems[index];
+                <div class="virtual-scroll-item"
+                     role="listitem"
+                     aria-setsize="@ItemCount"
+                     aria-posinset="@(visibleItem.Index + 1)"
+                     @key="GetItemKey(visibleItem.Item, visibleItem.Index)">
                     @if (ItemTemplate != null)
                     {
-                        @ItemTemplate(item)
+                        @ItemTemplate(visibleItem.Item)
                     }
                     else
                     {
-                        @item?.ToString()
+                        @GetFallbackText(visibleItem.Item)
                     }
                 </div>
             }
         }
-        else if (EmptyContent != null)
+        else
         {
-            <div class="virtual-scroll-empty">
-                @EmptyContent
+            <div class="virtual-scroll-empty" role="status">
+                @if (EmptyContent != null)
+                {
+                    @EmptyContent
+                }
+                else
+                {
+                    @EmptyText
+                }
             </div>
         }
     </div>
@@ -33,8 +52,6 @@
     private ElementReference _containerRef;
     private int _startIndex = 0;
     private int _endIndex = 0;
-    private int _containerHeight = 0;
-
     [Parameter]
     public List<TItem>? Items { get; set; }
 
@@ -43,6 +60,9 @@
 
     [Parameter]
     public RenderFragment? EmptyContent { get; set; }
+
+    [Parameter]
+    public string EmptyText { get; set; } = "No items";
 
     [Parameter]
     public int ItemHeight { get; set; } = 50;
@@ -54,26 +74,41 @@
     public int Height { get; set; } = 400;
 
     [Parameter]
-    public Func<TItem, string>? KeySelector { get; set; }
+    public Func<TItem, string?>? KeySelector { get; set; }
+
+    [Parameter]
+    public string? AriaLabel { get; set; } = "Virtualized list";
 
     [Parameter]
     public string? CssClass { get; set; }
 
-    private string CombinedCssClass => CombineClasses(
+    private string ComponentCssClass => CombineClasses(
         "vibe-virtual-scroll",
-        CssClass
-    );
+        ItemCount == 0 ? "vibe-virtual-scroll-empty" : null,
+        CssClass);
 
-    protected override string ComponentClass => CombinedCssClass;
+    protected override string ComponentClass => ComponentCssClass;
 
-    private string ContainerStyle => $"height: {Height}px; overflow-y: auto;";
+    private int EffectiveItemHeight => Math.Max(1, ItemHeight);
+
+    private int EffectiveBufferSize => Math.Max(0, BufferSize);
+
+    private int EffectiveHeight => Math.Max(1, Height);
+
+    private int ItemCount => Items?.Count ?? 0;
+
+    private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel)
+        ? "Virtualized list"
+        : AriaLabel.Trim();
+
+    private string ContainerStyle => $"height: {EffectiveHeight}px; overflow-y: auto;";
 
     private string SpacerStyle
     {
         get
         {
-            var totalHeight = (Items?.Count ?? 0) * ItemHeight;
-            var offsetTop = _startIndex * ItemHeight;
+            var totalHeight = ItemCount * EffectiveItemHeight;
+            var offsetTop = _startIndex * EffectiveItemHeight;
             return $"height: {totalHeight}px; padding-top: {offsetTop}px;";
         }
     }
@@ -85,38 +120,60 @@
 
     private void CalculateVisibleRange()
     {
-        if (Items == null || !Items.Any())
+        if (ItemCount == 0)
         {
             _startIndex = 0;
             _endIndex = 0;
             return;
         }
 
-        var visibleCount = (int)Math.Ceiling((double)Height / ItemHeight);
-        _startIndex = Math.Max(0, _startIndex - BufferSize);
-        _endIndex = Math.Min(Items.Count, _startIndex + visibleCount + BufferSize * 2);
+        var visibleCount = (int)Math.Ceiling((double)EffectiveHeight / EffectiveItemHeight);
+        _startIndex = Math.Clamp(_startIndex - EffectiveBufferSize, 0, ItemCount);
+        _endIndex = Math.Min(ItemCount, _startIndex + visibleCount + EffectiveBufferSize * 2);
     }
 
-    private IEnumerable<TItem> GetVisibleItems()
+    private IReadOnlyList<VisibleVirtualItem> GetVisibleItems()
     {
-        if (Items == null || !Items.Any())
-            return Enumerable.Empty<TItem>();
+        if (Items == null || ItemCount == 0 || _endIndex <= _startIndex)
+        {
+            return [];
+        }
 
-        return Items.Skip(_startIndex).Take(_endIndex - _startIndex);
+        var visibleItems = new List<VisibleVirtualItem>(_endIndex - _startIndex);
+        for (var index = _startIndex; index < _endIndex; index++)
+        {
+            visibleItems.Add(new VisibleVirtualItem(index, Items[index]));
+        }
+
+        return visibleItems;
     }
 
-    private string GetItemKey(TItem item)
+    private string GetItemKey(TItem item, int index)
     {
         if (KeySelector != null && item != null)
-            return KeySelector(item);
+        {
+            var key = KeySelector(item);
+            if (!string.IsNullOrWhiteSpace(key))
+            {
+                return key;
+            }
+        }
 
-        return item?.GetHashCode().ToString() ?? Guid.NewGuid().ToString();
+        return item?.GetHashCode().ToString() ?? $"null-{index}";
     }
 
     // Method to handle scroll event - would need JS interop for full implementation
     public void HandleScroll(int scrollTop)
     {
-        var newStartIndex = (int)Math.Floor((double)scrollTop / ItemHeight);
+        if (ItemCount == 0)
+        {
+            return;
+        }
+
+        var newStartIndex = Math.Clamp(
+            (int)Math.Floor((double)Math.Max(0, scrollTop) / EffectiveItemHeight),
+            0,
+            ItemCount - 1);
 
         if (newStartIndex != _startIndex)
         {
@@ -128,8 +185,10 @@
 
     public void ScrollToIndex(int index)
     {
-        if (Items == null || index < 0 || index >= Items.Count)
+        if (Items == null || index < 0 || index >= ItemCount)
+        {
             return;
+        }
 
         _startIndex = index;
         CalculateVisibleRange();
@@ -137,4 +196,10 @@
 
         // Would need JS interop: _containerRef.scrollTop = index * ItemHeight
     }
+
+    private static string GetFallbackText(TItem item) => item?.ToString() ?? string.Empty;
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
+
+    private sealed record VisibleVirtualItem(int Index, TItem Item);
 }

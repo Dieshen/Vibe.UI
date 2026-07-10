@@ -1,7 +1,14 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<div class="@CombinedClass" style="@SkeletonStyle">
+<div @attributes="AdditionalAttributes"
+     class="@CombinedClass"
+     style="@SkeletonStyle"
+     aria-hidden="@AriaHiddenValue"
+     role="@StatusRole"
+     aria-live="@AriaLiveValue"
+     aria-label="@EffectiveAriaLabel"
+     aria-busy="@AriaBusyValue">
 </div>
 
 @code {
@@ -16,6 +23,24 @@
     /// </summary>
     [Parameter]
     public string Height { get; set; } = "1rem";
+
+    /// <summary>
+    /// Gets or sets whether the skeleton shimmer animation is enabled.
+    /// </summary>
+    [Parameter]
+    public bool Animated { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets whether the skeleton should be announced as a loading status.
+    /// </summary>
+    [Parameter]
+    public bool Announce { get; set; }
+
+    /// <summary>
+    /// Gets or sets the accessible label used when <see cref="Announce" /> is enabled.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; } = "Loading content";
 
     /// <summary>
     /// Gets or sets whether the skeleton is rounded.
@@ -37,25 +62,40 @@
     /// <summary>
     /// Gets the inline style for the skeleton.
     /// </summary>
-    private string SkeletonStyle => $"width: {Width}; height: {Height};";
+    private string SkeletonStyle => $"width: {EffectiveWidth}; height: {EffectiveHeight};";
+
+    private string EffectiveWidth => string.IsNullOrWhiteSpace(Width) ? "100%" : Width.Trim();
+
+    private string EffectiveHeight => string.IsNullOrWhiteSpace(Height) ? "1rem" : Height.Trim();
+
+    private string AriaHiddenValue => AriaBool(!Announce);
+
+    private string? StatusRole => Announce ? "status" : null;
+
+    private string? AriaLiveValue => Announce ? "polite" : null;
+
+    private string? EffectiveAriaLabel =>
+        Announce
+            ? (string.IsNullOrWhiteSpace(AriaLabel) ? "Loading content" : AriaLabel.Trim())
+            : null;
+
+    private string? AriaBusyValue => Announce ? AriaBool(Animated) : null;
 
     /// <summary>
     /// Gets the CSS classes for the skeleton based on properties.
     /// </summary>
     private string GetSkeletonClass()
     {
-        var classes = new List<string> { "vibe-skeleton" };
-
-        if (Rounded)
-        {
-            classes.Add("rounded");
-        }
-
-        if (Circle)
-        {
-            classes.Add("circle");
-        }
-
-        return string.Join(" ", classes);
+        return new ClassBuilder()
+            .Add("vibe-skeleton")
+            .AddIf("vibe-skeleton-animated", Animated)
+            .AddIf("vibe-skeleton-static", !Animated)
+            .AddIf("rounded", Rounded)
+            .AddIf("vibe-skeleton-rounded", Rounded)
+            .AddIf("circle", Circle)
+            .AddIf("vibe-skeleton-circle", Circle)
+            .Build();
     }
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
 }

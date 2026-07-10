@@ -3,6 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import './setup';
 import { normalizeLanguage, escapeHtml, WEB_BUNDLE_LANGUAGES } from '../src/shiki-interop';
 import {
   mockShikiImport,
@@ -104,8 +105,8 @@ describe('shiki-interop', () => {
     });
   });
 
-  // NOTE: Tests in 'highlightCode' are skipped because they require mocking CDN imports
-  // which Node.js ESM cannot do (https:// protocol not supported for native imports).
+  // NOTE: Tests in 'highlightCode' are skipped because they require browser-level Shiki
+  // initialization semantics that are currently covered by E2E tests.
   // These scenarios are covered by E2E tests that run in the browser.
   describe.skip('highlightCode (requires browser environment)', () => {
     it('should highlight code with default settings', async () => {
@@ -164,7 +165,7 @@ describe('shiki-interop', () => {
     });
   });
 
-  // NOTE: All tests below require CDN import mocking which doesn't work in Node.js ESM.
+  // NOTE: All tests below require browser-level Shiki initialization semantics.
   // These scenarios are covered by E2E tests that run in the browser.
   describe.skip('isHighlighterReady (requires browser environment)', () => {
     it('should return false initially', () => {

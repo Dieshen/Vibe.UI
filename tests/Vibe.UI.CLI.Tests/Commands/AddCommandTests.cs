@@ -78,6 +78,35 @@ public class AddCommandTests : IDisposable
     }
 
     [Fact]
+    public async Task ExecuteAsync_FromWebAppRoot_UsesInitializedClientProject()
+    {
+        // Arrange
+        var clientPath = await CreateWebAppProjectsAsync();
+        await InitializeProject(clientPath);
+
+        var settings = new AddCommand.Settings
+        {
+            Component = "dialog",
+            SkipPrompts = true,
+            ProjectPath = _testProjectPath
+        };
+
+        var context = new CommandContext(
+            Array.Empty<string>(),
+            new TestRemainingArguments(),
+            "add",
+            null);
+
+        // Act
+        var result = await _command.ExecuteAsync(context, settings);
+
+        // Assert
+        result.Should().Be(0);
+        File.Exists(Path.Combine(clientPath, "Components", "Dialog.razor")).Should().BeTrue();
+        File.Exists(Path.Combine(_testProjectPath, "Components", "Dialog.razor")).Should().BeFalse();
+    }
+
+    [Fact]
     public async Task ExecuteAsync_WithInvalidComponent_ReturnsError()
     {
         // Arrange
@@ -239,10 +268,12 @@ public class AddCommandTests : IDisposable
         File.Exists(componentPath).Should().BeTrue($"component {expectedComponentName} should be installed in flat structure");
     }
 
-    private async Task InitializeProject()
+    private async Task InitializeProject(string? projectPath = null)
     {
+        projectPath ??= _testProjectPath;
+
         // Create Vibe infrastructure directory structure
-        var vibeBasePath = Path.Combine(_testProjectPath, "Vibe", "Base");
+        var vibeBasePath = Path.Combine(projectPath, "Vibe", "Base");
         Directory.CreateDirectory(vibeBasePath);
 
         // Create required infrastructure files expected by AddCommand
@@ -254,13 +285,42 @@ public class AddCommandTests : IDisposable
 
         // Save configuration
         var configService = new ConfigService();
-        await configService.SaveConfigAsync(_testProjectPath, new VibeConfig
+        await configService.SaveConfigAsync(projectPath, new VibeConfig
         {
             ProjectType = "Blazor WebAssembly",
             Theme = "light",
             ComponentsDirectory = "Components",
             CssVariables = true
         });
+    }
+
+    private async Task<string> CreateWebAppProjectsAsync()
+    {
+        var serverPath = Path.Combine(_testProjectPath, "Sample");
+        var clientPath = Path.Combine(_testProjectPath, "Sample.Client");
+        Directory.CreateDirectory(serverPath);
+        Directory.CreateDirectory(clientPath);
+
+        await File.WriteAllTextAsync(
+            Path.Combine(serverPath, "Sample.csproj"),
+            @"<Project Sdk=""Microsoft.NET.Sdk.Web"">
+  <ItemGroup>
+    <ProjectReference Include=""..\Sample.Client\Sample.Client.csproj"" />
+    <PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly.Server"" Version=""10.0.0"" />
+  </ItemGroup>
+</Project>");
+        await File.WriteAllTextAsync(
+            Path.Combine(serverPath, "Program.cs"),
+            "builder.Services.AddRazorComponents().AddInteractiveWebAssemblyComponents();");
+        await File.WriteAllTextAsync(
+            Path.Combine(clientPath, "Sample.Client.csproj"),
+            @"<Project Sdk=""Microsoft.NET.Sdk.BlazorWebAssembly"">
+  <ItemGroup>
+    <PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly"" Version=""10.0.0"" />
+  </ItemGroup>
+</Project>");
+
+        return clientPath;
     }
 
     public void Dispose()

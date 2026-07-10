@@ -120,6 +120,108 @@ public class InitCommandTests : IDisposable
     }
 
     [Fact]
+    public async Task ExecuteAsync_Default_CopiesAllComponentJavaScriptModulesExceptChart()
+    {
+        // Arrange
+        await File.WriteAllTextAsync(
+            Path.Combine(_testProjectPath, "Test.csproj"),
+            @"<Project Sdk=""Microsoft.NET.Sdk.BlazorWebAssembly"" />");
+
+        var settings = new InitCommand.Settings
+        {
+            SkipPrompts = true,
+            ProjectPath = _testProjectPath
+        };
+
+        var context = new CommandContext(
+            Array.Empty<string>(),
+            new TestRemainingArguments(),
+            "init",
+            null);
+
+        // Act
+        var result = await _command.ExecuteAsync(context, settings);
+
+        // Assert
+        result.Should().Be(0);
+        var jsPath = Path.Combine(_testProjectPath, "wwwroot", "js");
+        var expectedFiles = new[]
+        {
+            "vibe-click-outside.js",
+            "vibe-dialog.js",
+            "vibe-dom.js",
+            "vibe-resizable.js",
+            "vibe-richtext.js",
+            "vibe-theme.js"
+        };
+
+        foreach (var expectedFile in expectedFiles)
+        {
+            File.Exists(Path.Combine(jsPath, expectedFile)).Should().BeTrue();
+        }
+
+        File.Exists(Path.Combine(jsPath, "vibe-chart.js")).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithCharts_CopiesChartJavaScriptModule()
+    {
+        // Arrange
+        await File.WriteAllTextAsync(
+            Path.Combine(_testProjectPath, "Test.csproj"),
+            @"<Project Sdk=""Microsoft.NET.Sdk.BlazorWebAssembly"" />");
+
+        var settings = new InitCommand.Settings
+        {
+            SkipPrompts = true,
+            ProjectPath = _testProjectPath,
+            WithCharts = true
+        };
+
+        var context = new CommandContext(
+            Array.Empty<string>(),
+            new TestRemainingArguments(),
+            "init",
+            null);
+
+        // Act
+        var result = await _command.ExecuteAsync(context, settings);
+
+        // Assert
+        result.Should().Be(0);
+        File.Exists(Path.Combine(_testProjectPath, "wwwroot", "js", "vibe-chart.js")).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WithoutTheme_SkipsThemeJavaScriptModule()
+    {
+        // Arrange
+        await File.WriteAllTextAsync(
+            Path.Combine(_testProjectPath, "Test.csproj"),
+            @"<Project Sdk=""Microsoft.NET.Sdk.BlazorWebAssembly"" />");
+
+        var settings = new InitCommand.Settings
+        {
+            SkipPrompts = true,
+            ProjectPath = _testProjectPath,
+            NoTheme = true
+        };
+
+        var context = new CommandContext(
+            Array.Empty<string>(),
+            new TestRemainingArguments(),
+            "init",
+            null);
+
+        // Act
+        var result = await _command.ExecuteAsync(context, settings);
+
+        // Assert
+        result.Should().Be(0);
+        File.Exists(Path.Combine(_testProjectPath, "wwwroot", "js", "vibe-theme.js")).Should().BeFalse();
+    }
+
+    [Fact]
     public async Task ExecuteAsync_CreatesVibeInfrastructure()
     {
         // Arrange
@@ -229,9 +331,64 @@ public class InitCommandTests : IDisposable
         var configService = new ConfigService();
         var config = await configService.LoadConfigAsync(_testProjectPath);
         config.Should().NotBeNull();
-        config!.ProjectType.Should().Be("Blazor"); // InitCommand sets "Blazor" not "Blazor WebAssembly"
+        config!.ProjectType.Should().Be("Blazor WebAssembly");
         config.ComponentsDirectory.Should().Contain("Components"); // Could be "Components/vibe"
         config.CssVariables.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WebAppRoot_WithSkipPrompts_InitializesClientProject()
+    {
+        // Arrange
+        var serverPath = Path.Combine(_testProjectPath, "TestApp");
+        var clientPath = Path.Combine(_testProjectPath, "TestApp.Client");
+        Directory.CreateDirectory(serverPath);
+        Directory.CreateDirectory(clientPath);
+
+        await File.WriteAllTextAsync(
+            Path.Combine(serverPath, "TestApp.csproj"),
+            @"<Project Sdk=""Microsoft.NET.Sdk.Web"">
+  <ItemGroup>
+    <ProjectReference Include=""..\TestApp.Client\TestApp.Client.csproj"" />
+    <PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly.Server"" Version=""10.0.0"" />
+  </ItemGroup>
+</Project>");
+
+        await File.WriteAllTextAsync(
+            Path.Combine(clientPath, "TestApp.Client.csproj"),
+            @"<Project Sdk=""Microsoft.NET.Sdk.BlazorWebAssembly"">
+  <ItemGroup>
+    <PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly"" Version=""10.0.0"" />
+  </ItemGroup>
+</Project>");
+
+        var settings = new InitCommand.Settings
+        {
+            SkipPrompts = true,
+            ProjectPath = _testProjectPath
+        };
+
+        var context = new CommandContext(
+            Array.Empty<string>(),
+            new TestRemainingArguments(),
+            "init",
+            null);
+
+        // Act
+        var result = await _command.ExecuteAsync(context, settings);
+
+        // Assert
+        result.Should().Be(0);
+
+        var configService = new ConfigService();
+        var rootConfig = await configService.LoadConfigAsync(_testProjectPath);
+        var clientConfig = await configService.LoadConfigAsync(clientPath);
+
+        rootConfig.Should().BeNull("Web App root initialization should target a concrete project");
+        clientConfig.Should().NotBeNull();
+        clientConfig!.ProjectType.Should().Be("Blazor Web App Client");
+        Directory.Exists(Path.Combine(clientPath, "Components")).Should().BeTrue();
+        File.Exists(Path.Combine(clientPath, "vibe.json")).Should().BeTrue();
     }
 
     #region Vibe.UI.CSS Integration Tests
@@ -243,10 +400,10 @@ public class InitCommandTests : IDisposable
         var csprojPath = Path.Combine(_testProjectPath, "Test.csproj");
         await File.WriteAllTextAsync(csprojPath, @"<Project Sdk=""Microsoft.NET.Sdk.Web"">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include=""Microsoft.AspNetCore.Components.Web"" Version=""9.0.0"" />
+    <PackageReference Include=""Microsoft.AspNetCore.Components.Web"" Version=""10.0.0"" />
   </ItemGroup>
 </Project>");
 
@@ -276,6 +433,73 @@ public class InitCommandTests : IDisposable
 
         vibeCssRef.Should().NotBeNull("Vibe.UI.CSS package reference should be added with --with-css");
         vibeCssRef!.Attribute("Version")?.Value.Should().Be(GetCliVersion());
+        vibeCssRef.Attribute("PrivateAssets")?.Value.Should().Be("all");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WebAppRoot_WithCss_ConfiguresServerAsCssOwner()
+    {
+        // Arrange
+        var serverPath = Path.Combine(_testProjectPath, "TestApp");
+        var clientPath = Path.Combine(_testProjectPath, "TestApp.Client");
+        var serverProjectPath = Path.Combine(serverPath, "TestApp.csproj");
+        var clientProjectPath = Path.Combine(clientPath, "TestApp.Client.csproj");
+        Directory.CreateDirectory(serverPath);
+        Directory.CreateDirectory(clientPath);
+
+        await File.WriteAllTextAsync(
+            serverProjectPath,
+            @"<Project Sdk=""Microsoft.NET.Sdk.Web"">
+  <ItemGroup>
+    <ProjectReference Include=""..\TestApp.Client\TestApp.Client.csproj"" />
+    <PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly.Server"" Version=""10.0.0"" />
+  </ItemGroup>
+</Project>");
+
+        await File.WriteAllTextAsync(
+            clientProjectPath,
+            @"<Project Sdk=""Microsoft.NET.Sdk.BlazorWebAssembly"">
+  <PropertyGroup>
+    <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly"" Version=""10.0.0"" />
+  </ItemGroup>
+</Project>");
+
+        var settings = new InitCommand.Settings
+        {
+            SkipPrompts = true,
+            ProjectPath = _testProjectPath,
+            WithCss = true
+        };
+
+        var context = new CommandContext(
+            Array.Empty<string>(),
+            new TestRemainingArguments(),
+            "init",
+            null);
+
+        // Act
+        var result = await _command.ExecuteAsync(context, settings);
+
+        // Assert
+        result.Should().Be(0);
+
+        var serverDocument = XDocument.Load(serverProjectPath);
+        var serverNamespace = serverDocument.Root!.GetDefaultNamespace();
+        serverDocument.Descendants(serverNamespace + "PackageReference")
+            .Should().ContainSingle(reference => reference.Attribute("Include") != null
+                && reference.Attribute("Include")!.Value == "Vibe.UI.CSS");
+        serverDocument.Descendants(serverNamespace + "VibeCssScanRoot")
+            .Should().ContainSingle(element => element.Value == "$(MSBuildProjectDirectory)/..");
+
+        var clientDocument = XDocument.Load(clientProjectPath);
+        var clientNamespace = clientDocument.Root!.GetDefaultNamespace();
+        clientDocument.Descendants(clientNamespace + "PackageReference")
+            .Should().NotContain(reference => reference.Attribute("Include") != null
+                && reference.Attribute("Include")!.Value == "Vibe.UI.CSS");
+        File.Exists(Path.Combine(clientPath, "vibe.json")).Should().BeTrue();
     }
 
     private static string GetCliVersion()
@@ -300,7 +524,7 @@ public class InitCommandTests : IDisposable
         var csprojPath = Path.Combine(_testProjectPath, "Test.csproj");
         await File.WriteAllTextAsync(csprojPath, @"<Project Sdk=""Microsoft.NET.Sdk.Web"">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
 </Project>");
 
@@ -346,10 +570,10 @@ public class InitCommandTests : IDisposable
         var csprojPath = Path.Combine(_testProjectPath, "Test.csproj");
         await File.WriteAllTextAsync(csprojPath, @"<Project Sdk=""Microsoft.NET.Sdk.Web"">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include=""Microsoft.AspNetCore.Components.Web"" Version=""9.0.0"" />
+    <PackageReference Include=""Microsoft.AspNetCore.Components.Web"" Version=""10.0.0"" />
   </ItemGroup>
 </Project>");
 
@@ -390,7 +614,7 @@ public class InitCommandTests : IDisposable
         var csprojPath = Path.Combine(_testProjectPath, "Test.csproj");
         await File.WriteAllTextAsync(csprojPath, @"<Project Sdk=""Microsoft.NET.Sdk.Web"">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
   <PropertyGroup>
     <VibeCssEnabled>true</VibeCssEnabled>

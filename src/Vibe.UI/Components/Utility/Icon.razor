@@ -6,7 +6,8 @@
 {
     <svg @attributes="AdditionalAttributes" class="@CombinedCssClass" style="@IconStyle" width="@ActualWidth"
         height="@ActualHeight" viewBox="0 0 24 24" fill="@Fill" stroke="@Stroke" stroke-width="@StrokeWidth"
-        stroke-linecap="@StrokeLinecap" stroke-linejoin="@StrokeLinejoin">
+        stroke-linecap="@StrokeLinecap" stroke-linejoin="@StrokeLinejoin" role="@IconRole" aria-label="@AriaLabel"
+        aria-hidden="@IconAriaHidden" focusable="false">
         @if (IconContent != null)
         {
             @IconContent
@@ -101,6 +102,12 @@ else if (CustomSvg != null)
     [Parameter]
     public string? CssClass { get; set; }
 
+    /// <summary>
+    /// Accessible name for semantic icons. Icons without an accessible name are treated as decorative.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
     private string CombinedCssClass => CombineClasses(
     "vibe-icon",
     CssClass
@@ -112,6 +119,13 @@ else if (CustomSvg != null)
 
     private int ActualWidth => Width ?? Size;
     private int ActualHeight => Height ?? Size;
+    private bool HasAccessibleName =>
+        !string.IsNullOrWhiteSpace(AriaLabel) ||
+        AdditionalAttributes?.ContainsKey("aria-label") == true ||
+        AdditionalAttributes?.ContainsKey("aria-labelledby") == true;
+
+    private string? IconRole => HasAccessibleName ? "img" : null;
+    private string? IconAriaHidden => HasAccessibleName ? null : "true";
 
     private RenderFragment GetIconPath() => builder =>
     {

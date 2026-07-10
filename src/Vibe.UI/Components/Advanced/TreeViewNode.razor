@@ -1,64 +1,91 @@
 @namespace Vibe.UI.Components
 
-<div class="tree-view-node" role="treeitem" aria-expanded="@IsExpanded.ToString().ToLower()">
-    <div class="tree-node-content" @onclick="HandleClick">
+@if (Item is not null)
+{
+    <div class="@NodeCssClass"
+         role="treeitem"
+         aria-expanded="@AriaExpanded"
+         aria-selected="@AriaBool(IsSelected)"
+         aria-disabled="@AriaBool(IsDisabled)"
+         aria-level="@NormalizedLevel"
+         aria-posinset="@NormalizedPositionInSet"
+         aria-setsize="@NormalizedSetSize"
+         tabindex="@TabIndex"
+         @onkeydown="HandleKeyDown">
+        <div class="@ContentCssClass" @onclick="HandleClick">
+            @if (HasChildren)
+            {
+                <button type="button"
+                        class="@ToggleCssClass"
+                        disabled="@IsDisabled"
+                        aria-disabled="@AriaBool(IsDisabled)"
+                        aria-label="@ToggleAriaLabel"
+                        @onclick="HandleToggle"
+                        @onclick:stopPropagation="true"
+                        @onkeydown:stopPropagation="true">
+                    @* Chevron icon rotates 90deg when expanded via CSS. *@
+                    <svg class="tree-node-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                         aria-hidden="true" focusable="false">
+                        <path d="m9 18 6-6-6-6"/>
+                    </svg>
+                </button>
+            }
+            else
+            {
+                <span class="tree-node-spacer" aria-hidden="true"></span>
+            }
+
+            @if (ShowCheckboxes)
+            {
+                <input type="checkbox"
+                       checked="@IsSelected"
+                       disabled="@IsDisabled"
+                       aria-label="@CheckboxAriaLabel"
+                       @onchange="HandleCheckboxChange"
+                       @onclick:stopPropagation="true"
+                       @onkeydown:stopPropagation="true"
+                       class="tree-node-checkbox" />
+            }
+
+            @if (Item.Icon != null)
+            {
+                <span class="tree-node-icon">@Item.Icon</span>
+            }
+
+            <span class="@LabelCssClass">
+                @Item.Label
+            </span>
+        </div>
+
         @if (HasChildren)
         {
-            <button type="button"
-                    class="tree-node-toggle @(IsExpanded ? "expanded" : "")"
-                    @onclick="HandleToggle"
-                    @onclick:stopPropagation="true"
-                    aria-label="@(IsExpanded ? "Collapse" : "Expand")">
-                @* Chevron icon - rotates 90deg when expanded via CSS *@
-                <svg class="tree-node-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m9 18 6-6-6-6"/>
-                </svg>
-            </button>
-        }
-        else
-        {
-            <span class="tree-node-spacer"></span>
-        }
+            <div class="@ChildrenCssClass" role="group" hidden="@(!IsExpanded)">
+                @for (var index = 0; index < ChildItems.Count; index++)
+                {
+                    var child = ChildItems[index];
 
-        @if (ShowCheckboxes)
-        {
-            <input type="checkbox"
-                   checked="@IsSelected"
-                   @onchange="HandleCheckboxChange"
-                   @onclick:stopPropagation="true"
-                   class="tree-node-checkbox" />
+                    <TreeViewNode @key="child"
+                                  Item="child"
+                                  SelectedValue="@SelectedValue"
+                                  OnNodeClick="@OnNodeClick"
+                                  OnNodeExpand="@OnNodeExpand"
+                                  ShowCheckboxes="@ShowCheckboxes"
+                                  MultiSelect="@MultiSelect"
+                                  ExpandedNodes="@ExpandedNodes"
+                                  SelectedNodes="@SelectedNodes"
+                                  Level="@(NormalizedLevel + 1)"
+                                  PositionInSet="@(index + 1)"
+                                  SetSize="@ChildItems.Count" />
+                }
+            </div>
         }
-
-        @if (Item?.Icon != null)
-        {
-            <span class="tree-node-icon">@Item.Icon</span>
-        }
-
-        <span class="tree-node-label @(IsSelected ? "selected" : "") @(Item?.IsDisabled == true ? "disabled" : "")">
-            @Item?.Label
-        </span>
     </div>
-
-    @if (HasChildren && Item?.Children != null)
-    {
-        <div class="tree-node-children @(IsExpanded ? "expanded" : "collapsed")" role="group" style="@(IsExpanded ? "" : "display: none;")">
-            @foreach (var child in Item.Children)
-            {
-                <TreeViewNode Item="child"
-                              SelectedValue="@SelectedValue"
-                              OnNodeClick="@OnNodeClick"
-                              OnNodeExpand="@OnNodeExpand"
-                              ShowCheckboxes="@ShowCheckboxes"
-                              MultiSelect="@MultiSelect"
-                              ExpandedNodes="@ExpandedNodes"
-                              SelectedNodes="@SelectedNodes" />
-            }
-        </div>
-    }
-</div>
+}
 
 @code {
+    private static readonly IReadOnlyList<TreeView.TreeNode> EmptyNodes = Array.Empty<TreeView.TreeNode>();
+
     [Parameter]
     public TreeView.TreeNode? Item { get; set; }
 
@@ -78,18 +105,42 @@
     public bool MultiSelect { get; set; }
 
     [Parameter]
-    public HashSet<string> ExpandedNodes { get; set; } = new();
+    public HashSet<string>? ExpandedNodes { get; set; } = new();
 
     [Parameter]
-    public HashSet<string> SelectedNodes { get; set; } = new();
+    public HashSet<string>? SelectedNodes { get; set; } = new();
 
-    private bool HasChildren => Item?.Children != null && Item.Children.Any();
-    private bool IsExpanded => Item != null && ExpandedNodes.Contains(Item.Id);
-    private bool IsSelected => Item != null && (SelectedNodes.Contains(Item.Id) || SelectedValue == Item.Id);
+    [Parameter]
+    public int Level { get; set; } = 1;
+
+    [Parameter]
+    public int PositionInSet { get; set; } = 1;
+
+    [Parameter]
+    public int SetSize { get; set; } = 1;
+
+    private IReadOnlyList<TreeView.TreeNode> ChildItems => Item?.Children ?? EmptyNodes;
+    private bool HasChildren => ChildItems.Count > 0;
+    private bool IsDisabled => Item?.IsDisabled == true;
+    private bool IsExpanded => Item != null && ExpandedNodes?.Contains(Item.Id) == true;
+    private bool IsSelected => Item != null && (SelectedNodes?.Contains(Item.Id) == true || SelectedValue == Item.Id);
+    private int NormalizedLevel => Math.Max(1, Level);
+    private int NormalizedSetSize => Math.Max(1, SetSize);
+    private int NormalizedPositionInSet => Math.Clamp(PositionInSet, 1, NormalizedSetSize);
+    private int TabIndex => IsDisabled ? -1 : 0;
+    private string? AriaExpanded => HasChildren ? AriaBool(IsExpanded) : null;
+    private string NodeLabel => Item?.Label ?? string.Empty;
+    private string ToggleAriaLabel => $"{(IsExpanded ? "Collapse" : "Expand")} {NodeLabel}".Trim();
+    private string CheckboxAriaLabel => $"Select {NodeLabel}".Trim();
+    private string NodeCssClass => CombineClasses("tree-view-node", IsSelected ? "selected" : null, IsDisabled ? "disabled" : null);
+    private string ContentCssClass => CombineClasses("tree-node-content", IsSelected ? "selected" : null, IsDisabled ? "disabled" : null);
+    private string ToggleCssClass => CombineClasses("tree-node-toggle", IsExpanded ? "expanded" : null);
+    private string LabelCssClass => CombineClasses("tree-node-label", IsSelected ? "selected" : null, IsDisabled ? "disabled" : null);
+    private string ChildrenCssClass => CombineClasses("tree-node-children", IsExpanded ? "expanded" : "collapsed");
 
     private async Task HandleClick()
     {
-        if (Item != null && !Item.IsDisabled && OnNodeClick.HasDelegate)
+        if (Item != null && !IsDisabled && OnNodeClick.HasDelegate)
         {
             await OnNodeClick.InvokeAsync(Item);
         }
@@ -97,7 +148,7 @@
 
     private async Task HandleToggle()
     {
-        if (Item != null && OnNodeExpand.HasDelegate)
+        if (Item != null && HasChildren && !IsDisabled && OnNodeExpand.HasDelegate)
         {
             await OnNodeExpand.InvokeAsync(Item);
         }
@@ -105,9 +156,43 @@
 
     private async Task HandleCheckboxChange(ChangeEventArgs e)
     {
-        if (Item != null && OnNodeClick.HasDelegate)
+        if (Item != null && !IsDisabled && OnNodeClick.HasDelegate)
         {
             await OnNodeClick.InvokeAsync(Item);
         }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (Item == null || IsDisabled)
+            return;
+
+        switch (e.Key)
+        {
+            case "Enter":
+            case " ":
+            case "Spacebar":
+                await HandleClick();
+                break;
+            case "ArrowRight":
+                if (HasChildren && !IsExpanded)
+                {
+                    await HandleToggle();
+                }
+                break;
+            case "ArrowLeft":
+                if (HasChildren && IsExpanded)
+                {
+                    await HandleToggle();
+                }
+                break;
+        }
+    }
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
+
+    private static string CombineClasses(params string?[] classes)
+    {
+        return string.Join(" ", classes.Where(c => !string.IsNullOrWhiteSpace(c)));
     }
 }

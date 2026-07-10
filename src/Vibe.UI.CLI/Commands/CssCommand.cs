@@ -1,6 +1,7 @@
 using Spectre.Console;
 using Spectre.Console.Cli;
 using System.ComponentModel;
+using Vibe.UI.CLI.Services;
 using Vibe.UI.CSS;
 
 namespace Vibe.UI.CLI.Commands;
@@ -53,9 +54,19 @@ public class CssCommand : AsyncCommand<CssCommand.Settings>
         public string Patterns { get; init; } = "*.razor,*.cshtml,*.html";
     }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+    public Task<int> ExecuteAsync(CommandContext context, Settings settings) =>
+        ExecuteAsync(context, settings, CancellationToken.None);
+
+    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
-        var projectPath = Path.GetFullPath(settings.ProjectPath);
+        var requestedProjectPath = Path.GetFullPath(settings.ProjectPath);
+        var projectService = new ProjectService();
+        var projectPath = await projectService.ResolveInitializedProjectPathAsync(requestedProjectPath);
+
+        if (!PathsEqual(requestedProjectPath, projectPath))
+        {
+            AnsiConsole.WriteLine($"Using initialized project: {projectPath}");
+        }
 
         if (!Directory.Exists(projectPath))
         {
@@ -77,6 +88,9 @@ public class CssCommand : AsyncCommand<CssCommand.Settings>
 
         return await GenerateOnceAsync(projectPath, settings, patterns);
     }
+
+    private static bool PathsEqual(string left, string right) =>
+        string.Equals(Path.GetFullPath(left), Path.GetFullPath(right), StringComparison.OrdinalIgnoreCase);
 
     private static async Task<int> ScanOnlyAsync(string projectPath, string[] patterns, Settings settings)
     {

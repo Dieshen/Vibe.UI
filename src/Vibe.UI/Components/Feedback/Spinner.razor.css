@@ -7,6 +7,11 @@
   gap: 0.5rem;
 }
 
+:global(.vibe-spinner[aria-disabled="true"]) {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 :global(.vibe-spinner .spinner) {
   display: inline-block;
   border-radius: 9999px;
@@ -16,9 +21,25 @@
   animation: vibe-spin 1s linear infinite;
 }
 
+:global(.vibe-spinner.spinner-disabled .spinner) {
+  animation: none;
+}
+
 :global(.vibe-spinner .spinner-label) {
   color: var(--vibe-muted-foreground);
   font-size: 0.875rem;
+}
+
+:global(.vibe-spinner .sr-only) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 :global(.spinner-small .spinner) {
@@ -65,3 +86,8 @@
   border-top-color: var(--vibe-warning);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  :global(.vibe-spinner .spinner) {
+    animation: none;
+  }
+}

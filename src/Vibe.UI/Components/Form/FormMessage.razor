@@ -1,10 +1,10 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<p class="@CombinedClass @VariantClass" @attributes="AdditionalAttributes">
-    @if (!string.IsNullOrEmpty(Icon))
+<p @attributes="MessageAttributes" class="@CombinedClass">
+    @if (!string.IsNullOrWhiteSpace(Icon))
     {
-        <span class="form-message-icon">@((MarkupString)Icon)</span>
+        <span class="form-message-icon" aria-hidden="true">@((MarkupString)Icon)</span>
     }
     @ChildContent
 </p>
@@ -20,21 +20,70 @@
     /// Gets or sets the message variant (error, warning, success, info).
     /// </summary>
     [Parameter]
-    public string Variant { get; set; } = "default";
+    public string? Variant { get; set; } = "default";
 
     /// <summary>
     /// Gets or sets the message icon as HTML.
     /// </summary>
     [Parameter]
-    public string Icon { get; set; }
+    public string? Icon { get; set; }
 
     /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
     protected override string ComponentClass => "vibe-form-message";
 
+    /// <inheritdoc />
+    protected override string GetCombinedClass()
+    {
+        return CombineClasses(ComponentClass, VariantClass, Class, AdditionalClass);
+    }
+
     /// <summary>
     /// Gets the variant CSS class.
     /// </summary>
-    private string VariantClass => $"form-message-{Variant}";
+    private string VariantClass => $"form-message-{EffectiveVariant}";
+
+    private string EffectiveVariant => NormalizeVariant(Variant);
+
+    private Dictionary<string, object>? MessageAttributes => BuildMessageAttributes();
+
+    private string? AdditionalClass =>
+        AdditionalAttributes != null && AdditionalAttributes.TryGetValue("class", out var classValue)
+            ? classValue?.ToString()
+            : null;
+
+    private Dictionary<string, object>? BuildMessageAttributes()
+    {
+        var attributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+        if (AdditionalAttributes != null)
+        {
+            foreach (var attribute in AdditionalAttributes)
+            {
+                if (!attribute.Key.Equals("class", StringComparison.OrdinalIgnoreCase))
+                {
+                    attributes[attribute.Key] = attribute.Value;
+                }
+            }
+        }
+
+        if (EffectiveVariant == "error")
+        {
+            attributes.TryAdd("role", "alert");
+            attributes.TryAdd("aria-live", "assertive");
+        }
+
+        return attributes.Count == 0 ? null : attributes;
+    }
+
+    private static string NormalizeVariant(string? variant)
+    {
+        if (string.IsNullOrWhiteSpace(variant))
+        {
+            return "default";
+        }
+
+        return string.Join("-", variant.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries)).ToLowerInvariant();
+    }
 }

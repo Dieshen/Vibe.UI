@@ -1,7 +1,11 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
 
-<div class="@CombinedClass @SizeClass" style="@ContainerStyle" @attributes="AdditionalAttributes">
+<div class="@RootClass"
+     style="@ContainerStyle"
+     role="@EffectiveRole"
+     aria-label="@EffectiveAriaLabel"
+     @attributes="RootAttributes">
     @ChildContent
 </div>
 
@@ -36,8 +40,24 @@
     [Parameter]
     public bool Centered { get; set; } = true;
 
+    /// <summary>
+    /// Gets or sets an accessible label when the container represents a named page region.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the ARIA role for the container. Defaults to region only when an accessible name is provided.
+    /// </summary>
+    [Parameter]
+    public string? Role { get; set; }
+
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-container";
+
+    private string RootClass => CombineClasses(ComponentClass, SizeClass, Class?.Trim(), AdditionalClass);
+
+    private Dictionary<string, object>? RootAttributes => GetUnhandledAttributes();
 
     /// <summary>
     /// Gets the CSS class for the container size
@@ -62,9 +82,16 @@
         {
             var styles = new List<string>();
 
-            if (!string.IsNullOrEmpty(Padding))
+            var additionalStyle = AdditionalStyle;
+            if (!string.IsNullOrWhiteSpace(additionalStyle))
             {
-                styles.Add($"padding: {Padding}");
+                styles.Add(additionalStyle);
+            }
+
+            var padding = NormalizeAttributeValue(Padding);
+            if (padding is not null)
+            {
+                styles.Add($"padding: {padding}");
             }
 
             if (!Centered)
@@ -76,6 +103,73 @@
             return styles.Count > 0 ? string.Join("; ", styles) : null;
         }
     }
+
+    private string? EffectiveRole =>
+        GetAdditionalAttributeValue("role")
+        ?? NormalizeAttributeValue(Role)
+        ?? (HasAccessibleName ? "region" : null);
+
+    private string? EffectiveAriaLabel =>
+        GetAdditionalAttributeValue("aria-label")
+        ?? (HasAdditionalAttribute("aria-labelledby") ? null : NormalizeAttributeValue(AriaLabel));
+
+    private bool HasAccessibleName =>
+        !string.IsNullOrWhiteSpace(AriaLabel)
+        || HasAdditionalAttribute("aria-label")
+        || HasAdditionalAttribute("aria-labelledby");
+
+    private string? AdditionalClass => GetAdditionalAttributeValue("class");
+
+    private string? AdditionalStyle => GetAdditionalAttributeValue("style")?.TrimEnd(';');
+
+    private Dictionary<string, object>? GetUnhandledAttributes()
+    {
+        if (AdditionalAttributes is null || AdditionalAttributes.Count == 0)
+        {
+            return null;
+        }
+
+        var attributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (IsHandledRootAttribute(attribute.Key))
+            {
+                continue;
+            }
+
+            attributes[attribute.Key] = attribute.Value;
+        }
+
+        return attributes.Count == 0 ? null : attributes;
+    }
+
+    private static bool IsHandledRootAttribute(string attributeName) =>
+        string.Equals(attributeName, "class", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(attributeName, "style", StringComparison.OrdinalIgnoreCase);
+
+    private string? GetAdditionalAttributeValue(string attributeName)
+    {
+        if (AdditionalAttributes is null)
+        {
+            return null;
+        }
+
+        foreach (var attribute in AdditionalAttributes)
+        {
+            if (string.Equals(attribute.Key, attributeName, StringComparison.OrdinalIgnoreCase))
+            {
+                return NormalizeAttributeValue(attribute.Value?.ToString());
+            }
+        }
+
+        return null;
+    }
+
+    private bool HasAdditionalAttribute(string attributeName) =>
+        AdditionalAttributes?.Keys.Any(key => string.Equals(key, attributeName, StringComparison.OrdinalIgnoreCase)) == true;
+
+    private static string? NormalizeAttributeValue(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     /// <summary>
     /// Container size options

@@ -5,7 +5,7 @@ CLI tool for adding Vibe.UI components to your Blazor projects.
 ## Installation
 
 ```bash
-dotnet tool install -g Vibe.UI.CLI
+dotnet tool install -g Vibe.UI.CLI --version 1.0.0-beta
 ```
 
 ## Quick Start
@@ -18,6 +18,7 @@ vibe init
 # This creates:
 # - Vibe/ folder with base classes and services
 # - wwwroot/js/vibe-theme.js
+# - wwwroot/css/vibe-base.css and vibe-utilities.css
 
 # 2. Add to Program.cs:
 builder.Services.AddVibeUI();
@@ -28,6 +29,44 @@ vibe add input
 vibe add card
 
 # Components are now in Components/!
+```
+
+## Blazor Hosting Models
+
+`vibe init` detects common Blazor project shapes:
+
+- Standalone Blazor WebAssembly projects install into the current project and use direct `wwwroot/index.html` stylesheet links.
+- Blazor Web Apps with a server project and `.Client` project prompt for the install target. With `--yes`, the CLI installs into the `.Client` project because Interactive WebAssembly and Interactive Auto components must be bundled by the client project.
+- Blazor Web Apps should register Vibe.UI in both projects when components run in both render modes:
+
+```csharp
+// Server Program.cs
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents()
+    .AddInteractiveWebAssemblyComponents();
+builder.Services.AddVibeUI();
+
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode()
+    .AddInteractiveWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(typeof(MyApp.Client._Imports).Assembly);
+
+// Client Program.cs
+builder.Services.AddVibeUI();
+```
+
+For .NET 9 and later Blazor Web Apps, add generated styles in the server root component with `@Assets[...]`:
+
+```razor
+<link rel="stylesheet" href="@Assets["css/vibe-base.css"]" />
+<link rel="stylesheet" href="@Assets["css/vibe-utilities.css"]" />
+```
+
+Standalone Blazor WebAssembly projects use direct links in `wwwroot/index.html`:
+
+```html
+<link href="css/vibe-base.css" rel="stylesheet" />
+<link href="css/vibe-utilities.css" rel="stylesheet" />
 ```
 
 ## Project Structure
@@ -68,7 +107,7 @@ This design provides:
 - **Easier discovery**: All components visible in one directory
 - **Less cognitive load**: No need to remember which category a component belongs to
 - **Cleaner autocomplete**: Better IDE experience
-- **Scalable**: Works well even with 90+ components
+- **Scalable**: Works well even with 110 components
 
 **Why not category subdirectories?**
 
@@ -105,7 +144,8 @@ Copies infrastructure (base classes, services, theme system) to `Vibe/` folder.
 Options:
 - `--minimal` - Core infrastructure only
 - `--no-theme` - Skip theme system
-- `--with-charts` - Include Chart.js support
+- `--with-charts` - Copy the `vibe-chart.js` interop script (the Chart.js library must also be loaded by the app)
+- `--with-css` - Add build-time `Vibe.UI.CSS` generation. Hosted Web Apps configure the server as the single CSS owner and scan both server and client sources.
 
 ### `vibe add <component>`
 Adds a component to `Components/`.

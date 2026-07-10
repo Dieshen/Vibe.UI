@@ -6,7 +6,7 @@ public class ButtonTests : TestBase
     public void Button_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<Button>();
+        var cut = Render<Button>();
 
         // Assert
         cut.MarkupMatches(@"<button class:ignore type=""button""></button>");
@@ -16,7 +16,7 @@ public class ButtonTests : TestBase
     public void Button_Renders_WithChildContent()
     {
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .AddChildContent("Click Me"));
 
         // Assert
@@ -28,7 +28,7 @@ public class ButtonTests : TestBase
     public void Button_Applies_Disabled_Attribute()
     {
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .Add(p => p.Disabled, true));
 
         // Assert
@@ -39,7 +39,7 @@ public class ButtonTests : TestBase
     public void Button_Renders_AsLink_WhenHrefProvided()
     {
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .Add(p => p.Href, "https://example.com")
             .AddChildContent("Link"));
 
@@ -54,7 +54,7 @@ public class ButtonTests : TestBase
     {
         // Arrange
         var clicked = false;
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .Add(p => p.OnClick, () => clicked = true)
             .AddChildContent("Click"));
 
@@ -70,7 +70,7 @@ public class ButtonTests : TestBase
     {
         // Arrange
         var clicked = false;
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .Add(p => p.Disabled, true)
             .Add(p => p.OnClick, () => clicked = true)
             .AddChildContent("Click"));
@@ -88,7 +88,7 @@ public class ButtonTests : TestBase
     public void Button_WithNullChildContent_RendersEmpty()
     {
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .Add(p => p.ChildContent, (RenderFragment?)null));
 
         // Assert
@@ -100,7 +100,7 @@ public class ButtonTests : TestBase
     public void Button_WithComplexChildContent_RendersCorrectly()
     {
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .AddChildContent("<strong>Bold</strong> <em>Italic</em> Text"));
 
         // Assert
@@ -116,7 +116,7 @@ public class ButtonTests : TestBase
         var longText = new string('X', 500);
 
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .AddChildContent(longText));
 
         // Assert
@@ -130,7 +130,7 @@ public class ButtonTests : TestBase
         var specialText = "<script>alert('xss')</script> & \"quotes\" 'apostrophes'";
 
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .AddChildContent(specialText));
 
         // Assert - TextContent shows decoded text, InnerHtml shows encoded HTML
@@ -159,7 +159,7 @@ public class ButtonTests : TestBase
 
         foreach (var variant in variants)
         {
-            var cut = RenderComponent<Button>(parameters => parameters
+            var cut = Render<Button>(parameters => parameters
                 .Add(p => p.Variant, variant));
 
             cut.Find("button").ClassList.ShouldContain($"vibe-button-{variant.ToString().ToLowerInvariant()}");
@@ -179,7 +179,7 @@ public class ButtonTests : TestBase
 
         foreach (var size in sizes)
         {
-            var cut = RenderComponent<Button>(parameters => parameters
+            var cut = Render<Button>(parameters => parameters
                 .Add(p => p.Size, size));
 
             cut.Find("button").ClassList.ShouldContain($"vibe-button-{size.ToString().ToLowerInvariant()}");
@@ -192,7 +192,7 @@ public class ButtonTests : TestBase
     public void Button_WithSubmitType_RendersCorrectType()
     {
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .Add(p => p.Type, "submit"));
 
         // Assert
@@ -203,7 +203,7 @@ public class ButtonTests : TestBase
     public void Button_WithResetType_RendersCorrectType()
     {
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .Add(p => p.Type, "reset"));
 
         // Assert
@@ -216,7 +216,7 @@ public class ButtonTests : TestBase
     public void Button_WithLoading_ShowsSpinner()
     {
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .Add(p => p.Loading, true)
             .AddChildContent("Loading..."));
 
@@ -230,7 +230,7 @@ public class ButtonTests : TestBase
     {
         // Arrange
         var clicked = false;
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .Add(p => p.Loading, true)
             .Add(p => p.OnClick, () => clicked = true)
             .AddChildContent("Loading..."));
@@ -248,7 +248,7 @@ public class ButtonTests : TestBase
     public void Button_WithIcon_RendersIcon()
     {
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .Add(p => p.Icon, builder => builder.AddContent(0, "<svg></svg>"))
             .AddChildContent("With Icon"));
 
@@ -260,7 +260,7 @@ public class ButtonTests : TestBase
     public void Button_WithIconOnly_AppliesIconOnlyClass()
     {
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .Add(p => p.Icon, builder => builder.AddContent(0, "<svg></svg>")));
 
         // Assert
@@ -273,7 +273,7 @@ public class ButtonTests : TestBase
     public void Button_WithFullWidth_AppliesFullWidthClass()
     {
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .Add(p => p.FullWidth, true)
             .AddChildContent("Full Width"));
 
@@ -287,7 +287,7 @@ public class ButtonTests : TestBase
     public void Button_AsLink_WithTarget_RendersTarget()
     {
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .Add(p => p.Href, "https://example.com")
             .Add(p => p.Target, "_blank")
             .AddChildContent("Link"));
@@ -301,7 +301,7 @@ public class ButtonTests : TestBase
     public void Button_AsLink_WithTarget_HasSecurityRel()
     {
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .Add(p => p.Href, "https://example.com")
             .Add(p => p.Target, "_blank")
             .AddChildContent("Link"));
@@ -314,7 +314,7 @@ public class ButtonTests : TestBase
     public void Button_AsLink_WithCustomRel_UsesCustomRel()
     {
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .Add(p => p.Href, "https://example.com")
             .Add(p => p.Rel, "custom")
             .AddChildContent("Link"));
@@ -327,7 +327,7 @@ public class ButtonTests : TestBase
     public void Button_AsLink_WithDisabled_HasAriaDisabledAttribute()
     {
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .Add(p => p.Href, "https://example.com")
             .Add(p => p.Disabled, true)
             .AddChildContent("Disabled Link"));
@@ -347,7 +347,7 @@ public class ButtonTests : TestBase
     public void Button_WithNoOnClickDelegate_DoesNotThrow()
     {
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .AddChildContent("No Handler"));
 
         // Act & Assert - Should not throw
@@ -359,7 +359,7 @@ public class ButtonTests : TestBase
     {
         // Arrange
         var clickCount = 0;
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .Add(p => p.OnClick, () => clickCount++)
             .AddChildContent("Click"));
 
@@ -380,7 +380,7 @@ public class ButtonTests : TestBase
     public void Button_WithAdditionalAttributes_MergesCorrectly()
     {
         // Act
-        var cut = RenderComponent<Button>(parameters => parameters
+        var cut = Render<Button>(parameters => parameters
             .AddChildContent("Custom")
             .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
             {
@@ -392,5 +392,80 @@ public class ButtonTests : TestBase
         var button = cut.Find("button");
         button.GetAttribute("data-testid")!.ShouldBe("my-button");
         button.GetAttribute("aria-label")!.ShouldBe("Custom Button");
+    }
+
+    [Fact]
+    public void Button_WithClassParameter_AppendsCustomClass()
+    {
+        // Act
+        var cut = Render<Button>(parameters => parameters
+            .Add(p => p.Class, "tracking-button")
+            .AddChildContent("Tracked"));
+
+        // Assert
+        var button = cut.Find("button");
+        button.ClassList.ShouldContain("vibe-button");
+        button.ClassList.ShouldContain("tracking-button");
+    }
+
+    [Fact]
+    public void Button_WithLoading_DisablesNativeButtonAndSetsBusyState()
+    {
+        // Act
+        var cut = Render<Button>(parameters => parameters
+            .Add(p => p.Loading, true)
+            .AddChildContent("Saving"));
+
+        // Assert
+        var button = cut.Find("button");
+        button.HasAttribute("disabled").ShouldBeTrue();
+        button.GetAttribute("aria-busy")!.ShouldBe("true");
+    }
+
+    [Fact]
+    public void Button_AsLink_WithLoading_RemovesNavigationAndSetsDisabledSemantics()
+    {
+        // Act
+        var cut = Render<Button>(parameters => parameters
+            .Add(p => p.Href, "https://example.com")
+            .Add(p => p.Loading, true)
+            .AddChildContent("Loading Link"));
+
+        // Assert
+        var link = cut.Find("a");
+        link.GetAttribute("href").ShouldBeNull();
+        link.GetAttribute("aria-disabled")!.ShouldBe("true");
+        link.GetAttribute("aria-busy")!.ShouldBe("true");
+        link.GetAttribute("tabindex")!.ShouldBe("-1");
+        link.ClassList.ShouldContain("vibe-button-disabled");
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Button_WithNullOrWhitespaceType_FallsBackToButton(string? type)
+    {
+        // Act
+        var cut = Render<Button>(parameters => parameters
+            .Add(p => p.Type, type));
+
+        // Assert
+        cut.Find("button").GetAttribute("type")!.ShouldBe("button");
+    }
+
+    [Fact]
+    public void Button_WithInvalidVariantAndSize_FallsBackToDefaults()
+    {
+        // Act
+        var cut = Render<Button>(parameters => parameters
+            .Add(p => p.Variant, (ButtonVariant)999)
+            .Add(p => p.Size, (ComponentSize)999));
+
+        // Assert
+        var classes = cut.Find("button").ClassList;
+        classes.ShouldContain("vibe-button-primary");
+        classes.ShouldContain("vibe-button-medium");
+        classes.ShouldNotContain("vibe-button-999");
     }
 }

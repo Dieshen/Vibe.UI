@@ -1,8 +1,12 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
 
-<label @attributes="AdditionalAttributes" class="@CombinedCssClass" for="@For">
+<label @attributes="LabelAttributes" class="@CombinedCssClass" for="@EffectiveFor">
     @ChildContent
+    @if (Required)
+    {
+        <span class="required-indicator" aria-hidden="true">*</span>
+    }
 </label>
 
 @code {
@@ -37,11 +41,44 @@
     public bool Disabled { get; set; }
 
     private string CombinedCssClass => CombineClasses(
-    "vibe-label",
-    Required ? "vibe-label-required" : null,
-    Disabled ? "vibe-label-disabled" : null,
-    CssClass
-    );
+        ComponentClass,
+        Required ? "vibe-label-required" : null,
+        Disabled ? "vibe-label-disabled" : null,
+        CssClass,
+        Class,
+        AdditionalClass);
 
-    protected override string ComponentClass => CombinedCssClass;
+    protected override string ComponentClass => "vibe-label";
+
+    private string? EffectiveFor => string.IsNullOrWhiteSpace(For) ? null : For;
+
+    private Dictionary<string, object>? LabelAttributes => BuildLabelAttributes();
+
+    private string? AdditionalClass =>
+        AdditionalAttributes != null && AdditionalAttributes.TryGetValue("class", out var classValue)
+            ? classValue?.ToString()
+            : null;
+
+    private Dictionary<string, object>? BuildLabelAttributes()
+    {
+        var attributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+        if (AdditionalAttributes != null)
+        {
+            foreach (var attribute in AdditionalAttributes)
+            {
+                if (!attribute.Key.Equals("class", StringComparison.OrdinalIgnoreCase))
+                {
+                    attributes[attribute.Key] = attribute.Value;
+                }
+            }
+        }
+
+        if (Disabled)
+        {
+            attributes.TryAdd("aria-disabled", "true");
+        }
+
+        return attributes.Count == 0 ? null : attributes;
+    }
 }

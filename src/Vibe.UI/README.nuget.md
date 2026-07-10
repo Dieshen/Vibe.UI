@@ -1,11 +1,11 @@
 # Vibe.UI
 
-Modern Blazor component library with 109+ components. Inspired by shadcn/ui.
+Modern Blazor component library with 110 components. Inspired by shadcn/ui.
 
 ## Installation
 
 ```bash
-dotnet add package Vibe.UI
+dotnet add package Vibe.UI --version 1.0.0-beta
 ```
 
 ## Setup
@@ -57,7 +57,7 @@ builder.Services.AddVibeUI();
 For full source code control, use the CLI instead:
 
 ```bash
-dotnet tool install -g Vibe.UI.CLI
+dotnet tool install -g Vibe.UI.CLI --version 1.0.0-beta
 vibe init
 vibe add button
 ```
@@ -87,11 +87,11 @@ If using the `Chart` component, add Chart.js:
 
 ## Features
 
-- 109+ production-ready components
+- 110 production-ready components
 - Built-in theming system (light/dark mode)
 - Chart.js integration
 - Form validation helpers
-- ARIA-compliant accessibility
+- ARIA and keyboard support across core interactive components
 - Responsive design
 - Minimal dependencies
 

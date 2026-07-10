@@ -1,17 +1,17 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
-    @if (!string.IsNullOrEmpty(Value))
+<div @attributes="AdditionalAttributes" class="@CombinedClass" data-state="@StateName" data-level="@LevelName">
+    @if (EffectiveValue is not null)
     {
         <div class="qr-container" style="@ContainerStyle">
             @if (!string.IsNullOrEmpty(_qrCodeDataUrl))
             {
-                <img src="@_qrCodeDataUrl" alt="QR Code" class="qr-image" style="@ImageStyle" />
+                <img src="@_qrCodeDataUrl" alt="@EffectiveImageAlt" class="qr-image" style="@ImageStyle" />
             }
             else
             {
-                <div class="qr-placeholder" style="@PlaceholderStyle">
+                <div class="qr-placeholder" style="@PlaceholderStyle" role="img" aria-label="@EffectiveImageAlt">
                     <svg viewBox="0 0 100 100" class="qr-icon">
                         <rect x="10" y="10" width="35" height="35" fill="currentColor" />
                         <rect x="55" y="10" width="35" height="35" fill="currentColor" />
@@ -27,7 +27,7 @@
 
         @if (ShowValue)
         {
-            <div class="qr-value">@Value</div>
+            <div class="qr-value">@EffectiveValue</div>
         }
 
         @if (AllowDownload && !string.IsNullOrEmpty(_qrCodeDataUrl))
@@ -43,25 +43,37 @@
     {
         @EmptyContent
     }
+    else
+    {
+        <div class="qr-empty" role="status">@EffectiveEmptyText</div>
+    }
 </div>
 
 @code {
+    private const int DefaultSize = 200;
+    private const int MinSize = 1;
+    private const int MaxSize = 2048;
+    private const string DefaultForegroundColor = "#000000";
+    private const string DefaultBackgroundColor = "#FFFFFF";
+    private const string DefaultAriaLabel = "QR code";
+    private const string DefaultEmptyText = "No QR code value";
+
     private string _qrCodeDataUrl = string.Empty;
 
     [Parameter]
-    public string Value { get; set; } = string.Empty;
+    public string? Value { get; set; } = string.Empty;
 
     [Parameter]
-    public int Size { get; set; } = 200;
+    public int Size { get; set; } = DefaultSize;
 
     [Parameter]
     public QRCodeLevel Level { get; set; } = QRCodeLevel.M;
 
     [Parameter]
-    public string ForegroundColor { get; set; } = "#000000";
+    public string? ForegroundColor { get; set; } = DefaultForegroundColor;
 
     [Parameter]
-    public string BackgroundColor { get; set; } = "#FFFFFF";
+    public string? BackgroundColor { get; set; } = DefaultBackgroundColor;
 
     [Parameter]
     public bool ShowValue { get; set; } = false;
@@ -75,26 +87,56 @@
     [Parameter]
     public string? CssClass { get; set; }
 
+    [Parameter]
+    public string? AriaLabel { get; set; } = DefaultAriaLabel;
+
+    [Parameter]
+    public string? EmptyText { get; set; } = DefaultEmptyText;
+
     private string CombinedCssClass => CombineClasses(
-    "vibe-qrcode",
-    CssClass
+        "vibe-qrcode",
+        CssClass
     );
 
     protected override string ComponentClass => CombinedCssClass;
 
-    private string ContainerStyle => $"width: {Size}px; height: {Size}px;";
-    private string ImageStyle => $"width: {Size}px; height: {Size}px;";
-    private string PlaceholderStyle => $"width: {Size}px; height: {Size}px;";
+    private string? EffectiveValue => NormalizeOptionalText(Value);
+
+    private int EffectiveSize => Math.Clamp(Size, MinSize, MaxSize);
+
+    private QRCodeLevel EffectiveLevel => Enum.IsDefined(Level) ? Level : QRCodeLevel.M;
+
+    private string LevelName => EffectiveLevel.ToString().ToLowerInvariant();
+
+    private string EffectiveForegroundColor => NormalizeSvgPaint(ForegroundColor, DefaultForegroundColor);
+
+    private string EffectiveBackgroundColor => NormalizeSvgPaint(BackgroundColor, DefaultBackgroundColor);
+
+    private string EffectiveImageAlt => NormalizeOptionalText(AriaLabel) ?? DefaultAriaLabel;
+
+    private string EffectiveEmptyText => NormalizeOptionalText(EmptyText) ?? DefaultEmptyText;
+
+    private string StateName => EffectiveValue is null ? "empty" : "ready";
+
+    private string ContainerStyle => $"width: {EffectiveSize}px; height: {EffectiveSize}px;";
+
+    private string ImageStyle => $"width: {EffectiveSize}px; height: {EffectiveSize}px;";
+
+    private string PlaceholderStyle => $"width: {EffectiveSize}px; height: {EffectiveSize}px;";
 
     protected override async Task OnParametersSetAsync()
     {
-        if (!string.IsNullOrEmpty(Value))
+        if (EffectiveValue is not null)
         {
-            await GenerateQRCode();
+            await GenerateQRCode(EffectiveValue);
+        }
+        else
+        {
+            _qrCodeDataUrl = string.Empty;
         }
     }
 
-    private async Task GenerateQRCode()
+    private async Task GenerateQRCode(string value)
     {
         // This is a placeholder for QR code generation
         // In a real implementation, you would:
@@ -111,7 +153,7 @@
         // _qrCodeDataUrl = $"data:image/png;base64,{Convert.ToBase64String(qrCodeImage)}";
 
         // For now, use a simple SVG-based approach or placeholder
-        _qrCodeDataUrl = GenerateSimpleQRCode(Value);
+        _qrCodeDataUrl = GenerateSimpleQRCode(value);
         await Task.CompletedTask;
     }
 
@@ -127,24 +169,48 @@
     {
         // Create a simple visual pattern based on the text hash
         // This is NOT a real QR code - just a placeholder
-        var hash = text.GetHashCode();
-        var random = new Random(hash);
+        var hash = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes($"{text}|{EffectiveLevel}"));
+        var seed = BitConverter.ToInt32(hash, 0);
+        var random = new Random(seed);
         var svg = $@"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
-<rect width='100' height='100' fill='{BackgroundColor}'/>
-<rect x='5' y='5' width='20' height='20' fill='{ForegroundColor}'/>
-<rect x='75' y='5' width='20' height='20' fill='{ForegroundColor}'/>
-<rect x='5' y='75' width='20' height='20' fill='{ForegroundColor}'/>
+<rect width='100' height='100' fill='{EffectiveBackgroundColor}'/>
+<rect x='5' y='5' width='20' height='20' fill='{EffectiveForegroundColor}'/>
+<rect x='75' y='5' width='20' height='20' fill='{EffectiveForegroundColor}'/>
+<rect x='5' y='75' width='20' height='20' fill='{EffectiveForegroundColor}'/>
 ";
 
         for (int i = 0; i < 30; i++)
         {
             var x = random.Next(30, 70);
             var y = random.Next(30, 70);
-            svg += $"<rect x='{x}' y='{y}' width='5' height='5' fill='{ForegroundColor}'/>";
+            svg += $"<rect x='{x}' y='{y}' width='5' height='5' fill='{EffectiveForegroundColor}'/>";
         }
 
         svg += "</svg>";
         return svg;
+    }
+
+    private static string? NormalizeOptionalText(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static string NormalizeSvgPaint(string? value, string fallback)
+    {
+        var normalizedValue = NormalizeOptionalText(value);
+        return normalizedValue is not null && IsSafeSvgPaint(normalizedValue)
+            ? normalizedValue
+            : fallback;
+    }
+
+    private static bool IsSafeSvgPaint(string value)
+    {
+        if (value.Length is 0 or > 64)
+        {
+            return false;
+        }
+
+        return value.All(static character =>
+            char.IsAsciiLetterOrDigit(character) ||
+            character is '#' or ' ' or ',' or '.' or '%' or '(' or ')' or '-');
     }
 
     public enum QRCodeLevel

@@ -1,11 +1,11 @@
 @page "/components/chart"
 @using Vibe.UI.Components
+@using Vibe.UI.Services
 @using static Vibe.UI.Components.Chart
 
 <PageTitle>Chart - Vibe.UI</PageTitle>
 
 <div class="vibe-max-w-4xl vibe-mx-auto">
-    <!-- Header -->
     <header class="vibe-mb-8">
         <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
             <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
@@ -16,357 +16,285 @@
         </div>
         <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Chart</h1>
         <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
-            Visualize data with various chart types including line, bar, pie, and more.
+            Render Chart.js visualizations with a single <code>Data</code> model and chart-type-specific options.
         </p>
     </header>
 
-    <!-- Preview Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
         <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
                 <div>
-                    <h4 style="margin-bottom: 1rem; font-size: 0.875rem; font-weight: 600;">Line Chart</h4>
+                    <h3 style="margin-bottom: 1rem; font-size: 0.875rem; font-weight: 600;">Line</h3>
                     <Chart Type="ChartType.Line"
                            Data="@lineChartData"
-                           Height="250"
-                           ShowLegend="true" />
+                           Height="220" />
                 </div>
                 <div>
-                    <h4 style="margin-bottom: 1rem; font-size: 0.875rem; font-weight: 600;">Bar Chart</h4>
+                    <h3 style="margin-bottom: 1rem; font-size: 0.875rem; font-weight: 600;">Bar</h3>
                     <Chart Type="ChartType.Bar"
                            Data="@barChartData"
-                           Height="250"
-                           ShowLegend="true" />
+                           Height="220" />
+                </div>
+                <div>
+                    <h3 style="margin-bottom: 1rem; font-size: 0.875rem; font-weight: 600;">Pie</h3>
+                    <Chart Type="ChartType.Pie"
+                           Data="@pieChartData"
+                           Height="220"
+                           UseBuiltInLegend="true" />
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Examples Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
 
-        <!-- Line Chart -->
         <div class="vibe-mb-8">
             <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Line Chart</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Display trends over time with connected data points.
+                Use <code>Data</code> with one or more datasets for line and area-style charts.
             </p>
             <CodeBlock Code="@LineChartCode" Language="razor" />
         </div>
 
-        <!-- Bar Chart -->
         <div class="vibe-mb-8">
             <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Bar Chart</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Compare values across categories with vertical bars.
+                Bar charts use the same data model and can reuse the builder helpers.
             </p>
             <CodeBlock Code="@BarChartCode" Language="razor" />
         </div>
 
-        <!-- Pie Chart -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Pie Chart</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Pie Chart With Slice Colors</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Show proportional data as slices of a circle.
+                Keep <code>Color</code> for single-color datasets and use <code>BackgroundColors</code> or <code>BorderColors</code> for pie or doughnut slices.
             </p>
             <CodeBlock Code="@PieChartCode" Language="razor" />
         </div>
 
-        <!-- Area Chart -->
         <div class="vibe-mb-8">
             <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Area Chart</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Emphasize magnitude of change over time with filled areas.
+                Use <code>ChartType.Area</code> with filled datasets for trend visualizations.
             </p>
             <CodeBlock Code="@AreaChartCode" Language="razor" />
         </div>
-
-        <!-- Mixed Chart -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Mixed Chart</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Combine multiple chart types in a single visualization.
-            </p>
-            <CodeBlock Code="@MixedChartCode" Language="razor" />
-        </div>
     </section>
 
-    <!-- API Reference -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
-
-        <!-- Properties -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Properties</h3>
-            <div class="vibe-overflow-x-auto">
-                <table class="vibe-w-full vibe-text-sm">
-                    <thead>
-                        <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Default</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="ChartType" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Line</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Type of chart to display</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Data</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="ChartData" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Chart data configuration</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Options</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="ChartOptions" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Chart display options</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Width</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"100%"</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Width of the chart</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Height</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"400px"</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Height of the chart</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Responsive</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">true</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Whether chart is responsive</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Events -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Events</h3>
-            <div class="vibe-overflow-x-auto">
-                <table class="vibe-w-full vibe-text-sm">
-                    <thead>
-                        <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnDataPointClick</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<ChartDataPoint>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when data point is clicked</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnLegendClick</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<string>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when legend item is clicked</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="vibe-overflow-x-auto">
+            <table class="vibe-w-full vibe-text-sm">
+                <thead>
+                    <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Default</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
+                    </tr>
+                </thead>
+                <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+                    <tr>
+                        <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Data</td>
+                        <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="ChartData" /></td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Required</td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Chart labels and datasets.</td>
+                    </tr>
+                    <tr>
+                        <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</td>
+                        <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="ChartType" /></td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Line</td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Chart.js visualization type.</td>
+                    </tr>
+                    <tr>
+                        <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Title</td>
+                        <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string?" /></td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Visible chart title.</td>
+                    </tr>
+                    <tr>
+                        <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</td>
+                        <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string?" /></td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Optional supporting text.</td>
+                    </tr>
+                    <tr>
+                        <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ShowLegend</td>
+                        <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">true</td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Shows the legend.</td>
+                    </tr>
+                    <tr>
+                        <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">UseBuiltInLegend</td>
+                        <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Uses Chart.js legend instead of the HTML legend.</td>
+                    </tr>
+                    <tr>
+                        <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ShowGrid</td>
+                        <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">true</td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Shows cartesian grid lines.</td>
+                    </tr>
+                    <tr>
+                        <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Height</td>
+                        <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="int" /></td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">300</td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Chart height in pixels.</td>
+                    </tr>
+                    <tr>
+                        <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">AriaLabel</td>
+                        <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string?" /></td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Accessible label when no visible title is present.</td>
+                    </tr>
+                    <tr>
+                        <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">EmptyMessage</td>
+                        <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string?" /></td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"No chart data available"</td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Displayed when no datasets contain values.</td>
+                    </tr>
+                    <tr>
+                        <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Options</td>
+                        <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="ChartOptions" /></td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Chart.js configuration options exposed by Vibe.UI.</td>
+                    </tr>
+                    <tr>
+                        <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">FooterContent</td>
+                        <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment?" /></td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Optional footer slot below the chart.</td>
+                    </tr>
+                    <tr>
+                        <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">CssClass</td>
+                        <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string?" /></td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Additional CSS classes.</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </section>
 
-    <!-- Installation -->
     <section class="vibe-mb-12">
-        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
-        <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-            Install the Chart component using the Vibe.UI CLI:
-        </p>
-        <CodeBlock Code="vibe add chart" Language="bash" />
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Methods</h2>
+        <div class="vibe-space-y-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            <div>
+                <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-2">RefreshAsync()</h3>
+                <p>Call after mutating the current <code>Data</code> instance in place.</p>
+            </div>
+            <div>
+                <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-2">ExportAsImageAsync()</h3>
+                <p>Returns the rendered chart as a base64 string, or <code>null</code> when the chart is unavailable.</p>
+            </div>
+        </div>
     </section>
 
-    <!-- Accessibility -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
-        <div class="vibe-prose dark:vibe-prose-invert vibe-max-w-none">
-            <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    SVG charts with descriptive titles and labels
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Data table alternative for screen readers
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Keyboard navigation for interactive charts
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    High contrast mode support
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Proper ARIA labels and descriptions
-                </li>
-            </ul>
-        </div>
+        <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            <li>The rendered canvas uses <code>role="img"</code>.</li>
+            <li><code>Title</code> and <code>Description</code> provide <code>aria-labelledby</code> and <code>aria-describedby</code> wiring.</li>
+            <li><code>AriaLabel</code> supplies an accessible name when no visible title is present.</li>
+            <li>Empty charts show a status message instead of a blank canvas.</li>
+            <li>The custom legend is rendered as a semantic HTML list when enabled.</li>
+        </ul>
     </section>
 
-    <!-- Related Components -->
     <section>
-        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Related</h2>
-        <div class="vibe-grid vibe-grid-cols-1 sm:vibe-grid-cols-3 vibe-gap-4">
-            <a href="components/datagrid" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">DataGrid</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Data table with advanced features</p>
-            </a>
-            <a href="components/table" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Table</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Simple table component</p>
-            </a>
-            <a href="components/progress" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Progress</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Progress indicator</p>
-            </a>
-        </div>
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
+        <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
+            Add the component with the CLI, then load Chart.js and the Vibe.UI chart interop script in your app.
+        </p>
+        <CodeBlock Code="vibe add chart" Language="bash" />
     </section>
 </div>
 
 @code {
-    private ChartData lineChartData = new()
-    {
-        Labels = new List<string> { "Jan", "Feb", "Mar", "Apr", "May", "Jun" },
-        Datasets = new List<ChartDataset>
-        {
-            new ChartDataset
-            {
-                Label = "Revenue",
-                Data = new List<double> { 12000, 19000, 15000, 25000, 22000, 30000 },
-                Color = "#3b82f6",
-                BorderWidth = 2
-            },
-            new ChartDataset
-            {
-                Label = "Expenses",
-                Data = new List<double> { 8000, 12000, 10000, 15000, 14000, 18000 },
-                Color = "#ef4444",
-                BorderWidth = 2
-            }
-        }
-    };
+    private readonly ChartData lineChartData = new ChartDataBuilder()
+        .WithLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun")
+        .AddDataset("Revenue", new[] { 12_000.0, 19_000.0, 15_000.0, 25_000.0, 22_000.0, 30_000.0 }, "#3b82f6")
+        .AddDataset("Expenses", new[] { 8_000.0, 12_000.0, 10_000.0, 15_000.0, 14_000.0, 18_000.0 }, "#ef4444")
+        .Build();
 
-    private ChartData barChartData = new()
-    {
-        Labels = new List<string> { "Q1", "Q2", "Q3", "Q4" },
-        Datasets = new List<ChartDataset>
+    private readonly ChartData barChartData = ChartDataBuilder.CreateBarChart(
+        labels: ["Q1", "Q2", "Q3", "Q4"],
+        datasets: new Dictionary<string, double[]>
         {
-            new ChartDataset
-            {
-                Label = "Sales 2024",
-                Data = new List<double> { 45000, 52000, 48000, 61000 },
-                Color = "#10b981",
-                BackgroundColor = "#10b981"
-            },
-            new ChartDataset
-            {
-                Label = "Sales 2023",
-                Data = new List<double> { 38000, 45000, 42000, 55000 },
-                Color = "#6366f1",
-                BackgroundColor = "#6366f1"
-            }
-        }
-    };
+            ["Sales 2024"] = [45_000.0, 52_000.0, 48_000.0, 61_000.0],
+            ["Sales 2023"] = [38_000.0, 45_000.0, 42_000.0, 55_000.0]
+        });
 
-    private string LineChartCode => @"<Chart Type=""ChartType.Line"" Data=""@chartData"" />
+    private readonly ChartData pieChartData = ChartDataBuilder.CreatePieChart(
+        labels: ["North", "South", "West"],
+        values: [35.0, 40.0, 25.0],
+        colors: ["#2563eb", "#14b8a6", "#f59e0b"]);
+
+    private string LineChartCode => """
+<Chart Type="ChartType.Line" Data="@chartData" Title="Revenue" Height="320" />
 
 @code {
-    private ChartData chartData = new()
-    {
-        Labels = new[] { ""Jan"", ""Feb"", ""Mar"", ""Apr"", ""May"", ""Jun"" },
-        Datasets = new[]
-        {
-            new ChartDataset
-            {
-                Label = ""Sales"",
-                Data = new[] { 12, 19, 3, 5, 2, 3 }
-            }
-        }
-    };
-}";
+    private ChartData chartData = new ChartDataBuilder()
+        .WithLabels("Jan", "Feb", "Mar", "Apr")
+        .AddDataset("Revenue", new[] { 12.0, 19.0, 15.0, 24.0 }, "#3b82f6")
+        .AddDataset("Expenses", new[] { 8.0, 11.0, 10.0, 14.0 }, "#ef4444")
+        .Build();
+}
+""";
 
-    private string BarChartCode => @"<Chart Type=""ChartType.Bar"" Data=""@barData"" />
+    private string BarChartCode => """
+<Chart Type="ChartType.Bar" Data="@barData" Title="Quarterly Sales" Height="320" />
 
 @code {
-    private ChartData barData = new()
-    {
-        Labels = new[] { ""Q1"", ""Q2"", ""Q3"", ""Q4"" },
-        Datasets = new[]
+    private ChartData barData = ChartDataBuilder.CreateBarChart(
+        labels: new[] { "Q1", "Q2", "Q3", "Q4" },
+        datasets: new Dictionary<string, double[]>
         {
-            new ChartDataset
-            {
-                Label = ""Revenue"",
-                Data = new[] { 45, 52, 48, 61 }
-            }
-        }
-    };
-}";
+            ["2024"] = new[] { 45.0, 52.0, 48.0, 61.0 },
+            ["2023"] = new[] { 38.0, 45.0, 42.0, 55.0 }
+        });
+}
+""";
 
-    private string PieChartCode => @"<Chart Type=""ChartType.Pie"" Data=""@pieData"" />
+    private string PieChartCode => """
+<Chart Type="ChartType.Pie"
+       Data="@pieData"
+       Title="Regional Share"
+       UseBuiltInLegend="true" />
 
 @code {
     private ChartData pieData = new()
     {
-        Labels = new[] { ""Red"", ""Blue"", ""Yellow"" },
-        Datasets = new[]
-        {
+        Labels = ["North", "South", "West"],
+        Datasets =
+        [
             new ChartDataset
             {
-                Data = new[] { 300, 50, 100 },
-                BackgroundColor = new[] { ""#ff6384"", ""#36a2eb"", ""#ffce56"" }
+                Label = "Share",
+                Data = [35.0, 40.0, 25.0],
+                Color = "#2563eb",
+                BackgroundColors = ["#2563eb", "#14b8a6", "#f59e0b"],
+                BorderColors = ["#1d4ed8", "#0f766e", "#d97706"]
             }
-        }
+        ]
     };
-}";
-
-    private string AreaChartCode => @"<Chart Type=""ChartType.Area"" Data=""@areaData"" Options=""@areaOptions"" />
-
-@code {
-    private ChartOptions areaOptions = new()
-    {
-        Fill = true,
-        Tension = 0.4
-    };
-}";
-
-    private string MixedChartCode => @"<Chart Type=""ChartType.Mixed"" Data=""@mixedData"" />
-
-@code {
-    private ChartData mixedData = new()
-    {
-        Datasets = new[]
-        {
-            new ChartDataset { Type = ""line"", Label = ""Revenue"", Data = new[] { 50, 60, 70 } },
-            new ChartDataset { Type = ""bar"", Label = ""Profit"", Data = new[] { 20, 30, 40 } }
-        }
-    };
-}";
 }
+""";
 
+    private string AreaChartCode => """
+<Chart Type="ChartType.Area" Data="@areaData" Title="Traffic" Height="320" />
 
+@code {
+    private ChartData areaData = ChartDataBuilder.CreateAreaChart(
+        labels: new[] { "Week 1", "Week 2", "Week 3", "Week 4" },
+        datasets: new Dictionary<string, double[]>
+        {
+            ["Desktop"] = new[] { 1200.0, 1900.0, 1500.0, 2100.0 },
+            ["Mobile"] = new[] { 800.0, 1200.0, 1400.0, 1800.0 }
+        });
+}
+""";
+}

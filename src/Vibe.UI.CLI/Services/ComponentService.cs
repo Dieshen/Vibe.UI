@@ -4,6 +4,9 @@ namespace Vibe.UI.CLI.Services;
 
 public class ComponentService
 {
+    private const string PackageModulePathPrefix = "./_content/Vibe.UI/js/";
+    private const string SourceModulePathPrefix = "./js/";
+
     private readonly Dictionary<string, ComponentInfo> _components;
 
     public ComponentService()
@@ -132,6 +135,7 @@ public class ComponentService
             }
 
             var razorContent = await GetComponentContentAsync(sourcePath, component.Name);
+            razorContent = RewriteModulePathsForSourceInstallation(razorContent);
 
             // Rename component if custom name provided
             if (!string.IsNullOrEmpty(customName))
@@ -314,7 +318,7 @@ public class ComponentService
             ["scrollarea"] = new ComponentInfo { Name = "ScrollArea", Category = "Utility", Description = "Augments native scroll functionality for custom, cross-browser styling" },
             ["dropdownmenu"] = new ComponentInfo { Name = "DropdownMenu", Category = "Utility", Description = "Displays a menu to the user triggered by a button" },
             ["kbd"] = new ComponentInfo { Name = "Kbd", Category = "Utility", Description = "Keyboard shortcut display component" },
-            ["qrcode"] = new ComponentInfo { Name = "QRCode", Category = "Utility", Description = "QR code generator for URLs and text", HasCss = false },
+            ["qrcode"] = new ComponentInfo { Name = "QRCode", Category = "Utility", Description = "Experimental QR-style visual preview for URLs and text", HasCss = false },
             ["icon"] = new ComponentInfo { Name = "Icon", Category = "Utility", Description = "Lucide icon component with size and color customization" },
 
             // Advanced Components (4 components)
@@ -358,7 +362,7 @@ public class ComponentService
             // 2. Packaged with CLI in Templates folder (adjacent to tools folder)
             Path.Combine(assemblyLocation, "Templates", "Components", category, $"{componentName}.razor"),
 
-            // 3. Dotnet global tool: Templates folder in package root (../../.. from tools/net9.0/any)
+            // 3. Dotnet global tool: Templates folder in package root (../../.. from tools/net10.0/any)
             Path.GetFullPath(Path.Combine(assemblyLocation, "..", "..", "..", "Templates", "Components", category, $"{componentName}.razor")),
 
             // 4. Current directory structure (if running from repo root)
@@ -390,6 +394,12 @@ public class ComponentService
 
         return await File.ReadAllTextAsync(sourcePath);
     }
+
+    private static string RewriteModulePathsForSourceInstallation(string content) =>
+        content.Replace(
+            PackageModulePathPrefix,
+            SourceModulePathPrefix,
+            StringComparison.Ordinal);
 
     /// <summary>
     /// Renames component class and references in the razor content.

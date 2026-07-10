@@ -6,7 +6,7 @@ public class TagInputTests : TestBase
     public void TagInput_Renders_WithDefaultProps()
     {
         // Act
-        var cut = RenderComponent<TagInput>();
+        var cut = Render<TagInput>();
 
         // Assert
         var tagInput = cut.Find(".vibe-tag-input");
@@ -17,7 +17,7 @@ public class TagInputTests : TestBase
     public void TagInput_Renders_Input()
     {
         // Act
-        var cut = RenderComponent<TagInput>();
+        var cut = Render<TagInput>();
 
         // Assert
         var input = cut.Find(".tag-input");
@@ -28,7 +28,7 @@ public class TagInputTests : TestBase
     public void TagInput_Displays_Placeholder()
     {
         // Act
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.Placeholder, "Enter tags..."));
 
         // Assert
@@ -40,7 +40,7 @@ public class TagInputTests : TestBase
     public void TagInput_Renders_ExistingTags()
     {
         // Act
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.Tags, new List<string> { "tag1", "tag2", "tag3" }));
 
         // Assert
@@ -52,7 +52,7 @@ public class TagInputTests : TestBase
     public void TagInput_Displays_TagText()
     {
         // Act
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.Tags, new List<string> { "React", "Blazor" }));
 
         // Assert
@@ -65,7 +65,7 @@ public class TagInputTests : TestBase
     public void TagInput_Renders_RemoveButtons()
     {
         // Act
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.Tags, new List<string> { "tag1", "tag2" }));
 
         // Assert
@@ -77,7 +77,7 @@ public class TagInputTests : TestBase
     public void TagInput_Hides_RemoveButtons_WhenDisabled()
     {
         // Act
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.Tags, new List<string> { "tag1", "tag2" })
             .Add(p => p.Disabled, true));
 
@@ -89,7 +89,7 @@ public class TagInputTests : TestBase
     public void TagInput_Applies_DisabledState()
     {
         // Act
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.Disabled, true));
 
         // Assert
@@ -102,7 +102,7 @@ public class TagInputTests : TestBase
     public void TagInput_Shows_Suggestions()
     {
         // Act
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.Suggestions, new List<string> { "React", "Vue", "Angular" }));
 
         // Set internal state to show suggestions
@@ -120,7 +120,7 @@ public class TagInputTests : TestBase
     public void TagInput_Has_AccessibilityLabel()
     {
         // Act
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.AriaLabel, "Add keywords"));
 
         // Assert
@@ -132,7 +132,7 @@ public class TagInputTests : TestBase
     public void TagInput_Applies_CustomCssClass()
     {
         // Act
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.CssClass, "custom-tag-input"));
 
         // Assert
@@ -145,7 +145,7 @@ public class TagInputTests : TestBase
         // Arrange
         var tags = new List<string> { "tag1", "tag2" };
         var tagAdded = false;
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.Tags, tags)
             .Add(p => p.MaxTags, 2)
             .Add(p => p.OnTagAdded, _ => tagAdded = true));
@@ -162,7 +162,7 @@ public class TagInputTests : TestBase
     {
         // Arrange
         var tags = new List<string> { "react" };
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.Tags, tags)
             .Add(p => p.AllowDuplicates, false));
 
@@ -174,7 +174,7 @@ public class TagInputTests : TestBase
     public void TagInput_AllowDuplicates_True_AllowsDuplicates()
     {
         // Arrange
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.AllowDuplicates, true));
 
         // Assert
@@ -185,7 +185,7 @@ public class TagInputTests : TestBase
     public void TagInput_CustomSeparator_UsesCustomValue()
     {
         // Act
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.Separator, ";"));
 
         // Assert
@@ -196,7 +196,7 @@ public class TagInputTests : TestBase
     public void TagInput_DefaultSeparator_IsComma()
     {
         // Act
-        var cut = RenderComponent<TagInput>();
+        var cut = Render<TagInput>();
 
         // Assert
         cut.Instance.Separator.ShouldBe(",");
@@ -208,7 +208,7 @@ public class TagInputTests : TestBase
         // Arrange
         var tags = new List<string> { "React" };
         var suggestions = new List<string> { "React", "Vue", "Angular" };
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.Tags, tags)
             .Add(p => p.Suggestions, suggestions));
 
@@ -227,7 +227,7 @@ public class TagInputTests : TestBase
     public void TagInput_RemoveButton_HasAriaLabel()
     {
         // Act
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.Tags, new List<string> { "React" }));
 
         // Assert
@@ -239,7 +239,7 @@ public class TagInputTests : TestBase
     public void TagInput_DefaultAriaLabel_IsTagInput()
     {
         // Act
-        var cut = RenderComponent<TagInput>();
+        var cut = Render<TagInput>();
 
         // Assert
         var input = cut.Find(".tag-input");
@@ -250,7 +250,7 @@ public class TagInputTests : TestBase
     public void TagInput_EmptyTags_ShowsPlaceholder()
     {
         // Act
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.Tags, new List<string>())
             .Add(p => p.Placeholder, "Add tags..."));
 
@@ -263,7 +263,7 @@ public class TagInputTests : TestBase
     public void TagInput_WithTags_HidesPlaceholder()
     {
         // Act
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.Tags, new List<string> { "tag1" })
             .Add(p => p.Placeholder, "Add tags..."));
 
@@ -278,7 +278,7 @@ public class TagInputTests : TestBase
         // Arrange
         string? removedTag = null;
         var tags = new List<string> { "React", "Vue" };
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.Tags, tags)
             .Add(p => p.OnTagRemoved, tag => removedTag = tag));
 
@@ -294,7 +294,7 @@ public class TagInputTests : TestBase
     public void TagInput_MaxTags_DefaultValue()
     {
         // Act
-        var cut = RenderComponent<TagInput>();
+        var cut = Render<TagInput>();
 
         // Assert
         cut.Instance.MaxTags.ShouldBe(int.MaxValue);
@@ -304,7 +304,7 @@ public class TagInputTests : TestBase
     public void TagInput_TagContainer_RendersCorrectly()
     {
         // Act
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.Tags, new List<string> { "tag1", "tag2" }));
 
         // Assert
@@ -319,7 +319,7 @@ public class TagInputTests : TestBase
     {
         // Arrange
         var tags = new List<string> { "tag1", "tag2", "tag3" };
-        var cut = RenderComponent<TagInput>(parameters => parameters
+        var cut = Render<TagInput>(parameters => parameters
             .Add(p => p.Tags, tags)
             .Add(p => p.TagsChanged, newTags => tags = newTags));
 
@@ -338,10 +338,155 @@ public class TagInputTests : TestBase
     public void TagInput_InputType_IsText()
     {
         // Act
-        var cut = RenderComponent<TagInput>();
+        var cut = Render<TagInput>();
 
         // Assert
         var input = cut.Find(".tag-input");
         input.GetAttribute("type")!.ShouldBe("text");
+    }
+
+    [Fact]
+    public void TagInput_KeyboardEnter_AddsTagAndInvokesCallbacksWithoutMutatingCallerList()
+    {
+        // Arrange
+        var originalTags = new List<string> { "react" };
+        List<string>? changedTags = null;
+        string? addedTag = null;
+        var cut = Render<TagInput>(parameters => parameters
+            .Add(p => p.Tags, originalTags)
+            .Add(p => p.TagsChanged, tags => changedTags = tags)
+            .Add(p => p.OnTagAdded, tag => addedTag = tag));
+
+        var input = cut.Find(".tag-input");
+
+        // Act
+        input.Input("blazor");
+        input.KeyDown("Enter");
+
+        // Assert
+        originalTags.ShouldBe(new List<string> { "react" });
+        changedTags.ShouldNotBeNull();
+        changedTags.ShouldBe(new List<string> { "react", "blazor" });
+        changedTags.ShouldNotBeSameAs(originalTags);
+        addedTag.ShouldBe("blazor");
+        cut.FindAll(".tag-item").Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public void TagInput_SeparatorKey_AddsTrimmedTag()
+    {
+        // Arrange
+        List<string>? changedTags = null;
+        var cut = Render<TagInput>(parameters => parameters
+            .Add(p => p.Separator, ";")
+            .Add(p => p.TagsChanged, tags => changedTags = tags));
+
+        var input = cut.Find(".tag-input");
+
+        // Act
+        input.Input("  api  ");
+        input.KeyDown(";");
+
+        // Assert
+        changedTags.ShouldBe(new List<string> { "api" });
+        cut.Find(".tag-text").TextContent.ShouldBe("api");
+    }
+
+    [Fact]
+    public void TagInput_PreventsDuplicateKeyboardEntry()
+    {
+        // Arrange
+        var changed = false;
+        var cut = Render<TagInput>(parameters => parameters
+            .Add(p => p.Tags, new List<string> { "react" })
+            .Add(p => p.AllowDuplicates, false)
+            .Add(p => p.TagsChanged, _ => changed = true));
+
+        var input = cut.Find(".tag-input");
+
+        // Act
+        input.Input("react");
+        input.KeyDown("Enter");
+
+        // Assert
+        changed.ShouldBeFalse();
+        cut.FindAll(".tag-item").Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void TagInput_BackspaceWithEmptyInput_RemovesLastTag()
+    {
+        // Arrange
+        List<string>? changedTags = null;
+        string? removedTag = null;
+        var cut = Render<TagInput>(parameters => parameters
+            .Add(p => p.Tags, new List<string> { "react", "blazor" })
+            .Add(p => p.TagsChanged, tags => changedTags = tags)
+            .Add(p => p.OnTagRemoved, tag => removedTag = tag));
+
+        // Act
+        cut.Find(".tag-input").KeyDown("Backspace");
+
+        // Assert
+        changedTags.ShouldBe(new List<string> { "react" });
+        removedTag.ShouldBe("blazor");
+    }
+
+    [Fact]
+    public void TagInput_WhenDisabled_IgnoresSyntheticInputAndKeyDown()
+    {
+        // Arrange
+        var changed = false;
+        var added = false;
+        var cut = Render<TagInput>(parameters => parameters
+            .Add(p => p.Disabled, true)
+            .Add(p => p.TagsChanged, _ => changed = true)
+            .Add(p => p.OnTagAdded, _ => added = true));
+
+        var input = cut.Find(".tag-input");
+
+        // Act
+        input.Input("blazor");
+        input.KeyDown("Enter");
+
+        // Assert
+        changed.ShouldBeFalse();
+        added.ShouldBeFalse();
+        cut.FindAll(".tag-item").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void TagInput_ShowsSuggestionsOnFocus_WithListboxSemantics()
+    {
+        // Act
+        var cut = Render<TagInput>(parameters => parameters
+            .Add(p => p.Tags, new List<string> { "React" })
+            .Add(p => p.Suggestions, new List<string> { "React", "Vue", "Angular" }));
+
+        var input = cut.Find(".tag-input");
+        input.Focus();
+
+        // Assert
+        input.GetAttribute("role")!.ShouldBe("combobox");
+        input.GetAttribute("aria-expanded")!.ShouldBe("true");
+        cut.Find(".tag-suggestions").GetAttribute("role")!.ShouldBe("listbox");
+
+        var suggestions = cut.FindAll(".tag-suggestion");
+        suggestions.Count.ShouldBe(2);
+        suggestions[0].GetAttribute("role")!.ShouldBe("option");
+    }
+
+    [Fact]
+    public void TagInput_NullTagsAndSuggestions_RenderSafely()
+    {
+        // Act
+        var cut = Render<TagInput>(parameters => parameters
+            .Add(p => p.Tags, null!)
+            .Add(p => p.Suggestions, null!));
+
+        // Assert
+        cut.Find(".tag-input").GetAttribute("placeholder")!.ShouldBe("Add tags...");
+        cut.FindAll(".tag-item").ShouldBeEmpty();
+        cut.FindAll(".tag-suggestions").ShouldBeEmpty();
     }
 }

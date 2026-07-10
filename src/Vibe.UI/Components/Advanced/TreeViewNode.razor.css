@@ -3,6 +3,12 @@
 .tree-view-node {
     display: flex;
     flex-direction: column;
+    outline: none;
+}
+
+.tree-view-node:focus-visible > .tree-node-content {
+    outline: 2px solid var(--vibe-ring, hsl(222 84% 5%));
+    outline-offset: 2px;
 }
 
 .tree-node-content {
@@ -17,6 +23,14 @@
 
 .tree-node-content:hover {
     background-color: var(--vibe-muted, hsl(210 40% 96%));
+}
+
+.tree-node-content.disabled {
+    cursor: not-allowed;
+}
+
+.tree-node-content.disabled:hover {
+    background-color: transparent;
 }
 
 .tree-node-toggle {
@@ -39,6 +53,16 @@
     background-color: var(--vibe-muted, hsl(210 40% 96%));
 }
 
+.tree-node-toggle:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.tree-node-toggle:disabled:hover {
+    background-color: transparent;
+    color: var(--vibe-muted-foreground, hsl(215 16% 47%));
+}
+
 .tree-node-chevron {
     transition: transform 0.2s ease;
     flex-shrink: 0;
@@ -58,6 +82,11 @@
     height: 1rem;
     cursor: pointer;
     accent-color: var(--vibe-primary, hsl(222 47% 11%));
+}
+
+.tree-node-checkbox:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
 }
 
 .tree-node-icon {
@@ -82,13 +111,16 @@
 .tree-node-label.disabled {
     color: var(--vibe-muted-foreground, hsl(215 16% 47%));
     opacity: 0.5;
-    cursor: not-allowed;
 }
 
 .tree-node-children {
     margin-left: 1rem;
     padding-left: 0.5rem;
     border-left: 1px solid var(--vibe-border, hsl(214 32% 91%));
+}
+
+.tree-node-children[hidden] {
+    display: none;
 }
 
 .tree-node-children.collapsed {

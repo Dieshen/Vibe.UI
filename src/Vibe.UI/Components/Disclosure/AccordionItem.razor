@@ -3,13 +3,25 @@
 
 <div class="@CombinedClass" @attributes="AdditionalAttributes">
     <h3 class="vibe-accordion-item-header">
-        <button type="button" class="vibe-accordion-item-trigger" @onclick="ToggleExpanded" aria-expanded="@IsExpanded">
+        <button id="@_triggerId"
+                type="button"
+                class="vibe-accordion-item-trigger"
+                @onclick="ToggleExpanded"
+                aria-expanded="@(IsExpanded ? "true" : "false")"
+                aria-controls="@_contentId"
+                aria-disabled="@Disabled.ToString().ToLowerInvariant()"
+                disabled="@Disabled">
             @Header
             <span class="vibe-accordion-item-icon"></span>
         </button>
     </h3>
 
-    <div class="vibe-accordion-item-content" style="@ContentStyle">
+    <div id="@_contentId"
+         class="vibe-accordion-item-content"
+         style="@ContentStyle"
+         role="region"
+         aria-labelledby="@_triggerId"
+         hidden="@(!IsExpanded)">
         <div class="vibe-accordion-item-content-inner">
             @Content
         </div>
@@ -18,27 +30,29 @@
 
 @code {
     private string _id = Guid.NewGuid().ToString();
+    private readonly string _triggerId = $"vibe-accordion-trigger-{Guid.NewGuid():N}";
+    private readonly string _contentId = $"vibe-accordion-content-{Guid.NewGuid():N}";
 
     [CascadingParameter]
-    private Accordion Parent { get; set; }
+    private Accordion? Parent { get; set; }
 
     /// <summary>
     /// Gets or sets the ID of the accordion item
     /// </summary>
     [Parameter]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     /// <summary>
     /// Gets or sets the header content
     /// </summary>
     [Parameter]
-    public RenderFragment Header { get; set; }
+    public RenderFragment? Header { get; set; }
 
     /// <summary>
     /// Gets or sets the main content
     /// </summary>
     [Parameter]
-    public RenderFragment Content { get; set; }
+    public RenderFragment? Content { get; set; }
 
     /// <summary>
     /// Gets or sets whether the item is expanded by default

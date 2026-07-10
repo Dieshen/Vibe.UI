@@ -6,9 +6,19 @@ namespace Vibe.UI.Services;
 /// </summary>
 public static class LucideIcons
 {
+    /// <summary>
+    /// Represents one SVG element used to render an icon.
+    /// </summary>
     public class IconPath
     {
+        /// <summary>
+        /// Gets or sets the SVG element name.
+        /// </summary>
         public string Element { get; set; } = "path";
+
+        /// <summary>
+        /// Gets or sets the SVG attributes for the element.
+        /// </summary>
         public Dictionary<string, string> Attributes { get; set; } = new();
     }
 

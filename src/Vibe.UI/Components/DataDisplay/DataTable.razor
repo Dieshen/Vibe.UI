@@ -2,19 +2,20 @@
 @typeparam TItem
 @inherits Base.VibeComponent
 
-<div class="@CombinedClass">
+<div class="@CombinedClass" @attributes="AdditionalAttributes">
     @if (ShowToolbar)
     {
         <div class="datatable-toolbar">
             @if (ShowSearch)
             {
                 <div class="datatable-search">
-                    <div class="search-icon">
+                    <div class="search-icon" aria-hidden="true">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
                     </div>
                     <input 
                         type="text" 
                         class="search-input" 
+                        aria-label="@SearchLabel"
                         placeholder="@SearchPlaceholder" 
                         @bind-value="SearchText" 
                         @bind-value:event="oninput" />
@@ -30,16 +31,28 @@
                 <tr>
                     @foreach (var column in Columns)
                     {
-                        <th class="@(column.IsSortable ? "sortable" : "")" @onclick="() => SortByColumn(column)">
-                            <div class="datatable-header-cell">
-                                <span class="header-label">@column.Title</span>
-                                @if (column.IsSortable)
-                                {
-                                    <span class="sort-icon @GetSortIconClass(column.PropertyName)">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"></path><path d="m7 9 5-5 5 5"></path></svg>
+                        <th class="@(column.IsSortable ? "sortable" : "")" aria-sort="@GetAriaSortValue(column)">
+                            @if (column.IsSortable)
+                            {
+                                <button
+                                    type="button"
+                                    class="datatable-sort-button"
+                                    aria-label="@GetSortButtonLabel(column)"
+                                    @onclick="() => SortByColumn(column)">
+                                    <span class="datatable-header-cell">
+                                        <span class="header-label">@column.Title</span>
+                                        <span class="sort-icon @GetSortIconClass(column.PropertyName)" aria-hidden="true">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"></path><path d="m7 9 5-5 5 5"></path></svg>
+                                        </span>
                                     </span>
-                                }
-                            </div>
+                                </button>
+                            }
+                            else
+                            {
+                                <div class="datatable-header-cell">
+                                    <span class="header-label">@column.Title</span>
+                                </div>
+                            }
                         </th>
                     }
                 </tr>
@@ -82,7 +95,7 @@
     {
         <div class="datatable-pagination">
             <div class="pagination-info">
-                Showing @((CurrentPage - 1) * PageSize + 1) to @Math.Min(CurrentPage * PageSize, FilteredItems.Count) of @FilteredItems.Count entries
+                Showing @PaginationStart to @PaginationEnd of @FilteredItems.Count entries
             </div>
             <Pagination 
                 CurrentPage="@CurrentPage"
@@ -101,12 +114,12 @@
         /// <summary>
         /// Gets or sets the column title.
         /// </summary>
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the property name to bind to.
         /// </summary>
-        public string PropertyName { get; set; }
+        public string PropertyName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets whether the column is sortable.
@@ -116,7 +129,7 @@
         /// <summary>
         /// Gets or sets the custom template for the column.
         /// </summary>
-        public RenderFragment<T> Template { get; set; }
+        public RenderFragment<T>? Template { get; set; }
     }
 
     /// <summary>
@@ -135,7 +148,7 @@
     /// Gets or sets the custom content for the toolbar.
     /// </summary>
     [Parameter]
-    public RenderFragment ToolbarContent { get; set; }
+    public RenderFragment? ToolbarContent { get; set; }
 
     /// <summary>
     /// Gets or sets whether to show the toolbar.
@@ -154,6 +167,12 @@
     /// </summary>
     [Parameter]
     public string SearchPlaceholder { get; set; } = "Search...";
+
+    /// <summary>
+    /// Gets or sets the accessible label for the search input.
+    /// </summary>
+    [Parameter]
+    public string SearchLabel { get; set; } = "Search table";
 
     /// <summary>
     /// Gets or sets whether to enable pagination.
@@ -177,7 +196,7 @@
     /// Gets or sets a function to determine the CSS class for a row.
     /// </summary>
     [Parameter]
-    public Func<TItem, string> RowClass { get; set; }
+    public Func<TItem, string>? RowClass { get; set; }
 
     /// <summary>
     /// Gets the component CSS class name.
@@ -207,7 +226,7 @@
     /// <summary>
     /// The property name to sort by.
     /// </summary>
-    private string SortProperty { get; set; }
+    private string? SortProperty { get; set; }
 
     /// <summary>
     /// Whether to sort in ascending order.
@@ -229,7 +248,21 @@
     /// <summary>
     /// The total number of pages.
     /// </summary>
-    private int TotalPages => (int)Math.Ceiling(FilteredItems.Count / (double)PageSize);
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(FilteredItems.Count / (double)PageSize));
+
+    /// <summary>
+    /// The first item number shown in the current page range.
+    /// </summary>
+    private int PaginationStart => FilteredItems.Count == 0
+        ? 0
+        : (CurrentPage - 1) * PageSize + 1;
+
+    /// <summary>
+    /// The last item number shown in the current page range.
+    /// </summary>
+    private int PaginationEnd => FilteredItems.Count == 0
+        ? 0
+        : Math.Min(CurrentPage * PageSize, FilteredItems.Count);
 
     /// <summary>
     /// Initialize the component.
@@ -331,12 +364,48 @@
     }
 
     /// <summary>
+    /// Gets the aria-sort value for a sortable column.
+    /// </summary>
+    /// <param name="column">The column to get the sort state for.</param>
+    /// <returns>The aria-sort value, or null for non-sortable columns.</returns>
+    private string? GetAriaSortValue(DataTableColumn<TItem> column)
+    {
+        if (!column.IsSortable)
+        {
+            return null;
+        }
+
+        if (SortProperty != column.PropertyName)
+        {
+            return "none";
+        }
+
+        return SortAscending ? "ascending" : "descending";
+    }
+
+    /// <summary>
+    /// Gets the accessible label for the sort button.
+    /// </summary>
+    /// <param name="column">The sortable column.</param>
+    /// <returns>The accessible sort button label.</returns>
+    private string GetSortButtonLabel(DataTableColumn<TItem> column)
+    {
+        if (SortProperty != column.PropertyName)
+        {
+            return $"Sort by {column.Title}";
+        }
+
+        var direction = SortAscending ? "descending" : "ascending";
+        return $"Sort by {column.Title} {direction}";
+    }
+
+    /// <summary>
     /// Gets the value of a property by name.
     /// </summary>
     /// <param name="item">The item to get the property value from.</param>
     /// <param name="propertyName">The name of the property.</param>
     /// <returns>The property value.</returns>
-    private object GetPropertyValue(TItem item, string propertyName)
+    private object? GetPropertyValue(TItem item, string propertyName)
     {
         if (string.IsNullOrEmpty(propertyName))
             return null;

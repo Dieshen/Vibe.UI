@@ -3,24 +3,34 @@
 @inherits Vibe.UI.Base.VibeComponent
 @inject IJSRuntime JSRuntime
 
-<div class="@CombinedClass" @attributes="AdditionalAttributes">
+<div @attributes="AdditionalAttributes" class="@CombinedClass">
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <label class="vibe-slider-label" for="@ElementId">@Label</label>
+    }
+
     <div class="vibe-slider-track">
         <div class="vibe-slider-range" style="width: calc((@GetPercentage()% * (100% - 1rem) / 100%) + 0.5rem);"></div>
     </div>
     <input
+        id="@ElementId"
         type="range"
         class="vibe-slider-thumb"
-        min="@Min"
-        max="@Max"
-        step="@Step"
-        value="@Value"
+        min="@FormatNumber(Min)"
+        max="@FormatNumber(Max)"
+        step="@FormatNumber(Step)"
+        value="@FormatNumber(Value)"
         disabled="@Disabled"
+        aria-label="@EffectiveAriaLabel"
+        aria-valuemin="@FormatNumber(Min)"
+        aria-valuemax="@FormatNumber(Max)"
+        aria-valuenow="@FormatNumber(Value)"
         @oninput="HandleInputEvent"
         @onchange="HandleChangeEvent" />
 
     @if (ShowValue)
     {
-        <div class="vibe-slider-value">@Value</div>
+        <div class="vibe-slider-value">@FormatDisplayValue(Value)</div>
     }
 </div>
 
@@ -31,13 +41,13 @@
     /// Gets or sets the ID of the slider
     /// </summary>
     [Parameter]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     /// <summary>
     /// Gets or sets the label text
     /// </summary>
     [Parameter]
-    public string Label { get; set; }
+    public string? Label { get; set; }
 
     /// <summary>
     /// Gets or sets the minimum value of the slider
@@ -107,6 +117,8 @@
     /// </summary>
     private string ElementId => string.IsNullOrEmpty(Id) ? _id : Id;
 
+    private string? EffectiveAriaLabel => string.IsNullOrWhiteSpace(Label) ? null : Label;
+
     private string GetTrackFillWidth()
     {
         var percentage = ((Value - Min) / (Max - Min)) * 100;
@@ -137,9 +149,14 @@
     /// </summary>
     private async Task HandleInputEvent(ChangeEventArgs e)
     {
-        if (e.Value != null && double.TryParse(e.Value.ToString(), out double newValue))
+        if (Disabled)
         {
-            Value = Math.Clamp(newValue, Min, Max);
+            return;
+        }
+
+        if (TryGetEventValue(e, out double newValue))
+        {
+            Value = ClampValue(newValue);
 
             if (ValueChanged.HasDelegate)
             {
@@ -158,9 +175,14 @@
     /// </summary>
     private async Task HandleChangeEvent(ChangeEventArgs e)
     {
-        if (e.Value != null && double.TryParse(e.Value.ToString(), out double newValue))
+        if (Disabled)
         {
-            Value = Math.Clamp(newValue, Min, Max);
+            return;
+        }
+
+        if (TryGetEventValue(e, out double newValue))
+        {
+            Value = ClampValue(newValue);
 
             if (ValueChanged.HasDelegate)
             {
@@ -171,6 +193,41 @@
             {
                 await OnChange.InvokeAsync(e);
             }
+        }
+    }
+
+    private double ClampValue(double value)
+    {
+        if (Min > Max)
+        {
+            return value;
+        }
+
+        return Math.Clamp(value, Min, Max);
+    }
+
+    private static bool TryGetEventValue(ChangeEventArgs e, out double value)
+    {
+        return double.TryParse(e.Value?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out value)
+            || double.TryParse(e.Value?.ToString(), NumberStyles.Float, CultureInfo.CurrentCulture, out value);
+    }
+
+    private static string FormatNumber(double value) => value.ToString("0.################", CultureInfo.InvariantCulture);
+
+    private string FormatDisplayValue(double value)
+    {
+        if (string.IsNullOrWhiteSpace(ValueFormat))
+        {
+            return FormatNumber(value);
+        }
+
+        try
+        {
+            return value.ToString(ValueFormat, CultureInfo.InvariantCulture);
+        }
+        catch (FormatException)
+        {
+            return FormatNumber(value);
         }
     }
 }

@@ -15,6 +15,7 @@
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="@(_titleId != null ? _titleId : null)"
+                aria-label="@ContainerAriaLabel"
                 @onclick:stopPropagation="true">
                 @if (!string.IsNullOrWhiteSpace(_title))
                 {
@@ -38,13 +39,14 @@
 
 @code {
     private bool _isOpen = false;
-    private string _title;
-    private RenderFragment _content;
-    private string _dialogId;
+    private string? _title;
+    private RenderFragment? _content;
+    private string? _dialogId;
     private string? _titleId;
 
     private IJSObjectReference? _dialogModule;
     private bool _focusTrapActive;
+    private bool _disposed;
     private ElementReference _dialogRef;
     private readonly string _dialogKey = $"vibe-dialog-{Guid.NewGuid():N}";
 
@@ -63,10 +65,15 @@
     [Parameter]
     public bool CloseOnEscape { get; set; } = true;
 
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
     /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
     protected override string ComponentClass => "vibe-dialog-host";
+
+    private string? ContainerAriaLabel => _titleId is null ? NormalizeOptionalText(AriaLabel) ?? "Dialog" : null;
 
     protected override void OnInitialized()
     {
@@ -74,39 +81,75 @@
         DialogService.OnDialogClosed += HandleDialogClosed;
     }
 
-    private void HandleDialogOpened(object sender, DialogOpenedEventArgs args)
+    private async void HandleDialogOpened(object? sender, DialogOpenedEventArgs args)
     {
-        InvokeAsync(() =>
+        if (_disposed)
         {
-            _dialogId = args.Id;
-            _title = args.Title;
-            _titleId = string.IsNullOrWhiteSpace(_title) ? null : $"vibe-dialog-title-{Guid.NewGuid():N}";
-            _content = args.Content;
-            _isOpen = true;
-            StateHasChanged();
-        });
+            return;
+        }
+
+        try
+        {
+            await InvokeAsync(() =>
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                _dialogId = args.Id;
+                _title = args.Title;
+                _titleId = string.IsNullOrWhiteSpace(_title) ? null : $"vibe-dialog-title-{Guid.NewGuid():N}";
+                _content = args.Content;
+                _isOpen = true;
+                StateHasChanged();
+            });
+        }
+        catch (Exception ex)
+        {
+            await DispatchExceptionAsync(ex);
+        }
     }
 
-    private void HandleDialogClosed(object sender, DialogClosedEventArgs args)
+    private async void HandleDialogClosed(object? sender, DialogClosedEventArgs args)
     {
-        if (args.Id == _dialogId)
+        if (_disposed || args.Id != _dialogId)
         {
-            InvokeAsync(() =>
+            return;
+        }
+
+        try
+        {
+            await InvokeAsync(() =>
             {
+                if (_disposed)
+                {
+                    return;
+                }
+
                 _isOpen = false;
                 StateHasChanged();
             });
+        }
+        catch (Exception ex)
+        {
+            await DispatchExceptionAsync(ex);
         }
     }
 
     private void CloseDialog()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         DialogService.Close();
     }
 
     private void HandleBackdropClick()
     {
-        if (CloseOnBackdropClick)
+        if (!_disposed && CloseOnBackdropClick)
         {
             CloseDialog();
         }
@@ -114,7 +157,7 @@
 
     private void HandleKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key == "Escape" && CloseOnEscape)
+        if (!_disposed && e.Key == "Escape" && CloseOnEscape)
         {
             CloseDialog();
         }
@@ -122,42 +165,86 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         if (_isOpen && !_focusTrapActive)
         {
-            _dialogModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
-                "import", "./_content/Vibe.UI/js/vibe-dialog.js");
+            try
+            {
+                _dialogModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
+                    "import", "./_content/Vibe.UI/js/vibe-dialog.js");
 
-            await _dialogModule.InvokeVoidAsync("activate", _dialogKey, _dialogRef);
+                await _dialogModule.InvokeVoidAsync("activate", _dialogKey, _dialogRef);
+            }
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+            {
+                return;
+            }
+
             _focusTrapActive = true;
         }
         else if (!_isOpen && _focusTrapActive)
         {
-            if (_dialogModule != null)
-            {
-                await _dialogModule.InvokeVoidAsync("deactivate", _dialogKey);
-            }
-
-            _focusTrapActive = false;
+            await DeactivateFocusTrapAsync();
         }
     }
 
     public void Dispose()
     {
-        DialogService.OnDialogOpened -= HandleDialogOpened;
-        DialogService.OnDialogClosed -= HandleDialogClosed;
+        DisposeSubscriptions();
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_focusTrapActive && _dialogModule != null)
-        {
-            await _dialogModule.InvokeVoidAsync("deactivate", _dialogKey);
-            _focusTrapActive = false;
-        }
+        DisposeSubscriptions();
+        await DeactivateFocusTrapAsync();
 
         if (_dialogModule != null)
         {
-            await _dialogModule.DisposeAsync();
+            try
+            {
+                await _dialogModule.DisposeAsync();
+            }
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+            {
+            }
         }
     }
+
+    private void DisposeSubscriptions()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        DialogService.OnDialogOpened -= HandleDialogOpened;
+        DialogService.OnDialogClosed -= HandleDialogClosed;
+    }
+
+    private async Task DeactivateFocusTrapAsync()
+    {
+        if (_dialogModule != null)
+        {
+            try
+            {
+                await _dialogModule.InvokeVoidAsync("deactivate", _dialogKey);
+            }
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+            {
+            }
+        }
+
+        _focusTrapActive = false;
+    }
+
+    private static string? NormalizeOptionalText(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static bool IsRecoverableJsInteropException(Exception exception) =>
+        exception is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException;
 }

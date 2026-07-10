@@ -1,33 +1,56 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
 
-<div class="@CombinedClass" @attributes="AdditionalAttributes">
-    <div class="vibe-menu-trigger" @onclick="ToggleMenu">
+<div class="@CombinedClass" data-state="@CurrentState" @attributes="AdditionalAttributes">
+    <div class="@TriggerClass"
+         role="button"
+         tabindex="@TriggerTabIndex"
+         aria-haspopup="menu"
+         aria-expanded="@AriaExpanded"
+         aria-controls="@ContentId"
+         aria-disabled="@AriaDisabled"
+         data-state="@CurrentState"
+         @onclick="ToggleMenu"
+         @onkeydown="HandleTriggerKeyDown">
         @if (Trigger != null)
         {
             @Trigger
         }
         else
         {
-            <button type="button" class="vibe-button">
+            <span class="vibe-button vibe-menu-default-trigger">
                 Menu
-            </button>
+            </span>
         }
     </div>
 
-    @if (IsOpen)
+    @if (_isOpen)
     {
-        <div class="vibe-menu-content" style="@PlacementStyle">
+        <div id="@ContentId"
+             class="vibe-menu-content"
+             role="menu"
+             tabindex="-1"
+             aria-label="@EffectiveMenuAriaLabel"
+             aria-orientation="vertical"
+             data-state="open"
+             style="@PlacementStyle"
+             @onclick="HandleMenuContentClick"
+             @onkeydown="HandleMenuKeyDown">
             @ChildContent
         </div>
         @if (CloseOnClickOutside)
         {
-            <div class="menu-backdrop" @onclick="CloseMenu" style="position: fixed; inset: 0; z-index: 40;"></div>
+            <div class="menu-backdrop" aria-hidden="true" @onclick="CloseMenu"></div>
         }
     }
 </div>
 
 @code {
+    private readonly string ContentId = $"vibe-menu-content-{Guid.NewGuid():N}";
+    private bool _hasAppliedInitialIsOpen;
+    private bool _isOpen;
+    private bool _lastIsOpenParameter;
+
     /// <summary>
     /// Gets or sets the menu content
     /// </summary>
@@ -53,6 +76,12 @@
     public EventCallback<bool> IsOpenChanged { get; set; }
 
     /// <summary>
+    /// Gets or sets whether the menu trigger is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
     /// Gets or sets the menu placement
     /// </summary>
     [Parameter]
@@ -70,8 +99,57 @@
     [Parameter]
     public bool CloseOnClickOutside { get; set; } = true;
 
+    /// <summary>
+    /// Gets or sets the accessible label for the menu content.
+    /// </summary>
+    [Parameter]
+    public string? MenuAriaLabel { get; set; } = "Menu";
+
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-menu";
+
+    /// <inheritdoc/>
+    protected override string GetCombinedClass()
+    {
+        return CombineClasses(
+            ComponentClass,
+            _isOpen ? "vibe-menu-open" : null,
+            Disabled ? "vibe-menu-disabled" : null,
+            Class);
+    }
+
+    /// <inheritdoc/>
+    protected override void OnParametersSet()
+    {
+        if (!_hasAppliedInitialIsOpen || IsOpen != _lastIsOpenParameter)
+        {
+            _isOpen = IsOpen;
+            _lastIsOpenParameter = IsOpen;
+            _hasAppliedInitialIsOpen = true;
+        }
+
+        if (Disabled && _isOpen)
+        {
+            _isOpen = false;
+            _lastIsOpenParameter = false;
+        }
+    }
+
+    private string TriggerClass => CombineClasses(
+        "vibe-menu-trigger",
+        Disabled ? "vibe-menu-trigger-disabled" : null);
+
+    private string AriaExpanded => _isOpen ? "true" : "false";
+
+    private string AriaDisabled => Disabled ? "true" : "false";
+
+    private string CurrentState => _isOpen ? "open" : "closed";
+
+    private string TriggerTabIndex => Disabled ? "-1" : "0";
+
+    private string EffectiveMenuAriaLabel => string.IsNullOrWhiteSpace(MenuAriaLabel)
+        ? "Menu"
+        : MenuAriaLabel;
 
     private string PlacementStyle => Placement switch
     {
@@ -84,23 +162,75 @@
 
     private async Task ToggleMenu()
     {
-        IsOpen = !IsOpen;
-        if (IsOpenChanged.HasDelegate)
+        if (Disabled)
         {
-            await IsOpenChanged.InvokeAsync(IsOpen);
+            return;
         }
+
+        await SetOpenStateAsync(!_isOpen);
+    }
+
+    private async Task HandleTriggerKeyDown(KeyboardEventArgs e)
+    {
+        if (Disabled)
+        {
+            return;
+        }
+
+        if (e.Key is "Enter" or " " or "Spacebar")
+        {
+            await ToggleMenu();
+        }
+        else if (e.Key is "ArrowDown" or "ArrowUp")
+        {
+            await OpenMenu();
+        }
+        else if (e.Key == "Escape")
+        {
+            await CloseMenu();
+        }
+    }
+
+    private async Task HandleMenuKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            await CloseMenu();
+        }
+    }
+
+    private async Task HandleMenuContentClick()
+    {
+        if (CloseOnSelect)
+        {
+            await CloseMenu();
+        }
+    }
+
+    private Task OpenMenu()
+    {
+        return SetOpenStateAsync(true);
     }
 
     private async Task CloseMenu()
     {
-        if (IsOpen)
+        await SetOpenStateAsync(false);
+    }
+
+    private async Task SetOpenStateAsync(bool isOpen)
+    {
+        if (Disabled && isOpen)
         {
-            IsOpen = false;
-            if (IsOpenChanged.HasDelegate)
-            {
-                await IsOpenChanged.InvokeAsync(IsOpen);
-            }
+            return;
         }
+
+        if (_isOpen == isOpen)
+        {
+            return;
+        }
+
+        _isOpen = isOpen;
+        await IsOpenChanged.InvokeAsync(isOpen);
     }
 
     public enum MenuPlacement

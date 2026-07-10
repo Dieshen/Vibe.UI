@@ -20,11 +20,16 @@ public class ThemeService : IThemeService
 {
     private readonly VibeThemeOptions _options;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ThemeService"/> class.
+    /// </summary>
+    /// <param name="options">The theme options used to generate CSS.</param>
     public ThemeService(VibeThemeOptions options)
     {
         _options = options;
     }
 
+    /// <inheritdoc />
     public string GenerateThemeCss()
     {
         var (lightColors, darkColors) = GetColorsForBaseColor(_options.BaseColor);

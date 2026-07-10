@@ -3,14 +3,15 @@
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
 
-@if (IsOpen)
+@if (_isOpen)
 {
     <div class="vibe-dialog-overlay" @onclick="OnOutsideClick" @onkeydown="HandleKeyDown" tabindex="-1">
-        <div class="vibe-dialog @CombinedClass"
+        <div class="@CombinedClass"
             @ref="_dialogRef"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="@(Header != null ? _titleId : null)"
+            aria-labelledby="@DialogLabelledBy"
+            aria-label="@DialogAriaLabel"
             aria-describedby="@_bodyId"
             @onclick:stopPropagation="true"
             @attributes="AdditionalAttributes">
@@ -42,6 +43,9 @@
     private readonly string _dialogKey = $"vibe-dialog-{Guid.NewGuid():N}";
     private readonly string _titleId = $"vibe-dialog-title-{Guid.NewGuid():N}";
     private readonly string _bodyId = $"vibe-dialog-body-{Guid.NewGuid():N}";
+    private bool _hasSeenIsOpenParameter;
+    private bool _isOpen;
+    private bool _lastIsOpenParameter;
 
     /// <summary>
     /// Gets or sets the dialog content
@@ -53,13 +57,13 @@
     /// Gets or sets the dialog header
     /// </summary>
     [Parameter]
-    public RenderFragment Header { get; set; }
+    public RenderFragment? Header { get; set; }
 
     /// <summary>
     /// Gets or sets the dialog footer
     /// </summary>
     [Parameter]
-    public RenderFragment Footer { get; set; }
+    public RenderFragment? Footer { get; set; }
 
     /// <summary>
     /// Gets or sets whether the dialog is open
@@ -85,27 +89,50 @@
     [Parameter]
     public bool CloseOnEscape { get; set; } = true;
 
+    /// <summary>
+    /// Gets or sets the accessible label used when no header labels the dialog.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
     /// <inheritdoc/>
     protected override string ComponentClass => "vibe-dialog";
 
+    private string? DialogLabelledBy => Header is null ? null : _titleId;
+
+    private string? DialogAriaLabel => Header is null ? NormalizeOptionalText(AriaLabel) ?? "Dialog" : null;
+
+    protected override void OnParametersSet()
+    {
+        if (!_hasSeenIsOpenParameter || IsOpen != _lastIsOpenParameter)
+        {
+            _isOpen = IsOpen;
+            _lastIsOpenParameter = IsOpen;
+            _hasSeenIsOpenParameter = true;
+        }
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (IsOpen && !_focusTrapActive)
+        if (_isOpen && !_focusTrapActive)
         {
-            _dialogModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
-                "import", "./_content/Vibe.UI/js/vibe-dialog.js");
-
-            await _dialogModule.InvokeVoidAsync("activate", _dialogKey, _dialogRef);
-            _focusTrapActive = true;
-        }
-        else if (!IsOpen && _focusTrapActive)
-        {
-            if (_dialogModule != null)
+            try
             {
-                await _dialogModule.InvokeVoidAsync("deactivate", _dialogKey);
+                _dialogModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
+                    "import", "./_content/Vibe.UI/js/vibe-dialog.js");
+
+                await _dialogModule.InvokeVoidAsync("activate", _dialogKey, _dialogRef);
+            }
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+            {
+                return;
             }
 
-            _focusTrapActive = false;
+            _focusTrapActive = true;
+        }
+        else if (!_isOpen && _focusTrapActive)
+        {
+            await DeactivateFocusTrapAsync();
         }
     }
 
@@ -137,14 +164,16 @@
     /// </summary>
     private async Task CloseDialog()
     {
-        if (IsOpen)
+        if (_isOpen)
         {
-            IsOpen = false;
+            _isOpen = false;
 
             if (IsOpenChanged.HasDelegate)
             {
                 await IsOpenChanged.InvokeAsync(false);
             }
+
+            StateHasChanged();
         }
     }
 
@@ -153,28 +182,54 @@
     /// </summary>
     public async Task OpenDialog()
     {
-        if (!IsOpen)
+        if (!_isOpen)
         {
-            IsOpen = true;
+            _isOpen = true;
 
             if (IsOpenChanged.HasDelegate)
             {
                 await IsOpenChanged.InvokeAsync(true);
             }
+
+            StateHasChanged();
         }
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (_focusTrapActive && _dialogModule != null)
-        {
-            await _dialogModule.InvokeVoidAsync("deactivate", _dialogKey);
-            _focusTrapActive = false;
-        }
+        await DeactivateFocusTrapAsync();
 
         if (_dialogModule != null)
         {
-            await _dialogModule.DisposeAsync();
+            try
+            {
+                await _dialogModule.DisposeAsync();
+            }
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+            {
+            }
         }
     }
+
+    private async Task DeactivateFocusTrapAsync()
+    {
+        if (_dialogModule != null)
+        {
+            try
+            {
+                await _dialogModule.InvokeVoidAsync("deactivate", _dialogKey);
+            }
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+            {
+            }
+        }
+
+        _focusTrapActive = false;
+    }
+
+    private static string? NormalizeOptionalText(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static bool IsRecoverableJsInteropException(Exception exception) =>
+        exception is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException;
 }

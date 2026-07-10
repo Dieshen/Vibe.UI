@@ -1,0 +1,93 @@
+@page "/client"
+@rendermode InteractiveWebAssembly
+
+<PageTitle>Vibe.UI Interactive WebAssembly compatibility</PageTitle>
+
+<section class="compat-page" data-testid="webapp-client-smoke">
+    <div class="compat-page-header">
+        <div>
+            <Badge Variant="secondary">Interactive WebAssembly</Badge>
+            <h1>Client interactivity</h1>
+            <p>
+                This page lives in the .Client project and validates the WebAssembly render-mode path.
+            </p>
+        </div>
+
+        <ThemeToggle ShowLabel="true" />
+    </div>
+
+    <Card>
+        <CardTitle>Client runtime active</CardTitle>
+        <CardDescription>Button clicks, input events, checkbox changes, and dialog state run in WebAssembly.</CardDescription>
+
+        <ChildContent>
+            <Alert Title="Client component state" Variant="AlertVariant.Default">
+                Current interaction count: @_clickCount. Name value: @_name.
+            </Alert>
+
+            <div class="compat-grid">
+                <Input Id="client-name"
+                       Label="Name"
+                       Value="@_name"
+                       ValueChanged="OnNameChanged"
+                       HelperText="Updates through WebAssembly interactivity." />
+
+                <Checkbox Checked="@_confirmed" CheckedChanged="OnConfirmedChanged">
+                    Client checkbox state: @(_confirmed ? "checked" : "unchecked")
+                </Checkbox>
+            </div>
+
+            <div class="compat-actions">
+                <Button OnClick="Increment" data-testid="client-increment">Increment client state</Button>
+                <Button Variant="ButtonVariant.Outline" OnClick="OpenDialog" data-testid="client-dialog">Open dialog</Button>
+                <Button Href="/" Variant="ButtonVariant.Ghost">Back to static page</Button>
+            </div>
+        </ChildContent>
+    </Card>
+
+    <Dialog @bind-IsOpen="_dialogOpen">
+        <Header>
+            <strong>Client dialog</strong>
+        </Header>
+        <ChildContent>
+            The dialog rendered and opened from an Interactive WebAssembly event.
+        </ChildContent>
+        <Footer>
+            <Button Variant="ButtonVariant.Secondary" OnClick="CloseDialog">Close</Button>
+        </Footer>
+    </Dialog>
+</section>
+
+@code {
+    private int _clickCount;
+    private string _name = "Client";
+    private bool _confirmed = true;
+    private bool _dialogOpen;
+
+    private void Increment(MouseEventArgs _)
+    {
+        _clickCount++;
+    }
+
+    private Task OnNameChanged(string value)
+    {
+        _name = value;
+        return Task.CompletedTask;
+    }
+
+    private Task OnConfirmedChanged(bool value)
+    {
+        _confirmed = value;
+        return Task.CompletedTask;
+    }
+
+    private void OpenDialog(MouseEventArgs _)
+    {
+        _dialogOpen = true;
+    }
+
+    private void CloseDialog(MouseEventArgs _)
+    {
+        _dialogOpen = false;
+    }
+}

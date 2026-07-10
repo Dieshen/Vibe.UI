@@ -13,6 +13,10 @@
                 readonly="true"
                 placeholder="@StartDatePlaceholder"
                 disabled="@Disabled" 
+                aria-label="@StartDatePlaceholder"
+                aria-haspopup="dialog"
+                aria-expanded="@IsOpen.ToString().ToLowerInvariant()"
+                aria-controls="@_popupId"
                 @onclick="() => ToggleCalendar(true)" />
                 
             <div class="daterange-separator">
@@ -26,30 +30,41 @@
                 readonly="true"
                 placeholder="@EndDatePlaceholder"
                 disabled="@Disabled" 
+                aria-label="@EndDatePlaceholder"
+                aria-haspopup="dialog"
+                aria-expanded="@IsOpen.ToString().ToLowerInvariant()"
+                aria-controls="@_popupId"
                 @onclick="() => ToggleCalendar(false)" />
         </div>
         
-        <div class="daterange-icon" @onclick="() => ToggleCalendar()">
+        <button type="button"
+                class="daterange-icon"
+                disabled="@Disabled"
+                aria-label="Open date range calendar"
+                aria-haspopup="dialog"
+                aria-expanded="@IsOpen.ToString().ToLowerInvariant()"
+                aria-controls="@_popupId"
+                @onclick="() => ToggleCalendar()">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
-        </div>
+        </button>
     </div>
     
     @if (IsOpen)
     {
-        <div class="daterange-popup">
+        <div id="@_popupId" class="daterange-popup" role="dialog" aria-label="Choose date range">
             <div class="daterange-header">
                 <div class="daterange-header-section">
-                    <button type="button" class="daterange-nav-btn" @onclick="PreviousMonth">
+                    <button type="button" class="daterange-nav-btn" aria-label="Previous month" @onclick="PreviousMonth">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
                     </button>
                     <div class="daterange-header-label">
-                        <select class="daterange-month-select" value="@CurrentStartMonth" @onchange="HandleStartMonthChange">
+                        <select class="daterange-month-select" value="@CurrentStartMonth" aria-label="Start month" @onchange="HandleStartMonthChange">
                             @for (int i = 0; i < 12; i++)
                             {
                                 <option value="@i">@DateTimeFormatInfo.CurrentInfo.GetMonthName(i + 1)</option>
                             }
                         </select>
-                        <select class="daterange-year-select" value="@CurrentStartYear" @onchange="HandleStartYearChange">
+                        <select class="daterange-year-select" value="@CurrentStartYear" aria-label="Start year" @onchange="HandleStartYearChange">
                             @for (int i = MinYear; i <= MaxYear; i++)
                             {
                                 <option value="@i">@i</option>
@@ -60,20 +75,20 @@
                 
                 <div class="daterange-header-section">
                     <div class="daterange-header-label">
-                        <select class="daterange-month-select" value="@CurrentEndMonth" @onchange="HandleEndMonthChange">
+                        <select class="daterange-month-select" value="@CurrentEndMonth" aria-label="End month" @onchange="HandleEndMonthChange">
                             @for (int i = 0; i < 12; i++)
                             {
                                 <option value="@i">@DateTimeFormatInfo.CurrentInfo.GetMonthName(i + 1)</option>
                             }
                         </select>
-                        <select class="daterange-year-select" value="@CurrentEndYear" @onchange="HandleEndYearChange">
+                        <select class="daterange-year-select" value="@CurrentEndYear" aria-label="End year" @onchange="HandleEndYearChange">
                             @for (int i = MinYear; i <= MaxYear; i++)
                             {
                                 <option value="@i">@i</option>
                             }
                         </select>
                     </div>
-                    <button type="button" class="daterange-nav-btn" @onclick="NextMonth">
+                    <button type="button" class="daterange-nav-btn" aria-label="Next month" @onclick="NextMonth">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
                     </button>
                 </div>
@@ -98,6 +113,9 @@
                                         type="button"
                                         class="@GetStartDayClass(day)"
                                         disabled="@(!day.IsCurrentMonth || !IsInRange(day.Date) || Disabled)"
+                                        aria-label="@GetStartDayAriaLabel(day)"
+                                        aria-current="@(day.IsToday ? "date" : null)"
+                                        aria-pressed="@IsStartSelected(day).ToString().ToLowerInvariant()"
                                         @onclick="() => SelectStartDate(day.Date)">
                                         @day.DayNumber
                                     </button>
@@ -125,6 +143,9 @@
                                         type="button"
                                         class="@GetEndDayClass(day)"
                                         disabled="@(!day.IsCurrentMonth || !IsInRange(day.Date) || IsBeforeStartDate(day.Date) || Disabled)"
+                                        aria-label="@GetEndDayAriaLabel(day)"
+                                        aria-current="@(day.IsToday ? "date" : null)"
+                                        aria-pressed="@IsEndSelected(day).ToString().ToLowerInvariant()"
                                         @onclick="() => SelectEndDate(day.Date)">
                                         @day.DayNumber
                                     </button>
@@ -161,6 +182,8 @@
         public bool IsCurrentMonth { get; set; }
         public bool IsToday { get; set; }
     }
+
+    private readonly string _popupId = $"daterangepicker-{Guid.NewGuid():N}-popup";
 
     /// <summary>
     /// Gets or sets the start date.
@@ -437,7 +460,7 @@
     /// </summary>
     private void HandleStartMonthChange(ChangeEventArgs e)
     {
-        if (int.TryParse(e.Value.ToString(), out int month))
+        if (int.TryParse(e.Value!.ToString(), out int month))
         {
             CurrentStartMonth = month;
             
@@ -451,7 +474,7 @@
     /// </summary>
     private void HandleStartYearChange(ChangeEventArgs e)
     {
-        if (int.TryParse(e.Value.ToString(), out int year))
+        if (int.TryParse(e.Value!.ToString(), out int year))
         {
             CurrentStartYear = year;
             
@@ -465,7 +488,7 @@
     /// </summary>
     private void HandleEndMonthChange(ChangeEventArgs e)
     {
-        if (int.TryParse(e.Value.ToString(), out int month))
+        if (int.TryParse(e.Value!.ToString(), out int month))
         {
             CurrentEndMonth = month;
             
@@ -479,7 +502,7 @@
     /// </summary>
     private void HandleEndYearChange(ChangeEventArgs e)
     {
-        if (int.TryParse(e.Value.ToString(), out int year))
+        if (int.TryParse(e.Value!.ToString(), out int year))
         {
             CurrentEndYear = year;
             
@@ -695,6 +718,26 @@
         }
 
         return string.Join(" ", classes);
+    }
+
+    private bool IsStartSelected(CalendarDay day)
+    {
+        return TempStartDate.HasValue && day.Date.Date == TempStartDate.Value.Date;
+    }
+
+    private bool IsEndSelected(CalendarDay day)
+    {
+        return TempEndDate.HasValue && day.Date.Date == TempEndDate.Value.Date;
+    }
+
+    private static string GetStartDayAriaLabel(CalendarDay day)
+    {
+        return $"Start date {day.Date.ToString("D", CultureInfo.CurrentCulture)}";
+    }
+
+    private static string GetEndDayAriaLabel(CalendarDay day)
+    {
+        return $"End date {day.Date.ToString("D", CultureInfo.CurrentCulture)}";
     }
 
     /// <summary>
