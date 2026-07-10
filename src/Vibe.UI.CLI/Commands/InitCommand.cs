@@ -104,7 +104,7 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         };
 
         string? csprojPath = null;
-        var vibeCssAdded = false;
+        var vibeCssConfigured = false;
 
         await AnsiConsole.Status()
             .StartAsync("Setting up Vibe.UI infrastructure...", async ctx =>
@@ -118,7 +118,9 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
                 await CopyInfrastructureAsync(target.ProjectPath, settings.Minimal, settings.NoTheme, settings.WithCharts);
 
                 ctx.Status("Updating root _Imports.razor...");
-                await UpdateRootImportsAsync(target.ProjectPath);
+                await RazorImportsService.EnsureVibeImportsAsync(
+                    target.ProjectPath,
+                    includeComponents: false);
 
                 ctx.Status("Creating component directory...");
 
@@ -134,11 +136,18 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
                 // This is opt-in because the Vibe.UI.CSS package may not be published to NuGet yet
                 if (settings.WithCss)
                 {
-                    ctx.Status("Adding Vibe.UI.CSS package reference...");
-                    csprojPath = FindCsprojFile(target.ProjectPath);
+                    ctx.Status("Configuring Vibe.UI.CSS package reference...");
+                    csprojPath = topology.IsBlazorWebApp && !string.IsNullOrWhiteSpace(topology.ServerProjectFile)
+                        ? topology.ServerProjectFile
+                        : FindCsprojFile(target.ProjectPath);
+
                     if (csprojPath != null)
                     {
-                        vibeCssAdded = await AddVibeCssToProjectAsync(csprojPath);
+                        var scanRoot = topology.IsBlazorWebApp
+                            ? "$(MSBuildProjectDirectory)/.."
+                            : null;
+
+                        vibeCssConfigured = await AddVibeCssToProjectAsync(csprojPath, scanRoot);
                     }
                 }
             });
@@ -148,9 +157,9 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         AnsiConsole.WriteLine($"CSS foundation files copied to {Path.Combine(target.ProjectPath, "wwwroot", "css")}");
         AnsiConsole.WriteLine($"Color scheme: {baseColor}");
 
-        if (vibeCssAdded)
+        if (vibeCssConfigured)
         {
-            AnsiConsole.MarkupLine($"[grey]Vibe.UI.CSS package added to {Path.GetFileName(csprojPath)}[/]");
+            AnsiConsole.MarkupLine($"[grey]Vibe.UI.CSS configured in {Path.GetFileName(csprojPath)}[/]");
         }
         else if (settings.WithCss && csprojPath == null)
         {
@@ -250,14 +259,6 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
             await File.WriteAllTextAsync(serviceExtensionsTarget, await File.ReadAllTextAsync(serviceExtensionsSource));
         }
 
-        // Copy _Imports.razor
-        var importsSource = Path.Combine(infrastructurePath, "_Imports.razor");
-        var importsTarget = Path.Combine(targetVibeDir, "_Imports.razor");
-        if (File.Exists(importsSource))
-        {
-            await File.WriteAllTextAsync(importsTarget, await File.ReadAllTextAsync(importsSource));
-        }
-
         // Copy CSS foundation files to wwwroot/css/
         var cssTemplatePath = Path.Combine(templatePath, "wwwroot", "css");
         var cssTargetPath = Path.Combine(projectPath, "wwwroot", "css");
@@ -279,80 +280,23 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         var jsTargetPath = Path.Combine(projectPath, "wwwroot", "js");
         Directory.CreateDirectory(jsTargetPath);
 
-        // Copy core JS modules used by some components.
-        // ThemeToggle requires vibe-theme.js (unless --no-theme).
-        if (!noTheme)
+        if (Directory.Exists(jsTemplatePath))
         {
-            await CopyFileIfExistsAsync(
-                Path.Combine(jsTemplatePath, "vibe-theme.js"),
-                Path.Combine(jsTargetPath, "vibe-theme.js"));
-        }
-
-        // NavigationMenuItem uses vibe-dom.js; Resizable uses vibe-resizable.js.
-        await CopyFileIfExistsAsync(
-            Path.Combine(jsTemplatePath, "vibe-dom.js"),
-            Path.Combine(jsTargetPath, "vibe-dom.js"));
-
-        await CopyFileIfExistsAsync(
-            Path.Combine(jsTemplatePath, "vibe-resizable.js"),
-            Path.Combine(jsTargetPath, "vibe-resizable.js"));
-
-        // Optional helper (safe to include).
-        await CopyFileIfExistsAsync(
-            Path.Combine(jsTemplatePath, "vibe-click-outside.js"),
-            Path.Combine(jsTargetPath, "vibe-click-outside.js"));
-
-        // Copy vibe-chart.js if charts are requested
-        if (withCharts)
-        {
-            var chartSource = Path.Combine(jsTemplatePath, "vibe-chart.js");
-            var chartTarget = Path.Combine(jsTargetPath, "vibe-chart.js");
-            if (File.Exists(chartSource))
+            foreach (var jsSource in Directory
+                .EnumerateFiles(jsTemplatePath, "*.js", SearchOption.TopDirectoryOnly)
+                .OrderBy(Path.GetFileName, StringComparer.Ordinal))
             {
-                await File.WriteAllTextAsync(chartTarget, await File.ReadAllTextAsync(chartSource));
+                var fileName = Path.GetFileName(jsSource);
+
+                if ((!withCharts && fileName.Equals("vibe-chart.js", StringComparison.OrdinalIgnoreCase))
+                    || (noTheme && fileName.Equals("vibe-theme.js", StringComparison.OrdinalIgnoreCase)))
+                {
+                    continue;
+                }
+
+                await CopyFileIfExistsAsync(jsSource, Path.Combine(jsTargetPath, fileName));
             }
         }
-    }
-
-    private static async Task UpdateRootImportsAsync(string projectPath)
-    {
-        var csprojPath = FindCsprojFile(projectPath);
-        var projectRoot = csprojPath != null
-            ? Path.GetDirectoryName(csprojPath) ?? projectPath
-            : projectPath;
-
-        var importsPath = Path.Combine(projectRoot, "_Imports.razor");
-
-        var requiredUsings = new[]
-        {
-            "@using global::Vibe.UI",
-            "@using global::Vibe.UI.Base",
-            "@using global::Vibe.UI.Components",
-            "@using global::Vibe.UI.Enums"
-        };
-
-        if (!File.Exists(importsPath))
-        {
-            await File.WriteAllTextAsync(importsPath, string.Join(Environment.NewLine, requiredUsings));
-            return;
-        }
-
-        var existing = await File.ReadAllTextAsync(importsPath);
-        var linesToAppend = requiredUsings
-            .Where(line => existing.IndexOf(line, StringComparison.OrdinalIgnoreCase) < 0)
-            .ToArray();
-
-        if (linesToAppend.Length == 0)
-        {
-            return;
-        }
-
-        var separator = existing.EndsWith(Environment.NewLine, StringComparison.Ordinal)
-            ? string.Empty
-            : Environment.NewLine;
-
-        var updated = existing + separator + string.Join(Environment.NewLine, linesToAppend);
-        await File.WriteAllTextAsync(importsPath, updated);
     }
 
     private static async Task CopyFileIfExistsAsync(string source, string target)
@@ -646,9 +590,9 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
     }
 
     /// <summary>
-    /// Adds Vibe.UI.CSS package reference and MSBuild targets to the project file.
+    /// Adds the Vibe.UI.CSS package reference and build configuration to a project file.
     /// </summary>
-    private static async Task<bool> AddVibeCssToProjectAsync(string csprojPath)
+    private static async Task<bool> AddVibeCssToProjectAsync(string csprojPath, string? scanRoot = null)
     {
         try
         {
@@ -680,25 +624,22 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
                 // Add Vibe.UI.CSS package reference
                 var vibeCssReference = new XElement(ns + "PackageReference",
                     new XAttribute("Include", "Vibe.UI.CSS"),
-                    new XAttribute("Version", CliVersion.Current));
+                    new XAttribute("Version", CliVersion.Current),
+                    new XAttribute("PrivateAssets", "all"));
 
                 packageItemGroup.Add(vibeCssReference);
                 modified = true;
             }
 
-            // Check if VibeCss properties are already configured
-            var existingVibeCssProps = root.Descendants(ns + "VibeCssEnabled").Any();
+            var vibeCssPropertyGroup = root.Elements(ns + "PropertyGroup")
+                .FirstOrDefault(group => group.Elements().Any(element =>
+                    element.Name.LocalName.StartsWith("VibeCss", StringComparison.Ordinal)));
 
-            if (!existingVibeCssProps)
+            if (vibeCssPropertyGroup == null)
             {
-                // Add VibeCss configuration PropertyGroup
-                var vibeCssPropertyGroup = new XElement(ns + "PropertyGroup",
-                    new XComment(" Vibe.UI.CSS JIT Configuration "),
-                    new XElement(ns + "VibeCssEnabled", "true"),
-                    new XElement(ns + "VibeCssOutput", "wwwroot/css/Vibe.UI.CSS"),
-                    new XElement(ns + "VibeCssIncludeBase", "true"));
+                vibeCssPropertyGroup = new XElement(ns + "PropertyGroup",
+                    new XComment(" Vibe.UI.CSS JIT Configuration "));
 
-                // Insert after the first PropertyGroup
                 var firstPropertyGroup = root.Element(ns + "PropertyGroup");
                 if (firstPropertyGroup != null)
                 {
@@ -712,13 +653,33 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
                 modified = true;
             }
 
+            AddPropertyIfMissing("VibeCssEnabled", "true");
+            AddPropertyIfMissing("VibeCssOutput", "wwwroot/css/Vibe.UI.CSS");
+            AddPropertyIfMissing("VibeCssIncludeBase", "true");
+
+            if (!string.IsNullOrWhiteSpace(scanRoot))
+            {
+                AddPropertyIfMissing("VibeCssScanRoot", scanRoot);
+            }
+
             if (modified)
             {
                 await using var stream = File.Create(csprojPath);
                 await doc.SaveAsync(stream, SaveOptions.None, CancellationToken.None);
             }
 
-            return modified;
+            return true;
+
+            void AddPropertyIfMissing(string propertyName, string value)
+            {
+                if (root.Descendants(ns + propertyName).Any())
+                {
+                    return;
+                }
+
+                vibeCssPropertyGroup.Add(new XElement(ns + propertyName, value));
+                modified = true;
+            }
         }
         catch
         {

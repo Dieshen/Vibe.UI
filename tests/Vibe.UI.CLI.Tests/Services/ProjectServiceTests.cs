@@ -103,6 +103,90 @@ public class ProjectServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task ResolveInitializedProjectPathAsync_FromWebAppRoot_ReturnsConfiguredClient()
+    {
+        // Arrange
+        var (_, clientPath) = await CreateWebAppProjectsAsync();
+        await new ConfigService().SaveConfigAsync(clientPath, new VibeConfig());
+
+        // Act
+        var resolvedPath = await _projectService.ResolveInitializedProjectPathAsync(_testProjectPath);
+
+        // Assert
+        resolvedPath.Should().Be(clientPath);
+    }
+
+    [Fact]
+    public async Task DetectProjectTopologyAsync_DoesNotTreatNonWebProjectReferencingWasmAsServer()
+    {
+        // Arrange
+        var toolsPath = Path.Combine(_testProjectPath, "BuildTools");
+        var clientPath = Path.Combine(_testProjectPath, "Sample.Client");
+        Directory.CreateDirectory(toolsPath);
+        Directory.CreateDirectory(clientPath);
+
+        await File.WriteAllTextAsync(
+            Path.Combine(toolsPath, "BuildTools.csproj"),
+            @"<Project Sdk=""Microsoft.NET.Sdk"">
+  <ItemGroup>
+    <ProjectReference Include=""..\Sample.Client\Sample.Client.csproj"" />
+  </ItemGroup>
+</Project>");
+
+        await File.WriteAllTextAsync(
+            Path.Combine(clientPath, "Sample.Client.csproj"),
+            @"<Project Sdk=""Microsoft.NET.Sdk.BlazorWebAssembly"">
+  <ItemGroup>
+    <PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly"" Version=""10.0.0"" />
+  </ItemGroup>
+</Project>");
+
+        // Act
+        var topology = await _projectService.DetectProjectTopologyAsync(_testProjectPath);
+
+        // Assert
+        topology.Kind.Should().NotBe(BlazorProjectKind.BlazorWebApp);
+        topology.Kind.Should().NotBe(BlazorProjectKind.BlazorWebAppClient);
+        topology.HasServerProject.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task DetectProjectTopologyAsync_DoesNotPairInteractiveServerWithUnrelatedWasmProject()
+    {
+        // Arrange
+        var serverPath = Path.Combine(_testProjectPath, "Admin");
+        var clientPath = Path.Combine(_testProjectPath, "Store.Client");
+        Directory.CreateDirectory(serverPath);
+        Directory.CreateDirectory(clientPath);
+
+        await File.WriteAllTextAsync(
+            Path.Combine(serverPath, "Admin.csproj"),
+            @"<Project Sdk=""Microsoft.NET.Sdk.Web"">
+  <ItemGroup>
+    <PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly.Server"" Version=""10.0.0"" />
+  </ItemGroup>
+</Project>");
+        await File.WriteAllTextAsync(
+            Path.Combine(serverPath, "Program.cs"),
+            "builder.Services.AddRazorComponents().AddInteractiveWebAssemblyComponents();");
+
+        await File.WriteAllTextAsync(
+            Path.Combine(clientPath, "Store.Client.csproj"),
+            @"<Project Sdk=""Microsoft.NET.Sdk.BlazorWebAssembly"">
+  <ItemGroup>
+    <PackageReference Include=""Microsoft.AspNetCore.Components.WebAssembly"" Version=""10.0.0"" />
+  </ItemGroup>
+</Project>");
+
+        // Act
+        var topology = await _projectService.DetectProjectTopologyAsync(_testProjectPath);
+
+        // Assert
+        topology.Kind.Should().Be(BlazorProjectKind.BlazorServer);
+        topology.HasClientProject.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task DetectProjectTypeAsync_ReturnsBlazorServer_ForServerProject()
     {
         // Arrange

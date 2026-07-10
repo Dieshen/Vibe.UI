@@ -127,19 +127,7 @@
                   PackagePath="Templates/Infrastructure/" />
 
             <!-- JavaScript files -->
-            <None Include="../Vibe.UI/wwwroot/js/vibe-theme.js"
-                  Pack="true"
-                  PackagePath="Templates/wwwroot/js/" />
-            <None Include="../Vibe.UI/wwwroot/js/vibe-dom.js"
-                  Pack="true"
-                  PackagePath="Templates/wwwroot/js/" />
-            <None Include="../Vibe.UI/wwwroot/js/vibe-resizable.js"
-                  Pack="true"
-                  PackagePath="Templates/wwwroot/js/" />
-            <None Include="../Vibe.UI/wwwroot/js/vibe-click-outside.js"
-                  Pack="true"
-                  PackagePath="Templates/wwwroot/js/" />
-            <None Include="../Vibe.UI/wwwroot/js/vibe-chart.js"
+            <None Include="../Vibe.UI/wwwroot/js/*.js"
                   Pack="true"
                   PackagePath="Templates/wwwroot/js/" />
 

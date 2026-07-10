@@ -36,8 +36,7 @@ public class ProjectSetupGuidanceTests
         steps.Should().Contain(step => step.Contains("AddInteractiveWebAssemblyComponents", StringComparison.Ordinal));
         steps.Should().Contain(step => step.Contains("AddInteractiveWebAssemblyRenderMode", StringComparison.Ordinal));
         steps.Should().Contain(step => step.Contains("@Assets[\"css/vibe-base.css\"]", StringComparison.Ordinal));
-        steps.Should().Contain(step => step.Contains("--path", StringComparison.Ordinal)
-            && step.Contains(clientPath, StringComparison.Ordinal));
+        steps.Should().Contain(step => step.Contains("reuse the initialized client project automatically", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -66,5 +65,34 @@ public class ProjectSetupGuidanceTests
         steps.Should().Contain(step => step.Contains("wwwroot/index.html", StringComparison.Ordinal)
             && step.Contains("css/vibe-base.css", StringComparison.Ordinal));
         steps.Should().NotContain(step => step.Contains("@Assets", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void BuildNextSteps_WebAppWithCss_UsesSingleServerOwnedOutput()
+    {
+        // Arrange
+        var serverPath = Path.Combine(Path.GetTempPath(), "TestApp");
+        var clientPath = Path.Combine(Path.GetTempPath(), "TestApp.Client");
+        var topology = new ProjectTopology(
+            BlazorProjectKind.BlazorWebApp,
+            "Blazor Web App",
+            Path.GetTempPath(),
+            serverPath,
+            Path.Combine(serverPath, "TestApp.csproj"),
+            serverPath,
+            Path.Combine(serverPath, "TestApp.csproj"),
+            clientPath,
+            Path.Combine(clientPath, "TestApp.Client.csproj"),
+            "TestApp.Client");
+
+        // Act
+        var steps = ProjectSetupGuidance.BuildNextSteps(topology, clientPath, withCss: true);
+
+        // Assert
+        steps.Should().Contain(step => step.Contains("configured on the server", StringComparison.Ordinal)
+            && step.Contains("shared server/client root", StringComparison.Ordinal));
+        steps.Should().Contain(step => step.Contains("do not generate a second client copy", StringComparison.Ordinal));
+        steps.Should().NotContain(step => step.Contains("vibe css --watch", StringComparison.Ordinal));
+        steps.Should().NotContain(step => step.Contains("CSS commands", StringComparison.Ordinal));
     }
 }

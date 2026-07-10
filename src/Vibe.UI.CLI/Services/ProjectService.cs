@@ -6,10 +6,36 @@ namespace Vibe.UI.CLI.Services;
 
 public class ProjectService
 {
+    private const string VibeConfigFileName = "vibe.json";
+
     public async Task<string> DetectProjectTypeAsync(string projectPath)
     {
         var topology = await DetectProjectTopologyAsync(projectPath);
         return topology.DisplayName;
+    }
+
+    public async Task<string> ResolveInitializedProjectPathAsync(string projectPath)
+    {
+        var requestedPath = Path.GetFullPath(projectPath);
+        if (IsInitialized(requestedPath))
+        {
+            return requestedPath;
+        }
+
+        var topology = await DetectProjectTopologyAsync(requestedPath);
+        var candidatePaths = new[]
+        {
+            topology.ClientProjectPath,
+            topology.ServerProjectPath,
+            topology.ProjectPath
+        };
+
+        return candidatePaths
+            .Where(candidate => !string.IsNullOrWhiteSpace(candidate))
+            .Select(candidate => Path.GetFullPath(candidate!))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault(IsInitialized)
+            ?? requestedPath;
     }
 
     public async Task<ProjectTopology> DetectProjectTopologyAsync(string projectPath)
@@ -326,7 +352,7 @@ public class ProjectService
 
         return candidates.FirstOrDefault(candidate =>
                 candidate.IsWebAppServerProject
-                || candidate.ProjectReferences.Any(reference => clientProjectFiles.Contains(reference)))
+                && candidate.ProjectReferences.Any(reference => clientProjectFiles.Contains(reference)))
             ?? candidates.FirstOrDefault(candidate => candidate.IsWebAppServerProject);
     }
 
@@ -354,6 +380,8 @@ public class ProjectService
             {
                 return namedClient;
             }
+
+            return null;
         }
 
         return candidates.FirstOrDefault(candidate =>
@@ -364,6 +392,9 @@ public class ProjectService
 
     private static bool PathsEqual(string left, string right) =>
         string.Equals(Path.GetFullPath(left), Path.GetFullPath(right), StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsInitialized(string projectPath) =>
+        File.Exists(Path.Combine(projectPath, VibeConfigFileName));
 
     private sealed class ProjectCandidate
     {

@@ -4,6 +4,9 @@ namespace Vibe.UI.CLI.Services;
 
 public class ComponentService
 {
+    private const string PackageModulePathPrefix = "./_content/Vibe.UI/js/";
+    private const string SourceModulePathPrefix = "./js/";
+
     private readonly Dictionary<string, ComponentInfo> _components;
 
     public ComponentService()
@@ -132,6 +135,7 @@ public class ComponentService
             }
 
             var razorContent = await GetComponentContentAsync(sourcePath, component.Name);
+            razorContent = RewriteModulePathsForSourceInstallation(razorContent);
 
             // Rename component if custom name provided
             if (!string.IsNullOrEmpty(customName))
@@ -390,6 +394,12 @@ public class ComponentService
 
         return await File.ReadAllTextAsync(sourcePath);
     }
+
+    private static string RewriteModulePathsForSourceInstallation(string content) =>
+        content.Replace(
+            PackageModulePathPrefix,
+            SourceModulePathPrefix,
+            StringComparison.Ordinal);
 
     /// <summary>
     /// Renames component class and references in the razor content.

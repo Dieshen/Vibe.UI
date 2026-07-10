@@ -159,11 +159,7 @@ namespace Vibe.UI.Services.Dialog
                 
                 if (parameters != null)
                 {
-                    var seq = 1;
-                    foreach (var param in parameters.GetAll())
-                    {
-                        builder.AddAttribute(seq++, param.Key, param.Value);
-                    }
+                    builder.AddMultipleAttributes(1, parameters.GetAll());
                 }
                 
                 builder.CloseComponent();

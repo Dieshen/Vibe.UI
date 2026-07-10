@@ -29,8 +29,8 @@ public static class ProjectSetupGuidance
     {
         var steps = new List<string>
         {
-            $"Register Vibe.UI in server project {ProjectLabel(topology.ServerProjectFile, "Program.cs")}: builder.Services.AddVibeUI();",
-            $"Register Vibe.UI in client project {ProjectLabel(topology.ClientProjectFile, "Program.cs")}: builder.Services.AddVibeUI();",
+            $"In server project {ProjectLabel(topology.ServerProjectFile, "Program.cs")}, add using Vibe.UI; and register builder.Services.AddVibeUI();",
+            $"In client project {ProjectLabel(topology.ClientProjectFile, "Program.cs")}, add using Vibe.UI; and register builder.Services.AddVibeUI();",
             "Ensure the server Program.cs chains AddInteractiveWebAssemblyComponents() on AddRazorComponents().",
             $"Ensure the server endpoint chains AddInteractiveWebAssemblyRenderMode().AddAdditionalAssemblies(typeof({topology.ClientNamespace ?? "Client"}._Imports).Assembly)."
         };
@@ -38,7 +38,7 @@ public static class ProjectSetupGuidance
         if (withCss)
         {
             steps.Add("In the server App.razor head, reference the generated stylesheet with <link rel=\"stylesheet\" href=\"@Assets[\"css/Vibe.UI.CSS\"]\" />.");
-            steps.Add("Run vibe css --watch during development, or rely on build-time CSS generation.");
+            steps.Add("Vibe.UI.CSS is configured on the server and scans the shared server/client root during each required build; do not generate a second client copy of Vibe.UI.CSS.");
         }
         else
         {
@@ -48,7 +48,9 @@ public static class ProjectSetupGuidance
         if (!string.IsNullOrWhiteSpace(topology.ClientProjectPath)
             && PathsEqual(installProjectPath, topology.ClientProjectPath))
         {
-            steps.Add($"Run future component commands from {topology.ClientProjectPath} or pass --path \"{topology.ClientProjectPath}\".");
+            steps.Add(withCss
+                ? "Future add and update commands run from the Web App root will reuse the initialized client project automatically."
+                : "Future add, update, and CSS commands run from the Web App root will reuse the initialized client project automatically.");
         }
 
         steps.Add("Add <ThemeToggle /> to your layout for light/dark mode.");
@@ -62,7 +64,7 @@ public static class ProjectSetupGuidance
     {
         var steps = new List<string>
         {
-            "Register Vibe.UI in Program.cs: builder.Services.AddVibeUI();"
+            "In Program.cs, add using Vibe.UI; and register builder.Services.AddVibeUI();"
         };
 
         if (withCss)
@@ -86,7 +88,7 @@ public static class ProjectSetupGuidance
     {
         var steps = new List<string>
         {
-            "Register Vibe.UI in Program.cs: builder.Services.AddVibeUI();"
+            "In Program.cs, add using Vibe.UI; and register builder.Services.AddVibeUI();"
         };
 
         if (withCss)

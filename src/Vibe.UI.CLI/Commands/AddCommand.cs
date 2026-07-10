@@ -44,9 +44,17 @@ public class AddCommand : AsyncCommand<AddCommand.Settings>
     {
         var configService = new ConfigService();
         var componentService = new ComponentService();
+        var projectService = new ProjectService();
+        var requestedProjectPath = Path.GetFullPath(settings.ProjectPath);
+        var projectPath = await projectService.ResolveInitializedProjectPathAsync(requestedProjectPath);
+
+        if (!PathsEqual(requestedProjectPath, projectPath))
+        {
+            AnsiConsole.WriteLine($"Using initialized project: {projectPath}");
+        }
 
         // Check if vibe init was run
-        var vibeBaseDir = Path.Combine(settings.ProjectPath, "Vibe", "Base");
+        var vibeBaseDir = Path.Combine(projectPath, "Vibe", "Base");
         var requiredInfrastructureFiles = new[]
         {
             Path.Combine(vibeBaseDir, "ClassBuilder.cs"),
@@ -61,7 +69,7 @@ public class AddCommand : AsyncCommand<AddCommand.Settings>
         }
 
         // Load configuration
-        var config = await configService.LoadConfigAsync(settings.ProjectPath);
+        var config = await configService.LoadConfigAsync(projectPath);
         if (config == null)
         {
             AnsiConsole.MarkupLine("[red]Error:[/] Vibe.UI is not initialized in this project.");
@@ -124,7 +132,7 @@ public class AddCommand : AsyncCommand<AddCommand.Settings>
                     {
                         ctx.Status($"Installing dependency: {dep}...");
                         await componentService.InstallComponentAsync(
-                            settings.ProjectPath,
+                            projectPath,
                             config.ComponentsDirectory,
                             dep,
                             settings.Overwrite,
@@ -136,13 +144,15 @@ public class AddCommand : AsyncCommand<AddCommand.Settings>
                 // Install the component with custom name and output directory
                 ctx.Status($"Installing {component.Name}...");
                 await componentService.InstallComponentAsync(
-                    settings.ProjectPath,
+                    projectPath,
                     config.ComponentsDirectory,
                     componentName,
                     settings.Overwrite,
                     customName: settings.Name,
                     customOutputDir: settings.Output);
             });
+
+        await RazorImportsService.EnsureVibeImportsAsync(projectPath, includeComponents: true);
 
         var displayName = settings.Name ?? component.Name;
         AnsiConsole.MarkupLine($"\n[green]✓[/] Success! {displayName} has been added to your project.");
@@ -183,4 +193,7 @@ public class AddCommand : AsyncCommand<AddCommand.Settings>
 
         return 0;
     }
+
+    private static bool PathsEqual(string left, string right) =>
+        string.Equals(Path.GetFullPath(left), Path.GetFullPath(right), StringComparison.OrdinalIgnoreCase);
 }

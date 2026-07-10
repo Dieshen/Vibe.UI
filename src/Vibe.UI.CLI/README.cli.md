@@ -144,7 +144,8 @@ Copies infrastructure (base classes, services, theme system) to `Vibe/` folder.
 Options:
 - `--minimal` - Core infrastructure only
 - `--no-theme` - Skip theme system
-- `--with-charts` - Include Chart.js support
+- `--with-charts` - Copy the `vibe-chart.js` interop script (the Chart.js library must also be loaded by the app)
+- `--with-css` - Add build-time `Vibe.UI.CSS` generation. Hosted Web Apps configure the server as the single CSS owner and scan both server and client sources.
 
 ### `vibe add <component>`
 Adds a component to `Components/`.
