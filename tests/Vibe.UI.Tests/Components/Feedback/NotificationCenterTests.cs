@@ -332,6 +332,33 @@ public class NotificationCenterTests : TestBase
     }
 
     [Fact]
+    public void NotificationCenter_PreservesLocalReadAndRemoveStateAcrossParentRerender()
+    {
+        var source = new List<NotificationCenter.NotificationItem>
+        {
+            new() { Id = "one", Title = "One", IsRead = false, Timestamp = new System.DateTime(2024, 1, 2) },
+            new() { Id = "two", Title = "Two", IsRead = false, Timestamp = new System.DateTime(2024, 1, 1) }
+        };
+
+        var cut = RenderOpen(source);
+
+        cut.FindAll(".notification-content-button")[0].Click();
+        cut.FindAll(".notification-remove-btn")[1].Click();
+
+        cut.FindAll(".notification-item").Single().TextContent.ShouldContain("One");
+        cut.Find(".notification-item").ClassList.ShouldContain("read");
+
+        cut.Render(parameters => parameters
+            .Add(p => p.Notifications, source));
+
+        source.Count.ShouldBe(2);
+        source[0].IsRead.ShouldBeFalse();
+        cut.FindAll(".notification-item").Single().TextContent.ShouldContain("One");
+        cut.Find(".notification-item").ClassList.ShouldContain("read");
+        cut.FindAll(".notification-badge").ShouldBeEmpty();
+    }
+
+    [Fact]
     public void NotificationCenter_ClearAllInvokesChangeAndClosesPanel()
     {
         List<NotificationCenter.NotificationItem>? changed = null;

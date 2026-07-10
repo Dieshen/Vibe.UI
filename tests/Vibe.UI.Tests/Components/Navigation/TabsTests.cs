@@ -111,6 +111,26 @@ public class TabsTests : TestBase
     }
 
     [Fact]
+    public void Tabs_DefaultActiveDoesNotOverrideUserSelectionAfterRerender()
+    {
+        var cut = Render<Tabs>(parameters => parameters
+            .AddChildContent(CreateTabsContent(defaultDetails: true)));
+
+        WaitForTabs(cut, 3);
+
+        cut.Find("#vibe-tab-settings").Click();
+
+        cut.Find("#vibe-tab-settings").GetAttribute("aria-selected").ShouldBe("true");
+        cut.Find("#vibe-tab-details").GetAttribute("aria-selected").ShouldBe("false");
+
+        cut.Render(parameters => parameters
+            .AddChildContent(CreateTabsContent(defaultDetails: true)));
+
+        cut.Find("#vibe-tab-settings").GetAttribute("aria-selected").ShouldBe("true");
+        cut.Find("#vibe-tabpanel-settings").HasAttribute("hidden").ShouldBeFalse();
+    }
+
+    [Fact]
     public void Tabs_SkipsDisabledTabs_ForInitialActivationAndClicks()
     {
         string? activeTabId = null;

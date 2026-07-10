@@ -215,6 +215,23 @@ public class ToggleGroupTests : TestBase
     }
 
     [Fact]
+    public void ToggleGroup_SingleMode_ClearsPreviouslyPressedSibling()
+    {
+        var cut = Render<ToggleGroup>(parameters => parameters
+            .AddChildContent(BuildItems("left", "right")));
+
+        cut.FindAll("button")[0].Click();
+
+        cut.FindAll("button")[0].GetAttribute("aria-pressed")!.ShouldBe("true");
+        cut.FindAll("button")[1].GetAttribute("aria-pressed")!.ShouldBe("false");
+
+        cut.FindAll("button")[1].Click();
+
+        cut.FindAll("button")[0].GetAttribute("aria-pressed")!.ShouldBe("false");
+        cut.FindAll("button")[1].GetAttribute("aria-pressed")!.ShouldBe("true");
+    }
+
+    [Fact]
     public void ToggleGroup_MultipleMode_DoesNotMutateCallerOwnedValuesList()
     {
         // Arrange

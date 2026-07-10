@@ -90,6 +90,23 @@ public class MenuTests : TestBase
     }
 
     [Fact]
+    public void Menu_UncontrolledOpenStateSurvivesParentRerender()
+    {
+        var cut = Render<Menu>(parameters => parameters
+            .AddChildContent("Menu content"));
+
+        cut.Find(".vibe-menu-trigger").Click();
+
+        cut.Find(".vibe-menu-content").TextContent.ShouldContain("Menu content");
+
+        cut.Render(parameters => parameters
+            .AddChildContent("Menu content"));
+
+        cut.Find(".vibe-menu-content").TextContent.ShouldContain("Menu content");
+        cut.Find(".vibe-menu-trigger").GetAttribute("aria-expanded").ShouldBe("true");
+    }
+
+    [Fact]
     public void Menu_TogglesWithEnterAndSpacebarAndClosesWithEscape()
     {
         var changedValues = new List<bool>();

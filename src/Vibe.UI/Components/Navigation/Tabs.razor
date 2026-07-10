@@ -52,6 +52,7 @@
     private List<TabItem> _tabs = new();
     private IJSObjectReference? _domModule;
     private bool _isDisposed;
+    private bool _activeTabWasAutoSelected;
     private static readonly RenderFragment EmptyContent = _ => { };
 
     /// <summary>
@@ -107,7 +108,7 @@
 
         var shouldRender = UpsertTab(tab);
 
-        if (tab.DefaultActive && !tab.Disabled && ActiveTabId != tab.Id)
+        if (tab.DefaultActive && !tab.Disabled && _activeTabWasAutoSelected && ActiveTabId != tab.Id)
         {
             ActiveTabId = tab.Id;
             shouldRender = true;
@@ -157,6 +158,7 @@
             if (tabId == ActiveTabId)
             {
                 ActiveTabId = _tabs.FirstOrDefault(t => !t.Disabled)?.Id;
+                _activeTabWasAutoSelected = ActiveTabId != null;
             }
 
             StateHasChanged();
@@ -173,6 +175,7 @@
         if (tab != null && !tab.Disabled && tabId != ActiveTabId)
         {
             ActiveTabId = tabId;
+            _activeTabWasAutoSelected = false;
 
             if (ActiveTabIdChanged.HasDelegate)
             {
@@ -270,6 +273,7 @@
             return false;
 
         ActiveTabId = nextActiveTabId;
+        _activeTabWasAutoSelected = nextActiveTabId != null;
         return true;
     }
 

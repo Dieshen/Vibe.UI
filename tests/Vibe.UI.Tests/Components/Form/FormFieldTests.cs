@@ -152,4 +152,18 @@ public class FormFieldTests : TestBase
         cut.Find(".form-field-container").ClassList.ShouldContain("has-error");
         cut.Find(".form-validation-message").TextContent.ShouldContain("Name is required");
     }
+
+    [Fact]
+    public void FormField_DoesNotRenderValidationMessageOutsideEditContext()
+    {
+        var model = new FieldValidationModel();
+        Expression<Func<string>> validationFor = () => model.Name;
+
+        var cut = Render<FormField<string>>(parameters => parameters
+            .Add(p => p.ValidationFor, validationFor)
+            .AddChildContent("<input id=\"name\" />"));
+
+        cut.Find(".vibe-form-field").ShouldNotBeNull();
+        cut.FindAll(".form-validation-message").ShouldBeEmpty();
+    }
 }

@@ -129,6 +129,8 @@
             _values = updatedValues;
             await ValuesChanged.InvokeAsync(updatedValues);
         }
+
+        await InvokeAsync(StateHasChanged);
     }
 
     internal bool IsSelected(string itemValue)

@@ -175,6 +175,9 @@
     private string _activeFilter = AllFilter;
     private List<NotificationItem> _notifications = [];
     private List<string> _filters = [];
+    private readonly HashSet<string> _locallyReadNotificationIds = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _locallyRemovedNotificationIds = new(StringComparer.Ordinal);
+    private IReadOnlyList<string> _lastSourceNotificationIds = Array.Empty<string>();
 
     [Parameter]
     public List<NotificationItem>? Notifications { get; set; } = new();
@@ -257,7 +260,9 @@
 
     protected override void OnParametersSet()
     {
-        _notifications = NormalizeNotifications(Notifications);
+        var normalizedNotifications = NormalizeNotifications(Notifications);
+        ReconcileLocalNotificationState(normalizedNotifications);
+        _notifications = ApplyLocalNotificationState(normalizedNotifications);
         _filters = NormalizeFilters(Filters);
 
         if (_filters.Count == 0)
@@ -315,6 +320,7 @@
             updatedNotification.IsRead = true;
             _notifications[notificationIndex] = updatedNotification;
             notification = updatedNotification;
+            RememberNotificationRead(updatedNotification);
 
             await NotifyNotificationsChangedAsync();
         }
@@ -340,6 +346,7 @@
             var notification = CloneNotification(_notifications[i]);
             notification.IsRead = true;
             _notifications[i] = notification;
+            RememberNotificationRead(notification);
             changed = true;
         }
 
@@ -367,6 +374,7 @@
             return;
         }
 
+        RememberNotificationRemoved(_notifications[index]);
         _notifications.RemoveAt(index);
         await NotifyNotificationsChangedAsync();
     }
@@ -376,6 +384,11 @@
         if (ReadOnly || _notifications.Count == 0)
         {
             return;
+        }
+
+        foreach (var notification in _notifications)
+        {
+            RememberNotificationRemoved(notification);
         }
 
         _notifications.Clear();
@@ -391,6 +404,62 @@
     private async Task NotifyNotificationsChangedAsync()
     {
         await NotificationsChanged.InvokeAsync(_notifications.Select(notification => CloneNotification(notification)).ToList());
+    }
+
+    private void ReconcileLocalNotificationState(IReadOnlyList<NotificationItem> sourceNotifications)
+    {
+        var sourceIds = sourceNotifications.Select(notification => notification.Id).ToArray();
+
+        if (sourceIds.SequenceEqual(_lastSourceNotificationIds, StringComparer.Ordinal))
+        {
+            return;
+        }
+
+        var sourceIdSet = sourceIds.ToHashSet(StringComparer.Ordinal);
+        _locallyReadNotificationIds.IntersectWith(sourceIdSet);
+        _locallyRemovedNotificationIds.IntersectWith(sourceIdSet);
+        _lastSourceNotificationIds = sourceIds;
+    }
+
+    private List<NotificationItem> ApplyLocalNotificationState(IEnumerable<NotificationItem> sourceNotifications)
+    {
+        var notifications = new List<NotificationItem>();
+
+        foreach (var notification in sourceNotifications)
+        {
+            if (_locallyRemovedNotificationIds.Contains(notification.Id))
+            {
+                continue;
+            }
+
+            if (_locallyReadNotificationIds.Contains(notification.Id) && !notification.IsRead)
+            {
+                var readNotification = CloneNotification(notification);
+                readNotification.IsRead = true;
+                notifications.Add(readNotification);
+                continue;
+            }
+
+            notifications.Add(notification);
+        }
+
+        return notifications;
+    }
+
+    private void RememberNotificationRead(NotificationItem notification)
+    {
+        if (!string.IsNullOrWhiteSpace(notification.Id))
+        {
+            _locallyReadNotificationIds.Add(notification.Id);
+        }
+    }
+
+    private void RememberNotificationRemoved(NotificationItem notification)
+    {
+        if (!string.IsNullOrWhiteSpace(notification.Id))
+        {
+            _locallyRemovedNotificationIds.Add(notification.Id);
+        }
     }
 
     private IEnumerable<NotificationItem> ApplyFilter()
