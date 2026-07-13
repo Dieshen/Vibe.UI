@@ -1,0 +1,162 @@
+@page "/components/splitter"
+@using Vibe.UI.Components
+
+<PageTitle>Splitter - Vibe.UI</PageTitle>
+
+<div class="vibe-max-w-4xl vibe-mx-auto">
+    <header class="vibe-mb-8">
+        <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
+            <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
+            <span>/</span>
+            <a href="components" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Components</a>
+            <span>/</span>
+            <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Splitter</span>
+        </div>
+        <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Splitter</h1>
+        <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            Resize two adjacent panes with a pointer or keyboard.
+        </p>
+    </header>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+            <Splitter @ref="previewSplitter"
+                      style="height: 18rem; border: 1px solid var(--vibe-border); border-radius: var(--vibe-radius);"
+                      InitialSize="36"
+                      MinSize="22"
+                      MaxSize="72"
+                      DividerSize="4"
+                      OnSizeChanged="HandleSizeChanged">
+                <FirstPane>
+                    <div class="vibe-h-full vibe-p-4 vibe-bg-zinc-100/70 dark:vibe-bg-zinc-900/40">
+                        <h3 class="vibe-font-semibold vibe-mb-3">Navigation</h3>
+                        <ul class="vibe-grid vibe-gap-2 vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400">
+                            <li>Overview</li>
+                            <li>Components</li>
+                            <li>Releases</li>
+                        </ul>
+                    </div>
+                </FirstPane>
+                <SecondPane>
+                    <div class="vibe-h-full vibe-p-4 vibe-bg-white dark:vibe-bg-zinc-950">
+                        <h3 class="vibe-font-semibold vibe-mb-2">Component audit</h3>
+                        <p class="vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400">
+                            Compare interaction states while keeping the navigation visible.
+                        </p>
+                    </div>
+                </SecondPane>
+            </Splitter>
+            <div class="vibe-flex vibe-items-center vibe-justify-between vibe-gap-3 vibe-mt-3">
+                <output class="vibe-text-sm vibe-text-zinc-500">First pane: @currentSize.ToString("0.#")%</output>
+                <Button OnClick="ResetPreview">Reset</Button>
+            </div>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
+        <div class="vibe-mb-8">
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Horizontal panes</h3>
+            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
+                Sizes are percentages of the splitter container and honor the configured limits.
+            </p>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
+        <div class="vibe-overflow-x-auto">
+            <table class="vibe-w-full vibe-text-sm">
+                <thead>
+                    <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Default</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
+                    </tr>
+                </thead>
+                <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+                    @foreach (var property in Properties)
+                    {
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">@property.Name</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@property.Type" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@property.Default</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@property.Description</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
+        <CodeBlock Code="vibe add splitter" Language="bash" />
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
+        <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            @foreach (var item in AccessibilityItems)
+            {
+                <li class="vibe-flex vibe-items-start vibe-gap-2">
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />
+                    @item
+                </li>
+            }
+        </ul>
+    </section>
+</div>
+
+@code {
+    private Splitter? previewSplitter;
+    private double currentSize = 36;
+
+    private static readonly (string Name, string Type, string Default, string Description)[] Properties =
+    [
+        ("FirstPane", "RenderFragment?", "null", "Content before the divider"),
+        ("SecondPane", "RenderFragment?", "null", "Content after the divider"),
+        ("Orientation", "SplitterOrientation", "Horizontal", "Horizontal or Vertical pane layout"),
+        ("InitialSize", "double", "50", "Initial first-pane percentage"),
+        ("MinSize", "double", "10", "Minimum first-pane percentage"),
+        ("MaxSize", "double", "90", "Maximum first-pane percentage"),
+        ("DividerSize", "int", "4", "Visible divider size in pixels"),
+        ("OnSizeChanged", "EventCallback<double>", "-", "Raised after pointer or keyboard size changes"),
+        ("CssClass", "string?", "null", "Additional component class")
+    ];
+
+    private static readonly string[] AccessibilityItems =
+    [
+        "Exposes the divider as a focusable separator with current, minimum, and maximum values",
+        "Resizes horizontal panes with ArrowLeft and ArrowRight",
+        "Resizes vertical panes with ArrowUp and ArrowDown",
+        "Supports mouse, pen, and touch through pointer capture"
+    ];
+
+    private Task HandleSizeChanged(double size)
+    {
+        currentSize = size;
+        return Task.CompletedTask;
+    }
+
+    private void ResetPreview()
+    {
+        previewSplitter?.ResetSize();
+        currentSize = 36;
+    }
+
+    private string BasicCode => @"<Splitter InitialSize=""35""
+          MinSize=""20""
+          MaxSize=""75""
+          OnSizeChanged=""HandleSizeChanged"">
+    <FirstPane>
+        <Navigation />
+    </FirstPane>
+    <SecondPane>
+        <Workspace />
+    </SecondPane>
+</Splitter>";
+}

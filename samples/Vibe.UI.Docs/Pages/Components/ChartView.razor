@@ -16,7 +16,7 @@
         </div>
         <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Chart</h1>
         <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
-            Render Chart.js visualizations with a single <code>Data</code> model and chart-type-specific options.
+            Render Chart.js visualizations with Vibe-aware light and dark canvas styling, semantic legends, and an accessible data table.
         </p>
     </header>
 
@@ -28,20 +28,22 @@
                     <h3 style="margin-bottom: 1rem; font-size: 0.875rem; font-weight: 600;">Line</h3>
                     <Chart Type="ChartType.Line"
                            Data="@lineChartData"
+                           Title="Monthly revenue"
                            Height="220" />
                 </div>
                 <div>
                     <h3 style="margin-bottom: 1rem; font-size: 0.875rem; font-weight: 600;">Bar</h3>
                     <Chart Type="ChartType.Bar"
                            Data="@barChartData"
+                           Title="Quarterly sales"
                            Height="220" />
                 </div>
                 <div>
                     <h3 style="margin-bottom: 1rem; font-size: 0.875rem; font-weight: 600;">Pie</h3>
                     <Chart Type="ChartType.Pie"
                            Data="@pieChartData"
-                           Height="220"
-                           UseBuiltInLegend="true" />
+                           Title="Regional share"
+                           Height="220" />
                 </div>
             </div>
         </div>
@@ -69,7 +71,7 @@
         <div class="vibe-mb-8">
             <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Pie Chart With Slice Colors</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Keep <code>Color</code> for single-color datasets and use <code>BackgroundColors</code> or <code>BorderColors</code> for pie or doughnut slices.
+                Keep <code>Color</code> for single-color datasets and use <code>BackgroundColors</code> or <code>BorderColors</code> for pie or doughnut slices. The HTML legend names every slice and its value.
             </p>
             <CodeBlock Code="@PieChartCode" Language="razor" />
         </div>
@@ -130,7 +132,7 @@
                         <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">UseBuiltInLegend</td>
                         <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
                         <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Uses Chart.js legend instead of the HTML legend.</td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Uses the Chart.js canvas legend visually; Vibe.UI still exposes the semantic data alternative.</td>
                     </tr>
                     <tr>
                         <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ShowGrid</td>
@@ -160,7 +162,7 @@
                         <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Options</td>
                         <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="ChartOptions" /></td>
                         <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Chart.js configuration options exposed by Vibe.UI.</td>
+                        <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Responsive, tooltip, and animation options exposed by Vibe.UI. Canvas interface colors follow Vibe theme tokens.</td>
                     </tr>
                     <tr>
                         <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">FooterContent</td>
@@ -200,7 +202,9 @@
             <li><code>Title</code> and <code>Description</code> provide <code>aria-labelledby</code> and <code>aria-describedby</code> wiring.</li>
             <li><code>AriaLabel</code> supplies an accessible name when no visible title is present.</li>
             <li>Empty charts show a status message instead of a blank canvas.</li>
-            <li>The custom legend is rendered as a semantic HTML list when enabled.</li>
+            <li>Every rendered chart includes a semantic data summary and table for screen readers.</li>
+            <li>Circular charts expose every slice name and value in the semantic HTML legend.</li>
+            <li>Axes, ticks, tooltips, and legends update from the Vibe theme tokens when the document theme changes.</li>
         </ul>
     </section>
 
@@ -262,8 +266,7 @@
     private string PieChartCode => """
 <Chart Type="ChartType.Pie"
        Data="@pieData"
-       Title="Regional Share"
-       UseBuiltInLegend="true" />
+       Title="Regional Share" />
 
 @code {
     private ChartData pieData = new()

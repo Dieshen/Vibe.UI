@@ -14,7 +14,7 @@
         </div>
         <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Popover</h1>
         <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
-            Displays rich content in a portal, triggered by a button or other element.
+            Displays rich contextual content next to a semantic trigger button.
         </p>
     </header>
 
@@ -25,7 +25,8 @@
             <div class="vibe-flex vibe-justify-center">
                 <Popover>
                     <TriggerContent>
-                        <Button Variant="ButtonVariant.Outline">Open popover</Button>
+                        <span>Open popover</span>
+                        <Icon Name="chevron-down" Size="16" />
                     </TriggerContent>
                     <Content>
                         <div class="vibe-space-y-2">
@@ -64,22 +65,22 @@
             <CodeBlock Code="@PlacementCode" Language="razor" />
         </div>
 
-        <!-- With Arrow -->
+        <!-- Controlled State -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Arrow</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Controlled State</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Toggle the arrow that points to the trigger element.
+                Bind the open state when application logic needs to control the popover.
             </p>
-            <CodeBlock Code="@ArrowCode" Language="razor" />
+            <CodeBlock Code="@ControlledCode" Language="razor" />
         </div>
 
-        <!-- Trigger Types -->
+        <!-- Disabled Trigger -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Trigger Types</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Disabled Trigger</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Choose between click, hover, or focus triggers.
+                Prevent the trigger from opening while preserving its accessible state.
             </p>
-            <CodeBlock Code="@TriggerCode" Language="razor" />
+            <CodeBlock Code="@DisabledCode" Language="razor" />
         </div>
     </section>
 
@@ -102,28 +103,52 @@
                     </thead>
                     <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Placement</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="PopoverPlacement" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Top</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Popover placement (Top, Bottom, Left, Right)</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">TriggerContent</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment?" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Content rendered inside the trigger button</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Trigger</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="PopoverTrigger" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Click</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Trigger type (Click, Hover, Focus)</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Content</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment?" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Interactive popover content</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ShowArrow</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Position</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"bottom"</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Popover side: top, bottom, left, or right</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Align</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"center"</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Popover alignment: start, center, or end</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">IsOpen</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Controlled open state</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">CloseOnClickOutside</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">true</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Show arrow pointing to trigger</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Close when the backdrop is selected</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Offset</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="int" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">8</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Distance from trigger in pixels</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">CloseOnEscape</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">true</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Close when Escape is pressed</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Disabled</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Disable the trigger button</td>
                         </tr>
                     </tbody>
                 </table>
@@ -144,7 +169,7 @@
                     </thead>
                     <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnOpenChanged</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">IsOpenChanged</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<bool>" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when open state changes</td>
                         </tr>
@@ -189,7 +214,7 @@
                 <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                 </svg>
-                Focus management
+                Escape closes from the trigger or interactive content
             </li>
         </ul>
     </section>
@@ -215,56 +240,39 @@
 </div>
 
 @code {
-    private string BasicCode => @"<Popover>
-    <PopoverTrigger>
-        <Button>Click me</Button>
-    </PopoverTrigger>
-    <PopoverContent>
-        <PopoverHeader>Popover Title</PopoverHeader>
-        <PopoverBody>
-            <p>This is the popover content.</p>
-        </PopoverBody>
-    </PopoverContent>
+    private string BasicCode => @"<Popover AriaLabel=""Quick actions"">
+    <TriggerContent>
+        Open popover
+        <Icon Name=""chevron-down"" Size=""16"" />
+    </TriggerContent>
+    <Content>
+        <h4>Quick actions</h4>
+        <p>This is the popover content.</p>
+    </Content>
 </Popover>";
 
-    private string PlacementCode => @"<Popover Placement=""PopoverPlacement.Top"">
-    <PopoverTrigger><Button>Top</Button></PopoverTrigger>
-    <PopoverContent><p>Top placement</p></PopoverContent>
+    private string PlacementCode => @"<Popover Position=""top"" Align=""start"">
+    <TriggerContent>Top start</TriggerContent>
+    <Content><p>Top placement</p></Content>
 </Popover>
 
-<Popover Placement=""PopoverPlacement.Bottom"">
-    <PopoverTrigger><Button>Bottom</Button></PopoverTrigger>
-    <PopoverContent><p>Bottom placement</p></PopoverContent>
-</Popover>
-
-<Popover Placement=""PopoverPlacement.Left"">
-    <PopoverTrigger><Button>Left</Button></PopoverTrigger>
-    <PopoverContent><p>Left placement</p></PopoverContent>
-</Popover>
-
-<Popover Placement=""PopoverPlacement.Right"">
-    <PopoverTrigger><Button>Right</Button></PopoverTrigger>
-    <PopoverContent><p>Right placement</p></PopoverContent>
+<Popover Position=""bottom"" Align=""end"">
+    <TriggerContent>Bottom end</TriggerContent>
+    <Content><p>Bottom placement</p></Content>
 </Popover>";
 
-    private string ArrowCode => @"<Popover ShowArrow=""true"">
-    <PopoverTrigger><Button>With Arrow</Button></PopoverTrigger>
-    <PopoverContent><p>Popover with arrow</p></PopoverContent>
+    private string ControlledCode => @"<Popover @bind-IsOpen=""isOpen"">
+    <TriggerContent>Toggle details</TriggerContent>
+    <Content><p>Controlled popover content.</p></Content>
 </Popover>
 
-<Popover ShowArrow=""false"">
-    <PopoverTrigger><Button>No Arrow</Button></PopoverTrigger>
-    <PopoverContent><p>Popover without arrow</p></PopoverContent>
-</Popover>";
+@code {
+    private bool isOpen;
+}";
 
-    private string TriggerCode => @"<Popover Trigger=""PopoverTrigger.Click"">
-    <PopoverTrigger><Button>Click</Button></PopoverTrigger>
-    <PopoverContent><p>Triggered by click</p></PopoverContent>
-</Popover>
-
-<Popover Trigger=""PopoverTrigger.Hover"">
-    <PopoverTrigger><Button>Hover</Button></PopoverTrigger>
-    <PopoverContent><p>Triggered by hover</p></PopoverContent>
+    private string DisabledCode => @"<Popover Disabled=""true"">
+    <TriggerContent>Unavailable</TriggerContent>
+    <Content><p>This content cannot be opened.</p></Content>
 </Popover>";
 }
 

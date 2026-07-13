@@ -21,20 +21,40 @@
     <!-- Preview -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
-        <div class="vibe-p-6 vibe-rounded-xl vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-800 vibe-bg-white dark:vibe-bg-zinc-900 vibe-space-y-4">
-            <Alert Variant="AlertVariant.Default">
-                This is a default alert providing helpful information.
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-800 vibe-bg-white dark:vibe-bg-zinc-900 vibe-space-y-3">
+            <Alert Variant="AlertVariant.Success" Title="Payment successful">
+                <Icon>
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="16" />
+                </Icon>
+                <ChildContent>
+                    Your payment has been processed and a receipt was sent by email.
+                </ChildContent>
             </Alert>
-            <Alert Variant="AlertVariant.Default" Title="With Title">
-                This alert has a title for additional context.
+            <Alert Variant="AlertVariant.Default" Title="New feature available">
+                <Icon>
+                    <Vibe.UI.Components.Icon Name="info" Size="16" />
+                </Icon>
+                <ChildContent>
+                    Dark mode is now available in your account settings.
+                </ChildContent>
             </Alert>
-            <Alert Variant="AlertVariant.Destructive" Title="Destructive Alert">
-                This is a destructive alert for warnings or errors.
+            <Alert Variant="AlertVariant.Destructive" Title="Deployment failed">
+                <Icon>
+                    <Vibe.UI.Components.Icon Name="alert-circle" Size="16" />
+                </Icon>
+                <ChildContent>
+                    Review the failed checks before trying the deployment again.
+                </ChildContent>
             </Alert>
             @if (showDismissible)
             {
-                <Alert Variant="AlertVariant.Default" Dismissible="true" OnDismiss="@(() => showDismissible = false)" Title="Dismissible">
-                    This alert can be dismissed by clicking the close button.
+                <Alert Variant="AlertVariant.Warning" Dismissible="true" OnDismiss="@(() => showDismissible = false)" Title="Subscription expiring">
+                    <Icon>
+                        <Vibe.UI.Components.Icon Name="alert-circle" Size="16" />
+                    </Icon>
+                    <ChildContent>
+                        Renew within three days to avoid an interruption.
+                    </ChildContent>
                 </Alert>
             }
             else
@@ -55,8 +75,14 @@
                 Use different variants to communicate the type and urgency of the message.
             </p>
             <div class="vibe-space-y-3 vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <Alert Variant="AlertVariant.Default">Default alert for general information.</Alert>
-                <Alert Variant="AlertVariant.Destructive">Destructive alert for errors or warnings.</Alert>
+                <Alert Variant="AlertVariant.Default" Title="Account updated">
+                    <Icon><Vibe.UI.Components.Icon Name="info" Size="16" /></Icon>
+                    <ChildContent>Your profile changes were saved.</ChildContent>
+                </Alert>
+                <Alert Variant="AlertVariant.Destructive" Title="Payment failed">
+                    <Icon><Vibe.UI.Components.Icon Name="alert-circle" Size="16" /></Icon>
+                    <ChildContent>Check your payment method and try again.</ChildContent>
+                </Alert>
             </div>
             <CodeBlock Code="@VariantsCode" Language="razor" />
         </div>
@@ -120,7 +146,7 @@
                         </tr>
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Title</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Optional title displayed above content</td>
                         </tr>
@@ -185,27 +211,19 @@
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
         <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
             <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                 Uses ARIA <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">role="alert"</code> for important messages
             </li>
             <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                 Screen readers announce content automatically
             </li>
             <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                 Dismissible alerts are keyboard accessible
             </li>
             <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                 Color is not the sole indicator (icons included)
             </li>
         </ul>
@@ -226,12 +244,14 @@
 @code {
     private bool showDismissible = true;
 
-    private string VariantsCode => @"<Alert Variant=""AlertVariant.Default"">
-    Default alert for general information.
+    private string VariantsCode => @"<Alert Variant=""AlertVariant.Default"" Title=""Account updated"">
+    <Icon><Vibe.UI.Components.Icon Name=""info"" Size=""16"" /></Icon>
+    <ChildContent>Your profile changes were saved.</ChildContent>
 </Alert>
 
-<Alert Variant=""AlertVariant.Destructive"">
-    Destructive alert for errors or warnings.
+<Alert Variant=""AlertVariant.Destructive"" Title=""Payment failed"">
+    <Icon><Vibe.UI.Components.Icon Name=""alert-circle"" Size=""16"" /></Icon>
+    <ChildContent>Check your payment method and try again.</ChildContent>
 </Alert>";
 
     private string TitleCode => @"<Alert Title=""Heads up!"" Variant=""AlertVariant.Default"">
@@ -249,8 +269,11 @@
     }
 }";
 
-    private string IconCode => @"<Alert Icon=""ℹ️"" Variant=""AlertVariant.Default"">
-    Alert with custom icon.
+    private string IconCode => @"<Alert Title=""Heads up!"" Variant=""AlertVariant.Default"">
+    <Icon>
+        <Vibe.UI.Components.Icon Name=""info"" Size=""16"" />
+    </Icon>
+    <ChildContent>You can add components using the Vibe.UI CLI.</ChildContent>
 </Alert>";
 }
 

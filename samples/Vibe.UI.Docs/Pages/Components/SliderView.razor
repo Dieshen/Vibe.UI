@@ -26,16 +26,13 @@
             <PreviewContent>
                 <div class="vibe-w-full vibe-max-w-md">
                     <Slider Value="@currentValue"
+                            AriaLabel="Preview value"
                             ValueChanged="@((double val) => currentValue = val)"
                             Min="@currentMin"
                             Max="@currentMax"
                             Step="@currentStep"
                             Disabled="@currentDisabled"
                             ShowValue="@currentShowValue" />
-                    @if (currentShowValue)
-                    {
-                        <p class="vibe-mt-2 vibe-text-sm vibe-text-brand-teal">Value: @currentValue.ToString("F1")</p>
-                    }
                 </div>
             </PreviewContent>
         </LivePreview>
@@ -53,8 +50,7 @@
             </p>
             <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
                 <div class="vibe-max-w-md">
-                    <Slider Value="@volume" ValueChanged="@((double val) => volume = val)" ShowValue="true" />
-                    <p class="vibe-mt-2 vibe-text-sm vibe-text-brand-teal">Volume: @volume%</p>
+                    <Slider Label="Volume" Value="@volume" ValueChanged="@((double val) => volume = val)" ShowValue="true" />
                 </div>
             </div>
             <CodeBlock Code="@DefaultCode" Language="razor" />
@@ -68,8 +64,7 @@
             </p>
             <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
                 <div class="vibe-max-w-md">
-                    <Slider Min="0" Max="200" Value="@temperature" ValueChanged="@((double val) => temperature = val)" ShowValue="true" />
-                    <p class="vibe-mt-2 vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400">Temperature: @temperature°F</p>
+                    <Slider Label="Temperature (°F)" Min="0" Max="200" Value="@temperature" ValueChanged="@((double val) => temperature = val)" ShowValue="true" />
                 </div>
             </div>
             <CodeBlock Code="@RangeCode" Language="razor" />
@@ -84,14 +79,10 @@
             <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
                 <div class="vibe-max-w-md vibe-space-y-4">
                     <div>
-                        <label class="vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-2 vibe-block">Step: 10</label>
-                        <Slider Min="0" Max="100" Step="10" Value="@brightness" ValueChanged="@((double val) => brightness = val)" ShowValue="true" />
-                        <p class="vibe-mt-1 vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400">Brightness: @brightness%</p>
+                        <Slider Label="Brightness" Min="0" Max="100" Step="10" Value="@brightness" ValueChanged="@((double val) => brightness = val)" ShowValue="true" />
                     </div>
                     <div>
-                        <label class="vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-2 vibe-block">Step: 0.1</label>
-                        <Slider Min="0" Max="1" Step="0.1" Value="@opacity" ValueChanged="@((double val) => opacity = val)" ShowValue="true" />
-                        <p class="vibe-mt-1 vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400">Opacity: @opacity.ToString("F1")</p>
+                        <Slider Label="Opacity" Min="0" Max="1" Step="0.1" Value="@opacity" ValueChanged="@((double val) => opacity = val)" ShowValue="true" ValueFormat="0.0" />
                     </div>
                 </div>
             </div>
@@ -106,26 +97,12 @@
             </p>
             <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
                 <div class="vibe-max-w-md">
-                    <Slider Value="50" Disabled="true" ShowValue="true" />
+                    <Slider Label="Disabled value" Value="50" Disabled="true" ShowValue="true" />
                 </div>
             </div>
             <CodeBlock Code="@DisabledCode" Language="razor" />
         </div>
 
-        <!-- Vertical Orientation -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Vertical Orientation</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Display the slider vertically for different UI layouts.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-flex vibe-items-center vibe-gap-8">
-                    <Slider Value="@verticalValue" ValueChanged="@((double val) => verticalValue = val)" Orientation="Slider.SliderOrientation.Vertical" ShowValue="true" />
-                    <p class="vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400">Value: @verticalValue</p>
-                </div>
-            </div>
-            <CodeBlock Code="@VerticalCode" Language="razor" />
-        </div>
     </section>
 
     <!-- API Reference -->
@@ -179,14 +156,20 @@
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ShowValue</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">true</td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Whether to display the current value</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Orientation</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="SliderOrientation" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Horizontal</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Slider orientation (Horizontal, Vertical)</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Label</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Visible label associated with the native range input</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">AriaLabel</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Accessible name that takes precedence over Label</td>
                         </tr>
                     </tbody>
                 </table>
@@ -212,9 +195,14 @@
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when value changes</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnChangeCommitted</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<double>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when user finishes adjusting</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnInput</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<ChangeEventArgs>" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Native input event while the value is changing</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnChange</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<ChangeEventArgs>" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Native change event when the adjustment is committed</td>
                         </tr>
                     </tbody>
                 </table>
@@ -237,33 +225,23 @@
         <div class="vibe-prose dark:vibe-prose-invert vibe-max-w-none">
             <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                     Uses semantic <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">&lt;input type="range"&gt;</code> element
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                     Keyboard accessible (Arrow keys to adjust value, Home/End for min/max)
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                     ARIA attributes for current value and range
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                     Focus visible styles for keyboard users
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                     Screen reader announces value changes
                 </li>
             </ul>
@@ -304,7 +282,6 @@
     private double temperature = 98;
     private double brightness = 60;
     private double opacity = 0.8;
-    private double verticalValue = 50;
 
     // PropTweaker props
     private List<PropDefinition> sliderProps = new();
@@ -373,7 +350,7 @@
     {
         get
         {
-            var props = new List<string>();
+            var props = new List<string> { "AriaLabel=\"Preview value\"" };
 
             if (currentValue != 0)
                 props.Add($"Value=\"{currentValue}\"");
@@ -385,47 +362,40 @@
                 props.Add($"Step=\"{currentStep}\"");
             if (currentDisabled)
                 props.Add("Disabled=\"true\"");
-            if (currentShowValue)
-                props.Add("ShowValue=\"true\"");
+            if (!currentShowValue)
+                props.Add("ShowValue=\"false\"");
 
             var propsStr = props.Any() ? " " + string.Join(" ", props) : "";
             return $"<Slider{propsStr} />";
         }
     }
 
-    private string DefaultCode => @"<Slider Value=""@volume"" ValueChanged=""@((double val) => volume = val)"" ShowValue=""true"" />
-<p>Volume: @volume%</p>
+    private string DefaultCode => @"<Slider Label=""Volume""
+        Value=""@volume""
+        ValueChanged=""@((double val) => volume = val)"" />
 
 @code {
     private double volume = 75;
 }";
 
-    private string RangeCode => @"<Slider Min=""0"" Max=""200"" Value=""@temperature"" ValueChanged=""@((double val) => temperature = val)"" />
+    private string RangeCode => @"<Slider Label=""Temperature (°F)"" Min=""0"" Max=""200"" Value=""@temperature"" ValueChanged=""@((double val) => temperature = val)"" />
 
-<Slider Min=""-50"" Max=""50"" Value=""0"" />
+<Slider AriaLabel=""Offset"" Min=""-50"" Max=""50"" Value=""0"" />
 
 @code {
     private double temperature = 98;
 }";
 
-    private string StepCode => @"<Slider Step=""10"" Value=""@brightness"" ValueChanged=""@((double val) => brightness = val)"" />
+    private string StepCode => @"<Slider Label=""Brightness"" Step=""10"" Value=""@brightness"" ValueChanged=""@((double val) => brightness = val)"" />
 
-<Slider Step=""0.1"" Min=""0"" Max=""1"" Value=""@opacity"" ValueChanged=""@((double val) => opacity = val)"" />
+<Slider Label=""Opacity"" Step=""0.1"" Min=""0"" Max=""1"" Value=""@opacity"" ValueChanged=""@((double val) => opacity = val)"" ValueFormat=""0.0"" />
 
 @code {
     private double brightness = 60;
     private double opacity = 0.8;
 }";
 
-    private string DisabledCode => @"<Slider Value=""50"" Disabled=""true"" />";
-
-    private string VerticalCode => @"<Slider Value=""@value""
-        ValueChanged=""@((double val) => value = val)""
-        Orientation=""Slider.SliderOrientation.Vertical"" />
-
-@code {
-    private double value = 50;
-}";
+    private string DisabledCode => @"<Slider Label=""Disabled value"" Value=""50"" Disabled=""true"" />";
 }
 
 

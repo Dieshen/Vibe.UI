@@ -40,12 +40,16 @@
           AfterTargets="Build"
           Condition="'$(VibeCssEnabled)' == 'true'">
     <Message Importance="high" Text="Vibe.UI.CSS: Generating docs CSS -> $(VibeCssOutput)" />
-    <!-- Restore/build Vibe.UI.CSS if needed, then run the built assembly to avoid `dotnet run` locking issues during parallel builds. -->
+    <!-- Keep the local generator current, then run its assembly to avoid `dotnet run` locking issues. -->
     <MSBuild Projects="$(_VibeCssProjectPath)"
-             Targets="Restore;Build"
+             Targets="Restore"
              Properties="Configuration=$(Configuration);UseSharedCompilation=false"
              BuildInParallel="false"
-             Condition="!Exists('$(_VibeCssAssemblyPath)') Or !Exists('$(_VibeCssAssetsPath)')" />
+             Condition="!Exists('$(_VibeCssAssetsPath)')" />
+    <MSBuild Projects="$(_VibeCssProjectPath)"
+             Targets="Build"
+             Properties="Configuration=$(Configuration);UseSharedCompilation=false"
+             BuildInParallel="false" />
     <Exec Command="$(DotNetExe) exec &quot;$(_VibeCssAssemblyPath)&quot; generate &quot;$(VibeCssScanRoot)&quot; -o &quot;$(VibeCssOutput)&quot; --prefix &quot;$(VibeCssPrefix)&quot; --allow-unprefixed &quot;$(VibeCssAllowUnprefixed)&quot; --with-base &quot;$(VibeCssIncludeBase)&quot; --patterns=&quot;$(VibeCssScanPatterns)&quot;" />
   </Target>
 

@@ -22,7 +22,7 @@
     <!-- Preview -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
-        <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
             <Table Striped="true" Hover="true">
                 <HeaderContent>
                     <tr>
@@ -66,16 +66,16 @@
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
                 A simple table with headers and data rows.
             </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
+            <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
                 <Table>
-                    <thead>
+                    <HeaderContent>
                         <tr>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Role</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                    </HeaderContent>
+                    <ChildContent>
                         <tr>
                             <td>John Doe</td>
                             <td>john@example.com</td>
@@ -86,7 +86,7 @@
                             <td>jane@example.com</td>
                             <td>User</td>
                         </tr>
-                    </tbody>
+                    </ChildContent>
                 </Table>
             </div>
             <CodeBlock Code="@BasicCode" Language="razor" />
@@ -98,16 +98,16 @@
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
                 Alternate row background colors for better readability.
             </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
+            <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
                 <Table Striped="true">
-                    <thead>
+                    <HeaderContent>
                         <tr>
                             <th>Product</th>
                             <th>Price</th>
                             <th>Stock</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                    </HeaderContent>
+                    <ChildContent>
                         <tr>
                             <td>Widget A</td>
                             <td>$19.99</td>
@@ -123,7 +123,7 @@
                             <td>$39.99</td>
                             <td>20</td>
                         </tr>
-                    </tbody>
+                    </ChildContent>
                 </Table>
             </div>
             <CodeBlock Code="@StripedCode" Language="razor" />
@@ -135,16 +135,16 @@
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
                 Add borders to all cells for clear separation.
             </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
+            <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
                 <Table Bordered="true">
-                    <thead>
+                    <HeaderContent>
                         <tr>
                             <th>Column 1</th>
                             <th>Column 2</th>
                             <th>Column 3</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                    </HeaderContent>
+                    <ChildContent>
                         <tr>
                             <td>Data 1</td>
                             <td>Data 2</td>
@@ -155,7 +155,7 @@
                             <td>Data 5</td>
                             <td>Data 6</td>
                         </tr>
-                    </tbody>
+                    </ChildContent>
                 </Table>
             </div>
             <CodeBlock Code="@BorderedCode" Language="razor" />
@@ -167,16 +167,16 @@
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
                 Reduce padding for more condensed data display.
             </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <Table Size="TableSize.Compact">
-                    <thead>
+            <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
+                <Table Compact="true">
+                    <HeaderContent>
                         <tr>
                             <th>Compact</th>
                             <th>Table</th>
                             <th>Display</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                    </HeaderContent>
+                    <ChildContent>
                         <tr>
                             <td>Less</td>
                             <td>Padding</td>
@@ -187,7 +187,7 @@
                             <td>Rows</td>
                             <td>Visible</td>
                         </tr>
-                    </tbody>
+                    </ChildContent>
                 </Table>
             </div>
             <CodeBlock Code="@CompactCode" Language="razor" />
@@ -199,15 +199,15 @@
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
                 Add a caption to describe the table content.
             </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
+            <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
                 <Table Caption="User Information">
-                    <thead>
+                    <HeaderContent>
                         <tr>
                             <th>Name</th>
                             <th>Status</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                    </HeaderContent>
+                    <ChildContent>
                         <tr>
                             <td>User 1</td>
                             <td>Active</td>
@@ -216,7 +216,7 @@
                             <td>User 2</td>
                             <td>Inactive</td>
                         </tr>
-                    </tbody>
+                    </ChildContent>
                 </Table>
             </div>
             <CodeBlock Code="@CaptionCode" Language="razor" />
@@ -254,16 +254,16 @@
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Add borders to all cells</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Hoverable</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Hover</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Highlight row on hover</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Size</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="TableSize" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Default</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Table size (Compact, Default, Comfortable)</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Compact</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Use denser cell padding</td>
                         </tr>
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Caption</td>
@@ -275,7 +275,7 @@
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ChildContent</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Table content (thead, tbody, tfoot)</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Body rows rendered inside <code>tbody</code></td>
                         </tr>
                     </tbody>
                 </table>
@@ -298,34 +298,20 @@
         <div class="vibe-prose dark:vibe-prose-invert vibe-max-w-none">
             <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Semantic <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">&lt;table&gt;</code> structure
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
+                    Renders native <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">table</code>, <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">thead</code>, and <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">tbody</code> elements
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Proper use of thead, tbody, and th elements
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
+                    <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">Caption</code> provides a visible name; use <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">AriaLabel</code> when no caption is shown
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Caption provides table description
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
+                    Add <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">scope</code> attributes in <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">HeaderContent</code> for complex row or column headers
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Scope attributes on headers
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Keyboard navigation support
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
+                    Narrow layouts preserve complete cell content with horizontal scrolling instead of collapsing columns
                 </li>
             </ul>
         </div>
@@ -349,14 +335,14 @@
 
 @code {
     private string BasicCode => @"<Table>
-    <thead>
+    <HeaderContent>
         <tr>
             <th>Name</th>
             <th>Email</th>
             <th>Role</th>
         </tr>
-    </thead>
-    <tbody>
+    </HeaderContent>
+    <ChildContent>
         <tr>
             <td>John Doe</td>
             <td>john@example.com</td>
@@ -367,18 +353,18 @@
             <td>jane@example.com</td>
             <td>User</td>
         </tr>
-    </tbody>
+    </ChildContent>
 </Table>";
 
     private string StripedCode => @"<Table Striped=""true"">
-    <thead>
+    <HeaderContent>
         <tr>
             <th>Product</th>
             <th>Price</th>
             <th>Stock</th>
         </tr>
-    </thead>
-    <tbody>
+    </HeaderContent>
+    <ChildContent>
         <tr>
             <td>Widget A</td>
             <td>$19.99</td>
@@ -389,52 +375,52 @@
             <td>$29.99</td>
             <td>30</td>
         </tr>
-    </tbody>
+    </ChildContent>
 </Table>";
 
     private string BorderedCode => @"<Table Bordered=""true"">
-    <thead>
+    <HeaderContent>
         <tr>
             <th>Column 1</th>
             <th>Column 2</th>
         </tr>
-    </thead>
-    <tbody>
+    </HeaderContent>
+    <ChildContent>
         <tr>
             <td>Data 1</td>
             <td>Data 2</td>
         </tr>
-    </tbody>
+    </ChildContent>
 </Table>";
 
-    private string CompactCode => @"<Table Size=""TableSize.Compact"">
-    <thead>
+    private string CompactCode => @"<Table Compact=""true"">
+    <HeaderContent>
         <tr>
             <th>Compact</th>
             <th>Table</th>
         </tr>
-    </thead>
-    <tbody>
+    </HeaderContent>
+    <ChildContent>
         <tr>
             <td>Less</td>
             <td>Padding</td>
         </tr>
-    </tbody>
+    </ChildContent>
 </Table>";
 
     private string CaptionCode => @"<Table Caption=""User Information"">
-    <thead>
+    <HeaderContent>
         <tr>
             <th>Name</th>
             <th>Status</th>
         </tr>
-    </thead>
-    <tbody>
+    </HeaderContent>
+    <ChildContent>
         <tr>
             <td>User 1</td>
             <td>Active</td>
         </tr>
-    </tbody>
+    </ChildContent>
 </Table>";
 }
 

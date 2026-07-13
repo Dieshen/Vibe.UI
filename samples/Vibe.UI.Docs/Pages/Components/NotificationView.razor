@@ -1,135 +1,160 @@
 @page "/components/notification"
 
-<PageTitle>Notification - Vibe.UI</PageTitle>
+<PageTitle>Notification Center - Vibe.UI</PageTitle>
 
 <div class="vibe-max-w-4xl vibe-mx-auto">
-    <!-- Header -->
     <header class="vibe-mb-8">
         <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
             <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
             <span>/</span>
             <a href="components" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Components</a>
             <span>/</span>
-            <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Notification</span>
+            <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Notification Center</span>
         </div>
-        <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Notification</h1>
+        <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Notification Center</h1>
         <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
-            Displays a brief message that slides in and automatically dismisses.
+            A bell-triggered inbox for filtering, reading, and clearing persistent notifications.
         </p>
     </header>
 
-    <!-- Preview -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
         <div class="vibe-p-6 vibe-rounded-xl vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-800 vibe-bg-white dark:vibe-bg-zinc-900">
-            <div class="vibe-flex vibe-justify-center">
-                <p class="vibe-text-zinc-500 dark:vibe-text-zinc-400">Component preview will be shown here when installed.</p>
+            <div class="vibe-flex vibe-items-center vibe-justify-center vibe-gap-3 vibe-flex-wrap">
+                <NotificationCenter Notifications="@notifications"
+                                    NotificationsChanged="@HandleNotificationsChanged"
+                                    OnNotificationClicked="@HandleNotificationClicked"
+                                    OnViewAll="@HandleViewAll"
+                                    MaxDisplayCount="4" />
+                <Button Size="ComponentSize.Small" OnClick="@AddNotification">Add notification</Button>
+                <Button Variant="ButtonVariant.Outline" Size="ComponentSize.Small" OnClick="@ResetNotifications">Reset</Button>
             </div>
+            @if (!string.IsNullOrWhiteSpace(activityMessage))
+            {
+                <p class="vibe-mt-4 vibe-text-center vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400" role="status">
+                    @activityMessage
+                </p>
+            }
         </div>
     </section>
 
-    <!-- Examples Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
 
-        <!-- Basic Usage -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Basic Usage</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Notification Data</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Show a notification programmatically using the notification service.
+                Supply a list of typed notification items with stable IDs and timestamps.
             </p>
             <CodeBlock Code="@BasicCode" Language="razor" />
         </div>
 
-        <!-- With Actions -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Actions</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Persisting Changes</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Add interactive actions to notifications for user engagement.
+                Handle list updates when users mark, remove, or clear notifications.
             </p>
-            <CodeBlock Code="@ActionsCode" Language="razor" />
+            <CodeBlock Code="@UpdatesCode" Language="razor" />
         </div>
 
-        <!-- Positions -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Positions</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Read-only Inbox</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Control where notifications appear on the screen.
+                Keep filtering and item selection available while preventing list mutations.
             </p>
-            <CodeBlock Code="@PositionsCode" Language="razor" />
+            <CodeBlock Code="@ReadOnlyCode" Language="razor" />
         </div>
     </section>
 
-    <!-- API Reference -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
 
-        <!-- Properties -->
         <div class="vibe-mb-8">
             <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Properties</h3>
             <div class="vibe-overflow-x-auto">
                 <table class="vibe-w-full vibe-text-sm">
                     <thead>
                         <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Default</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Default</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th>
                         </tr>
                     </thead>
                     <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Title</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Notification title</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">Notifications</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="List&lt;NotificationItem&gt;?" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">empty</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Notification source list</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Message</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Notification message</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">ShowFilters</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">true</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Show filter controls</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Variant</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="NotificationVariant" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Info</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Visual style (Info, Success, Warning, Error)</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">Filters</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="List&lt;string&gt;?" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">All and types</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Available filter labels</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Duration</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">MaxDisplayCount</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="int" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">5000</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Auto-dismiss duration (ms)</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">5</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Maximum visible items before View all</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Position</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="NotificationPosition" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">TopRight</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Screen position (TopRight, TopLeft, BottomRight, BottomLeft)</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">AllowClearAll</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">true</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Show the Clear all command</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">ReadOnly</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Prevent mutation commands</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">Disabled</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Disable the notification trigger</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Events -->
         <div class="vibe-mb-8">
             <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Events</h3>
             <div class="vibe-overflow-x-auto">
                 <table class="vibe-w-full vibe-text-sm">
                     <thead>
                         <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th>
                         </tr>
                     </thead>
                     <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnClose</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">NotificationsChanged</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback&lt;List&lt;NotificationItem&gt;&gt;" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">List mutation callback</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">OnNotificationClicked</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback&lt;NotificationItem&gt;" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Item selection callback</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">OnViewAll</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when notification closes</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">View all callback</td>
                         </tr>
                     </tbody>
                 </table>
@@ -137,44 +162,27 @@
         </div>
     </section>
 
-    <!-- Installation -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
         <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-            Install the Notification component using the Vibe.UI CLI:
+            Install NotificationCenter and its dependencies with the Vibe.UI CLI:
         </p>
-        <CodeBlock Code="vibe add notification" Language="bash" />
+        <CodeBlock Code="vibe add notificationcenter" Language="bash" />
     </section>
 
-    <!-- Accessibility -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
         <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
-            <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
-                ARIA <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">live region</code> for announcements
-            </li>
-            <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
-                Keyboard accessible close button
-            </li>
-            <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
-                Respects <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">prefers-reduced-motion</code>
-            </li>
+            <li>Native trigger button exposes expanded and controlled-panel state.</li>
+            <li>Unread-count changes are announced through a polite live region.</li>
+            <li>The panel uses dialog, list, and listitem semantics.</li>
+            <li>Escape and outside selection close the panel.</li>
         </ul>
     </section>
 
-    <!-- Related Components -->
     <section>
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Related</h2>
-        <div class="vibe-grid vibe-grid-cols-1 sm:vibe-grid-cols-3 vibe-gap-4">
+        <div class="vibe-grid vibe-grid-cols-1 sm:vibe-grid-cols-2 vibe-gap-4">
             <a href="components/toast" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
                 <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Toast</h4>
                 <p class="vibe-text-sm vibe-text-zinc-500">Temporary feedback messages</p>
@@ -183,35 +191,131 @@
                 <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Alert</h4>
                 <p class="vibe-text-sm vibe-text-zinc-500">Important static messages</p>
             </a>
-            </div>
+        </div>
     </section>
 </div>
 
 @code {
-    private string BasicCode => @"<Button OnClick=""@ShowNotification"">Show Notification</Button>
+    private List<NotificationCenter.NotificationItem> notifications = CreateInitialNotifications();
+    private string activityMessage = string.Empty;
+    private int nextNotificationId = 5;
+
+    private void HandleNotificationsChanged(List<NotificationCenter.NotificationItem> updatedNotifications)
+    {
+        notifications = updatedNotifications;
+        activityMessage = $"Inbox updated: {notifications.Count} notifications remain.";
+    }
+
+    private void HandleNotificationClicked(NotificationCenter.NotificationItem notification)
+    {
+        activityMessage = $"Opened {notification.Title}.";
+    }
+
+    private void HandleViewAll()
+    {
+        activityMessage = "View all selected.";
+    }
+
+    private void AddNotification()
+    {
+        notifications =
+        [
+            new NotificationCenter.NotificationItem
+            {
+                Id = $"notification-{nextNotificationId++}",
+                Title = "New deployment ready",
+                Message = "Version 1.4.0 is ready for review.",
+                Type = NotificationCenter.NotificationType.Info,
+                Timestamp = DateTime.Now,
+                IsRead = false
+            },
+            .. notifications
+        ];
+        activityMessage = "Added a new unread notification.";
+    }
+
+    private void ResetNotifications()
+    {
+        notifications = CreateInitialNotifications();
+        nextNotificationId = 5;
+        activityMessage = "Notification preview reset.";
+    }
+
+    private static List<NotificationCenter.NotificationItem> CreateInitialNotifications()
+    {
+        var now = DateTime.Now;
+        return
+        [
+            new()
+            {
+                Id = "notification-1",
+                Title = "Build completed",
+                Message = "The release build passed all checks.",
+                Type = NotificationCenter.NotificationType.Success,
+                Timestamp = now.AddMinutes(-4),
+                IsRead = false
+            },
+            new()
+            {
+                Id = "notification-2",
+                Title = "Review requested",
+                Message = "Maya requested your review on the checkout flow.",
+                Type = NotificationCenter.NotificationType.Info,
+                Timestamp = now.AddMinutes(-18),
+                IsRead = false
+            },
+            new()
+            {
+                Id = "notification-3",
+                Title = "Usage threshold",
+                Message = "API usage reached 80% of the monthly limit.",
+                Type = NotificationCenter.NotificationType.Warning,
+                Timestamp = now.AddHours(-2),
+                IsRead = true
+            },
+            new()
+            {
+                Id = "notification-4",
+                Title = "Payment failed",
+                Message = "Update the billing method for the staging workspace.",
+                Type = NotificationCenter.NotificationType.Error,
+                Timestamp = now.AddDays(-1),
+                IsRead = true
+            }
+        ];
+    }
+
+    private string BasicCode => @"<NotificationCenter Notifications=""@notifications"" />
 
 @code {
-    private void ShowNotification()
+    private List<NotificationCenter.NotificationItem> notifications =
+    [
+        new()
+        {
+            Id = ""build-complete"",
+            Title = ""Build completed"",
+            Message = ""The release build passed all checks."",
+            Type = NotificationCenter.NotificationType.Success,
+            Timestamp = DateTime.Now,
+            IsRead = false
+        }
+    ];
+}";
+
+    private string UpdatesCode => @"<NotificationCenter Notifications=""@notifications""
+                    NotificationsChanged=""@HandleNotificationsChanged"" />
+
+@code {
+    private void HandleNotificationsChanged(
+        List<NotificationCenter.NotificationItem> updated)
     {
-        NotificationService.Show(""Success"", ""Operation completed successfully!"");
+        notifications = updated;
+        NotificationStore.Save(updated);
     }
 }";
 
-    private string ActionsCode => @"NotificationService.Show(new NotificationOptions
-{
-    Title = ""New Message"",
-    Message = ""You have a new message from John"",
-    Actions = new[]
-    {
-        new NotificationAction { Label = ""View"", OnClick = () => NavigateToMessage() },
-        new NotificationAction { Label = ""Dismiss"" }
-    }
-});";
-
-    private string PositionsCode => @"NotificationService.Show(""Top Right"", position: NotificationPosition.TopRight);
-NotificationService.Show(""Top Left"", position: NotificationPosition.TopLeft);
-NotificationService.Show(""Bottom Right"", position: NotificationPosition.BottomRight);
-NotificationService.Show(""Bottom Left"", position: NotificationPosition.BottomLeft);";
+    private string ReadOnlyCode => @"<NotificationCenter Notifications=""@notifications""
+                    Filters=""@(new List<string> { ""All"", ""Unread"", ""Warning"" })""
+                    ReadOnly=""true""
+                    AllowClearAll=""false"" />";
 }
-
-

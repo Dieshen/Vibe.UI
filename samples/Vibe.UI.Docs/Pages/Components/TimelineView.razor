@@ -1,0 +1,105 @@
+@page "/components/timeline"
+@using Vibe.UI.Components
+
+<PageTitle>Timeline - Vibe.UI</PageTitle>
+
+<div class="vibe-max-w-4xl vibe-mx-auto">
+    <header class="vibe-mb-8">
+        <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
+            <a href="./">Docs</a><span>/</span><a href="components">Components</a><span>/</span>
+            <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Timeline</span>
+        </div>
+        <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Timeline</h1>
+        <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            Show ordered events on a left, right, or alternating rail with explicit status and time metadata.
+        </p>
+    </header>
+
+    <section class="vibe-mb-12">
+        <div class="vibe-flex vibe-flex-wrap vibe-items-center vibe-justify-between vibe-gap-3 vibe-mb-4">
+            <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100">Preview</h2>
+            <div class="vibe-flex vibe-flex-wrap vibe-gap-2" role="group" aria-label="Timeline position">
+                <Button OnClick="@(() => position = Timeline.TimelinePosition.Left)">Left</Button>
+                <Button OnClick="@(() => position = Timeline.TimelinePosition.Alternate)">Alternate</Button>
+                <Button OnClick="@(() => position = Timeline.TimelinePosition.Right)">Right</Button>
+            </div>
+        </div>
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+            <Timeline Items="@items" Position="@position" AriaLabel="Beta release history" />
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Example</h2>
+        <CodeBlock Code="@BasicCode" Language="razor" />
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
+        <div class="vibe-overflow-x-auto">
+            <table class="vibe-w-full vibe-text-sm">
+                <thead><tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th>
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th>
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Default</th>
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th>
+                </tr></thead>
+                <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+                    @foreach (var property in Properties)
+                    {
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">@property.Name</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@property.Type" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@property.Default</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@property.Description</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
+        <CodeBlock Code="vibe add timeline" Language="bash" />
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
+        <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            <li class="vibe-flex vibe-items-start vibe-gap-2"><Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />Renders list and listitem semantics</li>
+            <li class="vibe-flex vibe-items-start vibe-gap-2"><Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />Shows status as text as well as color</li>
+            <li class="vibe-flex vibe-items-start vibe-gap-2"><Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />Uses semantic time elements with machine-readable timestamps</li>
+            <li class="vibe-flex vibe-items-start vibe-gap-2"><Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />Collapses every position to a one-sided mobile rail</li>
+        </ul>
+    </section>
+</div>
+
+@code {
+    private Timeline.TimelinePosition position = Timeline.TimelinePosition.Alternate;
+
+    private readonly List<Timeline.TimelineItem> items =
+    [
+        new() { Title = "Scope approved", Description = "Component contracts and compatibility targets locked.", Status = Timeline.TimelineStatus.Info, Timestamp = DateTime.Now.AddDays(-3) },
+        new() { Title = "Visual contracts passing", Description = "Mobile, desktop, light, and dark states verified.", Status = Timeline.TimelineStatus.Success, Timestamp = DateTime.Now.AddDays(-1) },
+        new() { Title = "Beta candidate", Description = "Package and hosted compatibility gates are running.", Status = Timeline.TimelineStatus.Warning, Timestamp = DateTime.Now.AddHours(-2) }
+    ];
+
+    private static readonly (string Name, string Type, string Default, string Description)[] Properties =
+    [
+        ("Items", "List<TimelineItem>?", "null", "Ordered events to render"),
+        ("Position", "TimelinePosition", "Left", "Left, Right, or Alternate rail layout"),
+        ("CssClass", "string?", "null", "Additional timeline class"),
+        ("AriaLabel", "string?", "null", "Accessible list name")
+    ];
+
+    private string BasicCode => @"<Timeline Items=""events"" Position=""Timeline.TimelinePosition.Alternate"" AriaLabel=""Release history"" />
+
+@code {
+    private List<Timeline.TimelineItem> events =
+    [
+        new() { Title = ""Built"", Status = Timeline.TimelineStatus.Info },
+        new() { Title = ""Released"", Status = Timeline.TimelineStatus.Success }
+    ];
+}";
+}

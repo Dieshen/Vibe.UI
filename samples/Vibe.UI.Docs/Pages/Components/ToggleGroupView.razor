@@ -1,0 +1,220 @@
+@page "/components/togglegroup"
+
+<PageTitle>Toggle Group - Vibe.UI</PageTitle>
+
+<div class="vibe-max-w-4xl vibe-mx-auto">
+    <header class="vibe-mb-8">
+        <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
+            <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
+            <span>/</span>
+            <a href="components" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Components</a>
+            <span>/</span>
+            <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Toggle Group</span>
+        </div>
+        <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Toggle Group</h1>
+        <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            A compact set of two-state buttons for choosing one or several options.
+        </p>
+    </header>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+            <ToggleGroup Type="ToggleGroup.ToggleGroupType.Single"
+                         @bind-Value="alignment"
+                         AriaLabel="Text alignment">
+                <ToggleGroupItem Value="left">Left</ToggleGroupItem>
+                <ToggleGroupItem Value="center">Center</ToggleGroupItem>
+                <ToggleGroupItem Value="right">Right</ToggleGroupItem>
+                <ToggleGroupItem Value="justify">Justify</ToggleGroupItem>
+            </ToggleGroup>
+            <output class="vibe-block vibe-mt-3 vibe-text-sm vibe-text-zinc-500">Alignment: @(alignment ?? "None")</output>
+        </div>
+        <div class="vibe-mt-4">
+            <CodeBlock Code="@SingleCode" Language="razor" />
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
+
+        <div class="vibe-mb-8">
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Multiple selection</h3>
+            <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
+                <ToggleGroup Type="ToggleGroup.ToggleGroupType.Multiple"
+                             @bind-Values="formats"
+                             AriaLabel="Text formatting">
+                    <ToggleGroupItem Value="bold">Bold</ToggleGroupItem>
+                    <ToggleGroupItem Value="italic">Italic</ToggleGroupItem>
+                    <ToggleGroupItem Value="underline">Underline</ToggleGroupItem>
+                    <ToggleGroupItem Value="strike">Strikethrough</ToggleGroupItem>
+                    <ToggleGroupItem Value="code">Code</ToggleGroupItem>
+                </ToggleGroup>
+                <output class="vibe-block vibe-mt-3 vibe-text-sm vibe-text-zinc-500">Active: @(formats.Count == 0 ? "None" : string.Join(", ", formats))</output>
+            </div>
+            <CodeBlock Code="@MultipleCode" Language="razor" />
+        </div>
+
+        <div class="vibe-mb-8">
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Vertical orientation</h3>
+            <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
+                <ToggleGroup Orientation="ToggleGroup.ToggleGroupOrientation.Vertical"
+                             Value="comfortable"
+                             AriaLabel="Display density">
+                    <ToggleGroupItem Value="compact">Compact</ToggleGroupItem>
+                    <ToggleGroupItem Value="comfortable">Comfortable</ToggleGroupItem>
+                    <ToggleGroupItem Value="spacious" Disabled="true">Spacious</ToggleGroupItem>
+                </ToggleGroup>
+            </div>
+            <CodeBlock Code="@VerticalCode" Language="razor" />
+        </div>
+
+        <div>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Sizes</h3>
+            <div class="vibe-flex vibe-flex-col vibe-items-start vibe-gap-4 vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                @foreach (var size in Sizes)
+                {
+                    <ToggleGroup Size="size" Value="week" AriaLabel="@($"{size} calendar range")">
+                        <ToggleGroupItem Value="day">Day</ToggleGroupItem>
+                        <ToggleGroupItem Value="week">Week</ToggleGroupItem>
+                        <ToggleGroupItem Value="month">Month</ToggleGroupItem>
+                    </ToggleGroup>
+                }
+            </div>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">ToggleGroup API</h2>
+        <div class="vibe-overflow-x-auto">
+            <table class="vibe-w-full vibe-text-sm">
+                <thead>
+                    <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Default</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th>
+                    </tr>
+                </thead>
+                <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+                    @foreach (var property in GroupProperties)
+                    {
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">@property.Name</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@property.Type" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@property.Default</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@property.Description</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">ToggleGroupItem API</h2>
+        <div class="vibe-overflow-x-auto">
+            <table class="vibe-w-full vibe-text-sm">
+                <thead>
+                    <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Default</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th>
+                    </tr>
+                </thead>
+                <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+                    @foreach (var property in ItemProperties)
+                    {
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">@property.Name</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@property.Type" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@property.Default</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@property.Description</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
+        <CodeBlock Code="vibe add togglegroup" Language="bash" />
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
+        <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            <li>Each item exposes its state through <code>aria-pressed</code>.</li>
+            <li>Only one enabled item is in the tab order at a time.</li>
+            <li>Arrow keys follow the configured orientation and wrap between enabled items.</li>
+            <li>Home and End move focus to the first and last enabled items.</li>
+        </ul>
+    </section>
+</div>
+
+@code {
+    private string? alignment = "left";
+    private List<string> formats = ["bold"];
+
+    private static readonly ToggleGroup.ToggleGroupSize[] Sizes =
+    [
+        ToggleGroup.ToggleGroupSize.Small,
+        ToggleGroup.ToggleGroupSize.Default,
+        ToggleGroup.ToggleGroupSize.Large
+    ];
+
+    private static readonly (string Name, string Type, string Default, string Description)[] GroupProperties =
+    [
+        ("ChildContent", "RenderFragment?", "null", "ToggleGroupItem content"),
+        ("Type", "ToggleGroupType", "Single", "Single or Multiple selection behavior"),
+        ("Value", "string?", "null", "Selected value in Single mode; supports @bind-Value"),
+        ("Values", "List<string>", "empty", "Selected values in Multiple mode; supports @bind-Values"),
+        ("ValueChanged", "EventCallback<string?>", "-", "Raised when the Single value changes"),
+        ("ValuesChanged", "EventCallback<List<string>>", "-", "Raised with a new list when Multiple values change"),
+        ("Disabled", "bool", "false", "Disables every item"),
+        ("Orientation", "ToggleGroupOrientation", "Horizontal", "Horizontal or Vertical keyboard axis"),
+        ("Size", "ToggleGroupSize", "Default", "Small, Default, or Large target size"),
+        ("AriaLabel", "string?", "null", "Accessible name for the group"),
+        ("CssClass", "string?", "null", "Additional group CSS class")
+    ];
+
+    private static readonly (string Name, string Type, string Default, string Description)[] ItemProperties =
+    [
+        ("ChildContent", "RenderFragment?", "null", "Visible item content"),
+        ("Value", "string", "empty", "Value used by the parent selection model"),
+        ("Disabled", "bool", "false", "Disables this item"),
+        ("CssClass", "string?", "null", "Additional item CSS class")
+    ];
+
+    private const string SingleCode = """
+        <ToggleGroup Type="ToggleGroup.ToggleGroupType.Single"
+                     @bind-Value="alignment"
+                     AriaLabel="Text alignment">
+            <ToggleGroupItem Value="left">Left</ToggleGroupItem>
+            <ToggleGroupItem Value="center">Center</ToggleGroupItem>
+            <ToggleGroupItem Value="right">Right</ToggleGroupItem>
+        </ToggleGroup>
+        """;
+
+    private const string MultipleCode = """
+        <ToggleGroup Type="ToggleGroup.ToggleGroupType.Multiple"
+                     @bind-Values="formats"
+                     AriaLabel="Text formatting">
+            <ToggleGroupItem Value="bold">Bold</ToggleGroupItem>
+            <ToggleGroupItem Value="italic">Italic</ToggleGroupItem>
+            <ToggleGroupItem Value="underline">Underline</ToggleGroupItem>
+        </ToggleGroup>
+        """;
+
+    private const string VerticalCode = """
+        <ToggleGroup Orientation="ToggleGroup.ToggleGroupOrientation.Vertical"
+                     Value="comfortable"
+                     AriaLabel="Display density">
+            <ToggleGroupItem Value="compact">Compact</ToggleGroupItem>
+            <ToggleGroupItem Value="comfortable">Comfortable</ToggleGroupItem>
+            <ToggleGroupItem Value="spacious" Disabled="true">Spacious</ToggleGroupItem>
+        </ToggleGroup>
+        """;
+}

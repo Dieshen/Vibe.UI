@@ -3,7 +3,6 @@
 <PageTitle>DragDrop - Vibe.UI</PageTitle>
 
 <div class="vibe-max-w-4xl vibe-mx-auto">
-    <!-- Header -->
     <header class="vibe-mb-8">
         <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
             <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
@@ -14,164 +13,162 @@
         </div>
         <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">DragDrop</h1>
         <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
-            A container component that enables drag and drop functionality for reordering items or moving content between containers.
+            An accessible reorderable list with native drag handles and keyboard movement.
         </p>
     </header>
 
-    <!-- Preview Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
-        <div class="vibe-p-8 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
-            <div class="vibe-p-4 vibe-bg-blue-50 dark:vibe-bg-blue-900/20 vibe-border vibe-border-blue-200 dark:vibe-border-blue-800 vibe-rounded-lg">
-                <p class="vibe-text-sm vibe-text-blue-800 dark:vibe-text-blue-200">
-                    <strong>Note:</strong> DragDrop component not found in Advanced folder.
-                    This component may need to be implemented or is located elsewhere in the codebase.
-                </p>
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-rounded-xl vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-800 vibe-bg-white dark:vibe-bg-zinc-900">
+            <div class="vibe-flex vibe-items-center vibe-justify-between vibe-gap-3 vibe-mb-4">
+                <div>
+                    <h3 class="vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100">Release checklist</h3>
+                    <p class="vibe-text-sm vibe-text-zinc-500">Drag a handle or use Alt+Arrow Up/Down.</p>
+                </div>
+                <Button Variant="ButtonVariant.Outline" Size="ComponentSize.Small" OnClick="@ResetTasks">Reset</Button>
             </div>
+
+            <DragDrop TItem="ReleaseTask"
+                      Items="@tasks"
+                      ItemsChanged="@HandleTasksChanged"
+                      ItemLabel="@(task => task.Title)"
+                      IsItemDisabled="@(task => task.Locked)"
+                      AriaLabel="Release checklist order">
+                <ItemTemplate Context="task">
+                    <div class="vibe-flex vibe-items-center vibe-justify-between vibe-gap-3">
+                        <div class="vibe-min-w-0">
+                            <p class="vibe-font-medium vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">@task.Title</p>
+                            <p class="vibe-text-xs vibe-text-zinc-500">@task.Owner | @task.Status</p>
+                        </div>
+                        @if (task.Locked)
+                        {
+                            <span class="vibe-shrink-0 vibe-text-xs vibe-font-medium vibe-px-2 vibe-py-1 vibe-rounded vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-text-zinc-600 dark:vibe-text-zinc-300">
+                                Locked
+                            </span>
+                        }
+                    </div>
+                </ItemTemplate>
+            </DragDrop>
+
+            @if (!string.IsNullOrWhiteSpace(activityMessage))
+            {
+                <p class="vibe-mt-4 vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400" role="status">@activityMessage</p>
+            }
         </div>
     </section>
 
-    <!-- Examples Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
 
-        <!-- Basic Drag and Drop -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Basic Drag and Drop</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Basic Reorder</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Simple drag and drop functionality for reordering items in a list.
+                Render a simple list and persist the reordered copy from ItemsChanged.
             </p>
             <CodeBlock Code="@BasicCode" Language="razor" />
         </div>
 
-        <!-- Sortable List -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Sortable List</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Rich Items and Locked Rows</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Create a sortable list with rich content cards.
+                Use an item template and prevent specific rows from being moved.
             </p>
-            <CodeBlock Code="@SortableCode" Language="razor" />
+            <CodeBlock Code="@TemplateCode" Language="razor" />
         </div>
 
-        <!-- Multiple Containers -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Multiple Containers</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Horizontal Layout</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Drag items between different containers (like a Kanban board).
+                Switch orientation for compact lanes that scroll on narrow screens.
             </p>
-            <CodeBlock Code="@MultiContainerCode" Language="razor" />
-        </div>
-
-        <!-- With Handles -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Handles</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Use drag handles to restrict which part of an item can be dragged.
-            </p>
-            <CodeBlock Code="@HandleCode" Language="razor" />
-        </div>
-
-        <!-- Disabled Items -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Disabled Items</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Prevent certain items from being dragged.
-            </p>
-            <CodeBlock Code="@DisabledCode" Language="razor" />
+            <CodeBlock Code="@HorizontalCode" Language="razor" />
         </div>
     </section>
 
-    <!-- API Reference -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
 
-        <!-- Properties -->
         <div class="vibe-mb-8">
             <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Properties</h3>
             <div class="vibe-overflow-x-auto">
                 <table class="vibe-w-full vibe-text-sm">
                     <thead>
                         <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Default</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Default</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th>
                         </tr>
                     </thead>
                     <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Items</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="IEnumerable<TItem>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Collection of items to display</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">Items</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="List&lt;TItem&gt;?" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Ordered source items</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ItemTemplate</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment<TItem>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Template for rendering each item</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">ItemTemplate</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment&lt;TItem&gt;?" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Custom item content</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Disabled</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">ItemLabel</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="Func&lt;TItem, string&gt;?" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">ToString</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Accessible item label</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">IsItemDisabled</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="Func&lt;TItem, bool&gt;?" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Prevent selected items from moving</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">Orientation</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"vertical"</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Vertical or horizontal layout</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">Disabled</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Disable drag and drop functionality</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Disable all movement</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Group</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string?" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Group name for multi-container drag/drop</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Handle</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string?" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">CSS selector for drag handle</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Animation</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="int" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">150</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Animation duration in milliseconds</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">AriaLabel</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"Reorderable list"</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Accessible list name</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Events -->
         <div class="vibe-mb-8">
             <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Events</h3>
             <div class="vibe-overflow-x-auto">
                 <table class="vibe-w-full vibe-text-sm">
                     <thead>
                         <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th>
                         </tr>
                     </thead>
                     <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnItemsChanged</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<IEnumerable<TItem>>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when items are reordered</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">ItemsChanged</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback&lt;List&lt;TItem&gt;&gt;" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Returns a reordered copy</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnDragStart</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<DragEventArgs<TItem>>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when drag starts</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnDragEnd</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<DragEventArgs<TItem>>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when drag ends</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnDrop</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<DropEventArgs<TItem>>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when item is dropped</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">OnReordered</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback&lt;ReorderEvent&gt;" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Reports the item and old/new indexes</td>
                         </tr>
                     </tbody>
                 </table>
@@ -179,172 +176,87 @@
         </div>
     </section>
 
-    <!-- Installation -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
         <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-            Install the DragDrop component using the Vibe.UI CLI:
+            Install DragDrop with the Vibe.UI CLI:
         </p>
         <CodeBlock Code="vibe add dragdrop" Language="bash" />
     </section>
 
-    <!-- Accessibility -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
-        <div class="vibe-prose dark:vibe-prose-invert vibe-max-w-none">
-            <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Draggable items have <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">draggable="true"</code> attribute
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Uses <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">aria-grabbed</code> to indicate drag state
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Drop zones have <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">aria-dropeffect</code> attribute
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Keyboard support for reordering (Alt+Arrow keys)
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Screen reader announcements for drag/drop actions
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Focus management during drag operations
-                </li>
-            </ul>
-        </div>
+        <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            <li>The container and rows expose list and listitem semantics.</li>
+            <li>Each handle is a native button with an item-specific accessible name.</li>
+            <li>Alt+Arrow Up/Down reorders the focused item without a pointer.</li>
+            <li>A polite live region announces pickup and completed moves.</li>
+            <li>Reduced-motion preferences disable reorder transitions.</li>
+        </ul>
     </section>
 
-    <!-- Related Components -->
     <section>
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Related</h2>
-        <div class="vibe-grid vibe-grid-cols-1 sm:vibe-grid-cols-3 vibe-gap-4">
+        <div class="vibe-grid vibe-grid-cols-1 sm:vibe-grid-cols-2 vibe-gap-4">
             <a href="components/kanbanboard" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
                 <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">KanbanBoard</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Task board with columns</p>
+                <p class="vibe-text-sm vibe-text-zinc-500">Multi-column task workflows</p>
             </a>
-            <a href="components/treeview" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">TreeView</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Hierarchical tree structure</p>
+            <a href="components/fileupload" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
+                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">FileUpload</h4>
+                <p class="vibe-text-sm vibe-text-zinc-500">External file drop input</p>
             </a>
-            </div>
+        </div>
     </section>
 </div>
 
 @code {
-    private string BasicCode => @"<DragDrop Items=""@items"" OnItemsChanged=""@HandleReorder"">
-    <ItemTemplate Context=""item"">
-        <div class=""drag-item"">@item.Name</div>
-    </ItemTemplate>
-</DragDrop>
+    private List<ReleaseTask> tasks = CreateTasks();
+    private string activityMessage = string.Empty;
+
+    private void HandleTasksChanged(List<ReleaseTask> reorderedTasks)
+    {
+        tasks = reorderedTasks;
+        activityMessage = $"Order updated: {string.Join(", ", tasks.Select(task => task.Title))}.";
+    }
+
+    private void ResetTasks()
+    {
+        tasks = CreateTasks();
+        activityMessage = "Release checklist reset.";
+    }
+
+    private static List<ReleaseTask> CreateTasks() =>
+    [
+        new("tests", "Run compatibility tests", "Maya", "Ready"),
+        new("notes", "Prepare release notes", "Noah", "In progress"),
+        new("approval", "Security approval", "Priya", "Required", Locked: true),
+        new("publish", "Publish beta package", "Liam", "Blocked")
+    ];
+
+    private sealed record ReleaseTask(string Id, string Title, string Owner, string Status, bool Locked = false);
+
+    private string BasicCode => @"<DragDrop TItem=""string""
+          Items=""@items""
+          ItemsChanged=""@(updated => items = updated)"" />
 
 @code {
-    private List<TodoItem> items = new()
-    {
-        new TodoItem { Name = ""First task"" },
-        new TodoItem { Name = ""Second task"" },
-        new TodoItem { Name = ""Third task"" }
-    };
-
-    private void HandleReorder(IEnumerable<TodoItem> reorderedItems)
-    {
-        items = reorderedItems.ToList();
-    }
+    private List<string> items = [""Plan"", ""Build"", ""Ship""];
 }";
 
-    private string SortableCode => @"<DragDrop Items=""@tasks"" OnItemsChanged=""@UpdateTasks"">
+    private string TemplateCode => @"<DragDrop TItem=""TaskItem""
+          Items=""@tasks""
+          ItemsChanged=""@(updated => tasks = updated)""
+          ItemLabel=""@(task => task.Title)""
+          IsItemDisabled=""@(task => task.Locked)"">
     <ItemTemplate Context=""task"">
-        <div class=""task-card"">
-            <h4>@task.Title</h4>
-            <p>@task.Description</p>
-            <span class=""badge"">@task.Priority</span>
-        </div>
-    </ItemTemplate>
-</DragDrop>
-
-@code {
-    private List<Task> tasks = GetTasks();
-
-    private void UpdateTasks(IEnumerable<Task> reordered)
-    {
-        tasks = reordered.ToList();
-        // Save new order to database
-    }
-}";
-
-    private string MultiContainerCode => @"<div class=""drag-containers"">
-    <div class=""column"">
-        <h3>To Do</h3>
-        <DragDrop Items=""@todoItems""
-                  Group=""tasks""
-                  OnItemsChanged=""@(items => todoItems = items.ToList())"">
-            <ItemTemplate Context=""item"">
-                <div class=""task"">@item.Title</div>
-            </ItemTemplate>
-        </DragDrop>
-    </div>
-
-    <div class=""column"">
-        <h3>In Progress</h3>
-        <DragDrop Items=""@inProgressItems""
-                  Group=""tasks""
-                  OnItemsChanged=""@(items => inProgressItems = items.ToList())"">
-            <ItemTemplate Context=""item"">
-                <div class=""task"">@item.Title</div>
-            </ItemTemplate>
-        </DragDrop>
-    </div>
-
-    <div class=""column"">
-        <h3>Done</h3>
-        <DragDrop Items=""@doneItems""
-                  Group=""tasks""
-                  OnItemsChanged=""@(items => doneItems = items.ToList())"">
-            <ItemTemplate Context=""item"">
-                <div class=""task"">@item.Title</div>
-            </ItemTemplate>
-        </DragDrop>
-    </div>
-</div>";
-
-    private string HandleCode => @"<DragDrop Items=""@items"" Handle="".drag-handle"">
-    <ItemTemplate Context=""item"">
-        <div class=""item-with-handle"">
-            <span class=""drag-handle"">⋮⋮</span>
-            <span>@item.Name</span>
-        </div>
+        <strong>@task.Title</strong>
+        <span>@task.Owner</span>
     </ItemTemplate>
 </DragDrop>";
 
-    private string DisabledCode => @"<DragDrop Items=""@items"">
-    <ItemTemplate Context=""item"">
-        <div class=""drag-item"" disabled=""@item.IsLocked"">
-            @item.Name
-            @if (item.IsLocked)
-            {
-                <span class=""lock-icon"">🔒</span>
-            }
-        </div>
-    </ItemTemplate>
-</DragDrop>";
+    private string HorizontalCode => @"<DragDrop TItem=""string""
+          Items=""@stages""
+          Orientation=""horizontal""
+          AriaLabel=""Pipeline stages"" />";
 }
-
-

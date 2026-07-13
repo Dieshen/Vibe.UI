@@ -1,0 +1,150 @@
+@page "/components/transferlist"
+@using Vibe.UI.Components
+
+<PageTitle>Transfer List - Vibe.UI</PageTitle>
+
+<div class="vibe-max-w-4xl vibe-mx-auto">
+    <header class="vibe-mb-8">
+        <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
+            <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
+            <span>/</span>
+            <a href="components" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Components</a>
+            <span>/</span>
+            <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Transfer List</span>
+        </div>
+        <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Transfer List</h1>
+        <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            Move one or more items between searchable source and target lists.
+        </p>
+    </header>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+            <TransferList TItem="string"
+                          @bind-SourceItems="availablePeople"
+                          @bind-TargetItems="assignedPeople"
+                          SourceTitle="Available people"
+                          TargetTitle="Assigned people"
+                          SearchPlaceholder="Search people..."
+                          AriaLabel="Assign people to the release team" />
+            <output class="vibe-block vibe-mt-3 vibe-text-sm vibe-text-zinc-500 dark:vibe-text-zinc-400">
+                @assignedPeople.Count people assigned
+            </output>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
+
+        <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Bound collections</h3>
+        <CodeBlock Code="@BasicCode" Language="razor" />
+
+        <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mt-8 vibe-mb-3">Disabled</h3>
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-4">
+            <TransferList TItem="string"
+                          SourceItems="disabledAvailablePeople"
+                          TargetItems="disabledAssignedPeople"
+                          SourceTitle="Available"
+                          TargetTitle="Assigned"
+                          ShowSearch="false"
+                          Disabled="true"
+                          AriaLabel="Disabled team assignment" />
+        </div>
+        <CodeBlock Code="@DisabledCode" Language="razor" />
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
+        <div class="vibe-overflow-x-auto">
+            <table class="vibe-w-full vibe-text-sm">
+                <thead>
+                    <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Default</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th>
+                    </tr>
+                </thead>
+                <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+                    @foreach (var property in Properties)
+                    {
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">@property.Name</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@property.Type" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@property.Default</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@property.Description</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
+        <CodeBlock Code="vibe add transferlist" Language="bash" />
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
+        <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            @foreach (var item in AccessibilityItems)
+            {
+                <li class="vibe-flex vibe-items-start vibe-gap-2">
+                    <Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />
+                    @item
+                </li>
+            }
+        </ul>
+    </section>
+</div>
+
+@code {
+    private List<string> availablePeople = ["Avery Stone", "Jordan Lee", "Morgan Diaz", "Riley Chen"];
+    private List<string> assignedPeople = ["Casey Patel"];
+    private List<string> disabledAvailablePeople = ["Taylor Brooks", "Cameron Reed"];
+    private List<string> disabledAssignedPeople = ["Jamie Kim"];
+
+    private static readonly (string Name, string Type, string Default, string Description)[] Properties =
+    [
+        ("SourceItems", "List<TItem>", "empty", "Items displayed in the source list"),
+        ("TargetItems", "List<TItem>", "empty", "Items displayed in the target list"),
+        ("SourceItemsChanged", "EventCallback<List<TItem>>", "none", "Raised after the source collection changes"),
+        ("TargetItemsChanged", "EventCallback<List<TItem>>", "none", "Raised after the target collection changes"),
+        ("ItemTemplate", "RenderFragment<TItem>?", "null", "Custom content for each option"),
+        ("TextSelector", "Func<TItem, string>?", "null", "Text used for option labels and filtering"),
+        ("KeySelector", "Func<TItem, string>?", "null", "Stable key used when rendering each option"),
+        ("SourceTitle", "string", "Available", "Heading for the source list"),
+        ("TargetTitle", "string", "Selected", "Heading for the target list"),
+        ("ShowSearch", "bool", "true", "Show a search field above each list"),
+        ("ShowCheckboxes", "bool", "true", "Show a selection checkbox in each option"),
+        ("SearchPlaceholder", "string", "Search...", "Placeholder used by both search fields"),
+        ("Disabled", "bool", "false", "Disable searching, selection, and transfer actions"),
+        ("CssClass", "string?", "null", "Additional CSS classes for the root element"),
+        ("AriaLabel", "string", "Transfer items", "Accessible name for the complete control")
+    ];
+
+    private static readonly string[] AccessibilityItems =
+    [
+        "Maintains one tab stop in each listbox",
+        "Supports Arrow Up, Arrow Down, Home, and End navigation",
+        "Uses Enter or Space to toggle the focused option",
+        "Moves focus into the destination list after a transfer",
+        "Announces completed transfers through a polite live region"
+    ];
+
+    private const string BasicCode = @"<TransferList TItem=""string""
+              @bind-SourceItems=""availablePeople""
+              @bind-TargetItems=""assignedPeople""
+              SourceTitle=""Available people""
+              TargetTitle=""Assigned people""
+              SearchPlaceholder=""Search people...""
+              AriaLabel=""Assign people to the release team"" />";
+
+    private const string DisabledCode = @"<TransferList TItem=""string""
+              SourceItems=""availablePeople""
+              TargetItems=""assignedPeople""
+              ShowSearch=""false""
+              Disabled=""true"" />";
+}

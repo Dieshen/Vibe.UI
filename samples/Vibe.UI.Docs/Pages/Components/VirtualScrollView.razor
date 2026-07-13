@@ -4,7 +4,6 @@
 <PageTitle>VirtualScroll - Vibe.UI</PageTitle>
 
 <div class="vibe-max-w-4xl vibe-mx-auto">
-    <!-- Header -->
     <header class="vibe-mb-8">
         <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
             <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
@@ -15,166 +14,106 @@
         </div>
         <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">VirtualScroll</h1>
         <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
-            A virtual scrolling component that efficiently renders large lists by only displaying visible items in the viewport.
+            Render large, fixed-height lists while keeping only the visible range in the DOM.
         </p>
     </header>
 
-    <!-- Preview Section -->
     <section class="vibe-mb-12">
-        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
-        <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
-            <VirtualScroll Items="scrollItems" ItemHeight="60" Height="300">
+        <div class="vibe-flex vibe-items-center vibe-justify-between vibe-gap-3 vibe-mb-4">
+            <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100">Interactive Preview</h2>
+            <Button Variant="ButtonVariant.Outline" Size="ComponentSize.Small" OnClick="JumpToMiddle">
+                Jump to item 501
+            </Button>
+        </div>
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+            <VirtualScroll @ref="previewScroll"
+                           Items="scrollItems"
+                           ItemHeight="48"
+                           Height="288"
+                           AriaLabel="One thousand numbered items">
                 <ItemTemplate Context="item">
-                    <div style="padding: 1rem; border-bottom: 1px solid #eee;">
-                        <strong>@item</strong>
+                    <div class="vibe-h-full vibe-flex vibe-items-center vibe-justify-between vibe-gap-3 vibe-px-4 vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-bg-white dark:vibe-bg-zinc-900">
+                        <span class="vibe-text-sm vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">@item</span>
+                        <span class="vibe-text-xs vibe-text-zinc-500">Fixed 48px row</span>
                     </div>
                 </ItemTemplate>
             </VirtualScroll>
         </div>
+        <p class="vibe-mt-3 vibe-text-sm vibe-text-zinc-500" role="status">@previewStatus</p>
     </section>
 
-    <!-- Examples Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
 
-        <!-- Basic Virtual Scroll -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Basic Virtual Scroll</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Efficiently render thousands of items with fixed heights.
-            </p>
-            <CodeBlock Code="@BasicCode" Language="razor" />
-        </div>
+        <div class="vibe-space-y-8">
+            <div>
+                <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Fixed-height list</h3>
+                <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
+                    Set <code>ItemHeight</code> to the rendered row height and provide a numeric viewport <code>Height</code> in pixels.
+                </p>
+                <CodeBlock Code="@BasicCode" Language="razor" />
+            </div>
 
-        <!-- Variable Item Heights -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Variable Item Heights</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Handle items with dynamic heights automatically measured and cached.
-            </p>
-            <CodeBlock Code="@VariableHeightCode" Language="razor" />
-        </div>
+            <div>
+                <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Programmatic scrolling</h3>
+                <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
+                    Keep a component reference and await <code>ScrollToIndex</code> to update the rendered range and the browser scroll position together.
+                </p>
+                <CodeBlock Code="@ProgrammaticCode" Language="razor" />
+            </div>
 
-        <!-- Infinite Scroll -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Infinite Scroll</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Load more data automatically when scrolling to the bottom.
-            </p>
-            <CodeBlock Code="@InfiniteScrollCode" Language="razor" />
-        </div>
-
-        <!-- Horizontal Scroll -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Horizontal Scroll</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Virtualize horizontal scrolling for wide content like image galleries.
-            </p>
-            <CodeBlock Code="@HorizontalCode" Language="razor" />
-        </div>
-
-        <!-- With Loading State -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Loading State</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Display loading indicators while fetching more data.
-            </p>
-            <CodeBlock Code="@LoadingCode" Language="razor" />
+            <div>
+                <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Empty state</h3>
+                <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
+                    Supply <code>EmptyContent</code> for a contextual empty result, or use <code>EmptyText</code> for plain text.
+                </p>
+                <CodeBlock Code="@EmptyCode" Language="razor" />
+            </div>
         </div>
     </section>
 
-    <!-- API Reference -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
-
-        <!-- Properties -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Properties</h3>
-            <div class="vibe-overflow-x-auto">
-                <table class="vibe-w-full vibe-text-sm">
-                    <thead>
-                        <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Default</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+        <div class="vibe-overflow-x-auto">
+            <table class="vibe-w-full vibe-text-sm">
+                <thead>
+                    <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Default</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
+                    </tr>
+                </thead>
+                <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+                    @foreach (var property in properties)
+                    {
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Items</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="IEnumerable<TItem>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Collection of items to display</td>
+                            <td class="vibe-py-3 vibe-px-4"><code>@property.Name</code></td>
+                            <td class="vibe-py-3 vibe-px-4"><code>@property.Type</code></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@property.Default</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@property.Description</td>
                         </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ItemTemplate</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment<TItem>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Template for rendering each item</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ItemHeight</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="int" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">50</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Fixed height per item in pixels</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Height</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"400px"</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Container height (CSS value)</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OverscanCount</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="int" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">3</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Number of items to render outside viewport</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Horizontal</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Enable horizontal scrolling mode</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">LoadingTemplate</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Template shown when loading more items</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                    }
+                </tbody>
+            </table>
         </div>
 
-        <!-- Events -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Events</h3>
+        <div class="vibe-mt-8">
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Methods</h3>
             <div class="vibe-overflow-x-auto">
                 <table class="vibe-w-full vibe-text-sm">
                     <thead>
                         <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
                             <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Returns</th>
                             <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
                         </tr>
                     </thead>
-                    <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+                    <tbody>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnScrollEnd</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when scrolled to the end</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnScroll</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<ScrollEventArgs>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback on scroll events</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnItemClick</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<TItem>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when item is clicked</td>
+                            <td class="vibe-py-3 vibe-px-4"><code>ScrollToIndex(int index)</code></td>
+                            <td class="vibe-py-3 vibe-px-4"><code>Task</code></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Scrolls to a valid zero-based item index.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -182,221 +121,87 @@
         </div>
     </section>
 
-    <!-- Installation -->
-    <section class="vibe-mb-12">
-        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
-        <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-            Install the VirtualScroll component using the Vibe.UI CLI:
-        </p>
-        <CodeBlock Code="vibe add virtualscroll" Language="bash" />
-    </section>
-
-    <!-- Accessibility -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
-        <div class="vibe-prose dark:vibe-prose-invert vibe-max-w-none">
-            <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Maintains focus position during virtual scrolling
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Keyboard scrolling (Arrow keys, Page Up/Down)
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Screen readers announce list size and position
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Uses <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">role="list"</code> and <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">role="listitem"</code>
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Proper <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">aria-setsize</code> and <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">aria-posinset</code> attributes
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Focus restoration when items are recycled
-                </li>
-            </ul>
-        </div>
+        <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            <li class="vibe-flex vibe-items-start vibe-gap-2">
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
+                The viewport is a named list and every rendered row is a list item.
+            </li>
+            <li class="vibe-flex vibe-items-start vibe-gap-2">
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
+                <code>aria-setsize</code> and <code>aria-posinset</code> preserve total count and absolute position as rows are recycled.
+            </li>
+            <li class="vibe-flex vibe-items-start vibe-gap-2">
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
+                Native scrolling supports wheel, touch, arrow, Page Up, and Page Down input when the viewport is focused.
+            </li>
+        </ul>
     </section>
 
-    <!-- Related Components -->
-    <section>
-        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Related</h2>
-        <div class="vibe-grid vibe-grid-cols-1 sm:vibe-grid-cols-3 vibe-gap-4">
-            <a href="components/datagrid" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">DataGrid</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Data table with advanced features</p>
-            </a>
-            <a href="components/table" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Table</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Table component</p>
-            </a>
-        </div>
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
+        <CodeBlock Code="vibe add virtualscroll" Language="bash" />
     </section>
 </div>
 
 @code {
-    private List<string> scrollItems = Enumerable.Range(1, 1000).Select(i => $"Item {i}").ToList();
+    private readonly List<string> scrollItems = Enumerable.Range(1, 1000).Select(index => $"Item {index}").ToList();
+    private readonly IReadOnlyList<PropertyRow> properties =
+    [
+        new("Items", "List<TItem>?", "null", "Items in the virtualized list."),
+        new("ItemTemplate", "RenderFragment<TItem>?", "null", "Template for each rendered item."),
+        new("EmptyContent", "RenderFragment?", "null", "Custom content shown when Items is empty."),
+        new("EmptyText", "string", "\"No items\"", "Fallback empty-state text."),
+        new("ItemHeight", "int", "50", "Fixed row height in pixels."),
+        new("BufferSize", "int", "5", "Rows rendered before and after the visible range."),
+        new("Height", "int", "400", "Viewport height in pixels."),
+        new("KeySelector", "Func<TItem, string?>?", "null", "Stable key selector for item reuse."),
+        new("AriaLabel", "string?", "\"Virtualized list\"", "Accessible name for the list viewport."),
+        new("CssClass", "string?", "null", "Additional component classes.")
+    ];
 
-    private string BasicCode => @"<VirtualScroll Items=""@items"" ItemHeight=""60"" Height=""500px"">
-    <ItemTemplate Context=""item"">
-        <div class=""list-item"">
-            <h4>@item.Title</h4>
-            <p>@item.Description</p>
-        </div>
-    </ItemTemplate>
-</VirtualScroll>
+    private VirtualScroll<string>? previewScroll;
+    private string previewStatus = "Showing the beginning of the list.";
 
-@code {
-    private List<DataItem> items = Enumerable.Range(1, 10000)
-        .Select(i => new DataItem
+    private async Task JumpToMiddle()
+    {
+        if (previewScroll is null)
         {
-            Title = $""Item {i}"",
-            Description = $""Description for item {i}""
-        })
-        .ToList();
-}";
-
-    private string VariableHeightCode => @"<VirtualScroll Items=""@posts"" Height=""600px"">
-    <ItemTemplate Context=""post"">
-        <div class=""post-card"">
-            <div class=""post-header"">
-                <Avatar Src=""@post.AuthorAvatar"" />
-                <span>@post.Author</span>
-            </div>
-            <h3>@post.Title</h3>
-            <p>@post.Content</p>
-            <div class=""post-footer"">
-                <span>@post.Likes likes</span>
-                <span>@post.Comments comments</span>
-            </div>
-        </div>
-    </ItemTemplate>
-</VirtualScroll>
-
-@code {
-    // Items can have different heights
-    // Component will measure and cache heights automatically
-    private List<Post> posts = GetPosts();
-}";
-
-    private string InfiniteScrollCode => @"<VirtualScroll Items=""@items""
-               ItemHeight=""80""
-               Height=""500px""
-               OnScrollEnd=""@LoadMoreAsync"">
-    <ItemTemplate Context=""item"">
-        <div class=""list-item"">@item.Name</div>
-    </ItemTemplate>
-    <LoadingTemplate>
-        <div class=""loading-more"">
-            <Spinner Size=""SpinnerSize.Small"" />
-            <span>Loading more items...</span>
-        </div>
-    </LoadingTemplate>
-</VirtualScroll>
-
-@code {
-    private List<Item> items = new();
-    private int page = 1;
-    private bool isLoading = false;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadMoreAsync();
-    }
-
-    private async Task LoadMoreAsync()
-    {
-        if (isLoading) return;
-
-        isLoading = true;
-        var newItems = await FetchItemsAsync(page++);
-        items.AddRange(newItems);
-        isLoading = false;
-
-        StateHasChanged();
-    }
-
-    private async Task<List<Item>> FetchItemsAsync(int pageNumber)
-    {
-        // Simulate API call
-        await Task.Delay(1000);
-        return Enumerable.Range((pageNumber - 1) * 50 + 1, 50)
-            .Select(i => new Item { Name = $""Item {i}"" })
-            .ToList();
-    }
-}";
-
-    private string HorizontalCode => @"<VirtualScroll Items=""@images""
-               ItemHeight=""200""
-               Height=""300px""
-               Horizontal=""true"">
-    <ItemTemplate Context=""image"">
-        <div class=""image-card"">
-            <img src=""@image.Url"" alt=""@image.Title"" />
-            <p>@image.Title</p>
-        </div>
-    </ItemTemplate>
-</VirtualScroll>
-
-@code {
-    private List<ImageItem> images = GetImages();
-}";
-
-    private string LoadingCode => @"<VirtualScroll Items=""@items""
-               ItemHeight=""70""
-               Height=""500px""
-               OnScrollEnd=""@LoadMoreDataAsync"">
-    <ItemTemplate Context=""item"">
-        <div class=""data-row"">
-            <span>@item.Id</span>
-            <span>@item.Name</span>
-            <span>@item.Status</span>
-        </div>
-    </ItemTemplate>
-    <LoadingTemplate>
-        <div class=""loading-indicator"">
-            <Skeleton Width=""100%"" Height=""70px"" Count=""3"" />
-        </div>
-    </LoadingTemplate>
-</VirtualScroll>
-
-@code {
-    private List<DataRow> items = new();
-    private bool hasMore = true;
-
-    private async Task LoadMoreDataAsync()
-    {
-        if (!hasMore) return;
-
-        var newData = await DataService.GetNextPageAsync();
-        if (newData.Any())
-        {
-            items.AddRange(newData);
+            return;
         }
-        else
-        {
-            hasMore = false;
-        }
+
+        await previewScroll.ScrollToIndex(500);
+        previewStatus = "Jumped to item 501.";
+    }
+
+    private const string BasicCode = @"<VirtualScroll Items=""@items""
+               ItemHeight=""48""
+               Height=""320""
+               AriaLabel=""Search results"">
+    <ItemTemplate Context=""item"">
+        <div class=""result-row"">@item.Name</div>
+    </ItemTemplate>
+</VirtualScroll>";
+
+    private const string ProgrammaticCode = @"<Button OnClick=""JumpToLatest"">Jump to latest</Button>
+
+<VirtualScroll @ref=""results"" Items=""@items"" ItemHeight=""48"" Height=""320"" />
+
+@code {
+    private VirtualScroll<Result>? results;
+
+    private async Task JumpToLatest()
+    {
+        await results!.ScrollToIndex(items.Count - 1);
     }
 }";
+
+    private const string EmptyCode = @"<VirtualScroll Items=""@filteredItems"" ItemHeight=""48"" Height=""240"">
+    <EmptyContent>
+        <p>No results match the current filters.</p>
+    </EmptyContent>
+</VirtualScroll>";
+
+    private sealed record PropertyRow(string Name, string Type, string Default, string Description);
 }
-
-

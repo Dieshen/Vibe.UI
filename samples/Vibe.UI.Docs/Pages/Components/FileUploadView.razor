@@ -5,7 +5,6 @@
 <PageTitle>FileUpload - Vibe.UI</PageTitle>
 
 <div class="vibe-max-w-4xl vibe-mx-auto">
-    <!-- Header -->
     <header class="vibe-mb-8">
         <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
             <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
@@ -16,78 +15,55 @@
         </div>
         <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">FileUpload</h1>
         <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
-            A file upload component with drag-and-drop support, file validation, and preview capabilities.
+            Select or drop files with type, size, and count validation.
         </p>
     </header>
 
-    <!-- Preview Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
-        <div class="vibe-p-8 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
-            <div style="max-width: 500px; margin: 0 auto;">
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+            <div class="vibe-max-w-lg vibe-mx-auto">
                 <FileUpload @bind-Files="uploadedFiles"
                             Multiple="true"
+                            Accept="image/*,.pdf,.txt"
+                            MaxFiles="5"
                             DropText="Drop files here or click to browse"
-                            HintText="Upload documents, images, or PDFs" />
+                            HintText="Images, PDF, or TXT up to 10 MB each" />
             </div>
         </div>
     </section>
 
-    <!-- Examples Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
 
-        <!-- Basic Upload -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Basic Upload</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Single file</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Simple file upload with a single file selection.
+                Bind the selected file list and disable multiple selection.
             </p>
             <CodeBlock Code="@BasicCode" Language="razor" />
         </div>
 
-        <!-- Image Upload with Preview -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Image Upload with Preview</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Validation</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Upload images with preview thumbnails and custom upload area.
-            </p>
-            <CodeBlock Code="@ImageCode" Language="razor" />
-        </div>
-
-        <!-- Multiple Files -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Multiple Files</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Allow multiple file selection with a maximum limit.
-            </p>
-            <CodeBlock Code="@MultipleCode" Language="razor" />
-        </div>
-
-        <!-- File Validation -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">File Validation</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Validate file types and sizes before upload.
+                Limit accepted MIME types or extensions, bytes per file, and total files.
             </p>
             <CodeBlock Code="@ValidationCode" Language="razor" />
         </div>
 
-        <!-- Custom Upload Area -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Custom Upload Area</h3>
+        <div>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">File callbacks</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Customize the upload area with your own content.
+                Observe validated additions and user-initiated removals.
             </p>
-            <CodeBlock Code="@CustomCode" Language="razor" />
+            <CodeBlock Code="@CallbackCode" Language="razor" />
         </div>
     </section>
 
-    <!-- API Reference -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
 
-        <!-- Properties -->
         <div class="vibe-mb-8">
             <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Properties</h3>
             <div class="vibe-overflow-x-auto">
@@ -101,55 +77,21 @@
                         </tr>
                     </thead>
                     <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Accept</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"*"</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Accepted file types (MIME types or extensions)</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Multiple</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Allow multiple file selection</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">MaxSize</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="long" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">10485760</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Maximum file size in bytes (default 10MB)</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">MaxFiles</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="int?" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Maximum number of files allowed</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ShowPreview</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">true</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Show file preview thumbnails</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Disabled</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Disable file upload</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ChildContent</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Custom content for upload area</td>
-                        </tr>
+                        @foreach (var property in Properties)
+                        {
+                            <tr>
+                                <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">@property.Name</td>
+                                <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@property.Type" /></td>
+                                <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@property.Default</td>
+                                <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@property.Description</td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Events -->
-        <div class="vibe-mb-8">
+        <div>
             <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Events</h3>
             <div class="vibe-overflow-x-auto">
                 <table class="vibe-w-full vibe-text-sm">
@@ -161,216 +103,97 @@
                         </tr>
                     </thead>
                     <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnFilesSelected</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<IEnumerable<IBrowserFile>>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when files are selected</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnFileRemoved</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<IBrowserFile>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when file is removed</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnUploadProgress</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<UploadProgressArgs>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback for upload progress updates</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnUploadComplete</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<IEnumerable<UploadResult>>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when upload completes</td>
-                        </tr>
+                        @foreach (var eventInfo in Events)
+                        {
+                            <tr>
+                                <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">@eventInfo.Name</td>
+                                <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@eventInfo.Type" /></td>
+                                <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@eventInfo.Description</td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
         </div>
     </section>
 
-    <!-- Installation -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
-        <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-            Install the FileUpload component using the Vibe.UI CLI:
-        </p>
         <CodeBlock Code="vibe add fileupload" Language="bash" />
     </section>
 
-    <!-- Accessibility -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
-        <div class="vibe-prose dark:vibe-prose-invert vibe-max-w-none">
-            <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+        <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            @foreach (var item in AccessibilityItems)
+            {
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Uses native <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">&lt;input type="file"&gt;</code> element
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />
+                    @item
                 </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Keyboard accessible (Enter/Space to open file dialog)
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Clear focus indicators for keyboard navigation
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Screen reader announces file selection and removal
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Progress updates announced to screen readers
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Error messages properly associated with input
-                </li>
-            </ul>
-        </div>
-    </section>
-
-    <!-- Related Components -->
-    <section>
-        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Related</h2>
-        <div class="vibe-grid vibe-grid-cols-1 sm:vibe-grid-cols-3 vibe-gap-4">
-            <a href="components/avatar" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Avatar</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Display user profile images</p>
-            </a>
-            <a href="components/dragdrop" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">DragDrop</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Drag and drop functionality</p>
-            </a>
-        </div>
+            }
+        </ul>
     </section>
 </div>
 
 @code {
-    private List<UploadedFile> uploadedFiles = new();
+    private List<UploadedFile> uploadedFiles = [];
 
-    private string BasicCode => @"<FileUpload OnFilesSelected=""@HandleFileSelected"" />
+    private static readonly (string Name, string Type, string Default, string Description)[] Properties =
+    [
+        ("Files", "List<UploadedFile>", "[]", "Current validated files; supports @bind-Files"),
+        ("Multiple", "bool", "true", "Allow more than one file"),
+        ("Accept", "string?", "null", "Comma-separated MIME types, wildcards, or extensions"),
+        ("MaxFileSize", "long", "10485760", "Maximum bytes read for each file"),
+        ("MaxFiles", "int", "10", "Maximum number of retained files"),
+        ("Disabled", "bool", "false", "Disable browse, drop, and removal controls"),
+        ("DropText", "string", "Drop files...", "Primary empty-state text"),
+        ("HintText", "string", "Supports...", "Supporting format or size guidance"),
+        ("AriaLabel", "string", "File upload", "Accessible name for the upload group and input"),
+        ("ErrorMessage", "string?", "null", "Externally supplied error message"),
+        ("CssClass", "string?", "null", "Additional component class")
+    ];
+
+    private static readonly (string Name, string Type, string Description)[] Events =
+    [
+        ("FilesChanged", "EventCallback<List<UploadedFile>>", "Raised when the retained list changes"),
+        ("OnFileAdded", "EventCallback<UploadedFile>", "Raised once for each validated file added"),
+        ("OnFileRemoved", "EventCallback<UploadedFile>", "Raised after a file is removed")
+    ];
+
+    private static readonly string[] AccessibilityItems =
+    [
+        "Uses the native file input for browse-dialog keyboard and assistive technology support",
+        "Associates hint and validation text with the active input",
+        "Announces changes to the selected file list",
+        "Provides named remove buttons for every selected file"
+    ];
+
+    private string BasicCode => @"<FileUpload @bind-Files=""files"" Multiple=""false"" />
 
 @code {
-    private async Task HandleFileSelected(IEnumerable<IBrowserFile> files)
-    {
-        var file = files.FirstOrDefault();
-        if (file != null)
-        {
-            // Upload file to server
-            await UploadFileAsync(file);
-        }
-    }
+    private List<FileUpload.UploadedFile> files = [];
 }";
 
-    private string ImageCode => @"<FileUpload Accept=""image/*""
-            ShowPreview=""true""
-            OnFilesSelected=""@HandleImageSelected"">
-    <ChildContent>
-        <div class=""upload-prompt"">
-            <span class=""icon"">📷</span>
-            <p>Click or drag image to upload</p>
-            <small>PNG, JPG or GIF up to 10MB</small>
-        </div>
-    </ChildContent>
-</FileUpload>
+    private string ValidationCode => @"<FileUpload @bind-Files=""files""
+            Accept=""image/*,.pdf""
+            MaxFileSize=""@(5 * 1024 * 1024)""
+            MaxFiles=""3"" />";
+
+    private string CallbackCode => @"<FileUpload @bind-Files=""files""
+            OnFileAdded=""HandleFileAdded""
+            OnFileRemoved=""HandleFileRemoved"" />
 
 @code {
-    private async Task HandleImageSelected(IEnumerable<IBrowserFile> files)
+    private Task HandleFileAdded(FileUpload.UploadedFile file)
     {
-        foreach (var file in files)
-        {
-            var imageData = await file.RequestImageFileAsync(""image/jpeg"", 800, 600);
-            // Process image
-        }
+        // Persist file.Data or hand it to an application service.
+        return Task.CompletedTask;
     }
-}";
 
-    private string MultipleCode => @"<FileUpload Multiple=""true""
-            MaxFiles=""5""
-            OnFilesSelected=""@HandleMultipleFiles"" />
-
-@code {
-    private List<IBrowserFile> selectedFiles = new();
-
-    private void HandleMultipleFiles(IEnumerable<IBrowserFile> files)
+    private Task HandleFileRemoved(FileUpload.UploadedFile file)
     {
-        selectedFiles.AddRange(files);
-        StateHasChanged();
-    }
-}";
-
-    private string ValidationCode => @"<FileUpload Accept="".pdf,.doc,.docx""
-            MaxSize=""@(5 * 1024 * 1024)""
-            OnFilesSelected=""@HandleFileValidation"" />
-
-@if (!string.IsNullOrEmpty(errorMessage))
-{
-    <Alert Variant=""AlertVariant.Error"">@errorMessage</Alert>
-}
-
-@code {
-    private string errorMessage;
-
-    private void HandleFileValidation(IEnumerable<IBrowserFile> files)
-    {
-        errorMessage = null;
-
-        foreach (var file in files)
-        {
-            if (file.Size > 5 * 1024 * 1024)
-            {
-                errorMessage = $""{file.Name} exceeds 5MB limit"";
-                return;
-            }
-
-            var ext = Path.GetExtension(file.Name).ToLower();
-            if (ext != "".pdf"" && ext != "".doc"" && ext != "".docx"")
-            {
-                errorMessage = $""{file.Name} is not a supported file type"";
-                return;
-            }
-        }
-
-        // Process valid files
-    }
-}";
-
-    private string CustomCode => @"<FileUpload OnFilesSelected=""@HandleFiles"">
-    <ChildContent>
-        <div class=""custom-upload-area"">
-            <svg class=""upload-icon"" width=""48"" height=""48"">
-                <use href=""#icon-upload"" />
-            </svg>
-            <h3>Upload Your Files</h3>
-            <p>Drag and drop files here or click to browse</p>
-            <Button Variant=""ButtonVariant.Outline"">
-                Choose Files
-            </Button>
-        </div>
-    </ChildContent>
-</FileUpload>
-
-@code {
-    private async Task HandleFiles(IEnumerable<IBrowserFile> files)
-    {
-        foreach (var file in files)
-        {
-            await ProcessFileAsync(file);
-        }
+        return Task.CompletedTask;
     }
 }";
 }
-
-

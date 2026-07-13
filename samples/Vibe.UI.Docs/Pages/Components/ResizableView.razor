@@ -1,0 +1,127 @@
+@page "/components/resizable"
+@using Vibe.UI.Components
+
+<PageTitle>Resizable - Vibe.UI</PageTitle>
+
+<div class="vibe-max-w-4xl vibe-mx-auto">
+    <header class="vibe-mb-8">
+        <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
+            <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
+            <span>/</span>
+            <a href="components" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Components</a>
+            <span>/</span>
+            <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Resizable</span>
+        </div>
+        <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Resizable</h1>
+        <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            Resize a panel with mouse, pen, touch, or keyboard input.
+        </p>
+    </header>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-overflow-x-auto">
+            <Resizable DefaultWidth="260"
+                       MinWidth="180"
+                       MaxWidth="320"
+                       OnSizeChange="HandleSizeChanged">
+                <div class="vibe-h-full vibe-p-4">
+                    <h3 class="vibe-font-semibold vibe-mb-2">Inspector</h3>
+                    <p class="vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400">
+                        Drag the trailing grip or focus it and use the arrow keys.
+                    </p>
+                </div>
+            </Resizable>
+            <output class="vibe-block vibe-mt-3 vibe-text-sm vibe-text-zinc-500">Panel: @currentSize.ToString("0")px</output>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
+        <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Constrained panel</h3>
+        <CodeBlock Code="@BasicCode" Language="razor" />
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
+        <div class="vibe-overflow-x-auto">
+            <table class="vibe-w-full vibe-text-sm">
+                <thead>
+                    <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Default</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th>
+                    </tr>
+                </thead>
+                <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+                    @foreach (var property in Properties)
+                    {
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">@property.Name</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@property.Type" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@property.Default</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@property.Description</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
+        <CodeBlock Code="vibe add resizable" Language="bash" />
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
+        <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            @foreach (var item in AccessibilityItems)
+            {
+                <li class="vibe-flex vibe-items-start vibe-gap-2">
+                    <Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />
+                    @item
+                </li>
+            }
+        </ul>
+    </section>
+</div>
+
+@code {
+    private double currentSize = 260;
+
+    private static readonly (string Name, string Type, string Default, string Description)[] Properties =
+    [
+        ("ChildContent", "RenderFragment?", "null", "Panel content"),
+        ("Direction", "ResizableDirection", "Horizontal", "Horizontal width or vertical height resizing"),
+        ("DefaultWidth", "double", "300", "Initial horizontal size in pixels"),
+        ("MinWidth", "double", "100", "Minimum horizontal size"),
+        ("MaxWidth", "double", "double.MaxValue", "Maximum horizontal size"),
+        ("DefaultHeight", "double", "200", "Initial vertical size in pixels"),
+        ("MinHeight", "double", "50", "Minimum vertical size"),
+        ("MaxHeight", "double", "double.MaxValue", "Maximum vertical size"),
+        ("OnSizeChange", "EventCallback<double>", "-", "Raised after pointer or keyboard resizing")
+    ];
+
+    private static readonly string[] AccessibilityItems =
+    [
+        "Exposes a focusable separator with current, minimum, and maximum values",
+        "Supports directional arrow keys in ten-pixel steps",
+        "Supports mouse, pen, and touch through pointer capture",
+        "Keeps the resize grip focused after pointer interaction"
+    ];
+
+    private Task HandleSizeChanged(double size)
+    {
+        currentSize = size;
+        return Task.CompletedTask;
+    }
+
+    private string BasicCode => @"<Resizable DefaultWidth=""280""
+           MinWidth=""180""
+           MaxWidth=""480""
+           OnSizeChange=""HandleSizeChanged"">
+    <Inspector />
+</Resizable>";
+}

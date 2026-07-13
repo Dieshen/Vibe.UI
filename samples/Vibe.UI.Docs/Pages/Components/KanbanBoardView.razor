@@ -5,7 +5,6 @@
 <PageTitle>KanbanBoard - Vibe.UI</PageTitle>
 
 <div class="vibe-max-w-4xl vibe-mx-auto">
-    <!-- Header -->
     <header class="vibe-mb-8">
         <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
             <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
@@ -16,86 +15,43 @@
         </div>
         <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">KanbanBoard</h1>
         <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
-            A kanban board component for visualizing and managing workflow with draggable cards across multiple columns.
+            Organize cards into columns with pointer and keyboard movement.
         </p>
     </header>
 
-    <!-- Preview Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
-        <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
-            <KanbanBoard Columns="kanbanColumns" AllowDragDrop="false" AllowAddCard="false">
-                <ColumnHeaderTemplate Context="column">
-                    <div class="kanban-column-header">
-                        <h3 class="column-title">@column.Title</h3>
-                        <span class="column-badge">@column.Cards.Count</span>
-                    </div>
-                </ColumnHeaderTemplate>
-                <CardTemplate Context="card">
-                    <div class="kanban-card">
-                        <p class="card-title">@card.Title</p>
-                        <p class="card-description">@card.Description</p>
-                    </div>
-                </CardTemplate>
-            </KanbanBoard>
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+            <KanbanBoard Columns="kanbanColumns"
+                         AllowAddCard="false"
+                         OnCardMoved="HandleCardMoved" />
+            <p class="vibe-mt-3 vibe-text-sm vibe-text-zinc-500" aria-live="polite">@moveStatus</p>
         </div>
     </section>
 
-    <!-- Examples Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
 
-        <!-- Basic Kanban Board -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Basic Kanban Board</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Columns and cards</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Create a basic kanban board with columns and cards.
+                Cards belong to the <code>Cards</code> list on each column.
             </p>
             <CodeBlock Code="@BasicCode" Language="razor" />
         </div>
 
-        <!-- Custom Card Template -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Custom Card Template</h3>
+        <div>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Card template</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Customize card appearance with rich templates including badges and avatars.
+                Replace the card contents while the board retains interaction and focus behavior.
             </p>
-            <CodeBlock Code="@CustomCardCode" Language="razor" />
-        </div>
-
-        <!-- With Card Limits -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Card Limits</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Set maximum card limits per column to enforce workflow constraints.
-            </p>
-            <CodeBlock Code="@LimitsCode" Language="razor" />
-        </div>
-
-        <!-- With Swimlanes -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Swimlanes</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Organize work across multiple horizontal swimlanes.
-            </p>
-            <CodeBlock Code="@SwimlanesCode" Language="razor" />
-        </div>
-
-        <!-- Full Example -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Full Example</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Complete example with all features including custom headers and card actions.
-            </p>
-            <CodeBlock Code="@FullCode" Language="razor" />
+            <CodeBlock Code="@TemplateCode" Language="razor" />
         </div>
     </section>
 
-    <!-- API Reference -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
 
-        <!-- Properties -->
         <div class="vibe-mb-8">
             <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Properties</h3>
             <div class="vibe-overflow-x-auto">
@@ -109,49 +65,21 @@
                         </tr>
                     </thead>
                     <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Columns</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="IEnumerable<KanbanColumn>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Collection of board columns</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Cards</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="IEnumerable<TCard>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Collection of cards to display</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">CardTemplate</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment<TCard>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Template for rendering cards</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ColumnHeaderTemplate</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment<KanbanColumn>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Custom column header template</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">AllowReorder</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">true</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Allow card reordering within columns</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ShowCardCount</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">true</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Show card count in column headers</td>
-                        </tr>
+                        @foreach (var property in Properties)
+                        {
+                            <tr>
+                                <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">@property.Name</td>
+                                <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@property.Type" /></td>
+                                <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@property.Default</td>
+                                <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@property.Description</td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Events -->
-        <div class="vibe-mb-8">
+        <div>
             <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Events</h3>
             <div class="vibe-overflow-x-auto">
                 <table class="vibe-w-full vibe-text-sm">
@@ -163,280 +91,138 @@
                         </tr>
                     </thead>
                     <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnCardMoved</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<CardMovedEventArgs<TCard>>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when card is moved to different column</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnCardReordered</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<CardReorderedEventArgs<TCard>>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when card is reordered within column</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnCardClick</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<TCard>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when card is clicked</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnColumnClick</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<KanbanColumn>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when column header is clicked</td>
-                        </tr>
+                        @foreach (var eventInfo in Events)
+                        {
+                            <tr>
+                                <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">@eventInfo.Name</td>
+                                <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@eventInfo.Type" /></td>
+                                <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@eventInfo.Description</td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
         </div>
     </section>
 
-    <!-- Installation -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
-        <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-            Install the KanbanBoard component using the Vibe.UI CLI:
-        </p>
         <CodeBlock Code="vibe add kanbanboard" Language="bash" />
     </section>
 
-    <!-- Accessibility -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
-        <div class="vibe-prose dark:vibe-prose-invert vibe-max-w-none">
-            <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+        <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            @foreach (var item in AccessibilityItems)
+            {
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Column headers are semantic headings
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />
+                    @item
                 </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Cards are keyboard navigable (Tab/Arrow keys)
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Drag and drop has keyboard alternatives
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Screen readers announce card movements
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Focus management when moving cards
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Proper ARIA labels and roles throughout
-                </li>
-            </ul>
-        </div>
-    </section>
-
-    <!-- Related Components -->
-    <section>
-        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Related</h2>
-        <div class="vibe-grid vibe-grid-cols-1 sm:vibe-grid-cols-3 vibe-gap-4">
-            <a href="components/dragdrop" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">DragDrop</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Drag and drop functionality</p>
-            </a>
-            <a href="components/card" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Card</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Content container component</p>
-            </a>
-            <a href="components/badge" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Badge</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Status and label indicator</p>
-            </a>
-        </div>
+            }
+        </ul>
     </section>
 </div>
 
 @code {
-    private List<KanbanColumn> kanbanColumns = new()
-    {
-        new()
-        {
-            Id = "todo",
-            Title = "To Do",
-            Cards = new()
-            {
-                new() { Title = "Design homepage", Description = "Create mockups", Tags = new() { "Design", "High Priority" } },
-                new() { Title = "Map component inventory", Description = "Audit existing styles", Tags = new() { "Docs" } }
-            }
-        },
-        new()
-        {
-            Id = "progress",
-            Title = "In Progress",
-            Cards = new()
-            {
-                new() { Title = "API development", Description = "Build REST endpoints", Tags = new() { "Backend" } },
-                new() { Title = "Dark mode polish", Description = "Refine tokens and contrast", Tags = new() { "UI" } }
-            }
-        },
-        new()
-        {
-            Id = "complete",
-            Title = "Complete",
-            Cards = new()
-            {
-                new() { Title = "Project setup", Description = "Initialize repository", Tags = new() { "Setup" } },
-                new() { Title = "Wire CI", Description = "Docs deploy pipeline", Tags = new() { "Build" } }
-            }
-        }
-    };
+    private string moveStatus = "Move a card to see the updated column.";
 
-    private string BasicCode => @"<KanbanBoard Columns=""@columns""
-             Cards=""@cards""
-             OnCardMoved=""@HandleCardMoved"">
-    <CardTemplate Context=""card"">
-        <div class=""kanban-card"">
-            <h4>@card.Title</h4>
-            <p>@card.Description</p>
-        </div>
-    </CardTemplate>
-</KanbanBoard>
+    private readonly List<KanbanColumn> kanbanColumns =
+    [
+        new()
+        {
+            Id = "backlog",
+            Title = "Backlog",
+            Cards =
+            [
+                new() { Id = "inventory", Title = "Map component inventory", Description = "Audit current visual states", Tags = ["Design system"] },
+                new() { Id = "docs", Title = "Correct API examples", Description = "Remove stale public contracts", Tags = ["Docs"] }
+            ]
+        },
+        new()
+        {
+            Id = "active",
+            Title = "In progress",
+            Cards =
+            [
+                new() { Id = "mobile", Title = "Mobile interaction pass", Description = "Verify touch-sized controls", Tags = ["UX"] }
+            ]
+        },
+        new()
+        {
+            Id = "done",
+            Title = "Done",
+            Cards =
+            [
+                new() { Id = "tokens", Title = "Normalize theme tokens", Description = "Align light and dark surfaces", Tags = ["CSS"] }
+            ]
+        }
+    ];
+
+    private static readonly (string Name, string Type, string Default, string Description)[] Properties =
+    [
+        ("Columns", "List<KanbanColumn>?", "null", "Columns and their card lists"),
+        ("CardTemplate", "RenderFragment<KanbanCard>?", "null", "Custom card contents"),
+        ("ColumnHeaderTemplate", "RenderFragment<KanbanColumn>?", "null", "Custom column header contents"),
+        ("EmptyContent", "RenderFragment?", "null", "Custom board-level empty state"),
+        ("AllowDragDrop", "bool", "true", "Enable pointer and keyboard card movement"),
+        ("AllowAddCard", "bool", "true", "Render add buttons in default headers"),
+        ("Disabled", "bool", "false", "Block all interactions"),
+        ("ReadOnly", "bool", "false", "Show content while blocking edits and clicks"),
+        ("AriaLabel", "string", "Kanban board", "Accessible board name"),
+        ("EmptyText", "string", "No columns", "Board-level empty text"),
+        ("EmptyColumnText", "string", "No cards", "Column-level empty text"),
+        ("CssClass", "string?", "null", "Additional component class")
+    ];
+
+    private static readonly (string Name, string Type, string Description)[] Events =
+    [
+        ("OnCardMoved", "EventCallback<CardMovedEventArgs>", "Raised after a card moves between columns"),
+        ("OnCardClicked", "EventCallback<KanbanCard>", "Raised for pointer or keyboard card activation"),
+        ("OnAddCardRequested", "EventCallback<string>", "Raised with the target column ID")
+    ];
+
+    private static readonly string[] AccessibilityItems =
+    [
+        "Exposes the board, columns, and card groups with list semantics",
+        "Moves a focused card with Control+ArrowLeft or Control+ArrowRight",
+        "Activates clickable cards with Enter or Space",
+        "Provides a distinct focus ring, drag state, and drop-target state"
+    ];
+
+    private Task HandleCardMoved(CardMovedEventArgs args)
+    {
+        moveStatus = $"Moved {args.Card.Title} from {args.FromColumnId} to {args.ToColumnId}.";
+        return Task.CompletedTask;
+    }
+
+    private string BasicCode => @"<KanbanBoard Columns=""columns""
+             AllowAddCard=""false""
+             OnCardMoved=""HandleCardMoved"" />
 
 @code {
-    private List<KanbanColumn> columns = new()
-    {
-        new KanbanColumn { Id = ""todo"", Title = ""To Do"" },
-        new KanbanColumn { Id = ""progress"", Title = ""In Progress"" },
-        new KanbanColumn { Id = ""complete"", Title = ""Complete"" }
-    };
+    private List<KanbanBoard.KanbanColumn> columns =
+    [
+        new()
+        {
+            Id = ""todo"",
+            Title = ""To do"",
+            Cards = [new() { Id = ""task-1"", Title = ""Review pull request"" }]
+        },
+        new() { Id = ""done"", Title = ""Done"" }
+    ];
 
-    private List<TaskCard> cards = GetCards();
-
-    private async Task HandleCardMoved(CardMovedEventArgs<TaskCard> args)
+    private Task HandleCardMoved(KanbanBoard.CardMovedEventArgs args)
     {
-        // Update card status in database
-        await UpdateCardStatusAsync(args.Card, args.ToColumn);
+        return SaveStatusAsync(args.Card.Id, args.ToColumnId);
     }
 }";
 
-    private string CustomCardCode => @"<KanbanBoard Columns=""@columns"" Cards=""@cards"">
+    private string TemplateCode => @"<KanbanBoard Columns=""columns"">
     <CardTemplate Context=""card"">
-        <div class=""task-card"">
-            <div class=""card-header"">
-                <h4>@card.Title</h4>
-                <Badge Variant=""@GetPriorityVariant(card.Priority)"">
-                    @card.Priority
-                </Badge>
-            </div>
-            <p>@card.Description</p>
-            <div class=""card-footer"">
-                <Avatar Src=""@card.AssigneeAvatar"" Size=""AvatarSize.Small"" />
-                <span class=""due-date"">Due: @card.DueDate.ToShortDateString()</span>
-            </div>
-        </div>
+        <h4>@card.Title</h4>
+        <p>@card.Description</p>
+        <Badge>@card.Tags?.FirstOrDefault()</Badge>
     </CardTemplate>
 </KanbanBoard>";
-
-    private string LimitsCode => @"<KanbanBoard Columns=""@columns"" Cards=""@cards"">
-    <ColumnHeaderTemplate Context=""column"">
-        <div class=""column-header"">
-            <h3>@column.Title</h3>
-            <span class=""card-count"">
-                @GetColumnCardCount(column.Id) / @column.MaxCards
-            </span>
-            @if (IsColumnFull(column))
-            {
-                <Badge Variant=""BadgeVariant.Warning"">Full</Badge>
-            }
-        </div>
-    </ColumnHeaderTemplate>
-    <CardTemplate Context=""card"">
-        <div class=""kanban-card"">@card.Title</div>
-    </CardTemplate>
-</KanbanBoard>
-
-@code {
-    private bool IsColumnFull(KanbanColumn column)
-    {
-        return GetColumnCardCount(column.Id) >= column.MaxCards;
-    }
-}";
-
-    private string SwimlanesCode => @"<div class=""kanban-swimlanes"">
-    @foreach (var swimlane in swimlanes)
-    {
-        <div class=""swimlane"">
-            <h2>@swimlane.Name</h2>
-            <KanbanBoard Columns=""@columns""
-                         Cards=""@GetCardsForSwimlane(swimlane.Id)""
-                         OnCardMoved=""@HandleCardMoved"">
-                <CardTemplate Context=""card"">
-                    <div class=""kanban-card"">@card.Title</div>
-                </CardTemplate>
-            </KanbanBoard>
-        </div>
-    }
-</div>";
-
-    private string FullCode => @"<KanbanBoard Columns=""@columns""
-             Cards=""@cards""
-             ShowCardCount=""true""
-             OnCardMoved=""@HandleCardMoved""
-             OnCardClick=""@HandleCardClick"">
-    <ColumnHeaderTemplate Context=""column"">
-        <div class=""column-header"">
-            <h3>@column.Title</h3>
-            <Button Size=""ComponentSize.Small""
-                    Variant=""ButtonVariant.Ghost""
-                    OnClick=""@(() => AddCard(column.Id))"">
-                + Add Card
-            </Button>
-        </div>
-    </ColumnHeaderTemplate>
-    <CardTemplate Context=""card"">
-        <div class=""task-card"" @onclick=""@(() => HandleCardClick(card))"">
-            <div class=""card-header"">
-                <h4>@card.Title</h4>
-                <Dropdown>
-                    <DropdownItem OnClick=""@(() => EditCard(card))"">Edit</DropdownItem>
-                    <DropdownItem OnClick=""@(() => DeleteCard(card))"">Delete</DropdownItem>
-                </Dropdown>
-            </div>
-            <p>@card.Description</p>
-            <div class=""card-tags"">
-                @foreach (var tag in card.Tags)
-                {
-                    <Badge>@tag</Badge>
-                }
-            </div>
-            <div class=""card-footer"">
-                <Avatar Src=""@card.AssigneeAvatar"" Size=""AvatarSize.Small"" />
-                <span>@card.DueDate.ToShortDateString()</span>
-            </div>
-        </div>
-    </CardTemplate>
-</KanbanBoard>
-
-@code {
-    private async Task HandleCardMoved(CardMovedEventArgs<TaskCard> args)
-    {
-        await TaskService.UpdateStatusAsync(args.Card.Id, args.ToColumn);
-        await LoadCardsAsync();
-    }
-
-    private void HandleCardClick(TaskCard card)
-    {
-        // Open card detail view
-        NavigationManager.NavigateTo($""/tasks/{card.Id}"");
-    }
-}";
 }
-
-

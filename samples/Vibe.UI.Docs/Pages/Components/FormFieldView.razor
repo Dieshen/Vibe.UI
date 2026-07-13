@@ -1,408 +1,133 @@
 @page "/components/formfield"
-@using Vibe.UI.Docs.Models
+@using Vibe.UI.Components
 
 <PageTitle>FormField - Vibe.UI</PageTitle>
 
 <div class="vibe-max-w-4xl vibe-mx-auto">
-    <!-- Header -->
     <header class="vibe-mb-8">
         <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
-            <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
-            <span>/</span>
-            <a href="components" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Components</a>
-            <span>/</span>
+            <a href="./">Docs</a><span>/</span><a href="components">Components</a><span>/</span>
             <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">FormField</span>
         </div>
         <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">FormField</h1>
         <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
-            A wrapper for form inputs that provides consistent labeling, error display, and layout.
+            Associates one control with its label, description, required state, and validation message.
         </p>
     </header>
 
-    <!-- Preview Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
-        <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
             <div class="vibe-max-w-md vibe-space-y-4">
-                <FormField TValue="string" Label="Username">
-                    <Input Placeholder="Enter username" />
+                <FormField TValue="string"
+                           Id="work-email"
+                           Label="Work email"
+                           Description="We use this for account notifications"
+                           ErrorMessage="@(showError ? "Enter a valid work email" : null)"
+                           Required="true">
+                    <Input Type="email" Placeholder="you@company.com" @bind-Value="email" />
                 </FormField>
-
-                <FormField TValue="string" Label="Email" Description="We'll never share your email">
-                    <Input Type="email" Placeholder="you@example.com" />
-                </FormField>
-
-                <FormField TValue="string" Label="Password" Description="Must be at least 8 characters">
-                    <Input Type="password" Placeholder="Enter password" />
-                </FormField>
+                <Button OnClick="@ToggleError">@(showError ? "Clear error" : "Show error")</Button>
             </div>
         </div>
     </section>
 
-    <!-- Examples Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
-
-        <!-- Basic Usage -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Basic Usage</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Wrap input elements with FormField to add a label and proper structure.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-md">
-                    <FormField TValue="string" Label="Username">
-                        <Input Placeholder="Enter username" />
-                    </FormField>
-                </div>
-            </div>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Description and required state</h3>
             <CodeBlock Code="@BasicCode" Language="razor" />
         </div>
-
-        <!-- With Required Indicator -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Required Indicator</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Show a visual indicator for required fields.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-md vibe-space-y-4">
-                    <FormField TValue="string" Label="Email" Required="true">
-                        <Input Type="email" Placeholder="you@example.com" />
-                    </FormField>
-
-                    <FormField TValue="string" Label="Password" Required="true">
-                        <Input Type="password" Placeholder="Enter password" />
-                    </FormField>
-                </div>
-            </div>
-            <CodeBlock Code="@RequiredCode" Language="razor" />
-        </div>
-
-        <!-- With Helper Text -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Helper Text</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Add descriptive helper text below the input using the Description property.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-md vibe-space-y-4">
-                    <FormField TValue="string" Label="Password" Description="Must be at least 8 characters long">
-                        <Input Type="password" />
-                    </FormField>
-
-                    <FormField TValue="string" Label="Website" Description="Optional: Enter your website URL">
-                        <Input Type="url" Placeholder="https://example.com" />
-                    </FormField>
-                </div>
-            </div>
-            <CodeBlock Code="@HelperTextCode" Language="razor" />
-        </div>
-
-        <!-- With Error Message -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Error Message</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Display validation errors using the Error property.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-md vibe-space-y-4">
-                    <FormField TValue="string" Label="Email" Error="Please enter a valid email address">
-                        <Input Type="email" Value="invalid-email" />
-                    </FormField>
-
-                    <FormField TValue="string" Label="Username" Error="This username is already taken">
-                        <Input Value="johndoe" />
-                    </FormField>
-                </div>
-            </div>
-            <CodeBlock Code="@ErrorCode" Language="razor" />
-        </div>
-
-        <!-- Horizontal Layout -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Horizontal Layout</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Use horizontal layout for side-by-side label and input arrangement.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-2xl vibe-space-y-4">
-                    <FormField TValue="string" Label="Name" Layout="FormFieldLayout.Horizontal">
-                        <Input Placeholder="Enter name" />
-                    </FormField>
-
-                    <FormField TValue="string" Label="Email" Layout="FormFieldLayout.Horizontal">
-                        <Input Type="email" Placeholder="you@example.com" />
-                    </FormField>
-                </div>
-            </div>
-            <CodeBlock Code="@HorizontalCode" Language="razor" />
-        </div>
-
-        <!-- With Different Input Types -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Different Input Types</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                FormField works with any input component.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-md vibe-space-y-4">
-                    <FormField TValue="string" Label="Country">
-                        <Select Placeholder="Select a country...">
-                            <option value="us">United States</option>
-                            <option value="uk">United Kingdom</option>
-                            <option value="ca">Canada</option>
-                        </Select>
-                    </FormField>
-
-                    <FormField TValue="string" Label="Bio">
-                        <TextArea Placeholder="Tell us about yourself..." Rows="4" />
-                    </FormField>
-
-                    <FormField TValue="bool" Label="Preferences">
-                        <Checkbox>Subscribe to newsletter</Checkbox>
-                    </FormField>
-                </div>
-            </div>
-            <CodeBlock Code="@InputTypesCode" Language="razor" />
-        </div>
-
-        <!-- Complex Example -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Complex Form Example</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Combining multiple FormFields with different configurations.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-md vibe-space-y-4">
-                    <FormField TValue="string" Label="Full Name" Required="true">
-                        <Input Placeholder="John Doe" />
-                    </FormField>
-
-                    <FormField TValue="string" Label="Email" Required="true" Description="We'll send confirmation to this email">
-                        <Input Type="email" Placeholder="john@example.com" />
-                    </FormField>
-
-                    <FormField TValue="string" Label="Phone" Description="Include country code">
-                        <Input Type="tel" Placeholder="+1 (555) 000-0000" />
-                    </FormField>
-
-                    <FormField TValue="string" Label="Comments">
-                        <TextArea Placeholder="Additional comments..." Rows="3" />
-                    </FormField>
-                </div>
-            </div>
-            <CodeBlock Code="@ComplexCode" Language="razor" />
+        <div>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">EditContext validation</h3>
+            <CodeBlock Code="@ValidationCode" Language="razor" />
         </div>
     </section>
 
-    <!-- API Reference -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
-
-        <!-- Properties -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Properties</h3>
-            <div class="vibe-overflow-x-auto">
-                <table class="vibe-w-full vibe-text-sm">
-                    <thead>
-                        <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Default</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+        <div class="vibe-overflow-x-auto">
+            <table class="vibe-w-full vibe-text-sm">
+                <thead><tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th>
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th>
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Default</th>
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th>
+                </tr></thead>
+                <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+                    @foreach (var property in Properties)
+                    {
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Label</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Label text for the field</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">@property.Name</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@property.Type" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@property.Default</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@property.Description</td>
                         </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Helper text to display below the input</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Required</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Whether to show required indicator</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Error</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Error message to display</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Layout</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="FormFieldLayout" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Vertical</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Layout orientation (Vertical, Horizontal)</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">TValue</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="Type" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Type parameter for strongly-typed field binding</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ChildContent</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Input control content</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                    }
+                </tbody>
+            </table>
         </div>
     </section>
 
-    <!-- Installation -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
-        <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-            Install the FormField component using the Vibe.UI CLI:
-        </p>
         <CodeBlock Code="vibe add formfield" Language="bash" />
     </section>
 
-    <!-- Accessibility -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
-        <div class="vibe-prose dark:vibe-prose-invert vibe-max-w-none">
-            <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+        <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            @foreach (var item in AccessibilityItems)
+            {
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Label properly associated with input via for/id attributes
+                    <Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />
+                    @item
                 </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Error messages linked with <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">aria-describedby</code>
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Required fields marked with <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">aria-required</code>
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Helper text provides additional context via aria-describedby
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Semantic HTML structure for proper form semantics
-                </li>
-            </ul>
-        </div>
-    </section>
-
-    <!-- Related Components -->
-    <section>
-        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Related</h2>
-        <div class="vibe-grid vibe-grid-cols-1 sm:vibe-grid-cols-3 vibe-gap-4">
-            <a href="components/form" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Form</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Form container component</p>
-            </a>
-            <a href="components/input" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Input</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Text input component</p>
-            </a>
-            <a href="components/textarea" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Textarea</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Multi-line text input</p>
-            </a>
-        </div>
+            }
+        </ul>
     </section>
 </div>
 
 @code {
-    private string BasicCode => @"<FormField TValue=""string"" Label=""Username"">
-    <Input Placeholder=""Enter username"" />
+    private string email = string.Empty;
+    private bool showError;
+
+    private void ToggleError() => showError = !showError;
+
+    private static readonly (string Name, string Type, string Default, string Description)[] Properties =
+    [
+        ("Id", "string?", "generated", "Shared ID for the label and nested Vibe control"),
+        ("Label", "string?", "null", "Visible control label"),
+        ("Description", "string?", "null", "Help text linked to the control"),
+        ("ErrorMessage", "string?", "null", "Explicit error linked and announced for the control"),
+        ("ValidationFor", "Expression<Func<TValue>>?", "null", "Field used to read EditContext validation messages"),
+        ("HasError", "bool", "false", "Force the invalid visual and ARIA state"),
+        ("Required", "bool", "false", "Render a required marker and mark the nested control required"),
+        ("ChildContent", "RenderFragment?", "null", "Input, Select, or TextArea content")
+    ];
+
+    private static readonly string[] AccessibilityItems =
+    [
+        "The label for attribute matches the nested control ID",
+        "Description and errors are applied to the control with aria-describedby",
+        "Invalid controls expose aria-invalid and aria-errormessage",
+        "Required state is visible and applied to the native control"
+    ];
+
+    private string BasicCode => @"<FormField TValue=""string""
+           Id=""email""
+           Label=""Email""
+           Description=""Used for account notifications""
+           Required=""true"">
+    <Input Type=""email"" @bind-Value=""model.Email"" />
 </FormField>";
 
-    private string RequiredCode => @"<FormField TValue=""string"" Label=""Email"" Required=""true"">
-    <Input Type=""email"" Placeholder=""you@example.com"" />
-</FormField>
-
-<FormField TValue=""string"" Label=""Password"" Required=""true"">
-    <Input Type=""password"" Placeholder=""Enter password"" />
-</FormField>";
-
-    private string HelperTextCode => @"<FormField TValue=""string"" Label=""Password""
-           Description=""Must be at least 8 characters long"">
-    <Input Type=""password"" />
-</FormField>
-
-<FormField TValue=""string"" Label=""Website""
-           Description=""Optional: Enter your website URL"">
-    <Input Type=""url"" Placeholder=""https://example.com"" />
-</FormField>";
-
-    private string ErrorCode => @"<FormField TValue=""string"" Label=""Email""
-           Error=""Please enter a valid email address"">
-    <Input Type=""email"" Value=""invalid-email"" />
-</FormField>
-
-<FormField TValue=""string"" Label=""Username""
-           Error=""This username is already taken"">
-    <Input Value=""johndoe"" />
-</FormField>";
-
-    private string HorizontalCode => @"<FormField TValue=""string"" Label=""Name"" Layout=""FormFieldLayout.Horizontal"">
-    <Input Placeholder=""Enter name"" />
-</FormField>
-
-<FormField TValue=""string"" Label=""Email"" Layout=""FormFieldLayout.Horizontal"">
-    <Input Type=""email"" />
-</FormField>";
-
-    private string InputTypesCode => @"<FormField TValue=""string"" Label=""Country"">
-    <Select Placeholder=""Select a country..."">
-        <option value=""us"">United States</option>
-        <option value=""uk"">United Kingdom</option>
-        <option value=""ca"">Canada</option>
-    </Select>
-</FormField>
-
-<FormField TValue=""string"" Label=""Bio"">
-    <TextArea Placeholder=""Tell us about yourself..."" Rows=""4"" />
-</FormField>
-
-<FormField TValue=""bool"" Label=""Preferences"">
-    <Checkbox>Subscribe to newsletter</Checkbox>
-</FormField>";
-
-    private string ComplexCode => @"<FormField TValue=""string"" Label=""Full Name"" Required=""true"">
-    <Input Placeholder=""John Doe"" />
-</FormField>
-
-<FormField TValue=""string"" Label=""Email"" Required=""true""
-           Description=""We'll send confirmation to this email"">
-    <Input Type=""email"" Placeholder=""john@example.com"" />
-</FormField>
-
-<FormField TValue=""string"" Label=""Phone"" Description=""Include country code"">
-    <Input Type=""tel"" Placeholder=""+1 (555) 000-0000"" />
-</FormField>
-
-<FormField TValue=""string"" Label=""Comments"">
-    <TextArea Placeholder=""Additional comments..."" Rows=""3"" />
-</FormField>";
+    private string ValidationCode => @"<Form Model=""model"">
+    <FormField TValue=""string""
+               Id=""email""
+               Label=""Email""
+               ValidationFor=""@(() => model.Email)"">
+        <Input Type=""email"" @bind-Value=""model.Email"" />
+    </FormField>
+</Form>";
 }
-
-

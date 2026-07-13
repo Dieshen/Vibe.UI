@@ -22,18 +22,26 @@
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
         <div class="vibe-p-6 vibe-rounded-xl vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-800 vibe-bg-white dark:vibe-bg-zinc-900">
-            <Alert Variant="AlertVariant.Info" Title="Note">
-                The Tabs component uses a programmatic API with AddTab().
-                A declarative child component API is planned for a future release.
-            </Alert>
-            <div class="vibe-mt-4">
-                <Card>
-                    <div class="vibe-p-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">
-                        <p class="vibe-mb-2">Current implementation requires programmatic tab registration.</p>
-                        <p>See the code examples below for usage patterns.</p>
+            <Tabs @bind-ActiveTabId="activeTabId">
+                <TabItem Id="account" Header="Account" DefaultActive="true">
+                    <div class="vibe-py-2">
+                        <h3 class="vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-1">Account</h3>
+                        <p class="vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400">Update your profile and account preferences.</p>
                     </div>
-                </Card>
-            </div>
+                </TabItem>
+                <TabItem Id="security" Header="Security">
+                    <div class="vibe-py-2">
+                        <h3 class="vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-1">Security</h3>
+                        <p class="vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400">Manage your password and active sessions.</p>
+                    </div>
+                </TabItem>
+                <TabItem Id="billing" Header="Billing">
+                    <div class="vibe-py-2">
+                        <h3 class="vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-1">Billing</h3>
+                        <p class="vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400">Review invoices and payment details.</p>
+                    </div>
+                </TabItem>
+            </Tabs>
         </div>
     </section>
 
@@ -41,45 +49,31 @@
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
 
-        <!-- How It Works -->
+        <!-- Basic Usage -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">How It Works</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Basic Usage</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                The current Tabs component implementation uses an internal API where tabs are registered programmatically.
+                Declare tab headers and panels together with <code>TabItem</code> children.
             </p>
-            <CodeBlock Code="@HowItWorksCode" Language="csharp" />
-        </div>
-
-        <!-- Component Structure -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Component Structure</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                The Tabs component renders:
-            </p>
-            <ul class="list-disc list-inside vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4 vibe-space-y-1">
-                <li>A tab list with clickable tab triggers</li>
-                <li>Tab panels that show/hide based on the active tab</li>
-                <li>Proper ARIA attributes for accessibility</li>
-            </ul>
-            <CodeBlock Code="@StructureCode" Language="razor" />
-        </div>
-
-        <!-- Creating Tabs Programmatically -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Creating Tabs Programmatically</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Tabs are added via the internal AddTab() method.
-            </p>
-            <CodeBlock Code="@ProgrammaticCode" Language="csharp" />
+            <CodeBlock Code="@BasicCode" Language="razor" />
         </div>
 
         <!-- Controlled State -->
         <div class="vibe-mb-8">
             <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Controlled State</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                You can control which tab is active using two-way binding.
+                Bind the active tab ID when application state needs to control the selection.
             </p>
             <CodeBlock Code="@ControlledCode" Language="razor" />
+        </div>
+
+        <!-- Disabled Tab -->
+        <div class="vibe-mb-8">
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Disabled Tab</h3>
+            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
+                Disabled tabs remain visible but cannot be selected with pointer or keyboard input.
+            </p>
+            <CodeBlock Code="@DisabledCode" Language="razor" />
         </div>
 
         <!-- Tab Events -->
@@ -91,20 +85,6 @@
             <CodeBlock Code="@EventsCode" Language="razor" />
         </div>
 
-        <!-- Future API -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Future API (Planned)</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                A declarative child component API is planned for easier usage.
-            </p>
-            <CodeBlock Code="@FutureApiCode" Language="razor" />
-            <div class="vibe-mt-3">
-                <Alert Variant="AlertVariant.Default" Title="Coming Soon">
-                    This declarative API is not yet implemented.
-                    Use the programmatic approach shown above for now.
-                </Alert>
-            </div>
-        </div>
     </section>
 
     <!-- API Reference -->
@@ -147,7 +127,7 @@
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ChildContent</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Child content (currently for future child components)</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Declarative <code>TabItem</code> children</td>
                         </tr>
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Class</td>
@@ -264,7 +244,7 @@
                 <svg class="vibe-w-5 vibe-h-5 vibe-text-amber-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
                 </svg>
-                Keyboard navigation should be implemented (currently limited to click)
+                Arrow keys, Home, and End move focus between enabled tabs
             </li>
         </ul>
     </section>
@@ -290,127 +270,36 @@
 </div>
 
 @code {
-    private string HowItWorksCode => @"// Internal TabItem class structure
-internal class TabItem
-{
-    public string Id { get; }
-    public RenderFragment Title { get; }
-    public RenderFragment Content { get; }
-    public bool Disabled { get; }
-    public bool DefaultActive { get; }
-}
+    private string? activeTabId = "account";
 
-// Tabs component maintains a list of TabItem instances
-private List<TabItem> _tabs = new();
+    private string BasicCode => @"<Tabs>
+    <TabItem Id=""overview"" Header=""Overview"" DefaultActive=""true"">
+        Overview content
+    </TabItem>
+    <TabItem Id=""activity"" Header=""Activity"">
+        Activity content
+    </TabItem>
+</Tabs>";
 
-// Tabs are added via internal AddTab() method
-internal void AddTab(TabItem tab)
-{
-    _tabs.Add(tab);
-    // First tab or DefaultActive tab becomes active
-}";
-
-    private string StructureCode => @"<!-- Rendered HTML structure -->
-<div class=""vibe-tabs"">
-    <!-- Tab triggers -->
-    <div class=""vibe-tabs-list"" role=""tablist"">
-        <button type=""button""
-                class=""vibe-tabs-trigger vibe-tabs-trigger-active""
-                role=""tab""
-                aria-selected=""true"">
-            Tab 1
-        </button>
-        <button type=""button""
-                class=""vibe-tabs-trigger""
-                role=""tab""
-                aria-selected=""false"">
-            Tab 2
-        </button>
-    </div>
-
-    <!-- Tab panels -->
-    <div class=""vibe-tabs-content"">
-        <div class=""vibe-tabs-panel vibe-tabs-panel-active""
-             role=""tabpanel"">
-            Content 1
-        </div>
-        <div class=""vibe-tabs-panel""
-             role=""tabpanel"">
-            Content 2
-        </div>
-    </div>
-</div>";
-
-    private string ProgrammaticCode => @"@* Current implementation requires creating a wrapper or custom component *@
-
-@code {
-    private Tabs tabsRef;
-
-    protected override void OnInitialized()
-    {
-        // Tabs need to be added programmatically
-        // This requires accessing the component's internal API
-        // A declarative child component approach is recommended for future releases
-    }
-}";
-
-    private string ControlledCode => @"<Tabs @bind-ActiveTabId=""@currentTabId"">
-    @* Tabs would be registered here *@
-</Tabs>
-
-<p>Current Active Tab: @currentTabId</p>
-
-@code {
-    private string currentTabId = ""tab1"";
-}";
-
-    private string EventsCode => @"<Tabs ActiveTabId=""@activeTab""
-      ActiveTabIdChanged=""@OnActiveTabChanged""
-      OnTabActivated=""@OnTabActivated"">
-    @* Tab content *@
+    private string ControlledCode => @"<Tabs @bind-ActiveTabId=""@activeTabId"">
+    <TabItem Id=""account"" Header=""Account"">Account content</TabItem>
+    <TabItem Id=""security"" Header=""Security"">Security content</TabItem>
 </Tabs>
 
 @code {
-    private string activeTab = ""home"";
-
-    private void OnActiveTabChanged(string newTabId)
-    {
-        Console.WriteLine($""Tab changed to: {newTabId}"");
-        activeTab = newTabId;
-    }
-
-    private void OnTabActivated(Tabs.TabActivatedEventArgs args)
-    {
-        Console.WriteLine($""Tab {args.TabId} was activated"");
-    }
+    private string? activeTabId = ""account"";
 }";
 
-    private string FutureApiCode => @"@* Planned declarative API (not yet implemented) *@
-<Tabs @bind-ActiveTabId=""@activeTab"">
-    <TabList>
-        <TabTrigger Id=""home"">Home</TabTrigger>
-        <TabTrigger Id=""profile"">Profile</TabTrigger>
-        <TabTrigger Id=""settings"" Disabled=""true"">Settings</TabTrigger>
-    </TabList>
-    <TabPanels>
-        <TabPanel Id=""home"">
-            <h3>Home Content</h3>
-            <p>Welcome to the home tab.</p>
-        </TabPanel>
-        <TabPanel Id=""profile"">
-            <h3>Profile Content</h3>
-            <p>Your profile information goes here.</p>
-        </TabPanel>
-        <TabPanel Id=""settings"">
-            <h3>Settings Content</h3>
-            <p>Application settings.</p>
-        </TabPanel>
-    </TabPanels>
-</Tabs>
+    private string DisabledCode => @"<Tabs>
+    <TabItem Id=""overview"" Header=""Overview"" DefaultActive=""true"">Overview</TabItem>
+    <TabItem Id=""analytics"" Header=""Analytics"" Disabled=""true"">Analytics</TabItem>
+</Tabs>";
 
-@code {
-    private string activeTab = ""home"";
-}";
+    private string EventsCode => @"<Tabs @bind-ActiveTabId=""@activeTabId""
+      OnTabActivated=""@HandleTabActivated"">
+    <TabItem Id=""home"" Header=""Home"">Home content</TabItem>
+    <TabItem Id=""settings"" Header=""Settings"">Settings content</TabItem>
+</Tabs>";
 }
 
 

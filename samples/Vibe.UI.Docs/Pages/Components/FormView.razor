@@ -1,507 +1,149 @@
 @page "/components/form"
-@using Vibe.UI.Docs.Models
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
+@using Vibe.UI.Components
 
 <PageTitle>Form - Vibe.UI</PageTitle>
 
 <div class="vibe-max-w-4xl vibe-mx-auto">
-    <!-- Header -->
     <header class="vibe-mb-8">
         <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
-            <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
-            <span>/</span>
-            <a href="components" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Components</a>
-            <span>/</span>
+            <a href="./">Docs</a><span>/</span><a href="components">Components</a><span>/</span>
             <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Form</span>
         </div>
         <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Form</h1>
         <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
-            A container for form elements with built-in validation and submission handling.
+            A typed EditForm wrapper with data-annotation validation and explicit valid and invalid submit callbacks.
         </p>
     </header>
 
-    <!-- Preview Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
-        <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
             <div class="vibe-max-w-md">
-                <Form Model="@userModel" OnSubmit="@HandleValidSubmit" FormName="user-form">
-                    <FormField TValue="string" Label="Name">
-                        <Input Value="@userModel.Name" ValueChanged="@((string v) => userModel.Name = v)" Placeholder="Enter your name" />
-                    </FormField>
-
-                    <FormField TValue="string" Label="Email">
-                        <Input Type="email" Value="@userModel.Email" ValueChanged="@((string v) => userModel.Email = v)" Placeholder="you@example.com" />
-                    </FormField>
-
-                    <FormField TValue="string" Label="Message">
-                        <TextArea Value="@userModel.Message" ValueChanged="@((string v) => userModel.Message = v)" Placeholder="Your message..." Rows="4" />
-                    </FormField>
-
-                    <div class="vibe-mt-4">
-                        <Button Type="submit" Variant="ButtonVariant.Primary">Submit</Button>
+                <Form Model="@model" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
+                    <div class="vibe-space-y-4">
+                        <FormField TValue="string" Id="name" Label="Name" ValidationFor="@(() => model.Name)" Required="true">
+                            <Input @bind-Value="model.Name" />
+                        </FormField>
+                        <FormField TValue="string" Id="email" Label="Email" ValidationFor="@(() => model.Email)" Required="true">
+                            <Input Type="email" @bind-Value="model.Email" />
+                        </FormField>
+                        <Button Type="submit">Create account</Button>
                     </div>
                 </Form>
-
-                @if (!string.IsNullOrEmpty(submitMessage))
+                @if (!string.IsNullOrEmpty(submitStatus))
                 {
-                    <div class="vibe-mt-4 vibe-p-4 vibe-bg-green-50 dark:vibe-bg-green-900/20 vibe-border-l-4 vibe-border-green-500 vibe-rounded">
-                        <p class="vibe-text-sm vibe-text-green-700 dark:vibe-text-green-400">@submitMessage</p>
-                    </div>
+                    <output class="vibe-block vibe-mt-3 vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400">@submitStatus</output>
                 }
             </div>
         </div>
     </section>
 
-    <!-- Examples Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
-
-        <!-- Basic Usage -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Basic Usage</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Create a simple form with input fields and a submit button.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-md">
-                    <Form Model="@basicModel">
-                        <FormField TValue="string" Label="Name">
-                            <Input Value="@basicModel.Name" ValueChanged="@((string v) => basicModel.Name = v)" />
-                        </FormField>
-                        <FormField TValue="string" Label="Email">
-                            <Input Type="email" Value="@basicModel.Email" ValueChanged="@((string v) => basicModel.Email = v)" />
-                        </FormField>
-                        <div class="vibe-mt-4">
-                            <Button Type="submit">Submit</Button>
-                        </div>
-                    </Form>
-                </div>
-            </div>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Validated model</h3>
             <CodeBlock Code="@BasicCode" Language="razor" />
         </div>
-
-        <!-- With Validation -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Validation</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Add data annotations for built-in validation.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-md">
-                    <p class="vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                        This example demonstrates validation using data annotations in your model class.
-                    </p>
-                </div>
-            </div>
-            <CodeBlock Code="@ValidationCode" Language="razor" />
-        </div>
-
-        <!-- Form Layout -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Form Layouts</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Control form layout with the Layout property.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-2xl vibe-space-y-6">
-                    <div>
-                        <h4 class="vibe-text-sm vibe-font-medium vibe-text-zinc-700 dark:vibe-text-zinc-300 vibe-mb-2">Vertical Layout (Default)</h4>
-                        <Form Model="@layoutModel1" Layout="FormLayout.Vertical">
-                            <FormField TValue="string" Label="Name">
-                                <Input Value="@layoutModel1.Name" ValueChanged="@((string v) => layoutModel1.Name = v)" />
-                            </FormField>
-                            <FormField TValue="string" Label="Email">
-                                <Input Value="@layoutModel1.Email" ValueChanged="@((string v) => layoutModel1.Email = v)" />
-                            </FormField>
-                        </Form>
-                    </div>
-                    <div>
-                        <h4 class="vibe-text-sm vibe-font-medium vibe-text-zinc-700 dark:vibe-text-zinc-300 vibe-mb-2">Horizontal Layout</h4>
-                        <Form Model="@layoutModel2" Layout="FormLayout.Horizontal">
-                            <FormField TValue="string" Label="Name">
-                                <Input Value="@layoutModel2.Name" ValueChanged="@((string v) => layoutModel2.Name = v)" />
-                            </FormField>
-                            <FormField TValue="string" Label="Email">
-                                <Input Value="@layoutModel2.Email" ValueChanged="@((string v) => layoutModel2.Email = v)" />
-                            </FormField>
-                        </Form>
-                    </div>
-                </div>
-            </div>
-            <CodeBlock Code="@LayoutCode" Language="razor" />
-        </div>
-
-        <!-- Submit Handlers -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Submit Handlers</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Handle form submission with OnValidSubmit, OnInvalidSubmit, or OnSubmit callbacks.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-md">
-                    <Form Model="@submitModel" OnValidSubmit="@((EditContext _) => HandleSubmit())" OnInvalidSubmit="@HandleInvalidSubmit">
-                        <FormField TValue="string" Label="Username">
-                            <Input Value="@submitModel.Username" ValueChanged="@((string v) => submitModel.Username = v)" />
-                        </FormField>
-                        <div class="vibe-mt-4">
-                            <Button Type="submit">Submit</Button>
-                        </div>
-                    </Form>
-                    @if (!string.IsNullOrEmpty(submitHandlerMessage))
-                    {
-                        <p class="vibe-mt-3 vibe-text-sm vibe-text-brand-teal">@submitHandlerMessage</p>
-                    }
-                </div>
-            </div>
-            <CodeBlock Code="@SubmitHandlerCode" Language="razor" />
-        </div>
-
-        <!-- Disabled Form -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Disabled Form</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Disable all form elements at once with the Disabled property.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-md">
-                    <Form Model="@disabledModel" Disabled="true">
-                        <FormField TValue="string" Label="Name">
-                            <Input Value="John Doe" />
-                        </FormField>
-                        <FormField TValue="string" Label="Email">
-                            <Input Value="john@example.com" />
-                        </FormField>
-                        <div class="vibe-mt-4">
-                            <Button Type="submit">Submit</Button>
-                        </div>
-                    </Form>
-                </div>
-            </div>
-            <CodeBlock Code="@DisabledCode" Language="razor" />
+        <div>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Explicit EditContext</h3>
+            <CodeBlock Code="@EditContextCode" Language="razor" />
         </div>
     </section>
 
-    <!-- API Reference -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
-
-        <!-- Properties -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Properties</h3>
-            <div class="vibe-overflow-x-auto">
-                <table class="vibe-w-full vibe-text-sm">
-                    <thead>
-                        <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Default</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+        <div class="vibe-overflow-x-auto">
+            <table class="vibe-w-full vibe-text-sm">
+                <thead><tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th>
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th>
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Default</th>
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th>
+                </tr></thead>
+                <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+                    @foreach (var property in Properties)
+                    {
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Model</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="object" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">The form model for data binding</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">@property.Name</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@property.Type" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@property.Default</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@property.Description</td>
                         </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">EditContext</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EditContext" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">The edit context for validation</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">FormName</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Name attribute for the form element</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Layout</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="FormLayout" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Vertical</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Form layout (Vertical, Horizontal, Inline)</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Disabled</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Whether the entire form is disabled</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ChildContent</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Form content</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Events -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Events</h3>
-            <div class="vibe-overflow-x-auto">
-                <table class="vibe-w-full vibe-text-sm">
-                    <thead>
-                        <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnValidSubmit</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<EditContext>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when form is submitted and valid</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnInvalidSubmit</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<EditContext>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when form is submitted but invalid</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnSubmit</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<EditContext>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when form is submitted (regardless of validity)</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                    }
+                </tbody>
+            </table>
         </div>
     </section>
 
-    <!-- Installation -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
-        <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-            Install the Form component using the Vibe.UI CLI:
-        </p>
         <CodeBlock Code="vibe add form" Language="bash" />
     </section>
 
-    <!-- Accessibility -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
-        <div class="vibe-prose dark:vibe-prose-invert vibe-max-w-none">
-            <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+        <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            @foreach (var item in AccessibilityItems)
+            {
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Uses semantic <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">&lt;form&gt;</code> element
+                    <Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />
+                    @item
                 </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Proper form labeling and field grouping
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Error messages associated with form fields via aria-describedby
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Submit button properly identified with type="submit"
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Focus management for validation errors
-                </li>
-            </ul>
-        </div>
-    </section>
-
-    <!-- Related Components -->
-    <section>
-        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Related</h2>
-        <div class="vibe-grid vibe-grid-cols-1 sm:vibe-grid-cols-3 vibe-gap-4">
-            <a href="components/formfield" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">FormField</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Form field wrapper component</p>
-            </a>
-            <a href="components/input" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Input</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Text input component</p>
-            </a>
-            <a href="components/button" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Button</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Button component</p>
-            </a>
-        </div>
+            }
+        </ul>
     </section>
 </div>
 
 @code {
-    // Preview form model
-    private UserFormModel userModel = new();
-    private string submitMessage = "";
+    private readonly AccountModel model = new();
+    private string submitStatus = string.Empty;
 
-    // Example models
-    private BasicFormModel basicModel = new();
-    private LayoutFormModel layoutModel1 = new();
-    private LayoutFormModel layoutModel2 = new();
-    private SubmitFormModel submitModel = new();
-    private DisabledFormModel disabledModel = new();
-    private string submitHandlerMessage = "";
+    private void HandleValidSubmit(EditContext _) => submitStatus = "Account details are valid.";
+    private void HandleInvalidSubmit(EditContext _) => submitStatus = "Review the highlighted fields.";
 
-    private void HandleValidSubmit(EditContext context)
-    {
-        submitMessage = $"Form submitted! Name: {userModel.Name}, Email: {userModel.Email}";
-    }
+    private static readonly (string Name, string Type, string Default, string Description)[] Properties =
+    [
+        ("Model", "TForm", "new TForm()", "Typed model used to create an EditContext"),
+        ("EditContext", "EditContext?", "null", "Optional explicit context used instead of Model"),
+        ("FormName", "string?", "null", "Name used by Blazor form handling"),
+        ("EnableDataAnnotationsValidator", "bool", "true", "Render DataAnnotationsValidator"),
+        ("ShowValidationSummary", "bool", "true", "Render ValidationSummary"),
+        ("ValidationSummaryClass", "string", "validation-summary", "CSS class for the summary"),
+        ("Enhance", "bool", "false", "Enable enhanced form posts"),
+        ("OnSubmit", "EventCallback<EditContext>", "none", "Called for valid submissions before OnValidSubmit"),
+        ("OnValidSubmit", "EventCallback<EditContext>", "none", "Called after successful validation"),
+        ("OnInvalidSubmit", "EventCallback<EditContext>", "none", "Called after failed validation"),
+        ("ChildContent", "RenderFragment?", "null", "Form fields and actions")
+    ];
 
-    private void HandleSubmit()
-    {
-        submitHandlerMessage = $"Form submitted with username: {submitModel.Username}";
-        StateHasChanged();
-    }
+    private static readonly string[] AccessibilityItems =
+    [
+        "Renders Blazor's semantic form element",
+        "Uses native submit behavior and validation callbacks",
+        "Can render a validation summary for invalid fields",
+        "Works with FormField control-level labels and messages"
+    ];
 
-    private void HandleInvalidSubmit(EditContext context)
-    {
-        submitHandlerMessage = "Form has validation errors!";
-        StateHasChanged();
-    }
-
-    public class UserFormModel
-    {
-        public string Name { get; set; } = "";
-        public string Email { get; set; } = "";
-        public string Message { get; set; } = "";
-    }
-
-    public class BasicFormModel
-    {
-        public string Name { get; set; } = "";
-        public string Email { get; set; } = "";
-    }
-
-    public class LayoutFormModel
-    {
-        public string Name { get; set; } = "";
-        public string Email { get; set; } = "";
-    }
-
-    public class SubmitFormModel
-    {
-        public string Username { get; set; } = "";
-    }
-
-    public class DisabledFormModel
-    {
-        public string Name { get; set; } = "John Doe";
-        public string Email { get; set; } = "john@example.com";
-    }
-
-    private string BasicCode => @"<Form Model=""@model"">
-    <FormField TValue=""string"" Label=""Name"">
-        <Input @bind-Value=""@model.Name"" />
+    private string BasicCode => @"<Form Model=""model"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+    <FormField TValue=""string"" Id=""email"" Label=""Email"" ValidationFor=""@(() => model.Email)"">
+        <Input Type=""email"" @bind-Value=""model.Email"" />
     </FormField>
-    <FormField TValue=""string"" Label=""Email"">
-        <Input Type=""email"" @bind-Value=""@model.Email"" />
-    </FormField>
-    <Button Type=""submit"">Submit</Button>
-</Form>
-
-@code {
-    private UserModel model = new();
-}";
-
-    private string ValidationCode => @"<Form Model=""@model"" OnValidSubmit=""@HandleValidSubmit"">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <FormField TValue=""string"" Label=""Name"">
-        <InputText @bind-Value=""@model.Name"" />
-        <ValidationMessage For=""@(() => model.Name)"" />
-    </FormField>
-
-    <FormField TValue=""string"" Label=""Email"">
-        <InputText @bind-Value=""@model.Email"" />
-        <ValidationMessage For=""@(() => model.Email)"" />
-    </FormField>
-
-    <Button Type=""submit"">Submit</Button>
-</Form>
-
-@code {
-    private UserModel model = new();
-
-    public class UserModel
-    {
-        [Required(ErrorMessage = ""Name is required"")]
-        [StringLength(50, ErrorMessage = ""Name must be less than 50 characters"")]
-        public string Name { get; set; }
-
-        [Required(ErrorMessage = ""Email is required"")]
-        [EmailAddress(ErrorMessage = ""Invalid email address"")]
-        public string Email { get; set; }
-    }
-}";
-
-    private string LayoutCode => @"<!-- Vertical Layout (Default) -->
-<Form Model=""@model"" Layout=""FormLayout.Vertical"">
-    <FormField TValue=""string"" Label=""Name"">
-        <Input @bind-Value=""@model.Name"" />
-    </FormField>
-    <FormField TValue=""string"" Label=""Email"">
-        <Input @bind-Value=""@model.Email"" />
-    </FormField>
-</Form>
-
-<!-- Horizontal Layout -->
-<Form Model=""@model"" Layout=""FormLayout.Horizontal"">
-    <FormField TValue=""string"" Label=""Name"">
-        <Input @bind-Value=""@model.Name"" />
-    </FormField>
-    <FormField TValue=""string"" Label=""Email"">
-        <Input @bind-Value=""@model.Email"" />
-    </FormField>
+    <Button Type=""submit"">Save</Button>
 </Form>";
 
-    private string SubmitHandlerCode => @"<Form Model=""@model"" OnValidSubmit=""@HandleValidSubmit"" OnInvalidSubmit=""@HandleInvalidSubmit"">
-    <FormField TValue=""string"" Label=""Username"">
-        <Input @bind-Value=""@model.Username"" />
-    </FormField>
-    <Button Type=""submit"">Submit</Button>
-</Form>
-
-@code {
-    private FormModel model = new();
-
-    private async Task HandleValidSubmit(EditContext context)
-    {
-        // Handle valid form submission
-        await SubmitDataAsync();
-    }
-
-    private void HandleInvalidSubmit(EditContext context)
-    {
-        // Handle invalid form submission
-        Console.WriteLine(""Form has validation errors"");
-    }
-}";
-
-    private string DisabledCode => @"<Form Disabled=""true"">
-    <FormField TValue=""string"" Label=""Name"">
-        <Input Value=""John Doe"" />
-    </FormField>
-    <FormField TValue=""string"" Label=""Email"">
-        <Input Value=""john@example.com"" />
-    </FormField>
-    <Button Type=""submit"">Submit</Button>
+    private string EditContextCode => @"<Form EditContext=""editContext"" ShowValidationSummary=""false"">
+    ...
 </Form>";
+
+    private sealed class AccountModel
+    {
+        [Required(ErrorMessage = "Name is required")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Enter a valid email")]
+        public string Email { get; set; } = string.Empty;
+    }
 }
-
-

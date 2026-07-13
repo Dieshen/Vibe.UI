@@ -1,0 +1,136 @@
+@page "/components/imagecropper"
+@using Vibe.UI.Components
+
+<PageTitle>Image Cropper - Vibe.UI</PageTitle>
+
+<div class="vibe-max-w-4xl vibe-mx-auto">
+    <header class="vibe-mb-8">
+        <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
+            <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
+            <span>/</span>
+            <a href="components" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Components</a>
+            <span>/</span>
+            <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Image Cropper</span>
+        </div>
+        <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Image Cropper</h1>
+        <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            Move and resize a crop area, transform the source, and produce a PNG result.
+        </p>
+    </header>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+            <ImageCropper ImageSource="logo.png"
+                          ImageAlt="Vibe.UI wave mark"
+                          AriaLabel="Crop the Vibe.UI wave mark"
+                          OnCropped="HandleCropped" />
+
+            @if (lastCrop is not null)
+            {
+                <div class="vibe-mt-4 vibe-grid sm:vibe-grid-cols-2 vibe-gap-4 vibe-items-start">
+                    <div>
+                        <h3 class="vibe-font-semibold vibe-mb-2">Cropped result</h3>
+                        @if (!string.IsNullOrWhiteSpace(lastCrop.ImageData))
+                        {
+                            <img src="@lastCrop.ImageData" alt="Cropped Vibe.UI wave mark" class="vibe-w-full vibe-rounded-md vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700" />
+                        }
+                    </div>
+                    <output class="vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400">
+                        @CropSummary
+                    </output>
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
+        <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Interactive crop</h3>
+        <CodeBlock Code="@BasicCode" Language="razor" />
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
+        <div class="vibe-overflow-x-auto">
+            <table class="vibe-w-full vibe-text-sm">
+                <thead>
+                    <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Default</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th>
+                    </tr>
+                </thead>
+                <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+                    @foreach (var property in Properties)
+                    {
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">@property.Name</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@property.Type" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@property.Default</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@property.Description</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
+        <CodeBlock Code="vibe add imagecropper" Language="bash" />
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
+        <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            @foreach (var item in AccessibilityItems)
+            {
+                <li class="vibe-flex vibe-items-start vibe-gap-2">
+                    <Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />
+                    @item
+                </li>
+            }
+        </ul>
+    </section>
+</div>
+
+@code {
+    private ImageCropper.CroppedImageData? lastCrop;
+
+    private string CropSummary => lastCrop is null
+        ? string.Empty
+        : $"Left {lastCrop.CropArea.X:0.#}%, top {lastCrop.CropArea.Y:0.#}%, width {lastCrop.CropArea.Width:0.#}%, height {lastCrop.CropArea.Height:0.#}%.";
+
+    private static readonly (string Name, string Type, string Default, string Description)[] Properties =
+    [
+        ("ImageSource", "string", "empty", "Image URL or data URL to edit"),
+        ("ImageAlt", "string", "Image to crop", "Alternative text for the source image"),
+        ("AspectRatio", "double", "0", "Selected ratio; zero allows free resizing"),
+        ("AspectRatioOptions", "List<AspectRatioOption>", "Free, 1:1, 16:9, 4:3", "Available ratio controls"),
+        ("ShowControls", "bool", "true", "Render transform, zoom, ratio, reset, and crop controls"),
+        ("Disabled", "bool", "false", "Disable all interaction"),
+        ("ReadOnly", "bool", "false", "Display the current crop without interaction"),
+        ("OnCropped", "EventCallback<CroppedImageData>", "-", "Returns crop metadata and a PNG data URL when canvas export is available"),
+        ("EmptyContent", "RenderFragment?", "null", "Custom empty state")
+    ];
+
+    private static readonly string[] AccessibilityItems =
+    [
+        "Moves the crop area with arrow keys and resizes it with Shift plus arrow keys",
+        "Supports mouse, pen, and touch on the crop area and eight resize handles",
+        "Announces crop coordinates, zoom, and rotation in a live status region",
+        "Provides named transform, zoom, ratio, reset, and crop controls"
+    ];
+
+    private Task HandleCropped(ImageCropper.CroppedImageData data)
+    {
+        lastCrop = data;
+        return Task.CompletedTask;
+    }
+
+    private string BasicCode => @"<ImageCropper ImageSource=""photo.jpg""
+              ImageAlt=""Portrait to crop""
+              OnCropped=""HandleCropped"" />";
+}

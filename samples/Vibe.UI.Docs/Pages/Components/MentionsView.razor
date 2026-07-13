@@ -1,0 +1,182 @@
+@page "/components/mentions"
+@using Vibe.UI.Components
+
+<PageTitle>Mentions - Vibe.UI</PageTitle>
+
+<div class="vibe-max-w-4xl vibe-mx-auto">
+    <header class="vibe-mb-8">
+        <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
+            <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
+            <span>/</span>
+            <a href="components" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Components</a>
+            <span>/</span>
+            <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Mentions</span>
+        </div>
+        <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Mentions</h1>
+        <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            Select people or hashtags from a keyboard-accessible suggestion list.
+        </p>
+    </header>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+            <div class="vibe-max-w-xl">
+                <div class="vibe-mb-2 vibe-text-sm vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Contributors</div>
+                <Mentions @bind-Items="selectedMentions"
+                          Suggestions="suggestions"
+                          AriaLabel="Add contributors"
+                          Placeholder="@MentionsPlaceholder"
+                          OnMentionAdded="HandleMentionAdded"
+                          OnMentionRemoved="HandleMentionRemoved" />
+                <output class="vibe-block vibe-mt-3 vibe-text-sm vibe-text-zinc-500 dark:vibe-text-zinc-400" aria-live="polite">
+                    @status
+                </output>
+            </div>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">States</h2>
+        <div class="vibe-grid md:vibe-grid-cols-2 vibe-gap-6">
+            <div>
+                <h3 class="vibe-text-sm vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-2">Read only</h3>
+                <Mentions Items="stateMentions" ReadOnly="true" AriaLabel="Read-only contributors" />
+            </div>
+            <div>
+                <h3 class="vibe-text-sm vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-2">Disabled</h3>
+                <Mentions Items="stateMentions" Disabled="true" AriaLabel="Disabled contributors" />
+            </div>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Example</h2>
+        <CodeBlock Code="@BasicCode" Language="razor" />
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
+        <div class="vibe-overflow-x-auto">
+            <table class="vibe-w-full vibe-text-sm">
+                <thead>
+                    <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Default</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th>
+                    </tr>
+                </thead>
+                <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+                    @foreach (var property in Properties)
+                    {
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">@property.Name</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@property.Type" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@property.Default</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@property.Description</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
+        <CodeBlock Code="vibe add mentions" Language="bash" />
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
+        <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            @foreach (var item in AccessibilityItems)
+            {
+                <li class="vibe-flex vibe-items-start vibe-gap-2">
+                    <Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />
+                    @item
+                </li>
+            }
+        </ul>
+    </section>
+</div>
+
+@code {
+    private const string MentionsPlaceholder = "Type @ for a person or # for a topic";
+
+    private List<Mentions.MentionItem> selectedMentions =
+    [
+        new() { Id = "ada", Name = "Ada Lovelace" }
+    ];
+
+    private readonly List<Mentions.MentionItem> stateMentions =
+    [
+        new() { Id = "grace", Name = "Grace Hopper" },
+        new() { Id = "blazor", Name = "blazor", Type = Mentions.MentionType.Hashtag }
+    ];
+
+    private readonly List<Mentions.MentionSuggestion> suggestions =
+    [
+        new() { Id = "ada", Name = "Ada Lovelace", Description = "Platform engineering", Avatar = Initials("AL") },
+        new() { Id = "grace", Name = "Grace Hopper", Description = "Developer experience", Avatar = Initials("GH") },
+        new() { Id = "margaret", Name = "Margaret Hamilton", Description = "Release engineering", Avatar = Initials("MH") },
+        new() { Id = "blazor", Name = "blazor", Description = "Framework topic", Avatar = Initials("BL") }
+    ];
+
+    private string status = "Type @ or # to open suggestions.";
+
+    private static readonly (string Name, string Type, string Default, string Description)[] Properties =
+    [
+        ("Items", "List<MentionItem>", "empty", "Selected mentions; supports @bind-Items"),
+        ("ItemsChanged", "EventCallback<List<MentionItem>>", "none", "Raised with a new list after add or remove"),
+        ("Suggestions", "List<MentionSuggestion>", "empty", "People or topics offered by the popup"),
+        ("MentionPrefix", "string", "@", "Prefix that starts a user query"),
+        ("HashtagPrefix", "string", "#", "Prefix that starts a hashtag query"),
+        ("AllowHashtags", "bool", "true", "Enable hashtag queries"),
+        ("Placeholder", "string", "Type @ to mention...", "Text shown when the input is empty"),
+        ("Disabled", "bool", "false", "Disable input and removal actions"),
+        ("ReadOnly", "bool", "false", "Keep values readable without edit actions"),
+        ("MaxSuggestions", "int", "5", "Maximum visible results; zero hides the popup"),
+        ("OnMentionAdded", "EventCallback<MentionItem>", "none", "Raised after a suggestion is selected"),
+        ("OnMentionRemoved", "EventCallback<MentionItem>", "none", "Raised after a selected mention is removed"),
+        ("AriaLabel", "string?", "Mention input", "Accessible name for the combobox"),
+        ("CssClass", "string?", "null", "Additional class for the component root")
+    ];
+
+    private static readonly string[] AccessibilityItems =
+    [
+        "Connects the combobox to its listbox and active option",
+        "Uses Arrow Up and Arrow Down to move, Enter to select, and Escape to close",
+        "Keeps focus on the input while pointer users choose a suggestion",
+        "Closes the suggestion list when focus leaves the input",
+        "Exposes native disabled and read-only input states"
+    ];
+
+    private void HandleMentionAdded(Mentions.MentionItem item)
+    {
+        status = $"Added {Prefix(item.Type)}{item.Name}.";
+    }
+
+    private void HandleMentionRemoved(Mentions.MentionItem item)
+    {
+        status = $"Removed {Prefix(item.Type)}{item.Name}.";
+    }
+
+    private static string Prefix(Mentions.MentionType type) =>
+        type == Mentions.MentionType.Hashtag ? "#" : "@";
+
+    private static RenderFragment Initials(string value) => builder =>
+    {
+        builder.OpenElement(0, "span");
+        builder.AddAttribute(1, "aria-hidden", "true");
+        builder.AddContent(2, value);
+        builder.CloseElement();
+    };
+
+    private string BasicCode => @"<Mentions @bind-Items=""selectedMentions""
+          Suggestions=""suggestions""
+          AriaLabel=""Add contributors""
+          Placeholder=""Type @ or #""
+          OnMentionAdded=""HandleMentionAdded""
+          OnMentionRemoved=""HandleMentionRemoved"" />";
+}

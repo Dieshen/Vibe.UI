@@ -70,3 +70,35 @@
     color: var(--vibe-foreground);
 }
 
+main :not(pre) > code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+main li {
+    min-width: 0;
+}
+
+.vibe-overflow-x-auto {
+    scrollbar-width: thin;
+    scrollbar-color: var(--vibe-border) transparent;
+}
+
+.vibe-overflow-x-auto::-webkit-scrollbar {
+    height: 0.5rem;
+}
+
+.vibe-overflow-x-auto::-webkit-scrollbar-thumb {
+    border: 0.125rem solid transparent;
+    border-radius: 999px;
+    background: var(--vibe-border);
+    background-clip: padding-box;
+}
+
+@media (max-width: 40rem) {
+    main .vibe-overflow-x-auto > table.vibe-w-full {
+        min-width: 42rem;
+    }
+}
+
