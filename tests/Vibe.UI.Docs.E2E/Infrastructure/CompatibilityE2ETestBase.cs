@@ -115,7 +115,8 @@ public abstract class CompatibilityE2ETestBase : IAsyncLifetime
             "Current interaction count: 1");
 
         var dialogTrigger = Page.Locator($"[data-testid='{prefix}-dialog']");
-        await dialogTrigger.ClickAsync();
+        await dialogTrigger.FocusAsync();
+        await dialogTrigger.PressAsync("Enter");
 
         var dialog = Page.Locator("[role='dialog']").First;
         await dialog.WaitForAsync(new() { State = WaitForSelectorState.Visible });
@@ -124,7 +125,8 @@ public abstract class CompatibilityE2ETestBase : IAsyncLifetime
         dialogText.ShouldNotBeNull();
         dialogText.ShouldContain("dialog", Case.Insensitive);
 
-        await Page.WaitForTimeoutAsync(50);
+        await Page.WaitForFunctionAsync(
+            "() => document.querySelector(\"[role='dialog']\")?.contains(document.activeElement) === true");
         await Page.Keyboard.PressAsync("Escape");
         await dialog.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
         await Page.WaitForFunctionAsync(
