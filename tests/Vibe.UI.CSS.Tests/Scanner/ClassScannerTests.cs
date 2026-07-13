@@ -99,6 +99,26 @@ public class ClassScannerTests
         Assert.Contains("vibe-bg-muted", classes);
     }
 
+    [Fact]
+    public void ScanContent_RazorCodeBlock_ExtractsDynamicVariantClasses()
+    {
+        var content = """
+            <span class="@BadgeClass">Badge</span>
+
+            @code {
+                private string BadgeClass =>
+                    "vibe-bg-blue-100 vibe-text-blue-700 dark:vibe-bg-blue-900/30 dark:vibe-text-blue-400";
+            }
+            """;
+
+        var classes = _scanner.ScanContent(content);
+
+        Assert.Contains("vibe-bg-blue-100", classes);
+        Assert.Contains("vibe-text-blue-700", classes);
+        Assert.Contains("dark:vibe-bg-blue-900/30", classes);
+        Assert.Contains("dark:vibe-text-blue-400", classes);
+    }
+
     #endregion
 
     #region Custom Attribute Tests

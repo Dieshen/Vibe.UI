@@ -59,7 +59,7 @@ public class ThemeService : IThemeService
                     PrimaryForeground = "hsl(210 40% 98%)",
                     Secondary = "hsl(210 40% 96.1%)",
                     Muted = "hsl(210 40% 96.1%)",
-                    MutedForeground = "hsl(215.4 16.3% 46.9%)",
+                    MutedForeground = "hsl(215.3 19.3% 34.5%)",
                     Border = "hsl(214.3 31.8% 91.4%)",
                     Input = "hsl(214.3 31.8% 91.4%)",
                     Ring = "hsl(222.2 84% 4.9%)"
@@ -87,7 +87,7 @@ public class ThemeService : IThemeService
                     PrimaryForeground = "hsl(210 20% 98%)",
                     Secondary = "hsl(220 14.3% 95.9%)",
                     Muted = "hsl(220 14.3% 95.9%)",
-                    MutedForeground = "hsl(220 8.9% 46.1%)",
+                    MutedForeground = "hsl(220 8.9% 33.9%)",
                     Border = "hsl(220 13% 91%)",
                     Input = "hsl(220 13% 91%)",
                     Ring = "hsl(224 71.4% 4.1%)"
@@ -115,7 +115,7 @@ public class ThemeService : IThemeService
                     PrimaryForeground = "hsl(0 0% 98%)",
                     Secondary = "hsl(240 4.8% 95.9%)",
                     Muted = "hsl(240 4.8% 95.9%)",
-                    MutedForeground = "hsl(240 3.8% 46.1%)",
+                    MutedForeground = "hsl(240 5.2% 33.9%)",
                     Border = "hsl(240 5.9% 90%)",
                     Input = "hsl(240 5.9% 90%)",
                     Ring = "hsl(240 5.9% 10%)"
@@ -143,7 +143,7 @@ public class ThemeService : IThemeService
                     PrimaryForeground = "hsl(0 0% 98%)",
                     Secondary = "hsl(0 0% 96.1%)",
                     Muted = "hsl(0 0% 96.1%)",
-                    MutedForeground = "hsl(0 0% 45.1%)",
+                    MutedForeground = "hsl(0 0% 32.2%)",
                     Border = "hsl(0 0% 89.8%)",
                     Input = "hsl(0 0% 89.8%)",
                     Ring = "hsl(0 0% 3.9%)"
@@ -171,7 +171,7 @@ public class ThemeService : IThemeService
                     PrimaryForeground = "hsl(60 9.1% 97.8%)",
                     Secondary = "hsl(60 4.8% 95.9%)",
                     Muted = "hsl(60 4.8% 95.9%)",
-                    MutedForeground = "hsl(25 5.3% 44.7%)",
+                    MutedForeground = "hsl(25 5.3% 32.5%)",
                     Border = "hsl(20 5.9% 90%)",
                     Input = "hsl(20 5.9% 90%)",
                     Ring = "hsl(20 14.3% 4.1%)"
@@ -199,7 +199,7 @@ public class ThemeService : IThemeService
                     PrimaryForeground = "hsl(210 40% 98%)",
                     Secondary = "hsl(210 40% 96.1%)",
                     Muted = "hsl(210 40% 96.1%)",
-                    MutedForeground = "hsl(215.4 16.3% 46.9%)",
+                    MutedForeground = "hsl(215.3 19.3% 34.5%)",
                     Border = "hsl(214.3 31.8% 91.4%)",
                     Input = "hsl(214.3 31.8% 91.4%)",
                     Ring = "hsl(221.2 83.2% 53.3%)"
@@ -262,10 +262,10 @@ public class ThemeService : IThemeService
     --vibe-secondary: {light.Secondary};
     --vibe-secondary-foreground: {light.SecondaryForeground ?? light.Foreground};
     --vibe-muted: {light.Muted};
-    --vibe-muted-foreground: {light.MutedForeground ?? "hsl(215.4 16.3% 46.9%)"};
+    --vibe-muted-foreground: {light.MutedForeground ?? "hsl(215.3 19.3% 34.5%)"};
     --vibe-accent: {light.Accent ?? light.Secondary};
     --vibe-accent-foreground: {light.AccentForeground ?? light.Foreground};
-    --vibe-destructive: {light.Destructive ?? "hsl(0 84.2% 60.2%)"};
+    --vibe-destructive: {light.Destructive ?? "hsl(0 72.2% 50.6%)"};
     --vibe-destructive-foreground: {light.DestructiveForeground ?? "hsl(0 0% 100%)"};
     --vibe-border: {light.Border ?? "hsl(214.3 31.8% 91.4%)"};
     --vibe-input: {light.Input ?? "hsl(214.3 31.8% 91.4%)"};

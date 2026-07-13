@@ -73,6 +73,7 @@ public partial class ClassScanner
         else
         {
             ExtractFromMarkup(content, classes);
+            ExtractFromCSharp(content, classes);
         }
 
         return classes;

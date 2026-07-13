@@ -36,14 +36,14 @@
 
     /* Muted - For disabled states and subtle text */
     --vibe-muted: hsl(240 4.8% 95.9%);
-    --vibe-muted-foreground: hsl(240 3.8% 46.1%);
+    --vibe-muted-foreground: hsl(240 5.2% 33.9%);
 
     /* Accent - For highlighting and hover states */
     --vibe-accent: hsl(240 4.8% 95.9%);
     --vibe-accent-foreground: hsl(240 5.9% 10%);
 
     /* Destructive - For errors and dangerous actions */
-    --vibe-destructive: hsl(0 84.2% 60.2%);
+    --vibe-destructive: hsl(0 72.2% 50.6%);
     --vibe-destructive-foreground: hsl(0 0% 98%);
 
     /* ===== Semantic Status Colors ===== */

@@ -70,6 +70,11 @@
     color: var(--vibe-foreground);
 }
 
+/* Zinc-500 is too dim for normal text on the docs dark surfaces. */
+.dark .vibe-text-zinc-500 {
+    color: rgb(161 161 170);
+}
+
 main :not(pre) > code {
     white-space: normal;
     overflow-wrap: anywhere;
