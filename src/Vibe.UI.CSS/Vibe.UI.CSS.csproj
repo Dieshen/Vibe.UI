@@ -32,9 +32,11 @@
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 
-  <!-- Embed vibe-base.css as resource -->
+  <!-- Embed the component library's canonical base stylesheet. -->
   <ItemGroup>
-    <EmbeddedResource Include="Data\vibe-base.css" LogicalName="Vibe.UI.CSS.vibe-base.css" />
+    <EmbeddedResource Include="..\Vibe.UI\wwwroot\css\vibe-base.css"
+                      LogicalName="Vibe.UI.CSS.vibe-base.css"
+                      Link="Data\vibe-base.css" />
   </ItemGroup>
 
   <!-- Include MSBuild targets -->

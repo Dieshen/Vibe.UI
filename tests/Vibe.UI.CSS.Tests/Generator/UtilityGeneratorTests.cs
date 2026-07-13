@@ -458,6 +458,16 @@ public class UtilityGeneratorTests
         Assert.Contains("box-shadow:", rule.Declarations);
     }
 
+    [Fact]
+    public void Generate_PageEnter_DoesNotRetainTransformAfterAnimation()
+    {
+        var rules = _generator.GenerateAll("vibe-page-enter");
+
+        var animationRule = Assert.Single(rules, rule => rule.Selector == ".vibe-page-enter");
+        Assert.Equal("animation: vibe-pageEnter 0.4s ease-out;", animationRule.Declarations);
+        Assert.DoesNotContain("forwards", animationRule.Declarations, StringComparison.Ordinal);
+    }
+
     #endregion
 
     #region Interactivity Utilities

@@ -56,34 +56,54 @@ public class ThemeService : IThemeService
                     Background = "hsl(0 0% 100%)",
                     Foreground = "hsl(222.2 84% 4.9%)",
                     Primary = "hsl(222.2 47.4% 11.2%)",
+                    PrimaryForeground = "hsl(210 40% 98%)",
                     Secondary = "hsl(210 40% 96.1%)",
-                    Muted = "hsl(214.3 31.8% 91.4%)"
+                    Muted = "hsl(210 40% 96.1%)",
+                    MutedForeground = "hsl(215.4 16.3% 46.9%)",
+                    Border = "hsl(214.3 31.8% 91.4%)",
+                    Input = "hsl(214.3 31.8% 91.4%)",
+                    Ring = "hsl(222.2 84% 4.9%)"
                 },
                 new ColorSet
                 {
                     Background = "hsl(222.2 84% 4.9%)",
                     Foreground = "hsl(210 40% 98%)",
-                    Primary = "hsl(217.2 32.6% 17.5%)",
+                    Primary = "hsl(210 40% 98%)",
+                    PrimaryForeground = "hsl(222.2 47.4% 11.2%)",
                     Secondary = "hsl(217.2 32.6% 17.5%)",
-                    Muted = "hsl(215 20.2% 65.1%)"
+                    Muted = "hsl(217.2 32.6% 17.5%)",
+                    MutedForeground = "hsl(215 20.2% 65.1%)",
+                    Border = "hsl(217.2 32.6% 17.5%)",
+                    Input = "hsl(217.2 32.6% 17.5%)",
+                    Ring = "hsl(212.7 26.8% 83.9%)"
                 }
             ),
             "Gray" => (
                 new ColorSet
                 {
                     Background = "hsl(0 0% 100%)",
-                    Foreground = "hsl(0 0% 3.9%)",
-                    Primary = "hsl(0 0% 14.9%)",
-                    Secondary = "hsl(0 0% 96.1%)",
-                    Muted = "hsl(0 0% 89.8%)"
+                    Foreground = "hsl(224 71.4% 4.1%)",
+                    Primary = "hsl(220.9 39.3% 11%)",
+                    PrimaryForeground = "hsl(210 20% 98%)",
+                    Secondary = "hsl(220 14.3% 95.9%)",
+                    Muted = "hsl(220 14.3% 95.9%)",
+                    MutedForeground = "hsl(220 8.9% 46.1%)",
+                    Border = "hsl(220 13% 91%)",
+                    Input = "hsl(220 13% 91%)",
+                    Ring = "hsl(224 71.4% 4.1%)"
                 },
                 new ColorSet
                 {
-                    Background = "hsl(0 0% 3.9%)",
-                    Foreground = "hsl(0 0% 98%)",
-                    Primary = "hsl(0 0% 14.9%)",
-                    Secondary = "hsl(0 0% 14.9%)",
-                    Muted = "hsl(0 0% 63.9%)"
+                    Background = "hsl(224 71.4% 4.1%)",
+                    Foreground = "hsl(210 20% 98%)",
+                    Primary = "hsl(210 20% 98%)",
+                    PrimaryForeground = "hsl(220.9 39.3% 11%)",
+                    Secondary = "hsl(215 27.9% 16.9%)",
+                    Muted = "hsl(215 27.9% 16.9%)",
+                    MutedForeground = "hsl(217.9 10.6% 64.9%)",
+                    Border = "hsl(215 27.9% 16.9%)",
+                    Input = "hsl(215 27.9% 16.9%)",
+                    Ring = "hsl(216 12.2% 83.9%)"
                 }
             ),
             "Zinc" => (
@@ -92,16 +112,26 @@ public class ThemeService : IThemeService
                     Background = "hsl(0 0% 100%)",
                     Foreground = "hsl(240 10% 3.9%)",
                     Primary = "hsl(240 5.9% 10%)",
+                    PrimaryForeground = "hsl(0 0% 98%)",
                     Secondary = "hsl(240 4.8% 95.9%)",
-                    Muted = "hsl(240 5.9% 90%)"
+                    Muted = "hsl(240 4.8% 95.9%)",
+                    MutedForeground = "hsl(240 3.8% 46.1%)",
+                    Border = "hsl(240 5.9% 90%)",
+                    Input = "hsl(240 5.9% 90%)",
+                    Ring = "hsl(240 5.9% 10%)"
                 },
                 new ColorSet
                 {
                     Background = "hsl(240 10% 3.9%)",
                     Foreground = "hsl(0 0% 98%)",
-                    Primary = "hsl(240 3.7% 15.9%)",
+                    Primary = "hsl(0 0% 98%)",
+                    PrimaryForeground = "hsl(240 5.9% 10%)",
                     Secondary = "hsl(240 3.7% 15.9%)",
-                    Muted = "hsl(240 5% 64.9%)"
+                    Muted = "hsl(240 3.7% 15.9%)",
+                    MutedForeground = "hsl(240 5% 64.9%)",
+                    Border = "hsl(240 3.7% 15.9%)",
+                    Input = "hsl(240 3.7% 15.9%)",
+                    Ring = "hsl(240 4.9% 83.9%)"
                 }
             ),
             "Neutral" => (
@@ -109,17 +139,27 @@ public class ThemeService : IThemeService
                 {
                     Background = "hsl(0 0% 100%)",
                     Foreground = "hsl(0 0% 3.9%)",
-                    Primary = "hsl(0 0% 14.9%)",
+                    Primary = "hsl(0 0% 9%)",
+                    PrimaryForeground = "hsl(0 0% 98%)",
                     Secondary = "hsl(0 0% 96.1%)",
-                    Muted = "hsl(0 0% 89.8%)"
+                    Muted = "hsl(0 0% 96.1%)",
+                    MutedForeground = "hsl(0 0% 45.1%)",
+                    Border = "hsl(0 0% 89.8%)",
+                    Input = "hsl(0 0% 89.8%)",
+                    Ring = "hsl(0 0% 3.9%)"
                 },
                 new ColorSet
                 {
                     Background = "hsl(0 0% 3.9%)",
                     Foreground = "hsl(0 0% 98%)",
-                    Primary = "hsl(0 0% 14.9%)",
+                    Primary = "hsl(0 0% 98%)",
+                    PrimaryForeground = "hsl(0 0% 9%)",
                     Secondary = "hsl(0 0% 14.9%)",
-                    Muted = "hsl(0 0% 63.9%)"
+                    Muted = "hsl(0 0% 14.9%)",
+                    MutedForeground = "hsl(0 0% 63.9%)",
+                    Border = "hsl(0 0% 14.9%)",
+                    Input = "hsl(0 0% 14.9%)",
+                    Ring = "hsl(0 0% 83.1%)"
                 }
             ),
             "Stone" => (
@@ -128,16 +168,26 @@ public class ThemeService : IThemeService
                     Background = "hsl(0 0% 100%)",
                     Foreground = "hsl(20 14.3% 4.1%)",
                     Primary = "hsl(24 9.8% 10%)",
-                    Secondary = "hsl(60 9.1% 97.8%)",
-                    Muted = "hsl(24 5.7% 82.9%)"
+                    PrimaryForeground = "hsl(60 9.1% 97.8%)",
+                    Secondary = "hsl(60 4.8% 95.9%)",
+                    Muted = "hsl(60 4.8% 95.9%)",
+                    MutedForeground = "hsl(25 5.3% 44.7%)",
+                    Border = "hsl(20 5.9% 90%)",
+                    Input = "hsl(20 5.9% 90%)",
+                    Ring = "hsl(20 14.3% 4.1%)"
                 },
                 new ColorSet
                 {
                     Background = "hsl(20 14.3% 4.1%)",
                     Foreground = "hsl(60 9.1% 97.8%)",
-                    Primary = "hsl(24 9.8% 10%)",
-                    Secondary = "hsl(24 9.8% 10%)",
-                    Muted = "hsl(24 5.4% 63.9%)"
+                    Primary = "hsl(60 9.1% 97.8%)",
+                    PrimaryForeground = "hsl(24 9.8% 10%)",
+                    Secondary = "hsl(12 6.5% 15.1%)",
+                    Muted = "hsl(12 6.5% 15.1%)",
+                    MutedForeground = "hsl(24 5.4% 63.9%)",
+                    Border = "hsl(12 6.5% 15.1%)",
+                    Input = "hsl(12 6.5% 15.1%)",
+                    Ring = "hsl(24 5.7% 82.9%)"
                 }
             ),
             "Blue" => (
@@ -146,16 +196,26 @@ public class ThemeService : IThemeService
                     Background = "hsl(0 0% 100%)",
                     Foreground = "hsl(222.2 84% 4.9%)",
                     Primary = "hsl(221.2 83.2% 53.3%)",
+                    PrimaryForeground = "hsl(210 40% 98%)",
                     Secondary = "hsl(210 40% 96.1%)",
-                    Muted = "hsl(214.3 31.8% 91.4%)"
+                    Muted = "hsl(210 40% 96.1%)",
+                    MutedForeground = "hsl(215.4 16.3% 46.9%)",
+                    Border = "hsl(214.3 31.8% 91.4%)",
+                    Input = "hsl(214.3 31.8% 91.4%)",
+                    Ring = "hsl(221.2 83.2% 53.3%)"
                 },
                 new ColorSet
                 {
                     Background = "hsl(222.2 84% 4.9%)",
                     Foreground = "hsl(210 40% 98%)",
                     Primary = "hsl(217.2 91.2% 59.8%)",
+                    PrimaryForeground = "hsl(222.2 47.4% 11.2%)",
                     Secondary = "hsl(217.2 32.6% 17.5%)",
-                    Muted = "hsl(215 20.2% 65.1%)"
+                    Muted = "hsl(217.2 32.6% 17.5%)",
+                    MutedForeground = "hsl(215 20.2% 65.1%)",
+                    Border = "hsl(217.2 32.6% 17.5%)",
+                    Input = "hsl(217.2 32.6% 17.5%)",
+                    Ring = "hsl(224.3 76.3% 48%)"
                 }
             ),
             _ => throw new ArgumentException($"Unknown base color: {baseColor}")
@@ -198,7 +258,7 @@ public class ThemeService : IThemeService
     --vibe-popover: {light.Popover ?? light.Background};
     --vibe-popover-foreground: {light.PopoverForeground ?? light.Foreground};
     --vibe-primary: {light.Primary};
-    --vibe-primary-foreground: {light.PrimaryForeground ?? "hsl(0 0% 100%)"};
+    --vibe-primary-foreground: {light.PrimaryForeground ?? light.Background};
     --vibe-secondary: {light.Secondary};
     --vibe-secondary-foreground: {light.SecondaryForeground ?? light.Foreground};
     --vibe-muted: {light.Muted};
@@ -216,16 +276,16 @@ public class ThemeService : IThemeService
 .dark {{
     --vibe-background: {dark.Background};
     --vibe-foreground: {dark.Foreground};
-    --vibe-card: {dark.Card ?? dark.Primary};
+    --vibe-card: {dark.Card ?? dark.Background};
     --vibe-card-foreground: {dark.CardForeground ?? dark.Foreground};
-    --vibe-popover: {dark.Popover ?? dark.Primary};
+    --vibe-popover: {dark.Popover ?? dark.Background};
     --vibe-popover-foreground: {dark.PopoverForeground ?? dark.Foreground};
     --vibe-primary: {dark.Primary};
-    --vibe-primary-foreground: {dark.PrimaryForeground ?? dark.Foreground};
+    --vibe-primary-foreground: {dark.PrimaryForeground ?? dark.Background};
     --vibe-secondary: {dark.Secondary};
     --vibe-secondary-foreground: {dark.SecondaryForeground ?? dark.Foreground};
     --vibe-muted: {dark.Muted};
-    --vibe-muted-foreground: {dark.MutedForeground ?? dark.Muted};
+    --vibe-muted-foreground: {dark.MutedForeground ?? "hsl(215 20.2% 65.1%)"};
     --vibe-accent: {dark.Accent ?? dark.Secondary};
     --vibe-accent-foreground: {dark.AccentForeground ?? dark.Foreground};
     --vibe-destructive: {dark.Destructive ?? "hsl(0 62.8% 30.6%)"};

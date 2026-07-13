@@ -338,7 +338,7 @@ public partial class UtilityGenerator
                 new()
                 {
                     Selector = selector,
-                    Declarations = "animation: vibe-pageEnter 0.4s ease-out forwards;",
+                    Declarations = "animation: vibe-pageEnter 0.4s ease-out;",
                     Order = CssOrder.Effects
                 }
             ];
