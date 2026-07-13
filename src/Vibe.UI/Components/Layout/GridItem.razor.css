@@ -1,17 +1,17 @@
 /* GridItem baseline styles */
 
-:global(.vibe-grid-item) {
+.vibe-grid-item {
   min-width: 0;
 }
 
 @media (min-width: 768px) {
-  :global(.vibe-grid-item-responsive) {
+  .vibe-grid-item-responsive {
     grid-column: span var(--vibe-grid-item-col-span-md, 1);
   }
 }
 
 @media (min-width: 1024px) {
-  :global(.vibe-grid-item-responsive) {
+  .vibe-grid-item-responsive {
     grid-column: span var(--vibe-grid-item-col-span-lg, var(--vibe-grid-item-col-span-md, 1));
   }
 }

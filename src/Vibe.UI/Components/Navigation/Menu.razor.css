@@ -19,25 +19,41 @@
    Trigger Area
    ---------------------------------------- */
 
-::deep .vibe-menu-trigger {
+.vibe-menu-trigger {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: var(--vibe-spacing-2, 0.5rem);
-    border-radius: var(--vibe-radius-sm, 0.3rem);
+    min-height: 2.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--vibe-border);
+    border-radius: var(--vibe-radius);
+    background-color: var(--vibe-background);
+    color: var(--vibe-foreground);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
     cursor: pointer;
     outline: none;
+    user-select: none;
+    transition: var(--vibe-transition-fast);
 }
 
-::deep .vibe-menu-trigger:focus-visible {
+.vibe-menu-trigger:hover:not(:disabled) {
+    background-color: var(--vibe-accent);
+    color: var(--vibe-accent-foreground);
+}
+
+.vibe-menu-trigger:focus-visible {
     outline: 2px solid var(--vibe-ring);
     outline-offset: 2px;
 }
 
-::deep .vibe-menu-trigger-disabled {
+.vibe-menu-trigger-disabled {
     cursor: not-allowed;
 }
 
-::deep .vibe-menu-default-trigger {
+.vibe-menu-default-trigger {
     pointer-events: none;
     user-select: none;
 }
@@ -46,7 +62,7 @@
    Menu Content (Dropdown)
    ---------------------------------------- */
 
-::deep .vibe-menu-content {
+.vibe-menu-content {
     position: absolute;
     z-index: 50;
     min-width: 12rem;
@@ -64,7 +80,7 @@
    Backdrop (Invisible click catcher)
    ---------------------------------------- */
 
-::deep .menu-backdrop {
+.menu-backdrop {
     position: fixed;
     inset: 0;
     z-index: 40;
@@ -103,7 +119,7 @@
    Dark Mode Support
    ---------------------------------------- */
 
-.dark ::deep .vibe-menu-content {
+.dark .vibe-menu-content {
     box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
 }
 
@@ -112,7 +128,7 @@
    ---------------------------------------- */
 
 @media (max-width: 640px) {
-    ::deep .vibe-menu-content {
+    .vibe-menu-content {
         max-width: calc(100vw - 2rem);
     }
 }

@@ -2,20 +2,26 @@
 @inherits Base.VibeComponent
 
 <div class="@CombinedClass" @ref="DropdownRef" @attributes="AdditionalAttributes">
-    <div class="dropdown-trigger"
-         role="button"
-         tabindex="0"
+    <button type="button"
+         class="@CombineClasses("dropdown-trigger", TriggerClass)"
+         disabled="@Disabled"
+         aria-label="@TriggerAriaLabel"
          aria-haspopup="menu"
          aria-expanded="@IsOpen.ToString().ToLowerInvariant()"
          aria-controls="@_contentId"
          @onclick="ToggleDropdown"
          @onkeydown="HandleTriggerKeyDown">
         @TriggerContent
-    </div>
+    </button>
 
     @if (IsOpen)
     {
-        <div id="@_contentId" class="dropdown-content @PositionClass" style="@PositionStyle" role="menu">
+        <div id="@_contentId"
+             class="@CombineClasses("dropdown-content", PositionClass, ContentClass)"
+             style="@ContentStyle"
+             role="menu"
+             @onclick="HandleContentClick"
+             @onclick:stopPropagation="true">
             @Content
         </div>
         @* Backdrop handles click-outside without JS *@
@@ -35,6 +41,42 @@
     /// </summary>
     [Parameter]
     public RenderFragment? Content { get; set; }
+
+    /// <summary>
+    /// Gets or sets additional classes applied to the trigger button.
+    /// </summary>
+    [Parameter]
+    public string? TriggerClass { get; set; }
+
+    /// <summary>
+    /// Gets or sets additional classes applied to the menu surface.
+    /// </summary>
+    [Parameter]
+    public string? ContentClass { get; set; }
+
+    /// <summary>
+    /// Gets or sets additional inline styles applied to the menu surface.
+    /// </summary>
+    [Parameter]
+    public string? ContentStyle { get; set; }
+
+    /// <summary>
+    /// Gets or sets an accessible name for triggers without visible text.
+    /// </summary>
+    [Parameter]
+    public string? TriggerAriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the trigger is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether selecting menu content closes the dropdown.
+    /// </summary>
+    [Parameter]
+    public bool CloseOnSelect { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the position of the dropdown.
@@ -59,11 +101,6 @@
     private string PositionClass => $"dropdown-{Position} dropdown-{Align}";
 
     /// <summary>
-    /// Gets the inline styles for custom positioning if needed.
-    /// </summary>
-    private string PositionStyle => string.Empty;
-
-    /// <summary>
     /// Flag to track if the dropdown is open.
     /// </summary>
     private bool IsOpen = false;
@@ -80,6 +117,11 @@
     /// </summary>
     private void ToggleDropdown()
     {
+        if (Disabled)
+        {
+            return;
+        }
+
         IsOpen = !IsOpen;
     }
 
@@ -87,14 +129,17 @@
     {
         switch (e.Key)
         {
-            case "Enter":
-            case " ":
-            case "Spacebar":
-                ToggleDropdown();
-                break;
             case "Escape":
                 CloseDropdown();
                 break;
+        }
+    }
+
+    private void HandleContentClick()
+    {
+        if (CloseOnSelect)
+        {
+            CloseDropdown();
         }
     }
 

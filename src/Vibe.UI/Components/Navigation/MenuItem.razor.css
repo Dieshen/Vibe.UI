@@ -127,6 +127,10 @@
     background-color: var(--vibe-destructive);
 }
 
+.dark .vibe-menu-item-danger:not(:hover):not(:focus-visible) {
+    color: color-mix(in srgb, var(--vibe-destructive) 45%, white);
+}
+
 /* ----------------------------------------
    Responsive Design
    ---------------------------------------- */

@@ -1,6 +1,6 @@
 /* DialogDescription baseline styles */
 
-:global(.vibe-dialog-description) {
+.vibe-dialog-description {
   color: var(--vibe-muted-foreground);
   font-size: 0.9rem;
 }

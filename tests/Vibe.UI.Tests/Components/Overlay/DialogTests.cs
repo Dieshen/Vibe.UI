@@ -157,6 +157,34 @@ public class DialogTests : TestBase
     }
 
     [Fact]
+    public async Task Dialog_HandleDialogEscape_ClosesWhenEnabled()
+    {
+        bool? changedTo = null;
+        var cut = Render<Dialog>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.IsOpenChanged, EventCallback.Factory.Create<bool>(this, value => changedTo = value))
+            .AddChildContent("Dialog Content"));
+
+        await cut.InvokeAsync(cut.Instance.HandleDialogEscape);
+
+        changedTo.ShouldBe(false);
+        cut.FindAll(".vibe-dialog").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Dialog_HandleDialogEscape_StaysOpenWhenDisabled()
+    {
+        var cut = Render<Dialog>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.CloseOnEscape, false)
+            .AddChildContent("Dialog Content"));
+
+        await cut.InvokeAsync(cut.Instance.HandleDialogEscape);
+
+        cut.Find(".vibe-dialog").ShouldNotBeNull();
+    }
+
+    [Fact]
     public void Dialog_Applies_AdditionalAttributes()
     {
         // Act

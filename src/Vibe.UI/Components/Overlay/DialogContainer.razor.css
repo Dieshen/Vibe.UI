@@ -1,12 +1,12 @@
 /* DialogContainer baseline styles */
 
-:global(.vibe-dialog-host) {
+.vibe-dialog-host {
   position: fixed;
   inset: 0;
   z-index: 60;
 }
 
-:global(.vibe-dialog-overlay) {
+.vibe-dialog-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
@@ -16,7 +16,7 @@
   padding: 1rem;
 }
 
-:global(.vibe-dialog-container) {
+.vibe-dialog-container {
   width: min(36rem, 100%);
   background: var(--vibe-popover);
   color: var(--vibe-popover-foreground);
@@ -25,7 +25,7 @@
   box-shadow: var(--vibe-shadow-lg);
 }
 
-:global(.vibe-dialog-header) {
+.vibe-dialog-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -34,13 +34,13 @@
   border-bottom: 1px solid var(--vibe-border);
 }
 
-:global(.vibe-dialog-title) {
+.vibe-dialog-title {
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
 }
 
-:global(.vibe-dialog-body) {
+.vibe-dialog-body {
   padding: 1rem;
 }
 

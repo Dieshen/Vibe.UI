@@ -4,6 +4,7 @@
  */
 
 const dialogStates = new Map();
+const activeDialogKeys = [];
 
 let bodyLockCount = 0;
 let previousBodyOverflow = null;
@@ -58,7 +59,7 @@ function focusInitial(container) {
  * @param {string} key - Stable key per dialog instance.
  * @param {HTMLElement} dialogElement - Root dialog element.
  */
-export function activate(key, dialogElement) {
+export function activate(key, dialogElement, dotNetRef = null, closeOnEscape = false) {
   if (!dialogElement) return;
   if (dialogStates.has(key)) return;
 
@@ -66,6 +67,15 @@ export function activate(key, dialogElement) {
   lockBodyScroll();
 
   const onKeyDown = (e) => {
+    if (activeDialogKeys[activeDialogKeys.length - 1] !== key) return;
+
+    if (e.key === 'Escape' && closeOnEscape && dotNetRef) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      dotNetRef.invokeMethodAsync('HandleDialogEscape');
+      return;
+    }
+
     if (e.key !== 'Tab') return;
 
     const focusables = getFocusableElements(dialogElement);
@@ -97,6 +107,7 @@ export function activate(key, dialogElement) {
   document.addEventListener('keydown', onKeyDown, true);
 
   dialogStates.set(key, { prevFocused, onKeyDown });
+  activeDialogKeys.push(key);
 
   // Let the DOM settle before focusing.
   setTimeout(() => focusInitial(dialogElement), 0);
@@ -111,6 +122,10 @@ export function deactivate(key) {
   if (!state) return;
 
   document.removeEventListener('keydown', state.onKeyDown, true);
+  const activeIndex = activeDialogKeys.lastIndexOf(key);
+  if (activeIndex >= 0) {
+    activeDialogKeys.splice(activeIndex, 1);
+  }
   unlockBodyScroll();
 
   if (state.prevFocused && document.contains(state.prevFocused)) {

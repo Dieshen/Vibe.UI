@@ -105,14 +105,14 @@ public class ResizableTests : TestBase
     }
 
     [Fact]
-    public void Resizable_Renders_HandleBar()
+    public void Resizable_Renders_SharedGripIcon()
     {
         // Act
         var cut = Render<Resizable>();
 
         // Assert
-        var handleBar = cut.Find(".resizable-handle-bar");
-        handleBar.ShouldNotBeNull();
+        cut.Find(".resizable-handle svg.vibe-icon").ShouldNotBeNull();
+        cut.FindAll(".resizable-handle-bar").ShouldBeEmpty();
     }
 
     [Fact]
@@ -195,7 +195,7 @@ public class ResizableTests : TestBase
             .Add(p => p.MaxWidth, 500)
             .Add(p => p.OnSizeChange, value => changedSize = value));
 
-        await cut.InvokeAsync(() => cut.Instance.HandleDragMove(450, 0));
+        await cut.InvokeAsync(() => cut.Instance.HandleDragMove(450));
         await cut.InvokeAsync(() => cut.Instance.HandleDragEnd());
 
         changedSize.ShouldBe(450);
@@ -213,5 +213,15 @@ public class ResizableTests : TestBase
 
         changedSize.ShouldBe(310);
         cut.Find(".vibe-resizable").GetAttribute("style")!.ShouldContain("width: 310px");
+    }
+
+    [Fact]
+    public void Resizable_VerticalDirection_UsesColumnLayoutContract()
+    {
+        var cut = Render<Resizable>(parameters => parameters
+            .Add(p => p.Direction, Resizable.ResizableDirection.Vertical));
+
+        cut.Find(".vibe-resizable").ClassList.ShouldContain("resizable-vertical");
+        cut.Find(".resizable-handle svg.vibe-icon").ShouldNotBeNull();
     }
 }

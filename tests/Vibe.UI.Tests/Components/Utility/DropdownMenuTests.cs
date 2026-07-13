@@ -13,8 +13,9 @@ public class DropdownMenuTests : TestBase
 
         var trigger = cut.Find(".dropdown-trigger");
         trigger.TextContent.ShouldBe("Actions");
-        trigger.GetAttribute("role").ShouldBe("button");
-        trigger.GetAttribute("tabindex").ShouldBe("0");
+        trigger.TagName.ShouldBe("BUTTON");
+        trigger.GetAttribute("type").ShouldBe("button");
+        trigger.QuerySelector("button").ShouldBeNull();
         trigger.GetAttribute("aria-haspopup").ShouldBe("menu");
         trigger.GetAttribute("aria-expanded").ShouldBe("false");
         trigger.GetAttribute("aria-controls").ShouldNotBeNullOrWhiteSpace();
@@ -72,7 +73,7 @@ public class DropdownMenuTests : TestBase
             .Add(p => p.Content, builder => builder.AddContent(0, "Menu item")));
 
         var trigger = cut.Find(".dropdown-trigger");
-        trigger.KeyDown("Enter");
+        trigger.Click();
 
         cut.Find(".dropdown-content").TextContent.ShouldContain("Menu item");
         cut.Find(".dropdown-trigger").GetAttribute("aria-expanded").ShouldBe("true");
@@ -80,9 +81,49 @@ public class DropdownMenuTests : TestBase
         cut.Find(".dropdown-trigger").KeyDown("Escape");
         cut.FindAll(".dropdown-content").ShouldBeEmpty();
         cut.Find(".dropdown-trigger").GetAttribute("aria-expanded").ShouldBe("false");
+    }
 
-        cut.Find(".dropdown-trigger").KeyDown(" ");
-        cut.Find(".dropdown-content").TextContent.ShouldContain("Menu item");
+    [Fact]
+    public void DropdownMenu_ClosesWhenMenuContentIsSelected()
+    {
+        var cut = Render<DropdownMenu>(parameters => parameters
+            .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Actions"))
+            .Add(p => p.Content, builder => builder.AddMarkupContent(0, "<button role=\"menuitem\">Delete</button>")));
+
+        cut.Find(".dropdown-trigger").Click();
+        cut.Find("[role='menuitem']").Click();
+
+        cut.FindAll(".dropdown-content").ShouldBeEmpty();
+        cut.Find(".dropdown-trigger").GetAttribute("aria-expanded").ShouldBe("false");
+    }
+
+    [Fact]
+    public void DropdownMenu_CanKeepContentOpenAfterSelection()
+    {
+        var cut = Render<DropdownMenu>(parameters => parameters
+            .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Actions"))
+            .Add(p => p.Content, builder => builder.AddMarkupContent(0, "<button role=\"menuitem\">Delete</button>"))
+            .Add(p => p.CloseOnSelect, false));
+
+        cut.Find(".dropdown-trigger").Click();
+        cut.Find("[role='menuitem']").Click();
+
+        cut.Find(".dropdown-content").ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void DropdownMenu_DisabledTriggerDoesNotOpen()
+    {
+        var cut = Render<DropdownMenu>(parameters => parameters
+            .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Actions"))
+            .Add(p => p.Content, builder => builder.AddContent(0, "Menu item"))
+            .Add(p => p.Disabled, true));
+
+        var trigger = cut.Find(".dropdown-trigger");
+        trigger.HasAttribute("disabled").ShouldBeTrue();
+        trigger.Click();
+
+        cut.FindAll(".dropdown-content").ShouldBeEmpty();
     }
 
     [Fact]

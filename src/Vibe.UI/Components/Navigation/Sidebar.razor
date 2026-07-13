@@ -1,7 +1,10 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
 <aside @attributes="AdditionalAttributes"
+    @ref="_rootReference"
     id="@_sidebarId"
     class="@CombinedCssClass"
     style="@SidebarStyle"
@@ -14,14 +17,16 @@
     @if (ShowHeader)
     {
         <div class="sidebar-header">
-            @if (Header != null)
-            {
-                @Header
-            }
-            else if (!string.IsNullOrEmpty(Title))
-            {
-                <h2 class="sidebar-title">@Title</h2>
-            }
+            <div class="sidebar-header-content" aria-hidden="@AriaBool(!IsOpen)" inert="@(!IsOpen)">
+                @if (Header != null)
+                {
+                    @Header
+                }
+                else if (!string.IsNullOrEmpty(Title))
+                {
+                    <h2 class="sidebar-title">@Title</h2>
+                }
+            </div>
 
             @if (Collapsible)
             {
@@ -33,42 +38,70 @@
                     aria-controls="@_sidebarId"
                     aria-expanded="@AriaBool(IsOpen)"
                     aria-disabled="@AriaBool(Disabled)">
-                    <span class="sidebar-toggle-icon" aria-hidden="true">@(IsOpen ? "◀" : "▶")</span>
+                    <Icon Name="@ToggleIconName" Size="16" CssClass="sidebar-toggle-icon" />
                 </button>
             }
         </div>
     }
 
-    <div class="sidebar-content" role="region" aria-label="@EffectiveContentAriaLabel">
+    <div class="sidebar-content"
+         role="region"
+         aria-label="@EffectiveContentAriaLabel"
+         aria-hidden="@AriaBool(!IsOpen)"
+         inert="@(!IsOpen)">
         @ChildContent
     </div>
 
     @if (Footer != null)
     {
-        <div class="sidebar-footer">
+        <div class="sidebar-footer" aria-hidden="@AriaBool(!IsOpen)" inert="@(!IsOpen)">
             @Footer
         </div>
     }
 
-    @if (Resizable)
+    @if (Resizable && IsOpen)
     {
         <div class="sidebar-resize-handle"
+             @ref="_resizeHandleReference"
              role="separator"
              aria-orientation="vertical"
              aria-label="@ResizeHandleAriaLabel"
              aria-disabled="@AriaBool(Disabled)"
-             @onmousedown="StartResize"></div>
+             aria-valuenow="@EffectiveWidth"
+             aria-valuemin="@EffectiveMinWidth"
+             aria-valuemax="@EffectiveMaxWidth"
+             tabindex="@(Disabled ? -1 : 0)"
+             @onkeydown="HandleResizeKeyDown">
+            <Icon Name="grip-vertical" Size="16" />
+        </div>
     }
 </aside>
 
 @code {
     private readonly string _sidebarId = $"vibe-sidebar-{Guid.NewGuid():N}";
+    private ElementReference _rootReference;
+    private ElementReference _resizeHandleReference;
+    private IJSObjectReference? _resizeModule;
+    private DotNetObjectReference<Sidebar>? _dotNetReference;
+    private bool _resizeConnected;
+    private SidebarPosition? _connectedPosition;
+    private bool _disposed;
+    private bool _hasInitializedWidth;
+    private int _lastWidthParameter;
+    private int _currentWidth = 280;
     private int EffectiveMinWidth => Math.Max(0, MinWidth);
     private int EffectiveMaxWidth => Math.Max(EffectiveMinWidth, MaxWidth);
-    private int EffectiveWidth => Math.Clamp(Width, EffectiveMinWidth, EffectiveMaxWidth);
+    private int EffectiveWidth => Math.Clamp(_currentWidth, EffectiveMinWidth, EffectiveMaxWidth);
     private int EffectiveCollapsedWidth => Math.Clamp(CollapsedWidth, 0, EffectiveWidth);
     private string CurrentState => IsOpen ? "open" : "closed";
     private string ToggleAriaLabel => IsOpen ? "Collapse sidebar" : "Expand sidebar";
+    private string ToggleIconName => (Position, IsOpen) switch
+    {
+        (SidebarPosition.Right, true) => "chevron-right",
+        (SidebarPosition.Right, false) => "chevron-left",
+        (_, true) => "chevron-left",
+        _ => "chevron-right"
+    };
     private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel)
         ? (!string.IsNullOrWhiteSpace(Title) ? Title! : "Sidebar")
         : AriaLabel!;
@@ -111,6 +144,9 @@
     public int Width { get; set; } = 280;
 
     [Parameter]
+    public EventCallback<int> WidthChanged { get; set; }
+
+    [Parameter]
     public int CollapsedWidth { get; set; } = 60;
 
     [Parameter]
@@ -135,6 +171,9 @@
     public bool PersistState { get; set; } = true;
 
     [Parameter]
+    public string? PersistenceKey { get; set; }
+
+    [Parameter]
     public string? CssClass { get; set; }
 
     private string CombinedCssClass => CombineClasses(
@@ -152,6 +191,86 @@
     private string SidebarStyle => IsOpen
     ? $"width: {EffectiveWidth}px;"
     : $"width: {EffectiveCollapsedWidth}px;";
+
+    private string? EffectivePersistenceKey
+    {
+        get
+        {
+            if (!PersistState)
+            {
+                return null;
+            }
+
+            var key = string.IsNullOrWhiteSpace(PersistenceKey)
+                ? $"{EffectiveAriaLabel}:{Position}"
+                : PersistenceKey.Trim();
+            return $"vibe-sidebar:{key}";
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        var incomingWidth = Width;
+        if (!_hasInitializedWidth || incomingWidth != _lastWidthParameter)
+        {
+            _currentWidth = Math.Clamp(incomingWidth, EffectiveMinWidth, EffectiveMaxWidth);
+        }
+        else
+        {
+            _currentWidth = Math.Clamp(_currentWidth, EffectiveMinWidth, EffectiveMaxWidth);
+        }
+
+        _lastWidthParameter = incomingWidth;
+        _hasInitializedWidth = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        var shouldConnect = Resizable && IsOpen && !Disabled;
+        if (!shouldConnect)
+        {
+            await DisconnectResizeAsync();
+            return;
+        }
+
+        try
+        {
+            _resizeModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
+                "import",
+                "./_content/Vibe.UI/js/sidebar.js");
+            _dotNetReference ??= DotNetObjectReference.Create(this);
+
+            if (!_resizeConnected || _connectedPosition != Position)
+            {
+                await DisconnectResizeAsync();
+                var restoredWidth = await _resizeModule.InvokeAsync<double?>(
+                    "connect",
+                    _rootReference,
+                    _resizeHandleReference,
+                    _dotNetReference,
+                    Position == SidebarPosition.Left,
+                    EffectivePersistenceKey);
+                _resizeConnected = true;
+                _connectedPosition = Position;
+
+                if (restoredWidth is double storedWidth)
+                {
+                    _currentWidth = Math.Clamp((int)Math.Round(storedWidth), EffectiveMinWidth, EffectiveMaxWidth);
+                    Width = _currentWidth;
+                    _lastWidthParameter = _currentWidth;
+                    StateHasChanged();
+                }
+            }
+        }
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+        {
+        }
+    }
 
     public Task Toggle()
     {
@@ -186,15 +305,105 @@
         }
     }
 
-    private void StartResize(MouseEventArgs e)
+    [JSInvokable]
+    public Task HandleResize(double width)
+    {
+        return SetWidth((int)Math.Round(width));
+    }
+
+    public async Task SetWidth(int width)
     {
         if (Disabled)
         {
             return;
         }
 
-        // Would need JS interop for actual drag handling
+        var nextWidth = Math.Clamp(width, EffectiveMinWidth, EffectiveMaxWidth);
+        if (nextWidth == _currentWidth)
+        {
+            return;
+        }
+
+        _currentWidth = nextWidth;
+        Width = nextWidth;
+        _lastWidthParameter = nextWidth;
+        await WidthChanged.InvokeAsync(nextWidth);
+
+        if (_resizeModule is not null && EffectivePersistenceKey is string key)
+        {
+            try
+            {
+                await _resizeModule.InvokeVoidAsync("save", key, nextWidth);
+            }
+            catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+            {
+            }
+        }
+
+        StateHasChanged();
     }
+
+    private async Task HandleResizeKeyDown(KeyboardEventArgs e)
+    {
+        var delta = (Position, e.Key) switch
+        {
+            (SidebarPosition.Left, "ArrowLeft") => -10,
+            (SidebarPosition.Left, "ArrowRight") => 10,
+            (SidebarPosition.Right, "ArrowLeft") => 10,
+            (SidebarPosition.Right, "ArrowRight") => -10,
+            _ => 0
+        };
+
+        if (delta != 0)
+        {
+            await SetWidth(_currentWidth + delta);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        await DisconnectResizeAsync();
+        if (_resizeModule is not null)
+        {
+            try
+            {
+                await _resizeModule.DisposeAsync();
+            }
+            catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+            {
+            }
+        }
+
+        _dotNetReference?.Dispose();
+    }
+
+    private async Task DisconnectResizeAsync()
+    {
+        if (!_resizeConnected || _resizeModule is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _resizeModule.InvokeVoidAsync("disconnect", _rootReference);
+        }
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+        {
+        }
+
+        _resizeConnected = false;
+        _connectedPosition = null;
+    }
+
+    private static bool IsRecoverableJsInteropException(Exception exception) =>
+        exception is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException;
 
     public enum SidebarPosition
     {

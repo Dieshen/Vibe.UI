@@ -2,9 +2,10 @@
 @inherits Base.VibeComponent
 
 <div @attributes="RootAttributes" @ref="_popoverRef">
-    <div class="popover-trigger"
-         role="button"
-         tabindex="@TriggerTabIndex"
+    <button type="button"
+         class="@CombineClasses("popover-trigger", TriggerClass)"
+         disabled="@Disabled"
+         aria-label="@TriggerAriaLabel"
          aria-expanded="@AriaExpanded"
          aria-haspopup="dialog"
          aria-controls="@_contentId"
@@ -13,7 +14,7 @@
          @onclick="TogglePopoverAsync"
          @onkeydown="HandleTriggerKeyDownAsync">
         @TriggerContent
-    </div>
+    </button>
 
     @if (_isOpen)
     {
@@ -23,7 +24,8 @@
              aria-label="@EffectiveAriaLabel"
              aria-labelledby="@NormalizedAriaLabelledBy"
              aria-describedby="@NormalizedAriaDescribedBy"
-             data-state="open">
+             data-state="open"
+             @onkeydown="HandleContentKeyDownAsync">
             @Content
         </div>
 
@@ -48,6 +50,18 @@
     /// </summary>
     [Parameter]
     public RenderFragment? Content { get; set; }
+
+    /// <summary>
+    /// Gets or sets additional classes applied to the trigger button.
+    /// </summary>
+    [Parameter]
+    public string? TriggerClass { get; set; }
+
+    /// <summary>
+    /// Gets or sets an accessible name for triggers without visible text.
+    /// </summary>
+    [Parameter]
+    public string? TriggerAriaLabel { get; set; }
 
     /// <summary>
     /// Gets or sets the position of the popover.
@@ -165,8 +179,6 @@
 
     private string CurrentState => _isOpen ? "open" : "closed";
 
-    private string TriggerTabIndex => Disabled ? "-1" : "0";
-
     private string NormalizedPosition => Position?.Trim().ToLowerInvariant() switch
     {
         "top" => "top",
@@ -221,11 +233,15 @@
             return;
         }
 
-        if (e.Key is "Enter" or " " or "Spacebar")
+        if (e.Key == "Escape" && CloseOnEscape)
         {
-            await SetOpenAsync(!_isOpen);
+            await SetOpenAsync(false);
         }
-        else if (e.Key == "Escape" && CloseOnEscape)
+    }
+
+    private async Task HandleContentKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape" && CloseOnEscape)
         {
             await SetOpenAsync(false);
         }

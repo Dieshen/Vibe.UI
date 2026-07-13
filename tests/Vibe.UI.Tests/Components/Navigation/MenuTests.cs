@@ -11,8 +11,8 @@ public class MenuTests : TestBase
         root.GetAttribute("data-state").ShouldBe("closed");
 
         var trigger = cut.Find(".vibe-menu-trigger");
-        trigger.GetAttribute("role").ShouldBe("button");
-        trigger.GetAttribute("tabindex").ShouldBe("0");
+        trigger.TagName.ShouldBe("BUTTON");
+        trigger.GetAttribute("type").ShouldBe("button");
         trigger.GetAttribute("aria-haspopup").ShouldBe("menu");
         trigger.GetAttribute("aria-expanded").ShouldBe("false");
         trigger.GetAttribute("aria-disabled").ShouldBe("false");
@@ -21,16 +21,17 @@ public class MenuTests : TestBase
 
         var defaultTrigger = cut.Find(".vibe-menu-default-trigger");
         defaultTrigger.TextContent.Trim().ShouldBe("Menu");
-        cut.FindAll(".vibe-menu-trigger button").ShouldBeEmpty();
+        trigger.QuerySelector("button").ShouldBeNull();
     }
 
     [Fact]
     public void Menu_RendersCustomTrigger()
     {
         var cut = Render<Menu>(parameters => parameters
-            .Add(p => p.Trigger, builder => builder.AddMarkupContent(0, "<button class='custom-trigger'>Actions</button>")));
+            .Add(p => p.Trigger, builder => builder.AddMarkupContent(0, "<span class='custom-trigger'>Actions</span>")));
 
         cut.Find(".custom-trigger").TextContent.ShouldBe("Actions");
+        cut.FindAll(".vibe-menu-trigger button").ShouldBeEmpty();
     }
 
     [Fact]
@@ -107,14 +108,14 @@ public class MenuTests : TestBase
     }
 
     [Fact]
-    public void Menu_TogglesWithEnterAndSpacebarAndClosesWithEscape()
+    public void Menu_ClosesWithEscapeAfterNativeTriggerClick()
     {
         var changedValues = new List<bool>();
         var cut = Render<Menu>(parameters => parameters
             .Add(p => p.IsOpenChanged, value => changedValues.Add(value))
             .AddChildContent("Menu content"));
 
-        cut.Find(".vibe-menu-trigger").KeyDown("Enter");
+        cut.Find(".vibe-menu-trigger").Click();
         changedValues.ShouldBe([true]);
         cut.Find(".vibe-menu-content").ShouldNotBeNull();
 
@@ -122,13 +123,6 @@ public class MenuTests : TestBase
         changedValues.ShouldBe([true, false]);
         cut.FindAll(".vibe-menu-content").ShouldBeEmpty();
 
-        cut.Find(".vibe-menu-trigger").KeyDown("Spacebar");
-        changedValues.ShouldBe([true, false, true]);
-        cut.Find(".vibe-menu-content").ShouldNotBeNull();
-
-        cut.Find(".vibe-menu-trigger").KeyDown(" ");
-        changedValues.ShouldBe([true, false, true, false]);
-        cut.FindAll(".vibe-menu-content").ShouldBeEmpty();
     }
 
     [Fact]
@@ -251,7 +245,7 @@ public class MenuTests : TestBase
 
         var trigger = cut.Find(".vibe-menu-trigger");
         trigger.ClassList.ShouldContain("vibe-menu-trigger-disabled");
-        trigger.GetAttribute("tabindex").ShouldBe("-1");
+        trigger.HasAttribute("disabled").ShouldBeTrue();
         trigger.GetAttribute("aria-disabled").ShouldBe("true");
         trigger.GetAttribute("aria-expanded").ShouldBe("false");
 

@@ -1,6 +1,6 @@
 /* DialogClose baseline styles */
 
-:global(.vibe-dialog-close) {
+.vibe-dialog-close {
   border: 1px solid var(--vibe-border);
   background: transparent;
   color: var(--vibe-foreground);
@@ -13,7 +13,7 @@
   cursor: pointer;
 }
 
-:global(.vibe-dialog-close:hover) {
+.vibe-dialog-close:hover {
   background: var(--vibe-muted);
 }
 

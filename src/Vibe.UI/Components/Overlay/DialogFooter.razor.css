@@ -1,6 +1,6 @@
 /* DialogFooter baseline styles */
 
-:global(.vibe-dialog-footer) {
+.vibe-dialog-footer {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;

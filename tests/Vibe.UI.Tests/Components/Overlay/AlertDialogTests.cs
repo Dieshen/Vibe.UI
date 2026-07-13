@@ -83,6 +83,7 @@ public class AlertDialogTests : TestBase
         bool? changedValue = null;
         var cut = Render<AlertDialog>(parameters => parameters
             .Add(p => p.IsOpen, true)
+            .Add(p => p.ShowCloseButton, true)
             .Add(p => p.IsOpenChanged, value => changedValue = value)
             .AddChildContent("Delete item?"));
 
@@ -161,6 +162,44 @@ public class AlertDialogTests : TestBase
             .AddChildContent("Delete item?"));
 
         cut.FindAll(".vibe-alert-dialog-close").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void AlertDialog_DefaultsRequireAnExplicitActionToDismiss()
+    {
+        var cut = Render<AlertDialog>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .AddChildContent("Delete item?"));
+
+        cut.FindAll(".vibe-alert-dialog-close").ShouldBeEmpty();
+        cut.Instance.CloseOnBackdropClick.ShouldBeFalse();
+        cut.Instance.ShowCloseButton.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void AlertDialog_CloseButtonUsesSharedIcon()
+    {
+        var cut = Render<AlertDialog>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.ShowCloseButton, true)
+            .AddChildContent("Delete item?"));
+
+        cut.Find(".vibe-alert-dialog-close svg.vibe-icon").ShouldNotBeNull();
+        cut.Markup.ShouldNotContain("&times;");
+    }
+
+    [Fact]
+    public async Task AlertDialog_DocumentEscapeCallbackClosesWhenEnabled()
+    {
+        bool? changedValue = null;
+        var cut = Render<AlertDialog>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.IsOpenChanged, value => changedValue = value)
+            .AddChildContent("Delete item?"));
+
+        await cut.InvokeAsync(cut.Instance.HandleDialogEscape);
+
+        changedValue.ShouldBe(false);
     }
 
     [Fact]

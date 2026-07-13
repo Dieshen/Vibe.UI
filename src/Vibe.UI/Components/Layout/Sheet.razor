@@ -1,14 +1,17 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
 @if (IsOpen || IsClosing)
 {
-    <div class="@CombinedClass @(IsClosing ? "closing" : "") @SideClass">
+    <div class="@CombinedClass @(IsClosing ? "closing" : "") @SideClass @SizeClass">
         @if (ShowOverlay)
         {
             <div class="sheet-overlay" @onclick="OnOverlayClick"></div>
         }
         <div class="sheet-content"
+             @ref="_sheetRef"
              style="@ContentStyle"
              role="dialog"
              aria-modal="true"
@@ -20,11 +23,7 @@
             @if (ShowCloseButton)
             {
                 <button type="button" class="sheet-close" @onclick="Close" aria-label="Close">
-                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M11.7816 4.03157C12.0062 3.80702 12.0062 3.44295 11.7816 3.2184C11.5571 2.99385 11.193 2.99385 10.9685 3.2184L7.50005 6.68682L4.03164 3.2184C3.8071 2.99385 3.44303 2.99385 3.21848 3.2184C2.99394 3.44295 2.99394 3.80702 3.21848 4.03157L6.6869 7.49999L3.21848 10.9684C2.99394 11.193 2.99394 11.557 3.21848 11.7816C3.44303 12.0061 3.8071 12.0061 4.03164 11.7816L7.50005 8.31316L10.9685 11.7816C11.193 12.0061 11.5571 12.0061 11.7816 11.7816C12.0062 11.557 12.0062 11.193 11.7816 10.9684L8.31321 7.49999L11.7816 4.03157Z"
-                            fill="currentColor" />
-                    </svg>
+                    <Icon Name="x" Size="16" />
                 </button>
             }
 
@@ -135,6 +134,10 @@
     /// Gets a value indicating whether the sheet is in the process of closing.
     /// </summary>
     private bool IsClosing { get; set; }
+    private IJSObjectReference? _dialogModule;
+    private ElementReference _sheetRef;
+    private readonly string _sheetKey = $"vibe-sheet-{Guid.NewGuid():N}";
+    private bool _focusTrapActive;
 
     private readonly string _titleId = $"vibe-sheet-title-{Guid.NewGuid():N}";
     private readonly string _descriptionId = $"vibe-sheet-description-{Guid.NewGuid():N}";
@@ -153,6 +156,8 @@
     /// Gets the CSS class for the sheet side.
     /// </summary>
     private string SideClass => $"sheet-{Side.ToString().ToLowerInvariant()}";
+
+    private string SizeClass => $"sheet-size-{Size.ToString().ToLowerInvariant()}";
 
     /// <summary>
     /// Gets the inline style for the sheet content based on size.
@@ -174,15 +179,43 @@
     /// </summary>
     private string GetSizeValue()
     {
-        return Size switch
+        var isHorizontal = Side is SheetSide.Top or SheetSide.Bottom;
+        return (Size, isHorizontal) switch
         {
-            SheetSize.Small => "25%",
-            SheetSize.Default => "35%",
-            SheetSize.Medium => "50%",
-            SheetSize.Large => "75%",
-            SheetSize.Full => "100%",
-            _ => "35%"
+            (SheetSize.Small, true) => "25vh",
+            (SheetSize.Default, true) => "40vh",
+            (SheetSize.Medium, true) => "55vh",
+            (SheetSize.Large, true) => "75vh",
+            (SheetSize.Full, true) => "100vh",
+            (SheetSize.Small, false) => "20rem",
+            (SheetSize.Default, false) => "24rem",
+            (SheetSize.Medium, false) => "32rem",
+            (SheetSize.Large, false) => "48rem",
+            (SheetSize.Full, false) => "100vw",
+            _ => "24rem"
         };
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if ((IsOpen || IsClosing) && !_focusTrapActive)
+        {
+            try
+            {
+                _dialogModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
+                    "import",
+                    "./_content/Vibe.UI/js/vibe-dialog.js");
+                await _dialogModule.InvokeVoidAsync("activate", _sheetKey, _sheetRef);
+                _focusTrapActive = true;
+            }
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+            {
+            }
+        }
+        else if (!IsOpen && !IsClosing && _focusTrapActive)
+        {
+            await DeactivateFocusTrapAsync();
+        }
     }
 
     /// <summary>
@@ -220,7 +253,43 @@
 
         IsClosing = false;
         await IsOpenChanged.InvokeAsync(false);
+        StateHasChanged();
     }
+
+    public async ValueTask DisposeAsync()
+    {
+        await DeactivateFocusTrapAsync();
+
+        if (_dialogModule is not null)
+        {
+            try
+            {
+                await _dialogModule.DisposeAsync();
+            }
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+            {
+            }
+        }
+    }
+
+    private async Task DeactivateFocusTrapAsync()
+    {
+        if (_dialogModule is not null)
+        {
+            try
+            {
+                await _dialogModule.InvokeVoidAsync("deactivate", _sheetKey);
+            }
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+            {
+            }
+        }
+
+        _focusTrapActive = false;
+    }
+
+    private static bool IsRecoverableJsInteropException(Exception exception) =>
+        exception is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException;
 
     /// <summary>
     /// Defines the side from which the sheet appears.

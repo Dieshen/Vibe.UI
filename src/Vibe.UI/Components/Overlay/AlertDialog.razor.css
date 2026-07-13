@@ -47,7 +47,7 @@
     background-color: var(--vibe-popover);
     color: var(--vibe-popover-foreground);
     border: 1px solid var(--vibe-border);
-    border-radius: var(--vibe-radius-lg);
+    border-radius: var(--vibe-radius);
     padding: var(--vibe-spacing-6);
     width: 100%;
     max-width: 32rem;
@@ -56,6 +56,7 @@
     z-index: 50;
     animation: alertDialogIn 0.2s ease-out;
     margin: 1rem;
+    overflow-y: auto;
 }
 
 /* ----------------------------------------
@@ -117,8 +118,8 @@
     line-height: 1;
     cursor: pointer;
     color: var(--vibe-muted-foreground);
-    height: 2rem;
-    width: 2rem;
+    height: 2.25rem;
+    width: 2.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -232,13 +233,20 @@
         gap: var(--vibe-spacing-2);
     }
 
-    .vibe-alert-dialog-footer > * {
+    .vibe-alert-dialog-footer ::deep > * {
         width: 100%;
     }
 
     .vibe-alert-dialog-close {
         top: var(--vibe-spacing-2);
         right: var(--vibe-spacing-2);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vibe-alert-dialog-backdrop,
+    .vibe-alert-dialog-content {
+        animation: none;
     }
 }
 

@@ -13,8 +13,9 @@ public class PopoverTests : TestBase
 
         var trigger = cut.Find(".popover-trigger");
         trigger.TextContent.ShouldBe("Details");
-        trigger.GetAttribute("role").ShouldBe("button");
-        trigger.GetAttribute("tabindex").ShouldBe("0");
+        trigger.TagName.ShouldBe("BUTTON");
+        trigger.GetAttribute("type").ShouldBe("button");
+        trigger.QuerySelector("button").ShouldBeNull();
         trigger.GetAttribute("aria-haspopup").ShouldBe("dialog");
         trigger.GetAttribute("aria-expanded").ShouldBe("false");
         trigger.GetAttribute("aria-disabled").ShouldBe("false");
@@ -54,14 +55,14 @@ public class PopoverTests : TestBase
     }
 
     [Fact]
-    public void Popover_TogglesWithKeyboard()
+    public void Popover_ClosesWithEscapeFromTrigger()
     {
         var cut = Render<Popover>(parameters => parameters
             .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Details"))
             .Add(p => p.Content, builder => builder.AddContent(0, "Popover content")));
 
         var trigger = cut.Find(".popover-trigger");
-        trigger.KeyDown("Enter");
+        trigger.Click();
         cut.Find(".popover-content").ShouldNotBeNull();
 
         trigger = cut.Find(".popover-trigger");
@@ -70,15 +71,16 @@ public class PopoverTests : TestBase
     }
 
     [Fact]
-    public void Popover_TogglesWithSpacebar()
+    public void Popover_ClosesWithEscapeFromInteractiveContent()
     {
         var cut = Render<Popover>(parameters => parameters
             .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Details"))
             .Add(p => p.Content, builder => builder.AddContent(0, "Popover content")));
 
-        cut.Find(".popover-trigger").KeyDown("Spacebar");
+        cut.Find(".popover-trigger").Click();
+        cut.Find(".popover-content").KeyDown("Escape");
 
-        cut.Find(".popover-content").TextContent.ShouldContain("Popover content");
+        cut.FindAll(".popover-content").ShouldBeEmpty();
     }
 
     [Fact]
@@ -234,7 +236,7 @@ public class PopoverTests : TestBase
 
         var trigger = cut.Find(".popover-trigger");
         trigger.GetAttribute("aria-disabled").ShouldBe("true");
-        trigger.GetAttribute("tabindex").ShouldBe("-1");
+        trigger.HasAttribute("disabled").ShouldBeTrue();
 
         trigger.Click();
         trigger.KeyDown("Enter");

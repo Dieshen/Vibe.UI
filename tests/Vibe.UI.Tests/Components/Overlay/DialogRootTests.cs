@@ -121,6 +121,21 @@ public class DialogRootTests : TestBase
     }
 
     [Fact]
+    public async Task DialogRoot_HandleDialogEscape_ClosesWhenEnabled()
+    {
+        bool? changedTo = null;
+        var cut = Render<DialogRoot>(parameters => parameters
+            .Add(p => p.IsOpen, true)
+            .Add(p => p.IsOpenChanged, EventCallback.Factory.Create<bool>(this, value => changedTo = value))
+            .AddChildContent("Dialog body"));
+
+        await cut.InvokeAsync(cut.Instance.HandleDialogEscape);
+
+        changedTo.ShouldBe(false);
+        cut.FindAll(".vibe-dialog").ShouldBeEmpty();
+    }
+
+    [Fact]
     public void DialogRoot_SyncsInternalOpenState_WhenParameterChanges()
     {
         var closed = Render<DialogRoot>(parameters => parameters

@@ -179,7 +179,8 @@ public class SplitterTests : TestBase
         cut.Find(".splitter-pane-first").GetAttribute("style")!.ShouldContain("width: 80%");
 
         var divider = cut.Find(".splitter-divider");
-        divider.GetAttribute("style").ShouldBe("width: 12px;");
+        divider.GetAttribute("style")!.ShouldContain("width: 12px;");
+        divider.GetAttribute("style")!.ShouldContain("margin-inline: -6px;");
         divider.GetAttribute("aria-valuenow").ShouldBe("80");
         divider.GetAttribute("aria-valuemin").ShouldBe("20");
         divider.GetAttribute("aria-valuemax").ShouldBe("80");
@@ -199,6 +200,20 @@ public class SplitterTests : TestBase
 
         changedSizes.ShouldBe(new[] { 80d });
         cut.Find(".splitter-pane-first").GetAttribute("style")!.ShouldContain("width: 80%");
+    }
+
+    [Fact]
+    public async Task Splitter_DragMove_UpdatesSizeAndInvokesCallback()
+    {
+        double? changedSize = null;
+        var cut = Render<Splitter>(parameters => parameters
+            .Add(p => p.OnSizeChanged, value => changedSize = value));
+
+        await cut.InvokeAsync(() => cut.Instance.HandleDragMove(73.5));
+
+        changedSize.ShouldBe(73.5);
+        cut.Find(".splitter-pane-first").GetAttribute("style")!.ShouldContain("width: 73.5%");
+        cut.Find(".splitter-divider").TextContent.ShouldNotContain("\u22EE");
     }
 
     [Fact]
@@ -223,7 +238,8 @@ public class SplitterTests : TestBase
 
         var divider = cut.Find(".splitter-divider");
         divider.GetAttribute("aria-orientation").ShouldBe("horizontal");
-        divider.GetAttribute("style").ShouldBe("height: 8px;");
+        divider.GetAttribute("style")!.ShouldContain("height: 8px;");
+        divider.GetAttribute("style")!.ShouldContain("margin-block: -4px;");
         cut.Find(".splitter-pane-first").GetAttribute("style")!.ShouldContain("height: 50%");
     }
 }

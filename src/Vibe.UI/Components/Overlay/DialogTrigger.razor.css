@@ -1,6 +1,6 @@
 /* DialogTrigger baseline styles */
 
-:global(.vibe-dialog-trigger) {
+.vibe-dialog-trigger {
   display: inline-flex;
   cursor: pointer;
 }

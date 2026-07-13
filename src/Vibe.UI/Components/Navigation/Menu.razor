@@ -2,9 +2,10 @@
 @inherits Vibe.UI.Base.VibeComponent
 
 <div class="@CombinedClass" data-state="@CurrentState" @attributes="AdditionalAttributes">
-    <div class="@TriggerClass"
-         role="button"
-         tabindex="@TriggerTabIndex"
+    <button type="button"
+         class="@EffectiveTriggerClass"
+         disabled="@Disabled"
+         aria-label="@TriggerAriaLabel"
          aria-haspopup="menu"
          aria-expanded="@AriaExpanded"
          aria-controls="@ContentId"
@@ -18,11 +19,10 @@
         }
         else
         {
-            <span class="vibe-button vibe-menu-default-trigger">
-                Menu
-            </span>
+            <span class="vibe-menu-default-trigger">Menu</span>
+            <Icon Name="chevron-down" Size="16" />
         }
-    </div>
+    </button>
 
     @if (_isOpen)
     {
@@ -62,6 +62,18 @@
     /// </summary>
     [Parameter]
     public RenderFragment? Trigger { get; set; }
+
+    /// <summary>
+    /// Gets or sets additional classes applied to the trigger button.
+    /// </summary>
+    [Parameter]
+    public string? TriggerClass { get; set; }
+
+    /// <summary>
+    /// Gets or sets an accessible name for triggers without visible text.
+    /// </summary>
+    [Parameter]
+    public string? TriggerAriaLabel { get; set; }
 
     /// <summary>
     /// Gets or sets whether the menu is open
@@ -135,17 +147,16 @@
         }
     }
 
-    private string TriggerClass => CombineClasses(
+    private string EffectiveTriggerClass => CombineClasses(
         "vibe-menu-trigger",
-        Disabled ? "vibe-menu-trigger-disabled" : null);
+        Disabled ? "vibe-menu-trigger-disabled" : null,
+        TriggerClass);
 
     private string AriaExpanded => _isOpen ? "true" : "false";
 
     private string AriaDisabled => Disabled ? "true" : "false";
 
     private string CurrentState => _isOpen ? "open" : "closed";
-
-    private string TriggerTabIndex => Disabled ? "-1" : "0";
 
     private string EffectiveMenuAriaLabel => string.IsNullOrWhiteSpace(MenuAriaLabel)
         ? "Menu"
@@ -177,11 +188,7 @@
             return;
         }
 
-        if (e.Key is "Enter" or " " or "Spacebar")
-        {
-            await ToggleMenu();
-        }
-        else if (e.Key is "ArrowDown" or "ArrowUp")
+        if (e.Key is "ArrowDown" or "ArrowUp")
         {
             await OpenMenu();
         }
