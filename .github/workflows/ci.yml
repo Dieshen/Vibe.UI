@@ -105,6 +105,9 @@ jobs:
     - name: Run docs smoke browser tests
       run: BROWSER=chromium dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Smoke -- RunConfiguration.TestSessionTimeout=600000
 
+    - name: Run docs functional browser tests
+      run: BROWSER=chromium dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Functional -- RunConfiguration.TestSessionTimeout=1200000
+
     - name: Run compatibility browser tests
       run: |
         for browser in chromium firefox webkit; do
@@ -121,3 +124,44 @@ jobs:
         name: codecov-vibe-ui
         fail_ci_if_error: false
         verbose: true
+
+  visual-regression:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v7.0.0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5.4.0
+      with:
+        dotnet-version: '10.0.x'
+
+    - name: Restore visual test dependencies
+      run: |
+        dotnet restore samples/Vibe.UI.Docs/Vibe.UI.Docs.csproj
+        dotnet restore tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj
+
+    - name: Build docs and visual tests
+      run: |
+        dotnet build samples/Vibe.UI.Docs/Vibe.UI.Docs.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+        dotnet build tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+
+    - name: Install Chromium
+      run: pwsh tests/Vibe.UI.Docs.E2E/bin/Release/net10.0/playwright.ps1 install chromium
+
+    - name: Compare reviewed visual baselines
+      run: |
+        $env:BROWSER = 'chromium'
+        dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Visual -- RunConfiguration.TestSessionTimeout=900000
+
+    - name: Upload visual regression artifacts
+      if: failure()
+      uses: actions/upload-artifact@v7.0.1
+      with:
+        name: visual-regression-windows-chromium
+        path: |
+          output/playwright/visual-regression/**
+          Artifacts/**
+        if-no-files-found: ignore
+        retention-days: 14
