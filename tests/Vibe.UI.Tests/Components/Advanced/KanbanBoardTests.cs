@@ -425,6 +425,59 @@ public class KanbanBoardTests : TestBase
     }
 
     [Fact]
+    public async Task KanbanBoard_DragLifecycle_MovesCardToDropTarget()
+    {
+        // Arrange
+        KanbanBoard.CardMovedEventArgs? moved = null;
+        var columns = CreateMoveColumns();
+        var cut = Render<KanbanBoard>(parameters => parameters
+            .Add(p => p.Columns, columns)
+            .Add(p => p.OnCardMoved, EventCallback.Factory.Create<KanbanBoard.CardMovedEventArgs>(
+                this, args => moved = args)));
+
+        // Act
+        await cut.Find(".kanban-card").TriggerEventAsync("ondragstart", new Microsoft.AspNetCore.Components.Web.DragEventArgs());
+        var destinationCards = cut.FindAll(".kanban-cards")[1];
+        await destinationCards.TriggerEventAsync("ondragover", new Microsoft.AspNetCore.Components.Web.DragEventArgs());
+
+        // Assert
+        cut.FindAll(".kanban-column")[1].ClassList.ShouldContain("kanban-column-drop-target");
+
+        // Act
+        destinationCards = cut.FindAll(".kanban-cards")[1];
+        await destinationCards.TriggerEventAsync("ondrop", new Microsoft.AspNetCore.Components.Web.DragEventArgs());
+
+        // Assert
+        columns[0].Cards!.ShouldBeEmpty();
+        columns[1].Cards!.Single().Id.ShouldBe("card1");
+        moved.ShouldNotBeNull();
+        moved.ToColumnId.ShouldBe("done");
+        cut.FindAll(".kanban-column")[1].ClassList.ShouldNotContain("kanban-column-drop-target");
+    }
+
+    [Fact]
+    public async Task KanbanBoard_ControlArrow_MovesFocusedCardToAdjacentColumn()
+    {
+        // Arrange
+        var columns = CreateMoveColumns();
+        var cut = Render<KanbanBoard>(parameters => parameters.Add(p => p.Columns, columns));
+        var card = cut.Find(".kanban-card");
+
+        // Assert
+        card.GetAttribute("tabindex").ShouldBe("0");
+        (card.GetAttribute("aria-keyshortcuts") ?? string.Empty).ShouldContain("Control+ArrowRight");
+
+        // Act
+        await card.TriggerEventAsync(
+            "onkeydown",
+            new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowRight", CtrlKey = true });
+
+        // Assert
+        columns[0].Cards!.ShouldBeEmpty();
+        columns[1].Cards!.Single().Id.ShouldBe("card1");
+    }
+
+    [Fact]
     public async Task KanbanBoard_MoveCard_DoesNothingForInvalidInputs()
     {
         // Arrange

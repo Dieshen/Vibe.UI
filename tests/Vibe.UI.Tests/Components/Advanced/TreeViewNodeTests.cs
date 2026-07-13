@@ -243,6 +243,23 @@ public class TreeViewNodeTests : TestBase
         cut.Find(".tree-view-node").GetAttribute("aria-selected").ShouldBe("true");
     }
 
+    [Fact]
+    public void TreeViewNode_RendersSharedIcon_WhenIconNameIsProvided()
+    {
+        var cut = Render<TreeViewNode>(parameters => parameters
+            .Add(p => p.Item, new TreeView.TreeNode
+            {
+                Id = "documents",
+                Label = "Documents",
+                IconName = "folder"
+            }));
+
+        var icon = cut.Find(".tree-node-icon svg");
+        icon.GetAttribute("aria-hidden").ShouldBe("true");
+        icon.GetAttribute("width").ShouldBe("16");
+        cut.FindAll(".tree-node-icon path").ShouldNotBeEmpty();
+    }
+
     private static TreeView.TreeNode CreateParentNode(bool disabled = false) => new()
     {
         Id = "parent",

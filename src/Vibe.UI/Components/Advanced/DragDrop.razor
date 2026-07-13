@@ -1,0 +1,278 @@
+@typeparam TItem
+@namespace Vibe.UI.Components
+@inherits Vibe.UI.Base.VibeComponent
+
+<div @attributes="AdditionalAttributes"
+     class="@CombinedClass"
+     role="list"
+     aria-label="@EffectiveAriaLabel"
+     aria-disabled="@AriaBool(Disabled)"
+     data-orientation="@NormalizedOrientation">
+    @for (var index = 0; index < _entries.Count; index++)
+    {
+        var currentIndex = index;
+        var entry = _entries[currentIndex];
+        var itemDisabled = IsItemDisabledInternal(entry.Item);
+
+        <div @key="entry.Id"
+             class="@GetItemClass(currentIndex, itemDisabled)"
+             role="listitem"
+             data-index="@currentIndex"
+             data-disabled="@(itemDisabled ? "true" : null)"
+             @ondragenter="@(() => HandleDragEnter(currentIndex))"
+             @ondragover:preventDefault
+             @ondrop="@(() => HandleDropAsync(currentIndex))">
+            <button type="button"
+                    class="dragdrop-handle"
+                    draggable="@AriaBool(CanMoveItem(entry.Item))"
+                    disabled="@(!CanMoveItem(entry.Item))"
+                    aria-label="@GetHandleAriaLabel(entry.Item, currentIndex)"
+                    aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
+                    @ondragstart="@(() => HandleDragStart(currentIndex))"
+                    @ondragend="HandleDragEnd"
+                    @onkeydown="@((KeyboardEventArgs e) => HandleHandleKeyDownAsync(currentIndex, e))">
+                <Icon Name="grip-vertical" Size="16" />
+            </button>
+
+            <div class="dragdrop-item-content">
+                @if (ItemTemplate is not null)
+                {
+                    @ItemTemplate(entry.Item)
+                }
+                else
+                {
+                    @entry.Item
+                }
+            </div>
+        </div>
+    }
+
+    @if (_entries.Count == 0)
+    {
+        <div class="dragdrop-empty">@EmptyText</div>
+    }
+
+    <span class="dragdrop-live-region" role="status" aria-live="polite">@_announcement</span>
+</div>
+
+@code {
+    private readonly List<Entry> _entries = [];
+    private List<TItem> _lastSourceItems = [];
+    private bool _hasInitializedItems;
+    private int? _draggedIndex;
+    private int? _dropTargetIndex;
+    private string _announcement = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the items displayed in the reorderable list.
+    /// </summary>
+    [Parameter]
+    [EditorRequired]
+    public List<TItem>? Items { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback invoked with a new list after reordering.
+    /// </summary>
+    [Parameter]
+    public EventCallback<List<TItem>> ItemsChanged { get; set; }
+
+    /// <summary>
+    /// Gets or sets the item rendering template.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    /// <summary>
+    /// Gets or sets a function that returns an accessible label for an item.
+    /// </summary>
+    [Parameter]
+    public Func<TItem, string>? ItemLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets a function that identifies items that cannot be moved.
+    /// </summary>
+    [Parameter]
+    public Func<TItem, bool>? IsItemDisabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether all reordering interactions are disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list orientation: vertical or horizontal.
+    /// </summary>
+    [Parameter]
+    public string Orientation { get; set; } = "vertical";
+
+    /// <summary>
+    /// Gets or sets the accessible name of the reorderable list.
+    /// </summary>
+    [Parameter]
+    public string AriaLabel { get; set; } = "Reorderable list";
+
+    /// <summary>
+    /// Gets or sets the message shown when the item list is empty.
+    /// </summary>
+    [Parameter]
+    public string EmptyText { get; set; } = "No items";
+
+    /// <summary>
+    /// Gets or sets the callback invoked after an item moves.
+    /// </summary>
+    [Parameter]
+    public EventCallback<ReorderEvent> OnReordered { get; set; }
+
+    /// <inheritdoc />
+    protected override string ComponentClass => "vibe-dragdrop";
+
+    /// <inheritdoc />
+    protected override string GetCombinedClass() => CombineClasses(
+        ComponentClass,
+        $"dragdrop-{NormalizedOrientation}",
+        Disabled ? "dragdrop-disabled" : null,
+        Class);
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        var sourceItems = Items ?? [];
+        if (_hasInitializedItems && sourceItems.SequenceEqual(_lastSourceItems))
+        {
+            return;
+        }
+
+        if (_hasInitializedItems && sourceItems.SequenceEqual(_entries.Select(entry => entry.Item)))
+        {
+            _lastSourceItems = sourceItems.ToList();
+            return;
+        }
+
+        _entries.Clear();
+        _entries.AddRange(sourceItems.Select(item => new Entry(item)));
+        _lastSourceItems = sourceItems.ToList();
+        _hasInitializedItems = true;
+        ResetDragState();
+    }
+
+    private string NormalizedOrientation => string.Equals(Orientation?.Trim(), "horizontal", StringComparison.OrdinalIgnoreCase)
+        ? "horizontal"
+        : "vertical";
+
+    private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel)
+        ? "Reorderable list"
+        : AriaLabel.Trim();
+
+    private bool CanMoveItem(TItem item) => !Disabled && !IsItemDisabledInternal(item);
+
+    private bool IsItemDisabledInternal(TItem item) => IsItemDisabled?.Invoke(item) == true;
+
+    private string GetItemClass(int index, bool itemDisabled) => CombineClasses(
+        "dragdrop-item",
+        _draggedIndex == index ? "dragging" : null,
+        _dropTargetIndex == index && _draggedIndex != index ? "drop-target" : null,
+        itemDisabled ? "dragdrop-item-disabled" : null);
+
+    private string GetHandleAriaLabel(TItem item, int index) => $"Move {GetItemLabel(item, index)}";
+
+    private string GetItemLabel(TItem item, int index)
+    {
+        var customLabel = ItemLabel?.Invoke(item);
+        if (!string.IsNullOrWhiteSpace(customLabel))
+        {
+            return customLabel.Trim();
+        }
+
+        var itemText = item is null ? null : item.ToString();
+        return string.IsNullOrWhiteSpace(itemText) ? $"item {index + 1}" : itemText;
+    }
+
+    private void HandleDragStart(int index)
+    {
+        if (index < 0 || index >= _entries.Count || !CanMoveItem(_entries[index].Item))
+        {
+            return;
+        }
+
+        _draggedIndex = index;
+        _dropTargetIndex = index;
+        _announcement = $"Picked up {GetItemLabel(_entries[index].Item, index)} at position {index + 1}.";
+    }
+
+    private void HandleDragEnter(int index)
+    {
+        if (_draggedIndex.HasValue && index >= 0 && index < _entries.Count)
+        {
+            _dropTargetIndex = index;
+        }
+    }
+
+    private async Task HandleDropAsync(int targetIndex)
+    {
+        if (!_draggedIndex.HasValue)
+        {
+            return;
+        }
+
+        var sourceIndex = _draggedIndex.Value;
+        await MoveItemAsync(sourceIndex, targetIndex);
+        ResetDragState();
+    }
+
+    private void HandleDragEnd()
+    {
+        ResetDragState();
+    }
+
+    private async Task HandleHandleKeyDownAsync(int index, KeyboardEventArgs e)
+    {
+        if (!e.AltKey || e.Key is not ("ArrowUp" or "ArrowDown"))
+        {
+            return;
+        }
+
+        var targetIndex = e.Key == "ArrowUp" ? index - 1 : index + 1;
+        await MoveItemAsync(index, targetIndex);
+    }
+
+    private async Task MoveItemAsync(int sourceIndex, int targetIndex)
+    {
+        if (sourceIndex < 0 || sourceIndex >= _entries.Count ||
+            targetIndex < 0 || targetIndex >= _entries.Count ||
+            sourceIndex == targetIndex ||
+            !CanMoveItem(_entries[sourceIndex].Item))
+        {
+            return;
+        }
+
+        var entry = _entries[sourceIndex];
+        _entries.RemoveAt(sourceIndex);
+        _entries.Insert(targetIndex, entry);
+
+        var updatedItems = _entries.Select(candidate => candidate.Item).ToList();
+        _announcement = $"Moved {GetItemLabel(entry.Item, targetIndex)} to position {targetIndex + 1} of {_entries.Count}.";
+
+        await ItemsChanged.InvokeAsync(updatedItems);
+        await OnReordered.InvokeAsync(new ReorderEvent(entry.Item, sourceIndex, targetIndex));
+    }
+
+    private void ResetDragState()
+    {
+        _draggedIndex = null;
+        _dropTargetIndex = null;
+    }
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
+
+    private sealed class Entry(TItem item)
+    {
+        public Guid Id { get; } = Guid.NewGuid();
+        public TItem Item { get; } = item;
+    }
+
+    /// <summary>
+    /// Describes a completed reorder operation.
+    /// </summary>
+    public sealed record ReorderEvent(TItem Item, int OldIndex, int NewIndex);
+}

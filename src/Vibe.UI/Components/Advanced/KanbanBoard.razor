@@ -1,7 +1,10 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
 <div @attributes="AdditionalAttributes"
+     @ref="_rootElement"
      class="@CombinedCssClass"
      role="region"
      aria-label="@EffectiveAriaLabel"
@@ -43,13 +46,19 @@
                                         @onclick="() => HandleAddCardRequested(column)"
                                         title="@GetAddCardLabel(column)"
                                         aria-label="@GetAddCardLabel(column)">
-                                    <span aria-hidden="true">+</span>
+                                    <Icon Name="plus" Size="16" />
                                 </button>
                             }
                         }
                     </div>
 
-                    <div class="kanban-cards" role="list" aria-label="@GetCardListLabel(column)">
+                    <div class="kanban-cards"
+                         role="list"
+                         aria-label="@GetCardListLabel(column)"
+                         @ondragover="() => HandleDragOver(column)"
+                         @ondragover:preventDefault="@CanReceiveDrop(column)"
+                         @ondrop="() => HandleDrop(column)"
+                         @ondrop:preventDefault="@CanReceiveDrop(column)">
                         @if (cards.Count == 0)
                         {
                             <div class="kanban-column-empty" role="status">@EmptyColumnText</div>
@@ -66,9 +75,13 @@
                                          tabindex="@GetCardTabIndex(card)"
                                          aria-label="@GetCardAriaLabel(card)"
                                          aria-disabled="@GetCardAriaDisabled(card)"
+                                         aria-keyshortcuts="@GetCardKeyboardShortcuts(card, column)"
+                                         data-kanban-card-id="@card.Id"
                                          draggable="@AriaBool(CanDragCard(card, column))"
+                                         @ondragstart="() => HandleDragStart(card, column)"
+                                         @ondragend="HandleDragEnd"
                                          @onclick="() => HandleCardClick(card)"
-                                         @onkeydown="args => HandleCardKeyDown(args, card)">
+                                         @onkeydown="args => HandleCardKeyDown(args, card, column)">
                                         @if (CardTemplate != null)
                                         {
                                             @CardTemplate(card)
@@ -134,6 +147,13 @@
     private const string DefaultAriaLabel = "Kanban board";
     private const string UntitledColumn = "Untitled column";
     private const string UntitledCard = "Untitled card";
+    private KanbanCard? _draggedCard;
+    private KanbanColumn? _sourceColumn;
+    private string? _dragOverColumnId;
+    private ElementReference _rootElement;
+    private IJSObjectReference? _module;
+    private string? _pendingFocusCardId;
+    private bool _disposed;
 
     [Parameter]
     public List<KanbanColumn>? Columns { get; set; }
@@ -190,6 +210,22 @@
 
     protected override string ComponentClass => CombinedCssClass;
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_disposed)
+        {
+            _module = await JSRuntime.InvokeAsync<IJSObjectReference>(
+                "import",
+                "./_content/Vibe.UI/js/kanbanBoard.js");
+        }
+
+        if (_module is not null && _pendingFocusCardId is string cardId)
+        {
+            _pendingFocusCardId = null;
+            await _module.InvokeVoidAsync("focusCard", _rootElement, cardId);
+        }
+    }
+
     private IReadOnlyList<KanbanColumn> VisibleColumns =>
         Columns?.OfType<KanbanColumn>().ToList() ?? [];
 
@@ -208,14 +244,40 @@
         await OnCardClicked.InvokeAsync(card);
     }
 
-    private async Task HandleCardKeyDown(KeyboardEventArgs args, KanbanCard card)
+    private async Task HandleCardKeyDown(KeyboardEventArgs args, KanbanCard card, KanbanColumn column)
     {
+        if (args.CtrlKey && args.Key is "ArrowLeft" or "ArrowRight" && CanDragCard(card, column))
+        {
+            await MoveCardToAdjacentColumn(card, column, args.Key == "ArrowRight" ? 1 : -1);
+            return;
+        }
+
         if (!CanClickCard(card) || !IsActivationKey(args.Key))
         {
             return;
         }
 
         await OnCardClicked.InvokeAsync(card);
+    }
+
+    private async Task MoveCardToAdjacentColumn(KanbanCard card, KanbanColumn column, int direction)
+    {
+        var columns = VisibleColumns.ToList();
+        var currentIndex = columns.IndexOf(column);
+        var targetIndex = currentIndex + direction;
+        if (currentIndex < 0 || targetIndex < 0 || targetIndex >= columns.Count)
+        {
+            return;
+        }
+
+        var targetColumn = columns[targetIndex];
+        if (IsColumnInteractionBlocked(targetColumn))
+        {
+            return;
+        }
+
+        _pendingFocusCardId = card.Id;
+        await MoveCard(card.Id, column.Id, targetColumn.Id);
     }
 
     private async Task HandleAddCardRequested(KanbanColumn column)
@@ -226,6 +288,53 @@
         }
 
         await OnAddCardRequested.InvokeAsync(column.Id);
+    }
+
+    private void HandleDragStart(KanbanCard card, KanbanColumn column)
+    {
+        if (!CanDragCard(card, column))
+        {
+            ClearDragState();
+            return;
+        }
+
+        _draggedCard = card;
+        _sourceColumn = column;
+        _dragOverColumnId = null;
+    }
+
+    private void HandleDragOver(KanbanColumn column)
+    {
+        var nextColumnId = CanReceiveDrop(column) ? column.Id : null;
+        if (!string.Equals(_dragOverColumnId, nextColumnId, StringComparison.Ordinal))
+        {
+            _dragOverColumnId = nextColumnId;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleDrop(KanbanColumn column)
+    {
+        if (!CanReceiveDrop(column) || _draggedCard is null || _sourceColumn is null)
+        {
+            ClearDragState();
+            return;
+        }
+
+        var cardId = _draggedCard.Id;
+        var fromColumnId = _sourceColumn.Id;
+        var toColumnId = column.Id;
+        ClearDragState();
+        await MoveCard(cardId, fromColumnId, toColumnId);
+    }
+
+    private void HandleDragEnd(DragEventArgs _) => ClearDragState();
+
+    private void ClearDragState()
+    {
+        _draggedCard = null;
+        _sourceColumn = null;
+        _dragOverColumnId = null;
     }
 
     public async Task MoveCard(string cardId, string fromColumnId, string toColumnId)
@@ -315,30 +424,48 @@
     private string GetColumnCssClass(KanbanColumn column) =>
         CombineClasses(
             "kanban-column",
-            IsColumnInteractionBlocked(column) ? "kanban-column-disabled" : null
+            IsColumnInteractionBlocked(column) ? "kanban-column-disabled" : null,
+            string.Equals(_dragOverColumnId, column.Id, StringComparison.Ordinal) ? "kanban-column-drop-target" : null
         );
 
     private string GetCardCssClass(KanbanCard card) =>
         CombineClasses(
             "kanban-card",
             IsCardInteractionBlocked(card) ? "kanban-card-disabled" : null,
-            CanClickCard(card) ? "kanban-card-clickable" : null
+            CanClickCard(card) ? "kanban-card-clickable" : null,
+            ReferenceEquals(_draggedCard, card) ? "kanban-card-dragging" : null
         );
 
     private string GetCardRole(KanbanCard card) =>
         OnCardClicked.HasDelegate ? "button" : "group";
 
     private string? GetCardTabIndex(KanbanCard card) =>
-        CanClickCard(card) ? "0" : null;
+        (CanClickCard(card) || CanDragCardInAnyColumn(card)) ? "0" : null;
 
     private string? GetCardAriaDisabled(KanbanCard card) =>
-        OnCardClicked.HasDelegate ? AriaBool(IsCardInteractionBlocked(card)) : null;
+        OnCardClicked.HasDelegate || AllowDragDrop ? AriaBool(IsCardInteractionBlocked(card)) : null;
+
+    private string? GetCardKeyboardShortcuts(KanbanCard card, KanbanColumn column) =>
+        CanDragCard(card, column) ? "Control+ArrowLeft Control+ArrowRight" : null;
 
     private bool CanClickCard(KanbanCard card) =>
         OnCardClicked.HasDelegate && !IsCardInteractionBlocked(card);
 
     private bool CanDragCard(KanbanCard card, KanbanColumn column) =>
-        AllowDragDrop && !IsColumnInteractionBlocked(column) && !IsCardInteractionBlocked(card);
+        AllowDragDrop &&
+        !string.IsNullOrWhiteSpace(card.Id) &&
+        !string.IsNullOrWhiteSpace(column.Id) &&
+        !IsColumnInteractionBlocked(column) &&
+        !IsCardInteractionBlocked(card);
+
+    private bool CanDragCardInAnyColumn(KanbanCard card) =>
+        VisibleColumns.Any(column => GetCards(column).Contains(card) && CanDragCard(card, column));
+
+    private bool CanReceiveDrop(KanbanColumn column) =>
+        _draggedCard is not null &&
+        _sourceColumn is not null &&
+        !IsColumnInteractionBlocked(column) &&
+        !string.Equals(_sourceColumn.Id, column.Id, StringComparison.Ordinal);
 
     private bool CanRequestAddCard(KanbanColumn column) =>
         AllowAddCard &&
@@ -357,6 +484,28 @@
 
     private static string AriaBool(bool value) =>
         value ? "true" : "false";
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        if (_module is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _module.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+    }
 
     public class KanbanColumn
     {
