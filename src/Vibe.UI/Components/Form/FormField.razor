@@ -9,12 +9,20 @@
     <div class="form-field-container @ValidationClass">
         @if (HasLabel)
         {
-            <label class="form-field-label" id="@LabelId" for="@EffectiveId">@Label</label>
+            <label class="form-field-label" id="@LabelId" for="@EffectiveId">
+                <span>@Label</span>
+                @if (Required)
+                {
+                    <span class="form-field-required" aria-hidden="true">*</span>
+                }
+            </label>
         }
 
-        <div class="form-field-input">
-            @ChildContent
-        </div>
+        <CascadingValue Value="@FieldContext">
+            <div class="form-field-input">
+                @ChildContent
+            </div>
+        </CascadingValue>
 
         @if (HasDescription)
         {
@@ -123,6 +131,21 @@
 
     private bool EffectiveHasError => HasError || HasExplicitError || ValidationMessages.Count > 0;
 
+    private string? EffectiveErrorId => EffectiveHasError && (HasExplicitError || ValidationMessages.Count > 0)
+        ? ErrorId
+        : null;
+
+    private string? ControlDescribedBy => CombineIds(
+        HasDescription ? DescriptionId : null,
+        EffectiveErrorId);
+
+    private FormFieldContext FieldContext => new(
+        EffectiveId,
+        ControlDescribedBy,
+        EffectiveErrorId,
+        EffectiveHasError,
+        Required);
+
     private IReadOnlyList<string> ValidationMessages => GetValidationMessages();
 
     private Dictionary<string, object>? RootAttributes => BuildRootAttributes();
@@ -194,36 +217,6 @@
                     attributes[attribute.Key] = attribute.Value;
                 }
             }
-        }
-
-        if (!attributes.ContainsKey("role"))
-        {
-            attributes["role"] = "group";
-        }
-
-        if (HasLabel && !attributes.ContainsKey("aria-labelledby"))
-        {
-            attributes["aria-labelledby"] = LabelId;
-        }
-
-        var describedBy = CombineIds(
-            attributes.TryGetValue("aria-describedby", out var existingDescribedBy) ? existingDescribedBy?.ToString() : null,
-            HasDescription ? DescriptionId : null,
-            EffectiveHasError && (HasExplicitError || ValidationMessages.Count > 0) ? ErrorId : null);
-
-        if (!string.IsNullOrEmpty(describedBy))
-        {
-            attributes["aria-describedby"] = describedBy;
-        }
-
-        if (EffectiveHasError && !attributes.ContainsKey("aria-invalid"))
-        {
-            attributes["aria-invalid"] = "true";
-        }
-
-        if (Required && !attributes.ContainsKey("aria-required"))
-        {
-            attributes["aria-required"] = "true";
         }
 
         return attributes.Count == 0 ? null : attributes;

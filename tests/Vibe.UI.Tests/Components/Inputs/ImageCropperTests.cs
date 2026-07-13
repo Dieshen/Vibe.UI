@@ -359,6 +359,45 @@ public class ImageCropperTests : TestBase
         croppedData.CropArea.Height.ShouldBe(80);
     }
 
+    [Fact]
+    public async Task ImageCropper_PointerCallbackUpdatesAndClampsCropArea()
+    {
+        ImageCropper.CroppedImageData? croppedData = null;
+        var cut = Render<ImageCropper>(parameters => parameters
+            .Add(p => p.ImageSource, "test.jpg")
+            .Add(p => p.OnCropped, data => croppedData = data));
+
+        await cut.InvokeAsync(() => cut.Instance.HandlePointerCrop(25, 15, 60, 55));
+        ClickButton(cut, "Crop image");
+
+        croppedData.ShouldNotBeNull();
+        croppedData.CropArea.X.ShouldBe(25);
+        croppedData.CropArea.Y.ShouldBe(15);
+        croppedData.CropArea.Width.ShouldBe(60);
+        croppedData.CropArea.Height.ShouldBe(55);
+
+        await cut.InvokeAsync(() => cut.Instance.HandlePointerCrop(95, 95, 40, 40));
+        ClickButton(cut, "Crop image");
+        croppedData.CropArea.X.ShouldBe(60);
+        croppedData.CropArea.Y.ShouldBe(60);
+    }
+
+    [Fact]
+    public void ImageCropper_UsesPointerHandlesAndSharedControlIcons()
+    {
+        var cut = Render<ImageCropper>(parameters => parameters
+            .Add(p => p.ImageSource, "test.jpg"));
+
+        var handles = cut.FindAll("[data-crop-handle]");
+        handles.Count.ShouldBe(8);
+        handles.Select(handle => handle.GetAttribute("data-crop-handle")).ShouldBeUnique();
+        cut.FindAll(".cropper-controls svg.vibe-icon").Count.ShouldBe(6);
+        cut.Markup.ShouldNotContain("↶");
+        cut.Markup.ShouldNotContain("↷");
+        cut.Markup.ShouldNotContain("⇄");
+        cut.Markup.ShouldNotContain("⇅");
+    }
+
     private static void ClickButton(IRenderedComponent<ImageCropper> cut, string ariaLabel)
     {
         cut.Find($"button[aria-label='{ariaLabel}']").Click();

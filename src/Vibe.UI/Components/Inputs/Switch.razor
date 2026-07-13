@@ -1,9 +1,10 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<label class="@CombinedClass @(Disabled ? "disabled" : string.Empty)">
+<label class="@CombinedClass" aria-disabled="@(Disabled ? "true" : null)">
     <input type="checkbox" id="@Id" name="@Name" value="@Value" class="switch-input" role="switch"
-        checked="@currentChecked" aria-checked="@currentChecked.ToString().ToLowerInvariant()" @onchange="OnToggleChanged" disabled="@Disabled"
+        checked="@currentChecked" aria-checked="@currentChecked.ToString().ToLowerInvariant()" aria-label="@EffectiveAriaLabel"
+        @onchange="OnToggleChanged" disabled="@Disabled"
         required="@Required"
         @attributes="AdditionalAttributes" />
     <span class="switch-thumb"></span>
@@ -23,6 +24,24 @@
     /// </summary>
     [Parameter]
     public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets an accessible label for the switch.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Gets or sets an accessible label that takes precedence over <see cref="Label"/>.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the visual size: sm, default, or lg.
+    /// </summary>
+    [Parameter]
+    public string Size { get; set; } = "default";
 
     /// <summary>
     /// Gets or sets the switch input ID.
@@ -57,7 +76,11 @@
     /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
-    protected override string ComponentClass => "vibe-switch";
+    protected override string ComponentClass => new ClassBuilder()
+        .Add("vibe-switch")
+        .AddIf($"vibe-switch-{NormalizedSize}", !string.Equals(NormalizedSize, "default", StringComparison.Ordinal))
+        .AddIf("disabled", Disabled)
+        .Build();
 
     protected override void OnParametersSet()
     {
@@ -78,4 +101,30 @@
         currentChecked = value;
         return CheckedChanged.InvokeAsync(value);
     }
+
+    private string NormalizedSize => NormalizeSize(Size);
+
+    private string? EffectiveAriaLabel
+    {
+        get
+        {
+            if (HasAdditionalAttribute("aria-label") || HasAdditionalAttribute("aria-labelledby"))
+            {
+                return null;
+            }
+
+            var value = string.IsNullOrWhiteSpace(AriaLabel) ? Label : AriaLabel;
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
+    }
+
+    private static string NormalizeSize(string? value) => value?.Trim().ToLowerInvariant() switch
+    {
+        "sm" or "small" => "sm",
+        "lg" or "large" => "lg",
+        _ => "default"
+    };
+
+    private bool HasAdditionalAttribute(string attributeName) =>
+        AdditionalAttributes?.Keys.Any(key => string.Equals(key, attributeName, StringComparison.OrdinalIgnoreCase)) == true;
 }

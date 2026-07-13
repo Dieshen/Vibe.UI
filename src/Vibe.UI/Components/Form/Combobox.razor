@@ -4,17 +4,14 @@
 <div @attributes="AdditionalAttributes" class="@CombinedClass">
     <div class="combobox-trigger" @onclick="ToggleDropdown">
         <input id="@InputId" type="text" class="combobox-input" placeholder="@Placeholder" value="@InputValue"
-            @oninput="OnInputChanged" @onfocus="OnInputFocus" @onkeydown="OnKeyDown" disabled="@Disabled"
+            @oninput="OnInputChanged" @onfocus="OnInputFocus" @onclick:stopPropagation="true" @onkeydown="OnKeyDown" disabled="@Disabled"
             readonly="@ReadOnly" autocomplete="off" role="combobox" aria-label="@AriaLabel"
             aria-labelledby="@AriaLabelledBy" aria-autocomplete="list" aria-haspopup="listbox"
             aria-expanded="@AriaBool(IsOpen)" aria-controls="@ListboxId" aria-activedescendant="@ActiveDescendantId"
             aria-describedby="@InputDescribedBy" aria-invalid="@AriaInvalid" aria-readonly="@AriaReadonly"
             required="@Required" />
         <div class="combobox-chevron" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m6 9 6 6 6-6" />
-            </svg>
+            <Icon Name="chevron-down" Size="16" />
         </div>
     </div>
 
@@ -27,10 +24,14 @@
                 {
                     var option = FilteredOptions[i];
                     <div id="@GetOptionId(i)" @key="option" role="option"
-                        class="combobox-option @(IsSelectedOption(option) ? "selected" : "")"
+                        class="combobox-option @(IsSelectedOption(option) ? "selected" : "") @(IsHighlightedOption(option) ? "highlighted" : "")"
                         aria-selected="@AriaBool(IsSelectedOption(option))" @onclick="() => SelectOption(option)"
                         @onmouseenter="() => HighlightOption(option)">
-                        @GetOptionLabel(option)
+                        <span>@GetOptionLabel(option)</span>
+                        @if (IsSelectedOption(option))
+                        {
+                            <Icon Name="check" Size="16" CssClass="combobox-check" />
+                        }
                     </div>
                 }
             }
@@ -59,6 +60,7 @@
     private string? _lastValue;
     private List<ComboboxOption>? _lastOptions;
     private bool _hasSyncedParameters;
+    private string? _currentValue;
 
     /// <summary>
     /// Represents an option in the combobox.
@@ -260,6 +262,7 @@
 
         if (valueChanged || optionsChanged)
         {
+            _currentValue = Value;
             UpdateInputFromValue();
         }
 
@@ -445,8 +448,10 @@
     /// <param name="option">The option to check.</param>
     private bool IsSelectedOption(ComboboxOption option)
     {
-        return HighlightedOption == option;
+        return string.Equals(option.Value, _currentValue, StringComparison.Ordinal);
     }
+
+    private bool IsHighlightedOption(ComboboxOption option) => ReferenceEquals(HighlightedOption, option);
 
     /// <summary>
     /// Selects an option.
@@ -460,6 +465,7 @@
         }
 
         InputValue = GetOptionLabel(option);
+        _currentValue = option.Value;
         await ValueChanged.InvokeAsync(option.Value ?? string.Empty);
         CloseDropdown();
     }

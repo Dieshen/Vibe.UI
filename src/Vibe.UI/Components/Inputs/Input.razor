@@ -34,6 +34,9 @@
     private readonly string generatedId = Guid.NewGuid().ToString();
     private string currentValue = string.Empty;
 
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
+
     [Parameter] public string? Id { get; set; }
     [Parameter] public string? Label { get; set; } = string.Empty;
     [Parameter] public string? Type { get; set; } = "text";
@@ -52,9 +55,11 @@
     private bool isFocused = false;
     private bool hasValue => !string.IsNullOrEmpty(currentValue);
     private bool HasError => !string.IsNullOrEmpty(ErrorMessage);
+    private bool EffectiveHasError => HasError || FieldContext?.IsInvalid == true;
     private bool HasHelper => !string.IsNullOrEmpty(HelperText);
 
-    private string EffectiveId => string.IsNullOrWhiteSpace(Id) ? generatedId : Id;
+    private string EffectiveId => FieldContext?.ControlId
+        ?? (string.IsNullOrWhiteSpace(Id) ? generatedId : Id);
     private string EffectiveType => string.IsNullOrWhiteSpace(Type) ? "text" : Type;
     private string ErrorId => $"{EffectiveId}-error";
     private string HelperId => $"{EffectiveId}-helper";
@@ -112,7 +117,7 @@
     private string GetContainerClass() => new ClassBuilder()
         .Add("vibe-input-container")
         .AddIf("vibe-input-disabled", Disabled)
-        .AddIf("vibe-input-has-error", HasError)
+        .AddIf("vibe-input-has-error", EffectiveHasError)
         .Build();
 
     private string GetInputWrapperClass() => new ClassBuilder()
@@ -122,7 +127,7 @@
         .AddIf("vibe-input-disabled", Disabled)
         .AddIf("vibe-input-focused", isFocused)
         .AddIf("vibe-input-has-value", hasValue)
-        .AddIf("vibe-input-has-error", HasError)
+        .AddIf("vibe-input-has-error", EffectiveHasError)
         .Build();
 
     private string GetLabelClass() => new ClassBuilder()
@@ -137,7 +142,7 @@
         .AddVariant("vibe-input", EffectiveVariant)
         .AddIf("vibe-input-with-leading-icon", !string.IsNullOrEmpty(LeadingIcon))
         .AddIf("vibe-input-with-trailing-icon", !string.IsNullOrEmpty(TrailingIcon))
-        .AddIf("vibe-input-error-state", HasError)
+        .AddIf("vibe-input-error-state", EffectiveHasError)
         .Build();
 
     private string GetPlaceholder()
@@ -174,7 +179,7 @@
 
     private Dictionary<string, object>? GetComputedA11yAttributes()
     {
-        if (!HasError && !HasHelper)
+        if (!EffectiveHasError && !HasHelper && FieldContext is null)
             return null;
 
         var attrs = new Dictionary<string, object>();
@@ -184,29 +189,48 @@
 
     private void MergeComputedA11yAttributes(Dictionary<string, object> target)
     {
-        if (HasError)
+        if (EffectiveHasError)
         {
             target["aria-invalid"] = "true";
-            target["aria-errormessage"] = ErrorId;
+
+            var errorId = HasError ? ErrorId : FieldContext?.ErrorId;
+            if (!string.IsNullOrWhiteSpace(errorId))
+            {
+                target["aria-errormessage"] = errorId;
+            }
         }
 
         if (!string.IsNullOrEmpty(DescribedBy))
         {
             MergeSpaceSeparatedAttribute(target, "aria-describedby", DescribedBy);
         }
+
+        if (FieldContext?.IsRequired == true)
+        {
+            target["required"] = "required";
+            target["aria-required"] = "true";
+        }
     }
 
     private string? BuildDescribedBy()
     {
-        string? describedBy = null;
+        string? describedBy = FieldContext?.DescribedBy;
 
         if (HasError)
-            describedBy = ErrorId;
+            describedBy = CombineIds(describedBy, ErrorId);
 
         if (HasHelper)
-            describedBy = describedBy == null ? HelperId : $"{describedBy} {HelperId}";
+            describedBy = CombineIds(describedBy, HelperId);
 
         return describedBy;
+    }
+
+    private static string CombineIds(string? first, string second)
+    {
+        return string.Join(" ", new[] { first, second }
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .SelectMany(value => value!.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            .Distinct(StringComparer.Ordinal));
     }
 
     private static void MergeSpaceSeparatedAttribute(Dictionary<string, object> target, string key, string value)

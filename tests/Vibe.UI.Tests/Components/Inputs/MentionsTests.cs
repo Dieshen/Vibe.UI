@@ -110,6 +110,22 @@ public class MentionsTests : TestBase
     }
 
     [Fact]
+    public void Mentions_RendersSharedIconForRemoveAction()
+    {
+        var cut = Render<Mentions>(parameters => parameters
+            .Add(p => p.Items, new List<Mentions.MentionItem>
+            {
+                new() { Id = "alice", Name = "Alice" }
+            }));
+
+        var removeButton = cut.Find(".mention-remove");
+        removeButton.GetAttribute("type").ShouldBe("button");
+        removeButton.GetAttribute("aria-label").ShouldBe("Remove Alice");
+        removeButton.QuerySelector("svg.vibe-icon").ShouldNotBeNull();
+        removeButton.TextContent.Trim().ShouldBeEmpty();
+    }
+
+    [Fact]
     public void Mentions_UpdatesRenderedItems_WhenItemsParameterReferenceChanges()
     {
         var cut = Render<Mentions>(parameters => parameters
@@ -197,6 +213,41 @@ public class MentionsTests : TestBase
         cut.FindAll(".mentions-suggestions").ShouldBeEmpty();
         input.GetAttribute("aria-expanded").ShouldBe("false");
         input.GetAttribute("aria-activedescendant").ShouldBeNull();
+    }
+
+    [Fact]
+    public void Mentions_BlurClosesSuggestions()
+    {
+        var cut = Render<Mentions>(parameters => parameters
+            .Add(p => p.Suggestions, CreateSuggestions()));
+
+        var input = cut.Find(".mentions-input");
+        input.Input("@");
+        input.GetAttribute("aria-expanded").ShouldBe("true");
+
+        input.Blur();
+
+        cut.FindAll(".mentions-suggestions").ShouldBeEmpty();
+        input = cut.Find(".mentions-input");
+        input.GetAttribute("aria-expanded").ShouldBe("false");
+        input.GetAttribute("aria-activedescendant").ShouldBeNull();
+    }
+
+    [Fact]
+    public void Mentions_CancelsNavigationDefaultsOnlyWhilePopupIsOpen()
+    {
+        var cut = Render<Mentions>(parameters => parameters
+            .Add(p => p.Suggestions, CreateSuggestions()));
+
+        var input = cut.Find(".mentions-input");
+        var keyGuard = input.GetAttribute("onkeydown");
+
+        keyGuard.ShouldNotBeNull();
+        keyGuard.ShouldContain("aria-expanded");
+        keyGuard.ShouldContain("event.preventDefault()");
+        keyGuard.ShouldContain("'Enter'");
+        keyGuard.ShouldContain("'ArrowDown'");
+        keyGuard.ShouldContain("'ArrowUp'");
     }
 
     [Fact]
@@ -332,7 +383,10 @@ public class MentionsTests : TestBase
         var root = cut.Find(".vibe-mentions");
         var input = cut.Find(".mentions-input");
         root.ClassList.ShouldContain("mentions-disabled");
+        root.GetAttribute("data-state").ShouldBe("disabled");
+        root.GetAttribute("aria-disabled").ShouldBe("true");
         input.HasAttribute("disabled").ShouldBeTrue();
+        input.GetAttribute("aria-disabled").ShouldBe("true");
         cut.FindAll(".mention-remove").ShouldBeEmpty();
 
         input.Input("@");
@@ -362,6 +416,8 @@ public class MentionsTests : TestBase
         var root = cut.Find(".vibe-mentions");
         var input = cut.Find(".mentions-input");
         root.ClassList.ShouldContain("mentions-readonly");
+        root.GetAttribute("data-state").ShouldBe("readonly");
+        root.GetAttribute("aria-disabled").ShouldBeNull();
         input.HasAttribute("readonly").ShouldBeTrue();
         input.GetAttribute("aria-readonly").ShouldBe("true");
         cut.FindAll(".mention-remove").ShouldBeEmpty();

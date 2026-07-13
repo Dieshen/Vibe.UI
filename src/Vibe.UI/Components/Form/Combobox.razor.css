@@ -151,6 +151,11 @@
     color: var(--vibe-accent-foreground);
 }
 
+.combobox-option.highlighted {
+    background-color: var(--vibe-accent);
+    color: var(--vibe-accent-foreground);
+}
+
 .combobox-option:active {
     background-color: var(--vibe-muted);
 }
@@ -165,16 +170,9 @@
     font-weight: 500;
 }
 
-.combobox-option.selected::after {
-    content: '';
-    position: absolute;
-    right: 0.75rem;
-    width: 0.875rem;
-    height: 0.875rem;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
+.combobox-option ::deep .combobox-check {
+    margin-left: auto;
+    flex-shrink: 0;
 }
 
 /* Keyboard navigation focus state */
@@ -302,36 +300,36 @@
    DARK MODE SUPPORT
    ---------------------------------------- */
 
-:global(.dark) .combobox-trigger {
+.dark .combobox-trigger {
     background-color: var(--vibe-background);
     border-color: var(--vibe-border);
 }
 
-:global(.dark) .combobox-input {
+.dark .combobox-input {
     color: var(--vibe-foreground);
 }
 
-:global(.dark) .combobox-content {
+.dark .combobox-content {
     background-color: var(--vibe-background);
     border-color: var(--vibe-border);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
 }
 
-:global(.dark) .combobox-option {
+.dark .combobox-option {
     color: var(--vibe-foreground);
 }
 
-:global(.dark) .combobox-option:hover,
-:global(.dark) .combobox-option.selected {
+.dark .combobox-option:hover,
+.dark .combobox-option.selected {
     background-color: var(--vibe-accent);
     color: var(--vibe-accent-foreground);
 }
 
-:global(.dark) .combobox-empty {
+.dark .combobox-empty {
     color: var(--vibe-muted-foreground);
 }
 
-:global(.dark) .combobox-group-label {
+.dark .combobox-group-label {
     color: var(--vibe-muted-foreground);
 }
 

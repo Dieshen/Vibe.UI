@@ -27,6 +27,15 @@ public class CheckboxTests : TestBase
     }
 
     [Fact]
+    public void Checkbox_Renders_WithPlainTextLabel()
+    {
+        var cut = Render<Checkbox>(parameters => parameters
+            .Add(p => p.Label, "Enable notifications"));
+
+        cut.Find(".vibe-checkbox-label").TextContent.ShouldBe("Enable notifications");
+    }
+
+    [Fact]
     public void Checkbox_Renders_AsChecked()
     {
         // Act
@@ -36,6 +45,36 @@ public class CheckboxTests : TestBase
         // Assert
         var checkbox = cut.Find("input[type='checkbox']");
         checkbox.HasAttribute("checked").ShouldBeTrue();
+        checkbox.GetAttribute("aria-checked")!.ShouldBe("true");
+        cut.Find(".vibe-checkbox-control svg.vibe-icon").ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Checkbox_Renders_IndeterminateStateWithMixedSemantics()
+    {
+        var cut = Render<Checkbox>(parameters => parameters
+            .Add(p => p.Indeterminate, true)
+            .Add(p => p.Label, "Select all"));
+
+        var checkbox = cut.Find("input[type='checkbox']");
+        checkbox.GetAttribute("aria-checked")!.ShouldBe("mixed");
+        checkbox.GetAttribute("data-indeterminate")!.ShouldBe("true");
+        cut.Find("label").ClassList.ShouldContain("vibe-checkbox-indeterminate");
+        cut.Find(".vibe-checkbox-control svg.vibe-icon").ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Checkbox_InteractionClearsIndeterminateState()
+    {
+        var indeterminate = true;
+        var cut = Render<Checkbox>(parameters => parameters
+            .Add(p => p.Indeterminate, true)
+            .Add(p => p.IndeterminateChanged, value => indeterminate = value));
+
+        cut.Find("input[type='checkbox']").Change(true);
+
+        indeterminate.ShouldBeFalse();
+        cut.Find("input[type='checkbox']").GetAttribute("aria-checked")!.ShouldBe("true");
     }
 
     [Fact]
@@ -64,6 +103,19 @@ public class CheckboxTests : TestBase
 
         // Assert
         checkedValue.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Checkbox_InvokesNativeOnChange_WhenClicked()
+    {
+        ChangeEventArgs? received = null;
+        var cut = Render<Checkbox>(parameters => parameters
+            .Add(p => p.OnChange, args => received = args));
+
+        cut.Find("input[type='checkbox']").Change(true);
+
+        received.ShouldNotBeNull();
+        received.Value.ShouldBe(true);
     }
 
     [Fact]
@@ -322,6 +374,19 @@ public class CheckboxTests : TestBase
 
         // Assert
         cut.Find("label").GetAttribute("aria-disabled")!.ShouldBe("true");
+    }
+
+    [Fact]
+    public void Checkbox_AppliesAccessibleNameAndInvalidStateToInput()
+    {
+        var cut = Render<Checkbox>(parameters => parameters
+            .Add(p => p.AriaLabel, "Select all rows")
+            .Add(p => p.AriaInvalid, true));
+
+        var checkbox = cut.Find("input[type='checkbox']");
+        checkbox.GetAttribute("aria-label")!.ShouldBe("Select all rows");
+        checkbox.GetAttribute("aria-invalid")!.ShouldBe("true");
+        cut.Find("label").ClassList.ShouldContain("vibe-checkbox-error");
     }
 
     [Fact]

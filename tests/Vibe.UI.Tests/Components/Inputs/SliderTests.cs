@@ -65,7 +65,22 @@ public class SliderTests : TestBase
 
         // Assert
         var valueDisplay = cut.Find(".vibe-slider-value");
+        valueDisplay.TagName.ShouldBe("OUTPUT");
         valueDisplay.TextContent.ShouldBe("75");
+    }
+
+    [Fact]
+    public void Slider_ContainsRangeInputAndTrackInsideDedicatedControl()
+    {
+        var cut = Render<Slider>(parameters => parameters
+            .Add(p => p.Id, "volume")
+            .Add(p => p.ShowValue, true));
+
+        var control = cut.Find(".vibe-slider-control");
+        control.QuerySelector(".vibe-slider-track").ShouldNotBeNull();
+        control.QuerySelector("input[type='range']").ShouldNotBeNull();
+        control.QuerySelector(".vibe-slider-value").ShouldBeNull();
+        cut.Find("output.vibe-slider-value").GetAttribute("for")!.ShouldBe("volume");
     }
 
     [Fact]
@@ -307,6 +322,17 @@ public class SliderTests : TestBase
         input.GetAttribute("aria-valuemin")!.ShouldBe("0");
         input.GetAttribute("aria-valuemax")!.ShouldBe("10");
         input.GetAttribute("aria-valuenow")!.ShouldBe("4");
+    }
+
+    [Fact]
+    public void Slider_AriaLabelTakesPrecedenceOverVisibleLabel()
+    {
+        var cut = Render<Slider>(parameters => parameters
+            .Add(p => p.Label, "Visible label")
+            .Add(p => p.AriaLabel, "Precise accessible label"));
+
+        cut.Find("label").TextContent.ShouldBe("Visible label");
+        cut.Find("input[type='range']").GetAttribute("aria-label")!.ShouldBe("Precise accessible label");
     }
 
     [Fact]

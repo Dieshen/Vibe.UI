@@ -1,11 +1,20 @@
 /* MultiSelect baseline styles */
 
-:global(.vibe-multiselect) {
+.vibe-multiselect {
   position: relative;
   display: block;
 }
 
-:global(.vibe-multiselect .multiselect-container) {
+.vibe-multiselect .multiselect-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--vibe-foreground);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+}
+
+.vibe-multiselect .multiselect-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -13,11 +22,18 @@
   border: 1px solid var(--vibe-border);
   border-radius: var(--vibe-radius);
   background: var(--vibe-background);
-  padding: 0.5rem 0.6rem;
+  min-height: 2.5rem;
+  padding: 0.375rem 0.625rem;
   cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-:global(.vibe-multiselect .multiselect-values) {
+.vibe-multiselect .multiselect-container:focus-within {
+  border-color: var(--vibe-ring);
+  box-shadow: 0 0 0 2px var(--vibe-background), 0 0 0 4px var(--vibe-ring);
+}
+
+.vibe-multiselect .multiselect-values {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem;
@@ -26,20 +42,24 @@
   flex: 1;
 }
 
-:global(.vibe-multiselect .multiselect-input) {
+.vibe-multiselect .multiselect-input {
   border: none;
   outline: none;
   background: transparent;
   color: var(--vibe-foreground);
-  min-width: 6rem;
+  min-width: 7rem;
+  flex: 1 1 7rem;
+  padding: 0.125rem 0;
+  font: inherit;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
 }
 
-:global(.vibe-multiselect .multiselect-placeholder) {
+.vibe-multiselect .multiselect-input::placeholder {
   color: var(--vibe-muted-foreground);
-  font-size: 0.9rem;
 }
 
-:global(.vibe-multiselect .multiselect-tag) {
+.vibe-multiselect .multiselect-tag {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -51,15 +71,19 @@
   font-size: 0.8rem;
 }
 
-:global(.vibe-multiselect .multiselect-tag-remove) {
+.vibe-multiselect .multiselect-tag-remove {
   border: none;
   background: transparent;
   cursor: pointer;
   color: var(--vibe-muted-foreground);
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem;
+  border-radius: var(--vibe-radius-sm);
 }
 
-:global(.vibe-multiselect .multiselect-dropdown) {
+.vibe-multiselect .multiselect-dropdown {
   position: absolute;
   z-index: 50;
   margin-top: 0.25rem;
@@ -69,23 +93,92 @@
   background: var(--vibe-popover);
   box-shadow: var(--vibe-shadow-md);
   padding: 0.25rem;
+  max-height: 15rem;
+  overflow-y: auto;
 }
 
-:global(.vibe-multiselect .multiselect-option) {
+.vibe-multiselect .multiselect-option {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.45rem 0.5rem;
   border-radius: 0.375rem;
   cursor: pointer;
+  color: var(--vibe-popover-foreground, var(--vibe-foreground));
 }
 
-:global(.vibe-multiselect .multiselect-option:hover),
-:global(.vibe-multiselect .multiselect-option.highlighted) {
+.vibe-multiselect .multiselect-option:hover,
+.vibe-multiselect .multiselect-option.highlighted {
   background: var(--vibe-muted);
 }
 
-:global(.vibe-multiselect .multiselect-option.selected) {
+.vibe-multiselect .multiselect-option.selected {
   background: color-mix(in hsl, var(--vibe-primary) 10%, transparent);
 }
 
+.vibe-multiselect .multiselect-checkbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid var(--vibe-border);
+  border-radius: var(--vibe-radius-sm);
+  color: var(--vibe-primary-foreground);
+  flex-shrink: 0;
+}
+
+.vibe-multiselect .multiselect-option.selected .multiselect-checkbox {
+  border-color: var(--vibe-primary);
+  background: var(--vibe-primary);
+}
+
+.vibe-multiselect .multiselect-indicators,
+.vibe-multiselect .multiselect-chevron,
+.vibe-multiselect .multiselect-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vibe-multiselect .multiselect-indicators {
+  gap: 0.25rem;
+  color: var(--vibe-muted-foreground);
+}
+
+.vibe-multiselect .multiselect-clear {
+  padding: 0.25rem;
+  border: 0;
+  border-radius: var(--vibe-radius-sm);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.vibe-multiselect .multiselect-clear:hover,
+.vibe-multiselect .multiselect-tag-remove:hover {
+  color: var(--vibe-foreground);
+  background: var(--vibe-muted);
+}
+
+.vibe-multiselect .multiselect-helper-text,
+.vibe-multiselect .multiselect-no-options {
+  color: var(--vibe-muted-foreground);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.vibe-multiselect .multiselect-helper-text {
+  margin-top: 0.375rem;
+}
+
+.vibe-multiselect .multiselect-no-options {
+  padding: 1.5rem 0.75rem;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vibe-multiselect .multiselect-container {
+    transition: none;
+  }
+}

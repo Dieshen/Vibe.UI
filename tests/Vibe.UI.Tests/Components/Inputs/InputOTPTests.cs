@@ -18,8 +18,9 @@ public class InputOTPTests : TestBase
         inputs[0].GetAttribute("type").ShouldBe("tel");
         inputs[0].GetAttribute("inputmode").ShouldBe("numeric");
         inputs[0].GetAttribute("autocomplete").ShouldBe("one-time-code");
-        inputs[0].GetAttribute("maxlength").ShouldBe("1");
+        inputs[0].GetAttribute("maxlength").ShouldBe("6");
         inputs[0].GetAttribute("aria-label").ShouldBe("Digit 1 of 6");
+        inputs[1].GetAttribute("autocomplete").ShouldBe("off");
         inputs[5].GetAttribute("aria-label").ShouldBe("Digit 6 of 6");
     }
 
@@ -205,6 +206,24 @@ public class InputOTPTests : TestBase
         changedValues.ShouldBe(["1234"]);
         completedValues.ShouldBe(["1234"]);
         cut.Find(".input-otp").ClassList.ShouldContain("input-otp-complete");
+        cut.FindAll("input").Select(input => input.GetAttribute("value") ?? string.Empty)
+            .ShouldBe(["1", "2", "3", "4"]);
+    }
+
+    [Fact]
+    public void InputOTP_AllowsRemainingSlotsWhenPastingFromAnyPosition()
+    {
+        var cut = Render<InputOTP>(parameters => parameters
+            .Add(p => p.Length, 4)
+            .Add(p => p.Value, "1"));
+
+        var inputs = cut.FindAll("input");
+        inputs[0].GetAttribute("maxlength").ShouldBe("4");
+        inputs[1].GetAttribute("maxlength").ShouldBe("3");
+        inputs[3].GetAttribute("maxlength").ShouldBe("1");
+
+        inputs[1].Input("234");
+
         cut.FindAll("input").Select(input => input.GetAttribute("value") ?? string.Empty)
             .ShouldBe(["1", "2", "3", "4"]);
     }

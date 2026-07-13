@@ -9,7 +9,7 @@
 .vibe-rating {
     display: inline-flex;
     align-items: center;
-    gap: var(--vibe-spacing-1, 0.25rem);
+    gap: 0.125rem;
 }
 
 /* ----------------------------------------
@@ -25,19 +25,16 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: var(--vibe-transition-fast, all 0.15s ease);
+    border-radius: calc(var(--vibe-radius, 0.5rem) - 0.125rem);
+    transition: color 120ms ease, background-color 120ms ease;
     color: var(--vibe-muted-foreground);
     position: relative;
 }
 
-.rating-star:focus {
+.rating-star:focus-visible {
     outline: 2px solid var(--vibe-ring);
     outline-offset: 2px;
     border-radius: var(--vibe-radius-sm, 0.3rem);
-}
-
-.rating-star:focus:not(:focus-visible) {
-    outline: none;
 }
 
 /* ----------------------------------------
@@ -45,10 +42,25 @@
    ---------------------------------------- */
 
 .star-icon {
-    display: inline-block;
+    position: relative;
+    display: inline-grid;
+    place-items: center;
     user-select: none;
     line-height: 1;
-    transition: var(--vibe-transition-fast, all 0.15s ease);
+}
+
+.star-icon ::deep .vibe-icon {
+    grid-area: 1 / 1;
+    stroke-width: 1.75;
+}
+
+.rating-star.star-filled .star-icon ::deep .rating-star-outline {
+    fill: currentColor;
+}
+
+.star-icon ::deep .rating-star-half-fill {
+    fill: currentColor;
+    clip-path: inset(0 50% 0 0);
 }
 
 /* ----------------------------------------
@@ -75,22 +87,17 @@
    ---------------------------------------- */
 
 .rating-star:not([disabled]):hover {
-    transform: scale(1.1);
+    background: var(--vibe-accent);
     color: var(--vibe-rating-hover-color, var(--vibe-warning, hsl(38 92% 50%)));
 }
 
 .rating-star:not([disabled]):active {
-    transform: scale(0.95);
+    background: color-mix(in srgb, var(--vibe-accent) 75%, var(--vibe-border));
 }
 
 /* Hover Preview - Show filled state on hover */
 .vibe-rating:not(.rating-readonly):not(.rating-disabled) .rating-star:hover ~ .rating-star {
     color: var(--vibe-rating-empty-color, var(--vibe-muted-foreground));
-}
-
-.vibe-rating:not(.rating-readonly):not(.rating-disabled) .rating-star:hover,
-.vibe-rating:not(.rating-readonly):not(.rating-disabled) .rating-star:hover ~ .rating-star:not(.star-filled) {
-    color: var(--vibe-rating-hover-color, var(--vibe-warning, hsl(38 92% 50%)));
 }
 
 /* ----------------------------------------
@@ -100,22 +107,22 @@
 /* Small Size */
 .rating-small .rating-star {
     font-size: 1rem;
-    width: 1rem;
-    height: 1rem;
+    width: 2rem;
+    height: 2rem;
 }
 
 /* Default Size */
 .rating-default .rating-star {
     font-size: 1.5rem;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
 }
 
 /* Large Size */
 .rating-large .rating-star {
     font-size: 2rem;
-    width: 2rem;
-    height: 2rem;
+    width: 3rem;
+    height: 3rem;
 }
 
 /* ----------------------------------------
@@ -193,12 +200,9 @@
         transition: none;
     }
 
-    .rating-star:not([disabled]):hover {
-        transform: none;
-    }
-
+    .rating-star:not([disabled]):hover,
     .rating-star:not([disabled]):active {
-        transform: none;
+        background: transparent;
     }
 }
 

@@ -138,6 +138,12 @@
     border-color: var(--vibe-destructive);
 }
 
+.vibe-input-wrapper.vibe-input-wrapper-outlined.vibe-input-has-error.vibe-input-focused,
+.vibe-input-wrapper.vibe-input-wrapper-outlined.vibe-input-focused:has(::deep .vibe-input[aria-invalid="true"]) {
+    border-color: var(--vibe-destructive);
+    box-shadow: 0 0 0 2px var(--vibe-background), 0 0 0 4px var(--vibe-destructive);
+}
+
 ::deep .vibe-input.vibe-input-outlined {
     padding: 0.75rem;
 }

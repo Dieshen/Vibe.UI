@@ -1,6 +1,6 @@
 /* Label baseline styles */
 
-:global(.vibe-label) {
+.vibe-label {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -9,11 +9,11 @@
   color: var(--vibe-foreground);
 }
 
-:global(.vibe-label-disabled) {
+.vibe-label-disabled {
   color: var(--vibe-muted-foreground);
   cursor: not-allowed;
 }
 
-:global(.vibe-label-required .required-indicator) {
+.vibe-label-required .required-indicator {
   color: var(--vibe-destructive);
 }

@@ -18,22 +18,13 @@
                         <span class="multiselect-tag-label">@GetItemText(item)</span>
                         <button type="button" class="multiselect-tag-remove" @onclick="() => RemoveItem(item)"
                             @onclick:stopPropagation="true" aria-label="@($"Remove {GetItemText(item)}")" disabled="@Disabled">
-                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M9.42426 2.57574C9.65858 2.34142 9.65858 1.96142 9.42426 1.72709C9.18995 1.49277 8.80995 1.49277 8.57563 1.72709L5 5.30272L1.42437 1.72709C1.19005 1.49277 0.810048 1.49277 0.575736 1.72709C0.341423 1.96142 0.341423 2.34142 0.575736 2.57574L4.15137 6.15137L0.575736 9.72699C0.341423 9.96131 0.341423 10.3413 0.575736 10.5756C0.810048 10.81 1.19005 10.81 1.42437 10.5756L5 7L8.57563 10.5756C8.80995 10.81 9.18995 10.81 9.42426 10.5756C9.65858 10.3413 9.65858 9.96131 9.42426 9.72699L5.84863 6.15137L9.42426 2.57574Z"
-                                    fill="currentColor" />
-                            </svg>
+                            <Icon Name="x" Size="12" />
                         </button>
                     </div>
                 }
             }
-            else if (string.IsNullOrEmpty(SearchText) && !string.IsNullOrEmpty(Placeholder))
-            {
-                <div class="multiselect-placeholder">@Placeholder</div>
-            }
-
             <input id="@Id" type="text" class="multiselect-input" @bind-value="SearchText" @bind-value:event="oninput"
-                @onfocus="OpenDropdown" @onkeydown="OnKeyDown"
+                @onfocus="OpenDropdown" @onclick:stopPropagation="true" @onkeydown="OnKeyDown"
                 placeholder="@(CurrentSelectedItems.Any() ? "" : Placeholder)" disabled="@Disabled"
                 role="combobox" aria-expanded="@AriaBool(IsOpen)" aria-haspopup="listbox" aria-controls="@DropdownId"
                 aria-autocomplete="list" aria-activedescendant="@ActiveDescendantId" aria-describedby="@HelperTextId"
@@ -45,19 +36,12 @@
             {
                 <button type="button" class="multiselect-clear" @onclick="ClearSearch"
                     @onclick:stopPropagation="true" aria-label="Clear search" disabled="@Disabled">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M9.42426 2.57574C9.65858 2.34142 9.65858 1.96142 9.42426 1.72709C9.18995 1.49277 8.80995 1.49277 8.57563 1.72709L5 5.30272L1.42437 1.72709C1.19005 1.49277 0.810048 1.49277 0.575736 1.72709C0.341423 1.96142 0.341423 2.34142 0.575736 2.57574L4.15137 6.15137L0.575736 9.72699C0.341423 9.96131 0.341423 10.3413 0.575736 10.5756C0.810048 10.81 1.19005 10.81 1.42437 10.5756L5 7L8.57563 10.5756C8.80995 10.81 9.18995 10.81 9.42426 10.5756C9.65858 10.3413 9.65858 9.96131 9.42426 9.72699L5.84863 6.15137L9.42426 2.57574Z"
-                            fill="currentColor" />
-                    </svg>
+                    <Icon Name="x" Size="12" />
                 </button>
             }
 
             <div class="multiselect-chevron">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M2.25 4.5L6 8.25L9.75 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                </svg>
+                <Icon Name="chevron-down" Size="16" />
             </div>
         </div>
     </div>
@@ -82,10 +66,7 @@
                             <div class="multiselect-checkbox">
                                 @if (isSelected)
                                 {
-                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M10.5 3L4.5 9L1.5 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                            stroke-linejoin="round" />
-                                    </svg>
+                                    <Icon Name="check" Size="12" />
                                 }
                             </div>
 

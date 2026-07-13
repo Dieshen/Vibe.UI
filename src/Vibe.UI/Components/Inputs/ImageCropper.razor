@@ -1,6 +1,8 @@
 @namespace Vibe.UI.Components
 @using System.Globalization
 @inherits VibeComponent
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
 <div @attributes="AdditionalAttributes"
      class="@CombinedCssClass"
@@ -11,12 +13,11 @@
     @if (HasImage)
     {
         <div class="cropper-container">
-            <div class="cropper-canvas" role="group" aria-label="Image crop canvas" aria-describedby="@CanvasDescribedBy">
-                <img src="@EffectiveImageSource" alt="@EffectiveImageAlt" class="cropper-image" style="@ImageStyle" draggable="false" />
-
-                <div class="crop-overlay" aria-hidden="true"></div>
+            <div class="cropper-canvas" @ref="_canvasReference" role="group" aria-label="Image crop canvas" aria-describedby="@CanvasDescribedBy">
+                <img src="@EffectiveImageSource" @ref="_imageReference" alt="@EffectiveImageAlt" class="cropper-image" style="@ImageStyle" draggable="false" />
 
                 <div class="@CropBoxCssClass"
+                     @ref="_cropBoxReference"
                      style="@CropBoxStyle"
                      role="group"
                      tabindex="@CropBoxTabIndex"
@@ -30,14 +31,14 @@
                         <div class="grid-line grid-line-v"></div>
                         <div class="grid-line grid-line-v"></div>
                     </div>
-                    <div class="crop-handle crop-handle-nw" aria-hidden="true"></div>
-                    <div class="crop-handle crop-handle-ne" aria-hidden="true"></div>
-                    <div class="crop-handle crop-handle-sw" aria-hidden="true"></div>
-                    <div class="crop-handle crop-handle-se" aria-hidden="true"></div>
-                    <div class="crop-handle crop-handle-n" aria-hidden="true"></div>
-                    <div class="crop-handle crop-handle-s" aria-hidden="true"></div>
-                    <div class="crop-handle crop-handle-w" aria-hidden="true"></div>
-                    <div class="crop-handle crop-handle-e" aria-hidden="true"></div>
+                    <div class="crop-handle crop-handle-nw" data-crop-handle="nw" aria-hidden="true"></div>
+                    <div class="crop-handle crop-handle-ne" data-crop-handle="ne" aria-hidden="true"></div>
+                    <div class="crop-handle crop-handle-sw" data-crop-handle="sw" aria-hidden="true"></div>
+                    <div class="crop-handle crop-handle-se" data-crop-handle="se" aria-hidden="true"></div>
+                    <div class="crop-handle crop-handle-n" data-crop-handle="n" aria-hidden="true"></div>
+                    <div class="crop-handle crop-handle-s" data-crop-handle="s" aria-hidden="true"></div>
+                    <div class="crop-handle crop-handle-w" data-crop-handle="w" aria-hidden="true"></div>
+                    <div class="crop-handle crop-handle-e" data-crop-handle="e" aria-hidden="true"></div>
                 </div>
 
                 <p id="@_keyboardInstructionsId" class="cropper-sr-only">
@@ -56,7 +57,7 @@
                                 @onclick="() => Rotate(-90)"
                                 aria-label="Rotate left"
                                 title="Rotate left">
-                            <span aria-hidden="true">↶</span>
+                            <Icon Name="rotate-ccw" Size="16" />
                         </button>
                         <button type="button"
                                 class="control-btn"
@@ -64,7 +65,7 @@
                                 @onclick="() => Rotate(90)"
                                 aria-label="Rotate right"
                                 title="Rotate right">
-                            <span aria-hidden="true">↷</span>
+                            <Icon Name="rotate-cw" Size="16" />
                         </button>
                         <button type="button"
                                 class="control-btn"
@@ -72,7 +73,7 @@
                                 @onclick="FlipHorizontal"
                                 aria-label="Flip horizontally"
                                 title="Flip horizontally">
-                            <span aria-hidden="true">⇄</span>
+                            <Icon Name="flip-horizontal-2" Size="16" />
                         </button>
                         <button type="button"
                                 class="control-btn"
@@ -80,7 +81,7 @@
                                 @onclick="FlipVertical"
                                 aria-label="Flip vertically"
                                 title="Flip vertically">
-                            <span aria-hidden="true">⇅</span>
+                            <Icon Name="flip-vertical-2" Size="16" />
                         </button>
                     </div>
 
@@ -92,7 +93,7 @@
                                 @onclick="() => Zoom(-ZoomStep)"
                                 aria-label="Zoom out"
                                 title="Zoom out">
-                            <span aria-hidden="true">−</span>
+                            <Icon Name="minus" Size="16" />
                         </button>
                         <input id="@_zoomInputId"
                                type="range"
@@ -109,7 +110,7 @@
                                 @onclick="() => Zoom(ZoomStep)"
                                 aria-label="Zoom in"
                                 title="Zoom in">
-                            <span aria-hidden="true">+</span>
+                            <Icon Name="plus" Size="16" />
                         </button>
                     </div>
 
@@ -195,6 +196,12 @@
     private double _lastParameterAspectRatio;
     private bool _hasAppliedAspectRatio;
     private CropArea _cropArea = CreateDefaultCropArea();
+    private ElementReference _canvasReference;
+    private ElementReference _cropBoxReference;
+    private ElementReference _imageReference;
+    private IJSObjectReference? _cropModule;
+    private IJSObjectReference? _cropHandler;
+    private DotNetObjectReference<ImageCropper>? _dotNetReference;
 
     [Parameter]
     public string ImageSource { get; set; } = string.Empty;
@@ -297,6 +304,45 @@
         }
 
         NormalizeCropArea();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!HasImage || ControlsDisabled)
+        {
+            await DisposeCropHandlerAsync();
+            return;
+        }
+
+        try
+        {
+            _cropModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
+                "import", "./_content/Vibe.UI/js/imageCropper.js");
+            _dotNetReference ??= DotNetObjectReference.Create(this);
+            _cropHandler ??= await _cropModule.InvokeAsync<IJSObjectReference>(
+                "createCropHandler",
+                _canvasReference,
+                _cropBoxReference,
+                _dotNetReference,
+                _selectedAspectRatio);
+            await _cropHandler.InvokeVoidAsync("setAspectRatio", _selectedAspectRatio);
+        }
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+        {
+        }
+    }
+
+    [JSInvokable]
+    public void HandlePointerCrop(double x, double y, double width, double height)
+    {
+        if (ControlsDisabled)
+        {
+            return;
+        }
+
+        _cropArea = new CropArea { X = x, Y = y, Width = width, Height = height };
+        NormalizeCropArea();
+        StateHasChanged();
     }
 
     private void HandleZoomInput(ChangeEventArgs e)
@@ -452,6 +498,26 @@
 
         NormalizeCropArea();
 
+        string? imageData = null;
+        if (_cropModule is not null)
+        {
+            try
+            {
+                imageData = await _cropModule.InvokeAsync<string?>(
+                    "renderCrop",
+                    _canvasReference,
+                    _cropBoxReference,
+                    _imageReference,
+                    _zoom,
+                    _rotation,
+                    _flipH,
+                    _flipV);
+            }
+            catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+            {
+            }
+        }
+
         var croppedData = new CroppedImageData
         {
             ImageSource = EffectiveImageSource,
@@ -460,7 +526,8 @@
             Zoom = _zoom,
             Rotation = _rotation,
             FlipHorizontal = _flipH,
-            FlipVertical = _flipV
+            FlipVertical = _flipV,
+            ImageData = imageData
         };
 
         await OnCropped.InvokeAsync(croppedData);
@@ -632,6 +699,46 @@
 
     private static string GetAspectRatioAriaLabel(AspectRatioOption option) =>
         $"Set aspect ratio {option.Label}";
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeCropHandlerAsync();
+
+        if (_cropModule is not null)
+        {
+            try
+            {
+                await _cropModule.DisposeAsync();
+            }
+            catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+            {
+            }
+        }
+
+        _dotNetReference?.Dispose();
+    }
+
+    private async Task DisposeCropHandlerAsync()
+    {
+        if (_cropHandler is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _cropHandler.InvokeVoidAsync("dispose");
+            await _cropHandler.DisposeAsync();
+        }
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+        {
+        }
+
+        _cropHandler = null;
+    }
+
+    private static bool IsRecoverableJsInteropException(Exception exception) =>
+        exception is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException;
 
     public class AspectRatioOption
     {

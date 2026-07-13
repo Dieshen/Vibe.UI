@@ -3,26 +3,36 @@
 @inherits VibeComponent
 
 <div @attributes="AdditionalAttributes" class="@CombinedCssClass">
-    <div class="vibe-color-picker-preview"
-         role="button"
-         tabindex="@TriggerTabIndex"
+    <button type="button"
+         @ref="_triggerElement"
+         class="vibe-color-picker-preview"
          aria-label="@TriggerAriaLabel"
          aria-haspopup="dialog"
          aria-expanded="@ExpandedAriaValue"
          aria-controls="@_popoverId"
          aria-disabled="@DisabledAriaValue"
-         @onclick="TogglePicker"
-         @onkeydown="HandleTriggerKeyDown">
+         disabled="@Disabled"
+         @onclick="TogglePicker">
         <div class="vibe-color-picker-swatch" style="background-color: @PreviewColor;" aria-hidden="true"></div>
         <span class="vibe-color-picker-value">@DisplayValue</span>
-    </div>
+        <Icon Name="chevron-down" Size="16" CssClass="vibe-color-picker-chevron" />
+    </button>
 
     @if (IsOpen)
     {
-        <div id="@_popoverId" class="vibe-color-picker-popover" role="dialog" aria-labelledby="@_popoverLabelId">
+        <div class="vibe-color-picker-backdrop" @onclick="ClosePicker" aria-hidden="true"></div>
+        <div id="@_popoverId" class="vibe-color-picker-popover" role="dialog" aria-labelledby="@_popoverLabelId"
+             @onclick:stopPropagation="true" @onkeydown="HandlePopoverKeyDown">
             <div id="@_popoverLabelId" class="vibe-color-picker-sr-only">Color picker</div>
 
-            <div class="vibe-color-picker-saturation" @onmousedown="HandleSaturationMouseDown">
+            <div class="vibe-color-picker-saturation"
+                 style="--vibe-color-picker-hue: hsl(@(FormatNumber(Hue)) 100% 50%);"
+                 @onpointerdown="HandleSaturationPointerDown"
+                 @onpointerdown:preventDefault="true"
+                 @onpointermove="HandleSaturationPointerMove"
+                 @onpointerup="HandleSaturationPointerEnd"
+                 @onpointercancel="HandleSaturationPointerEnd"
+                 @onpointerleave="HandleSaturationPointerEnd">
                 <div class="vibe-color-picker-saturation-overlay"></div>
                 <div class="vibe-color-picker-saturation-pointer" style="left: @(Saturation)%; top: @(100 - Lightness)%;">
                 </div>
@@ -31,8 +41,21 @@
             <div class="vibe-color-picker-controls">
                 <div class="vibe-color-picker-hue-slider">
                     <label class="vibe-color-picker-sr-only" for="@_hueInputId">Hue</label>
-                    <input id="@_hueInputId" type="range" min="0" max="360" value="@Hue" @oninput="HandleHueChange"
-                        class="vibe-color-picker-slider" />
+                    <input @ref="_hueInputElement" id="@_hueInputId" type="range" min="0" max="360" value="@Hue" @oninput="HandleHueChange"
+                        class="vibe-color-picker-slider vibe-color-picker-hue" />
+                </div>
+
+                <div class="vibe-color-picker-axis-sliders">
+                    <div class="vibe-color-picker-axis-control">
+                        <label for="@_saturationInputId">S</label>
+                        <input id="@_saturationInputId" type="range" min="0" max="100" value="@Saturation"
+                               @oninput="HandleSaturationChange" class="vibe-color-picker-slider" />
+                    </div>
+                    <div class="vibe-color-picker-axis-control">
+                        <label for="@_lightnessInputId">L</label>
+                        <input id="@_lightnessInputId" type="range" min="0" max="100" value="@Lightness"
+                               @oninput="HandleLightnessChange" class="vibe-color-picker-slider" />
+                    </div>
                 </div>
 
                 @if (ShowAlpha)
@@ -55,17 +78,17 @@
                 {
                     <div class="vibe-color-picker-input-group">
                         <label for="@_redInputId">R</label>
-                        <input id="@_redInputId" type="number" min="0" max="255" value="@Red" @oninput="HandleRgbInput"
+                        <input id="@_redInputId" type="number" min="0" max="255" value="@Red" @oninput="HandleRedInput"
                             class="vibe-color-picker-input" />
                     </div>
                     <div class="vibe-color-picker-input-group">
                         <label for="@_greenInputId">G</label>
-                        <input id="@_greenInputId" type="number" min="0" max="255" value="@Green" @oninput="HandleRgbInput"
+                        <input id="@_greenInputId" type="number" min="0" max="255" value="@Green" @oninput="HandleGreenInput"
                             class="vibe-color-picker-input" />
                     </div>
                     <div class="vibe-color-picker-input-group">
                         <label for="@_blueInputId">B</label>
-                        <input id="@_blueInputId" type="number" min="0" max="255" value="@Blue" @oninput="HandleRgbInput"
+                        <input id="@_blueInputId" type="number" min="0" max="255" value="@Blue" @oninput="HandleBlueInput"
                             class="vibe-color-picker-input" />
                     </div>
                 }
@@ -77,7 +100,7 @@
                     <div id="@_presetsLabelId" class="vibe-color-picker-sr-only">Preset colors</div>
                     @foreach (var preset in Presets)
                     {
-                        <button @key="preset" type="button" class="vibe-color-picker-preset" style="background-color: @GetPresetBackgroundColor(preset);"
+                        <button @key="preset" type="button" class="vibe-color-picker-preset @(IsPresetSelected(preset) ? "selected" : null)" style="background-color: @GetPresetBackgroundColor(preset);"
                             aria-label="@GetPresetAriaLabel(preset)" title="@GetPresetAriaLabel(preset)" @onclick="() => SelectPreset(preset)">
                         </button>
                     }
@@ -120,6 +143,8 @@
     private readonly string _popoverLabelId = $"vibe-color-picker-label-{Guid.NewGuid():N}";
     private readonly string _presetsLabelId = $"vibe-color-picker-presets-{Guid.NewGuid():N}";
     private readonly string _hueInputId = $"vibe-color-picker-hue-{Guid.NewGuid():N}";
+    private readonly string _saturationInputId = $"vibe-color-picker-saturation-{Guid.NewGuid():N}";
+    private readonly string _lightnessInputId = $"vibe-color-picker-lightness-{Guid.NewGuid():N}";
     private readonly string _alphaInputId = $"vibe-color-picker-alpha-{Guid.NewGuid():N}";
     private readonly string _hexInputId = $"vibe-color-picker-hex-{Guid.NewGuid():N}";
     private readonly string _redInputId = $"vibe-color-picker-red-{Guid.NewGuid():N}";
@@ -134,12 +159,16 @@
     private int Green { get; set; }
     private int Blue { get; set; }
     private string HexValue { get; set; } = "#000000";
+    private bool _isSelectingSaturation;
+    private ElementReference _triggerElement;
+    private ElementReference _hueInputElement;
+    private bool _focusHueOnOpen;
+    private bool _restoreTriggerFocus;
     private string DisplayValue => ShowAlpha && Alpha < 1 ? FormatRgba(Alpha, "0.00") : HexValue;
     private string PreviewColor => ShowAlpha && Alpha < 1 ? FormatRgba(Alpha, "0.##") : HexValue;
     private string TriggerAriaLabel => $"Color picker, selected {DisplayValue}";
     private string ExpandedAriaValue => IsOpen ? "true" : "false";
     private string DisabledAriaValue => Disabled ? "true" : "false";
-    private string TriggerTabIndex => Disabled ? "-1" : "0";
 
     private string CombinedCssClass => CombineClasses(
     "vibe-color-picker",
@@ -155,28 +184,53 @@
         TryApplyColor(Value);
     }
 
-    private void TogglePicker()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!Disabled)
+        if (_focusHueOnOpen && IsOpen)
         {
-            IsOpen = !IsOpen;
+            _focusHueOnOpen = false;
+            await _hueInputElement.FocusAsync();
         }
+        else if (_restoreTriggerFocus && !IsOpen)
+        {
+            _restoreTriggerFocus = false;
+            await _triggerElement.FocusAsync();
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
-    private void HandleTriggerKeyDown(KeyboardEventArgs e)
+    private void TogglePicker()
     {
         if (Disabled)
         {
             return;
         }
 
-        if (e.Key is "Enter" or " " or "Spacebar")
+        if (IsOpen)
         {
-            IsOpen = !IsOpen;
+            ClosePicker();
+            return;
         }
-        else if (e.Key == "Escape" && IsOpen)
+
+        IsOpen = true;
+        _focusHueOnOpen = true;
+    }
+
+    private void ClosePicker()
+    {
+        if (IsOpen)
         {
             IsOpen = false;
+            _restoreTriggerFocus = true;
+        }
+    }
+
+    private void HandlePopoverKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            ClosePicker();
         }
     }
 
@@ -216,6 +270,24 @@
         await UpdateColorFromHsl();
     }
 
+    private async Task HandleSaturationChange(ChangeEventArgs e)
+    {
+        if (TryParseDouble(e.Value?.ToString(), out var saturation))
+        {
+            Saturation = Math.Clamp(saturation, 0, 100);
+            await UpdateColorFromHsl();
+        }
+    }
+
+    private async Task HandleLightnessChange(ChangeEventArgs e)
+    {
+        if (TryParseDouble(e.Value?.ToString(), out var lightness))
+        {
+            Lightness = Math.Clamp(lightness, 0, 100);
+            await UpdateColorFromHsl();
+        }
+    }
+
     private async Task HandleAlphaChange(ChangeEventArgs e)
     {
         if (!TryParseDouble(e.Value?.ToString(), out var alpha))
@@ -236,9 +308,35 @@
         }
     }
 
-    private async Task HandleRgbInput(ChangeEventArgs e)
+    private Task HandleRedInput(ChangeEventArgs e) => HandleRgbInput(e, RgbChannel.Red);
+
+    private Task HandleGreenInput(ChangeEventArgs e) => HandleRgbInput(e, RgbChannel.Green);
+
+    private Task HandleBlueInput(ChangeEventArgs e) => HandleRgbInput(e, RgbChannel.Blue);
+
+    private async Task HandleRgbInput(ChangeEventArgs e, RgbChannel channel)
     {
-        // This would need proper binding to R/G/B properties
+        if (!int.TryParse(e.Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var component))
+        {
+            return;
+        }
+
+        component = Math.Clamp(component, 0, 255);
+        switch (channel)
+        {
+            case RgbChannel.Red:
+                Red = component;
+                break;
+            case RgbChannel.Green:
+                Green = component;
+                break;
+            case RgbChannel.Blue:
+                Blue = component;
+                break;
+        }
+
+        HexValue = $"#{Red:X2}{Green:X2}{Blue:X2}";
+        (Hue, Saturation, Lightness) = RgbToHsl(Red, Green, Blue);
         await UpdateValue();
     }
 
@@ -272,9 +370,27 @@
         await ValueChanged.InvokeAsync(parsed.Value);
     }
 
-    private void HandleSaturationMouseDown(MouseEventArgs e)
+    private async Task HandleSaturationPointerDown(PointerEventArgs e)
     {
-        // Would need JS interop for proper drag handling
+        _isSelectingSaturation = true;
+        await UpdateSaturationFromPointer(e);
+    }
+
+    private async Task HandleSaturationPointerMove(PointerEventArgs e)
+    {
+        if (_isSelectingSaturation)
+        {
+            await UpdateSaturationFromPointer(e);
+        }
+    }
+
+    private void HandleSaturationPointerEnd(PointerEventArgs e) => _isSelectingSaturation = false;
+
+    private async Task UpdateSaturationFromPointer(PointerEventArgs e)
+    {
+        Saturation = Math.Clamp(e.OffsetX / 240d * 100d, 0, 100);
+        Lightness = 100d - Math.Clamp(e.OffsetY / 144d * 100d, 0, 100);
+        await UpdateColorFromHsl();
     }
 
     private string GetPresetAriaLabel(string color)
@@ -290,6 +406,11 @@
             ? GetCssColor(parsed)
             : "transparent";
     }
+
+    private bool IsPresetSelected(string color) =>
+        TryParseColor(color, out var parsed) && string.Equals(parsed.Value, Value, StringComparison.OrdinalIgnoreCase);
+
+    private static string FormatNumber(double value) => value.ToString("0.##", CultureInfo.InvariantCulture);
 
     private string FormatRgba(double alpha, string alphaFormat)
     {
@@ -418,6 +539,13 @@
         if (t < 1.0 / 2) return q;
         if (t < 2.0 / 3) return p + (q - p) * (2.0 / 3 - t) * 6;
         return p;
+    }
+
+    private enum RgbChannel
+    {
+        Red,
+        Green,
+        Blue
     }
 
     private readonly record struct ParsedColor(string Value, string HexValue, int Red, int Green, int Blue, double Alpha);

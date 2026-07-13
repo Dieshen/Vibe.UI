@@ -4,6 +4,7 @@
 
 /* Container - wraps the entire checkbox + label */
 .vibe-checkbox {
+    position: relative;
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -14,9 +15,17 @@
 /* Hidden checkbox input - accessible but visually hidden */
 .vibe-checkbox-input {
     position: absolute;
+    top: 50%;
+    left: 0;
+    z-index: 1;
+    width: 1rem;
+    height: 1rem;
+    padding: 0;
+    margin: 0;
     opacity: 0;
-    width: 0;
-    height: 0;
+    border: 0;
+    cursor: inherit;
+    transform: translateY(-50%);
 }
 
 /* Checkbox control - the visible checkbox box */
@@ -30,25 +39,22 @@
     border: 1px solid var(--vibe-border);
     border-radius: 0.25rem;
     background-color: var(--vibe-background);
-    transition: all 0.2s ease;
+    color: var(--vibe-primary-foreground);
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     flex-shrink: 0;
 }
 
 /* Checked state - primary color background */
-.vibe-checkbox-input:checked + .vibe-checkbox-control {
+.vibe-checkbox-input:checked + .vibe-checkbox-control,
+.vibe-checkbox-input[data-indeterminate="true"] + .vibe-checkbox-control {
     background-color: var(--vibe-primary);
     border-color: var(--vibe-primary);
 }
 
-/* Checkmark indicator - CSS-based checkmark */
-.vibe-checkbox-input:checked + .vibe-checkbox-control::after {
-    content: '';
-    display: block;
-    width: 0.375rem;
-    height: 0.625rem;
-    border: solid var(--vibe-primary-foreground);
-    border-width: 0 0.125rem 0.125rem 0;
-    transform: rotate(45deg) translate(-1px, -1px);
+.vibe-checkbox-control ::deep svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    stroke-width: 3;
 }
 
 /* Focus state - accessible keyboard navigation */
@@ -82,15 +88,9 @@
     border-color: var(--vibe-primary);
 }
 
-/* Disabled checked checkmark - same as normal checked state */
-.vibe-checkbox-input:disabled:checked + .vibe-checkbox-control::after {
-    content: '';
-    display: block;
-    width: 0.375rem;
-    height: 0.625rem;
-    border: solid var(--vibe-primary-foreground);
-    border-width: 0 0.125rem 0.125rem 0;
-    transform: rotate(45deg) translate(-1px, -1px);
+.vibe-checkbox-input:disabled[data-indeterminate="true"] + .vibe-checkbox-control {
+    background-color: var(--vibe-primary);
+    border-color: var(--vibe-primary);
 }
 
 /* Error/Invalid state - destructive border */
@@ -108,4 +108,15 @@
 .vibe-checkbox-error .vibe-checkbox-input:checked + .vibe-checkbox-control {
     background-color: var(--vibe-destructive);
     border-color: var(--vibe-destructive);
+}
+
+.vibe-checkbox-error .vibe-checkbox-input[data-indeterminate="true"] + .vibe-checkbox-control {
+    background-color: var(--vibe-destructive);
+    border-color: var(--vibe-destructive);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vibe-checkbox-control {
+        transition: none;
+    }
 }

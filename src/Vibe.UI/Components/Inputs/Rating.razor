@@ -1,8 +1,10 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
 <div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="radiogroup" aria-label="@AriaLabel"
-    aria-disabled="@AriaBool(Disabled)" aria-readonly="@AriaBool(ReadOnly)">
+    aria-orientation="horizontal" aria-disabled="@AriaBool(Disabled)" aria-readonly="@AriaBool(ReadOnly)">
     @for (int i = 1; i <= EffectiveMaxRating; i++)
     {
         var index = i;
@@ -10,29 +12,40 @@
         var isFilled = AllowHalf ? index <= displayValue : (int)Math.Ceiling(displayValue) >= index;
         var isHalfFilled = AllowHalf && displayValue >= index - 0.5 && displayValue < index;
 
-        <button type="button" class="rating-star @(isFilled ? "star-filled" : "") @(isHalfFilled ? "star-half" : "")"
+        <button id="@GetStarId(index)" type="button" class="rating-star @(isFilled ? "star-filled" : "") @(isHalfFilled ? "star-half" : "")"
             @onclick="() => HandleClick(index)" @onmouseenter="() => HandleHover(index)" @onmouseleave="HandleHoverEnd"
-            disabled="@(Disabled || ReadOnly)" role="radio" aria-checked="@AriaBool(isFilled || isHalfFilled)"
-            aria-label="@($"{index} star{(index > 1 ? "s" : "")}")">
+            @onkeydown="e => HandleKeyDown(e, index)"
+            disabled="@Disabled" role="radio" aria-checked="@AriaBool(IsSelectedIndex(index))"
+            aria-disabled="@AriaBool(Disabled || ReadOnly)" tabindex="@GetTabIndex(index)"
+            aria-label="@GetStarAriaLabel(index)">
             @if (CustomIcon != null)
             {
                 @CustomIcon
             }
             else
             {
-                <span class="star-icon">@(isFilled || isHalfFilled ? "★" : "☆")</span>
+                <span class="star-icon" aria-hidden="true">
+                    <Icon Name="star" Size="@IconSize" CssClass="rating-star-outline" />
+                    @if (isHalfFilled)
+                    {
+                        <Icon Name="star" Size="@IconSize" CssClass="rating-star-half-fill" />
+                    }
+                </span>
             }
         </button>
     }
 
     @if (ShowValue)
     {
-        <span class="rating-value">@Value.ToString("0.#") / @EffectiveMaxRating</span>
+        <output class="rating-value" aria-live="polite">@NormalizedValue.ToString("0.#") / @EffectiveMaxRating</output>
     }
 </div>
 
 @code {
     private double _hoverValue;
+    private readonly string _ratingId = $"vibe-rating-{Guid.NewGuid():N}";
+    private IJSObjectReference? _domModule;
+    private int? _pendingFocusIndex;
 
     [Parameter]
     public double Value { get; set; }
@@ -82,7 +95,22 @@
 
     private RatingSize EffectiveSize => Enum.IsDefined(typeof(RatingSize), Size) ? Size : RatingSize.Default;
 
-    private double DisplayValue => _hoverValue > 0 ? _hoverValue : Value;
+    private double NormalizedValue => Math.Clamp(Value, 0, EffectiveMaxRating);
+
+    private double DisplayValue => _hoverValue > 0 ? _hoverValue : NormalizedValue;
+
+    private int ActiveIndex => EffectiveMaxRating == 0
+        ? 0
+        : NormalizedValue > 0
+            ? Math.Clamp((int)Math.Ceiling(NormalizedValue), 1, EffectiveMaxRating)
+            : 1;
+
+    private int IconSize => EffectiveSize switch
+    {
+        RatingSize.Small => 16,
+        RatingSize.Large => 24,
+        _ => 20
+    };
 
     private static string AriaBool(bool value) => value ? "true" : "false";
 
@@ -93,6 +121,33 @@
         var newValue = AllowHalf && Value == rating ? rating - 0.5 : rating;
         Value = newValue;
         await ValueChanged.InvokeAsync(newValue);
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e, int rating)
+    {
+        if (ReadOnly || Disabled || EffectiveMaxRating == 0)
+        {
+            return;
+        }
+
+        var nextRating = e.Key switch
+        {
+            "ArrowLeft" or "ArrowDown" => Math.Max(1, rating - 1),
+            "ArrowRight" or "ArrowUp" => Math.Min(EffectiveMaxRating, rating + 1),
+            "Home" => 1,
+            "End" => EffectiveMaxRating,
+            _ => rating
+        };
+
+        if (nextRating == rating && e.Key is not ("Home" or "End"))
+        {
+            return;
+        }
+
+        Value = nextRating;
+        _pendingFocusIndex = nextRating;
+        await ValueChanged.InvokeAsync(nextRating);
+        StateHasChanged();
     }
 
     private void HandleHover(int rating)
@@ -109,6 +164,60 @@
         _hoverValue = 0;
         StateHasChanged();
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_pendingFocusIndex is not int focusIndex)
+        {
+            return;
+        }
+
+        _pendingFocusIndex = null;
+        try
+        {
+            _domModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
+                "import", "./_content/Vibe.UI/js/vibe-dom.js");
+            await _domModule.InvokeVoidAsync("focusElement", GetStarId(focusIndex));
+        }
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+        {
+        }
+    }
+
+    private bool IsSelectedIndex(int index) => NormalizedValue > 0 && ActiveIndex == index;
+
+    private int GetTabIndex(int index) => Disabled || ReadOnly || ActiveIndex != index ? -1 : 0;
+
+    private string GetStarId(int index) => $"{_ratingId}-star-{index}";
+
+    private string GetStarAriaLabel(int index)
+    {
+        if (IsSelectedIndex(index))
+        {
+            return $"{NormalizedValue:0.#} star{(NormalizedValue == 1 ? string.Empty : "s")}, selected";
+        }
+
+        return $"Set rating to {index} star{(index == 1 ? string.Empty : "s")}";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_domModule is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _domModule.DisposeAsync();
+        }
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+        {
+        }
+    }
+
+    private static bool IsRecoverableJsInteropException(Exception exception) =>
+        exception is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException;
 
     public enum RatingSize
     {

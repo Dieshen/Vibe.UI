@@ -5,19 +5,43 @@
 /* Container - main slider wrapper with relative positioning */
 .vibe-slider {
     position: relative;
-    display: flex;
-    align-items: center;
+    display: block;
     width: 100%;
     touch-action: none;
     user-select: none;
+}
+
+.vibe-slider-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--vibe-foreground);
+    font-family: var(--vibe-font);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+}
+
+.vibe-slider-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.vibe-slider-control {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    min-width: 0;
     height: 1.5rem;
 }
 
 /* Track - background rail for the slider */
 .vibe-slider-track {
     position: relative;
-    flex-grow: 1;
-    height: 0.5rem;
+    width: 100%;
+    height: 0.25rem;
     background-color: var(--vibe-secondary);
     border-radius: 9999px;
     overflow: hidden;
@@ -36,7 +60,7 @@
 /* Thumb - native range input styled as draggable handle */
 .vibe-slider-thumb {
     position: absolute;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 1.5rem;
     appearance: none;
@@ -119,7 +143,6 @@
 
 /* Value display - shows current slider value */
 .vibe-slider-value {
-    margin-left: 0.75rem;
     font-size: 0.875rem;
     color: var(--vibe-foreground);
     font-family: var(--vibe-font-mono, monospace);
@@ -167,44 +190,6 @@
 }
 
 /* ========================================
-   VERTICAL ORIENTATION
-   ======================================== */
-
-/* Note: Vertical orientation requires HTML structure changes
-   and additional JavaScript. This is a placeholder for future
-   implementation. Current component only supports horizontal. */
-
-.vibe-slider-vertical {
-    flex-direction: column;
-    height: 12rem;
-    width: 1.5rem;
-}
-
-.vibe-slider-vertical .vibe-slider-track {
-    width: 0.5rem;
-    height: 100%;
-}
-
-.vibe-slider-vertical .vibe-slider-range {
-    width: 100%;
-    height: auto;
-    bottom: 0;
-    top: auto;
-}
-
-.vibe-slider-vertical .vibe-slider-thumb {
-    width: 1.5rem;
-    height: 100%;
-    left: auto;
-    top: 0;
-}
-
-.vibe-slider-vertical .vibe-slider-value {
-    margin-left: 0;
-    margin-top: 0.75rem;
-}
-
-/* ========================================
    DARK MODE SUPPORT
    ======================================== */
 
@@ -221,3 +206,17 @@
    in vibe-components.css and do not require component-
    specific overrides when using CSS variables consistently.
 */
+
+@media (prefers-reduced-motion: reduce) {
+    .vibe-slider-range {
+        transition: none;
+    }
+
+    .vibe-slider-thumb::-webkit-slider-thumb {
+        transition: none;
+    }
+
+    .vibe-slider-thumb::-moz-range-thumb {
+        transition: none;
+    }
+}

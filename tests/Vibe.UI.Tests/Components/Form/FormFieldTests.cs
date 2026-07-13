@@ -28,7 +28,7 @@ public class FormFieldTests : TestBase
             .Add(p => p.Id, "email")
             .Add(p => p.Label, "Email")
             .Add(p => p.Description, "Use your work email")
-            .AddChildContent("<input id=\"email\" />"));
+            .Add(p => p.ChildContent, RenderInput()));
 
         var label = cut.Find(".form-field-label");
         label.TextContent.ShouldBe("Email");
@@ -41,11 +41,12 @@ public class FormFieldTests : TestBase
     {
         var cut = Render<FormField<string>>(parameters => parameters
             .Add(p => p.Label, "Email")
-            .AddChildContent("<input />"));
+            .Add(p => p.ChildContent, RenderInput()));
 
         var labelFor = cut.Find(".form-field-label").GetAttribute("for");
         labelFor.ShouldNotBeNullOrWhiteSpace();
         labelFor.ShouldStartWith("form-field-");
+        cut.Find("input").GetAttribute("id").ShouldBe(labelFor);
     }
 
     [Fact]
@@ -79,7 +80,7 @@ public class FormFieldTests : TestBase
         var root = cut.Find(".vibe-form-field");
         root.ClassList.ShouldContain("stacked");
         root.GetAttribute("data-testid").ShouldBe("email-field");
-        root.GetAttribute("role").ShouldBe("group");
+        root.HasAttribute("role").ShouldBeFalse();
     }
 
     [Fact]
@@ -91,31 +92,41 @@ public class FormFieldTests : TestBase
             .Add(p => p.Description, "Use your work email")
             .Add(p => p.ErrorMessage, "Email is required")
             .Add(p => p.Required, true)
-            .AddChildContent("<input id=\"email\" />"));
+            .Add(p => p.ChildContent, RenderInput()));
 
         var root = cut.Find(".vibe-form-field");
-        root.GetAttribute("aria-labelledby").ShouldBe("email-label");
-        root.GetAttribute("aria-describedby").ShouldBe("email-description email-error");
-        root.GetAttribute("aria-invalid").ShouldBe("true");
-        root.GetAttribute("aria-required").ShouldBe("true");
+        root.HasAttribute("aria-describedby").ShouldBeFalse();
+        root.HasAttribute("aria-invalid").ShouldBeFalse();
+        root.HasAttribute("aria-required").ShouldBeFalse();
+
+        var input = cut.Find("input");
+        input.GetAttribute("id").ShouldBe("email");
+        input.GetAttribute("aria-describedby").ShouldBe("email-description email-error");
+        input.GetAttribute("aria-errormessage").ShouldBe("email-error");
+        input.GetAttribute("aria-invalid").ShouldBe("true");
+        input.GetAttribute("aria-required").ShouldBe("true");
+        input.HasAttribute("required").ShouldBeTrue();
 
         cut.Find(".form-field-label").GetAttribute("id").ShouldBe("email-label");
+        cut.Find(".form-field-required").TextContent.ShouldBe("*");
         cut.Find(".form-field-description").GetAttribute("id").ShouldBe("email-description");
         cut.Find(".form-validation-message").GetAttribute("id").ShouldBe("email-error");
         cut.Find(".form-validation-message").GetAttribute("role").ShouldBe("alert");
     }
 
     [Fact]
-    public void FormField_PreservesCallerDescribedBy_WhenAddingDescriptionAndError()
+    public void FormField_PreservesInputDescribedBy_WhenAddingDescriptionAndError()
     {
         var cut = Render<FormField<string>>(parameters => parameters
             .Add(p => p.Id, "email")
             .Add(p => p.Description, "Help")
             .Add(p => p.ErrorMessage, "Error")
-            .AddUnmatched("aria-describedby", "external-help")
-            .AddChildContent("<input />"));
+            .Add(p => p.ChildContent, RenderInput(new Dictionary<string, object>
+            {
+                ["aria-describedby"] = "external-help"
+            })));
 
-        cut.Find(".vibe-form-field")
+        cut.Find("input")
             .GetAttribute("aria-describedby")
             .ShouldBe("external-help email-description email-error");
     }
@@ -136,8 +147,7 @@ public class FormFieldTests : TestBase
                 childBuilder.AddAttribute(1, "Id", "name");
                 childBuilder.AddAttribute(2, "Label", "Name");
                 childBuilder.AddAttribute(3, "ValidationFor", validationFor);
-                childBuilder.AddAttribute(4, "ChildContent", (RenderFragment)(inputBuilder =>
-                    inputBuilder.AddMarkupContent(0, "<input id=\"name\" />")));
+                childBuilder.AddAttribute(4, "ChildContent", RenderInput());
                 childBuilder.CloseComponent();
                 childBuilder.AddMarkupContent(5, "<button type=\"submit\">Submit</button>");
             }));
@@ -146,9 +156,10 @@ public class FormFieldTests : TestBase
 
         cut.Find("form").Submit();
 
-        var root = cut.Find(".vibe-form-field");
-        root.GetAttribute("aria-invalid").ShouldBe("true");
-        root.GetAttribute("aria-describedby").ShouldBe("name-error");
+        var input = cut.Find("input");
+        input.GetAttribute("aria-invalid").ShouldBe("true");
+        input.GetAttribute("aria-describedby").ShouldBe("name-error");
+        input.GetAttribute("aria-errormessage").ShouldBe("name-error");
         cut.Find(".form-field-container").ClassList.ShouldContain("has-error");
         cut.Find(".form-validation-message").TextContent.ShouldContain("Name is required");
     }
@@ -165,5 +176,64 @@ public class FormFieldTests : TestBase
 
         cut.Find(".vibe-form-field").ShouldNotBeNull();
         cut.FindAll(".form-validation-message").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void FormField_CascadesRelationshipsToSelect()
+    {
+        var cut = Render<FormField<string>>(parameters => parameters
+            .Add(p => p.Id, "country")
+            .Add(p => p.Label, "Country")
+            .Add(p => p.Description, "Choose your billing country")
+            .Add(p => p.ErrorMessage, "Country is required")
+            .Add(p => p.Required, true)
+            .Add(p => p.ChildContent, builder =>
+            {
+                builder.OpenComponent<Select>(0);
+                builder.AddAttribute(1, nameof(Select.ChildContent), (RenderFragment)(options =>
+                    options.AddMarkupContent(0, "<option value='us'>United States</option>")));
+                builder.CloseComponent();
+            }));
+
+        var select = cut.Find("select");
+        select.GetAttribute("id").ShouldBe("country");
+        select.GetAttribute("aria-describedby").ShouldBe("country-description country-error");
+        select.GetAttribute("aria-errormessage").ShouldBe("country-error");
+        select.GetAttribute("aria-invalid").ShouldBe("true");
+        select.HasAttribute("required").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void FormField_CascadesRelationshipsToTextArea()
+    {
+        var cut = Render<FormField<string>>(parameters => parameters
+            .Add(p => p.Id, "notes")
+            .Add(p => p.Label, "Notes")
+            .Add(p => p.Description, "Add delivery instructions")
+            .Add(p => p.Required, true)
+            .Add(p => p.ChildContent, builder =>
+            {
+                builder.OpenComponent<TextArea>(0);
+                builder.CloseComponent();
+            }));
+
+        var textArea = cut.Find("textarea");
+        textArea.GetAttribute("id").ShouldBe("notes");
+        textArea.GetAttribute("aria-describedby").ShouldBe("notes-description");
+        textArea.GetAttribute("aria-required").ShouldBe("true");
+        textArea.HasAttribute("required").ShouldBeTrue();
+    }
+
+    private static RenderFragment RenderInput(IReadOnlyDictionary<string, object>? attributes = null)
+    {
+        return builder =>
+        {
+            builder.OpenComponent<Input>(0);
+            if (attributes is not null)
+            {
+                builder.AddAttribute(1, nameof(Input.AdditionalAttributes), attributes);
+            }
+            builder.CloseComponent();
+        };
     }
 }

@@ -183,7 +183,10 @@ public class TransferListTests : TestBase
         var options = cut.FindAll("[role='option']");
         options.Count.ShouldBe(3);
         options[0].GetAttribute("tabindex").ShouldBe("0");
+        options[1].GetAttribute("tabindex").ShouldBe("-1");
+        options[2].GetAttribute("tabindex").ShouldBe("0");
         options[0].GetAttribute("aria-selected").ShouldBe("false");
+        options[0].GetAttribute("aria-disabled").ShouldBe("false");
         options[0].QuerySelector(".item-checkbox")!.GetAttribute("aria-hidden").ShouldBe("true");
 
         var buttons = cut.FindAll(".transfer-btn");
@@ -193,6 +196,83 @@ public class TransferListTests : TestBase
         buttons[3].GetAttribute("aria-label").ShouldBe("Move all Assigned people items to Available people");
         buttons[1].HasAttribute("disabled").ShouldBeTrue();
         buttons[2].HasAttribute("disabled").ShouldBeTrue();
+        buttons.Select(button => button.QuerySelectorAll("svg.vibe-icon").Length)
+            .ShouldBe(new[] { 2, 1, 1, 2 });
+        buttons.ShouldAllBe(button => string.IsNullOrWhiteSpace(button.TextContent));
+    }
+
+    [Fact]
+    public void TransferList_UsesRovingFocus_WithArrowHomeAndEndKeys()
+    {
+        // Arrange
+        var cut = Render<TransferList<string>>(parameters => parameters
+            .Add(p => p.SourceItems, new List<string> { "Alpha", "Beta", "Gamma" })
+            .Add(p => p.TargetItems, new List<string> { "Delta", "Epsilon" }));
+
+        var sourceOptions = GetPanelOptions(cut, 0);
+        var targetOptions = GetPanelOptions(cut, 1);
+        sourceOptions.Select(option => option.GetAttribute("tabindex"))
+            .ShouldBe(new[] { "0", "-1", "-1" });
+        targetOptions.Select(option => option.GetAttribute("tabindex"))
+            .ShouldBe(new[] { "0", "-1" });
+
+        // Act - arrow to the next source option.
+        sourceOptions[0].KeyDown("ArrowDown");
+
+        // Assert
+        sourceOptions = GetPanelOptions(cut, 0);
+        sourceOptions.Select(option => option.GetAttribute("tabindex"))
+            .ShouldBe(new[] { "-1", "0", "-1" });
+
+        // Act - jump to the end, then back home.
+        sourceOptions[1].KeyDown("End");
+        sourceOptions = GetPanelOptions(cut, 0);
+        sourceOptions.Select(option => option.GetAttribute("tabindex"))
+            .ShouldBe(new[] { "-1", "-1", "0" });
+
+        sourceOptions[2].KeyDown("Home");
+        sourceOptions = GetPanelOptions(cut, 0);
+        sourceOptions.Select(option => option.GetAttribute("tabindex"))
+            .ShouldBe(new[] { "0", "-1", "-1" });
+
+        // Act - clamp at the first option without disturbing the target list.
+        sourceOptions[0].KeyDown("ArrowUp");
+
+        // Assert
+        GetPanelOptions(cut, 0).Select(option => option.GetAttribute("tabindex"))
+            .ShouldBe(new[] { "0", "-1", "-1" });
+        GetPanelOptions(cut, 1).Select(option => option.GetAttribute("tabindex"))
+            .ShouldBe(new[] { "0", "-1" });
+    }
+
+    [Fact]
+    public void TransferList_DisabledState_IsInertAndRemovedFromTabOrder()
+    {
+        // Arrange
+        var sourceItems = new List<string> { "Alpha", "Beta" };
+        var targetItems = new List<string> { "Gamma" };
+        var cut = Render<TransferList<string>>(parameters => parameters
+            .Add(p => p.SourceItems, sourceItems)
+            .Add(p => p.TargetItems, targetItems)
+            .Add(p => p.Disabled, true));
+
+        // Assert
+        var root = cut.Find(".vibe-transfer");
+        root.ClassList.ShouldContain("is-disabled");
+        root.GetAttribute("aria-disabled").ShouldBe("true");
+        cut.FindAll(".search-input").ShouldAllBe(input => input.HasAttribute("disabled"));
+        cut.FindAll("[role='listbox']").ShouldAllBe(list => list.GetAttribute("aria-disabled") == "true");
+        cut.FindAll("[role='option']").ShouldAllBe(option =>
+            option.GetAttribute("tabindex") == "-1" && option.GetAttribute("aria-disabled") == "true");
+        cut.FindAll(".transfer-btn").ShouldAllBe(button => button.HasAttribute("disabled"));
+
+        // Act
+        cut.FindAll("[role='option']")[0].Click();
+
+        // Assert
+        cut.FindAll(".transfer-item.selected").ShouldBeEmpty();
+        sourceItems.ShouldBe(new List<string> { "Alpha", "Beta" });
+        targetItems.ShouldBe(new List<string> { "Gamma" });
     }
 
     [Fact]
@@ -251,6 +331,9 @@ public class TransferListTests : TestBase
         cut.FindAll(".transfer-btn")[1].HasAttribute("disabled").ShouldBeTrue();
         cut.FindAll(".panel-count")[0].TextContent.ShouldBe("1");
         cut.FindAll(".panel-count")[1].TextContent.ShouldBe("3");
+        GetPanelOptions(cut, 1).Select(option => option.GetAttribute("tabindex"))
+            .ShouldBe(new[] { "-1", "0", "-1" });
+        cut.Find(".transfer-status").TextContent.ShouldBe("Moved 2 items to Selected.");
     }
 
     [Fact]
@@ -279,6 +362,9 @@ public class TransferListTests : TestBase
         changedSource.ShouldBe(new List<string> { "Alpha", "Gamma" });
         changedTarget.ShouldBe(new List<string> { "Beta" });
         cut.FindAll(".transfer-btn")[2].HasAttribute("disabled").ShouldBeTrue();
+        GetPanelOptions(cut, 0).Select(option => option.GetAttribute("tabindex"))
+            .ShouldBe(new[] { "-1", "0" });
+        cut.Find(".transfer-status").TextContent.ShouldBe("Moved 1 item to Available.");
     }
 
     [Fact]
@@ -352,6 +438,27 @@ public class TransferListTests : TestBase
     }
 
     [Fact]
+    public void TransferList_SearchResetsRovingTabStopToFirstVisibleOption()
+    {
+        // Arrange
+        var cut = Render<TransferList<string>>(parameters => parameters
+            .Add(p => p.SourceItems, new List<string> { "Alpha", "Beta", "Gamma" }));
+
+        var sourceOptions = GetPanelOptions(cut, 0);
+        sourceOptions[0].KeyDown("End");
+        GetPanelOptions(cut, 0)[2].GetAttribute("tabindex").ShouldBe("0");
+
+        // Act
+        cut.FindAll(".search-input")[0].Input("Beta");
+
+        // Assert
+        sourceOptions = GetPanelOptions(cut, 0);
+        sourceOptions.Count.ShouldBe(1);
+        sourceOptions[0].TextContent.ShouldContain("Beta");
+        sourceOptions[0].GetAttribute("tabindex").ShouldBe("0");
+    }
+
+    [Fact]
     public void TransferList_RendersCustomItemTemplate()
     {
         // Arrange
@@ -394,6 +501,15 @@ public class TransferListTests : TestBase
         // Assert
         cut.FindAll(".transfer-item.selected").ShouldBeEmpty();
         cut.FindAll(".transfer-btn")[1].HasAttribute("disabled").ShouldBeTrue();
+    }
+
+    private static IReadOnlyList<AngleSharp.Dom.IElement> GetPanelOptions(
+        IRenderedComponent<TransferList<string>> cut,
+        int panelIndex)
+    {
+        return cut.FindAll(".transfer-panel")[panelIndex]
+            .QuerySelectorAll("[role='option']")
+            .ToList();
     }
 
     private sealed record TransferListTestItem(string Id, string Name);

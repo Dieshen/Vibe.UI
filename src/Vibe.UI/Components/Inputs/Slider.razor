@@ -1,7 +1,6 @@
 @namespace Vibe.UI.Components
 @using System.Globalization
 @inherits Vibe.UI.Base.VibeComponent
-@inject IJSRuntime JSRuntime
 
 <div @attributes="AdditionalAttributes" class="@CombinedClass">
     @if (!string.IsNullOrWhiteSpace(Label))
@@ -9,29 +8,33 @@
         <label class="vibe-slider-label" for="@ElementId">@Label</label>
     }
 
-    <div class="vibe-slider-track">
-        <div class="vibe-slider-range" style="width: calc((@GetPercentage()% * (100% - 1rem) / 100%) + 0.5rem);"></div>
-    </div>
-    <input
-        id="@ElementId"
-        type="range"
-        class="vibe-slider-thumb"
-        min="@FormatNumber(Min)"
-        max="@FormatNumber(Max)"
-        step="@FormatNumber(Step)"
-        value="@FormatNumber(Value)"
-        disabled="@Disabled"
-        aria-label="@EffectiveAriaLabel"
-        aria-valuemin="@FormatNumber(Min)"
-        aria-valuemax="@FormatNumber(Max)"
-        aria-valuenow="@FormatNumber(Value)"
-        @oninput="HandleInputEvent"
-        @onchange="HandleChangeEvent" />
+    <div class="vibe-slider-row">
+        <div class="vibe-slider-control">
+            <div class="vibe-slider-track">
+                <div class="vibe-slider-range" style="width: calc((@GetPercentage()% * (100% - 1rem) / 100%) + 0.5rem);"></div>
+            </div>
+            <input
+                id="@ElementId"
+                type="range"
+                class="vibe-slider-thumb"
+                min="@FormatNumber(Min)"
+                max="@FormatNumber(Max)"
+                step="@FormatNumber(Step)"
+                value="@FormatNumber(Value)"
+                disabled="@Disabled"
+                aria-label="@EffectiveAriaLabel"
+                aria-valuemin="@FormatNumber(Min)"
+                aria-valuemax="@FormatNumber(Max)"
+                aria-valuenow="@FormatNumber(Value)"
+                @oninput="HandleInputEvent"
+                @onchange="HandleChangeEvent" />
+        </div>
 
-    @if (ShowValue)
-    {
-        <div class="vibe-slider-value">@FormatDisplayValue(Value)</div>
-    }
+        @if (ShowValue)
+        {
+            <output class="vibe-slider-value" for="@ElementId">@FormatDisplayValue(Value)</output>
+        }
+    </div>
 </div>
 
 @code {
@@ -48,6 +51,12 @@
     /// </summary>
     [Parameter]
     public string? Label { get; set; }
+
+    /// <summary>
+    /// Gets or sets an accessible name that takes precedence over <see cref="Label"/>.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
 
     /// <summary>
     /// Gets or sets the minimum value of the slider
@@ -117,20 +126,13 @@
     /// </summary>
     private string ElementId => string.IsNullOrEmpty(Id) ? _id : Id;
 
-    private string? EffectiveAriaLabel => string.IsNullOrWhiteSpace(Label) ? null : Label;
-
-    private string GetTrackFillWidth()
+    private string? EffectiveAriaLabel
     {
-        var percentage = ((Value - Min) / (Max - Min)) * 100;
-        percentage = Math.Clamp(percentage, 0, 100);
-        return $"{percentage}%";
-    }
-
-    private string GetThumbPosition()
-    {
-        var percentage = ((Value - Min) / (Max - Min)) * 100;
-        percentage = Math.Clamp(percentage, 0, 100);
-        return $"calc({percentage}% - 0.5rem)";
+        get
+        {
+            var value = string.IsNullOrWhiteSpace(AriaLabel) ? Label : AriaLabel;
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
     }
 
     /// <summary>

@@ -1,7 +1,8 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass">
+<div @attributes="AdditionalAttributes" class="@CombinedCssClass"
+    aria-disabled="@(Disabled ? "true" : null)" data-state="@InteractionState">
     <div class="mentions-input-container">
         @foreach (var item in _displayItems)
         {
@@ -12,7 +13,9 @@
                     @if (IsInteractive)
                     {
                         <button type="button" class="mention-remove" @onclick="() => RemoveMention(item.Index)"
-                            aria-label="@($"Remove {item.Text}")">×</button>
+                            aria-label="@($"Remove {item.Text}")">
+                            <Icon Name="x" Size="14" />
+                        </button>
                     }
                 </span>
             }
@@ -22,12 +25,15 @@
             }
         }
 
-        <input type="text" class="mentions-input" value="@_inputValue" @oninput="HandleInput"
-            @onkeydown="HandleKeyDown" @onfocus="HandleFocus" placeholder="@Placeholder" disabled="@Disabled"
-            readonly="@ReadOnly" aria-label="@EffectiveAriaLabel" aria-autocomplete="list" aria-haspopup="listbox"
-            aria-controls="@_suggestionsId" aria-expanded="@(_showSuggestions ? "true" : "false")"
-            aria-activedescendant="@ActiveSuggestionId" aria-readonly="@(ReadOnly ? "true" : null)"
-            autocomplete="off" role="combobox" />
+        <span class="mentions-input-shell" @onkeydown="HandleKeyDown">
+            <input type="text" class="mentions-input" value="@_inputValue" @oninput="HandleInput"
+                @onfocus="HandleFocus" @onblur="HandleBlur" placeholder="@Placeholder" disabled="@Disabled"
+                readonly="@ReadOnly" aria-label="@EffectiveAriaLabel" aria-autocomplete="list" aria-haspopup="listbox"
+                aria-controls="@_suggestionsId" aria-expanded="@(_showSuggestions ? "true" : "false")"
+                aria-activedescendant="@ActiveSuggestionId" aria-readonly="@(ReadOnly ? "true" : null)"
+                aria-disabled="@(Disabled ? "true" : null)" autocomplete="off" role="combobox"
+                onkeydown="if (this.getAttribute('aria-expanded') === 'true' && (event.key === 'Enter' || event.key === 'ArrowDown' || event.key === 'ArrowUp')) event.preventDefault();" />
+        </span>
     </div>
 
     @if (_showSuggestions && VisibleSuggestions.Any())
@@ -41,7 +47,8 @@
                 var isActive = i == _activeSuggestionIndex;
                 <button type="button" class="mention-suggestion @(isActive ? "active" : "")" id="@GetSuggestionId(i)"
                     role="option" aria-selected="@(isActive ? "true" : "false")" tabindex="-1"
-                    @onclick="() => SelectSuggestion(suggestion)" @key="GetSuggestionKey(suggestion, i)">
+                    @onpointerdown:preventDefault="true" @onclick="() => SelectSuggestion(suggestion)"
+                    @key="GetSuggestionKey(suggestion, i)">
                     @if (suggestion.Avatar != null)
                     {
                         <div class="suggestion-avatar">@suggestion.Avatar</div>
@@ -126,6 +133,8 @@
     protected override string ComponentClass => CombinedCssClass;
 
     private bool IsInteractive => !Disabled && !ReadOnly;
+
+    private string InteractionState => Disabled ? "disabled" : ReadOnly ? "readonly" : "enabled";
 
     private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel) ? "Mention input" : AriaLabel;
 
@@ -220,6 +229,11 @@
         {
             UpdateSuggestionState(resetActiveIndex: false);
         }
+    }
+
+    private void HandleBlur()
+    {
+        CloseSuggestions();
     }
 
     private async Task SelectSuggestion(MentionSuggestion suggestion)

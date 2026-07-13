@@ -2,39 +2,68 @@
 @inherits VibeComponent
 @typeparam TItem
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="group" aria-label="@AriaLabel">
+@{
+    var filteredSourceItems = GetFilteredSourceItems();
+    var filteredTargetItems = GetFilteredTargetItems();
+    PrepareOptionState(filteredSourceItems.Count, filteredTargetItems.Count);
+}
+
+<div @attributes="AdditionalAttributes"
+     class="@CombinedCssClass"
+     role="group"
+     aria-label="@AriaLabel"
+     aria-disabled="@AriaBool(Disabled)">
     <div class="transfer-panel">
         <div class="transfer-panel-header">
             <h4 id="@_sourceTitleId" class="panel-title">@SourceTitle</h4>
-            <span class="panel-count">@SourceItems.Count</span>
+            <span class="panel-count" aria-label="@($"{SourceItems.Count} items")">@SourceItems.Count</span>
         </div>
         @if (ShowSearch)
         {
             <div class="transfer-search">
-                <input type="text" class="search-input" placeholder="@SearchPlaceholder" @bind="_sourceSearch"
-                    @bind:event="oninput" aria-label="@($"{SourceTitle} search")" />
+                <input @ref="_sourceSearchReference"
+                       type="search"
+                       class="search-input"
+                       placeholder="@SearchPlaceholder"
+                       value="@_sourceSearch"
+                       @oninput="HandleSourceSearch"
+                       aria-label="@($"{SourceTitle} search")"
+                       disabled="@Disabled" />
             </div>
         }
-        <div class="transfer-list" role="listbox" aria-multiselectable="true" aria-labelledby="@_sourceTitleId">
-            @{
-                var filteredSourceItems = GetFilteredSourceItems().ToList();
-            }
+        <div class="transfer-list"
+             role="listbox"
+             aria-multiselectable="true"
+             aria-labelledby="@_sourceTitleId"
+             aria-disabled="@AriaBool(Disabled)">
             @if (filteredSourceItems.Count == 0)
             {
                 <div class="transfer-empty" role="status">No @SourceTitle.ToLowerInvariant() items found</div>
             }
-            @foreach (var item in filteredSourceItems)
+            @for (var optionIndex = 0; optionIndex < filteredSourceItems.Count; optionIndex++)
             {
+                var index = optionIndex;
+                var item = filteredSourceItems[index];
                 var isSelected = _selectedSource.Contains(item);
-                <div class="transfer-item @(isSelected ? "selected" : "")" @key="GetItemKey(item)"
-                    role="option"
-                    tabindex="0"
-                    aria-selected="@isSelected.ToString().ToLowerInvariant()"
-                    @onclick="() => ToggleSourceSelection(item)"
-                    @onkeydown="(e) => HandleSourceItemKeyDown(e, item)">
+                <div @ref="_sourceOptionReferences[index]"
+                     id="@GetSourceOptionId(index)"
+                     class="@GetOptionClass(isSelected)"
+                     @key="GetItemKey(item)"
+                     role="option"
+                     tabindex="@GetOptionTabIndex(_sourceActiveIndex, index)"
+                     aria-selected="@AriaBool(isSelected)"
+                     aria-disabled="@AriaBool(Disabled)"
+                     @onclick="() => ToggleSourceSelection(item, index)"
+                     @onkeydown="(args) => HandleSourceItemKeyDown(args, item, index, filteredSourceItems.Count)"
+                     @onkeydown:preventDefault="@(!Disabled)">
                     @if (ShowCheckboxes)
                     {
-                        <input type="checkbox" checked="@isSelected" class="item-checkbox" tabindex="-1" aria-hidden="true" />
+                        <input type="checkbox"
+                               checked="@isSelected"
+                               class="item-checkbox"
+                               tabindex="-1"
+                               aria-hidden="true"
+                               disabled="@Disabled" />
                     }
                     <div class="item-content">
                         @if (ItemTemplate != null)
@@ -51,61 +80,94 @@
         </div>
     </div>
 
-    <div class="transfer-controls">
-        <button type="button" class="transfer-btn" @onclick="MoveAllToTarget" disabled="@(!SourceItems.Any())"
-            aria-label="@($"Move all {SourceTitle} items to {TargetTitle}")"
-            title="Move all to target">
-            ≫
+    <div class="transfer-controls" role="group" aria-label="Transfer controls">
+        <button type="button"
+                class="transfer-btn transfer-btn-forward transfer-btn-all"
+                @onclick="MoveAllToTarget"
+                disabled="@(Disabled || SourceItems.Count == 0)"
+                aria-label="@($"Move all {SourceTitle} items to {TargetTitle}")"
+                title="@($"Move all to {TargetTitle}")">
+            <Icon Name="arrow-right" Size="16" />
+            <Icon Name="arrow-right" Size="16" />
         </button>
-        <button type="button" class="transfer-btn" @onclick="MoveToTarget" disabled="@(!_selectedSource.Any())"
-            aria-label="@($"Move selected {SourceTitle} items to {TargetTitle}")"
-            title="Move selected to target">
-            &gt;
+        <button type="button"
+                class="transfer-btn transfer-btn-forward"
+                @onclick="MoveToTarget"
+                disabled="@(Disabled || _selectedSource.Count == 0)"
+                aria-label="@($"Move selected {SourceTitle} items to {TargetTitle}")"
+                title="@($"Move selected to {TargetTitle}")">
+            <Icon Name="arrow-right" Size="18" />
         </button>
-        <button type="button" class="transfer-btn" @onclick="MoveToSource" disabled="@(!_selectedTarget.Any())"
-            aria-label="@($"Move selected {TargetTitle} items to {SourceTitle}")"
-            title="Move selected to source">
-            &lt;
+        <button type="button"
+                class="transfer-btn transfer-btn-backward"
+                @onclick="MoveToSource"
+                disabled="@(Disabled || _selectedTarget.Count == 0)"
+                aria-label="@($"Move selected {TargetTitle} items to {SourceTitle}")"
+                title="@($"Move selected to {SourceTitle}")">
+            <Icon Name="arrow-left" Size="18" />
         </button>
-        <button type="button" class="transfer-btn" @onclick="MoveAllToSource" disabled="@(!TargetItems.Any())"
-            aria-label="@($"Move all {TargetTitle} items to {SourceTitle}")"
-            title="Move all to source">
-            ≪
+        <button type="button"
+                class="transfer-btn transfer-btn-backward transfer-btn-all"
+                @onclick="MoveAllToSource"
+                disabled="@(Disabled || TargetItems.Count == 0)"
+                aria-label="@($"Move all {TargetTitle} items to {SourceTitle}")"
+                title="@($"Move all to {SourceTitle}")">
+            <Icon Name="arrow-left" Size="16" />
+            <Icon Name="arrow-left" Size="16" />
         </button>
     </div>
 
     <div class="transfer-panel">
         <div class="transfer-panel-header">
             <h4 id="@_targetTitleId" class="panel-title">@TargetTitle</h4>
-            <span class="panel-count">@TargetItems.Count</span>
+            <span class="panel-count" aria-label="@($"{TargetItems.Count} items")">@TargetItems.Count</span>
         </div>
         @if (ShowSearch)
         {
             <div class="transfer-search">
-                <input type="text" class="search-input" placeholder="@SearchPlaceholder" @bind="_targetSearch"
-                    @bind:event="oninput" aria-label="@($"{TargetTitle} search")" />
+                <input @ref="_targetSearchReference"
+                       type="search"
+                       class="search-input"
+                       placeholder="@SearchPlaceholder"
+                       value="@_targetSearch"
+                       @oninput="HandleTargetSearch"
+                       aria-label="@($"{TargetTitle} search")"
+                       disabled="@Disabled" />
             </div>
         }
-        <div class="transfer-list" role="listbox" aria-multiselectable="true" aria-labelledby="@_targetTitleId">
-            @{
-                var filteredTargetItems = GetFilteredTargetItems().ToList();
-            }
+        <div class="transfer-list"
+             role="listbox"
+             aria-multiselectable="true"
+             aria-labelledby="@_targetTitleId"
+             aria-disabled="@AriaBool(Disabled)">
             @if (filteredTargetItems.Count == 0)
             {
                 <div class="transfer-empty" role="status">No @TargetTitle.ToLowerInvariant() items found</div>
             }
-            @foreach (var item in filteredTargetItems)
+            @for (var optionIndex = 0; optionIndex < filteredTargetItems.Count; optionIndex++)
             {
+                var index = optionIndex;
+                var item = filteredTargetItems[index];
                 var isSelected = _selectedTarget.Contains(item);
-                <div class="transfer-item @(isSelected ? "selected" : "")" @key="GetItemKey(item)"
-                    role="option"
-                    tabindex="0"
-                    aria-selected="@isSelected.ToString().ToLowerInvariant()"
-                    @onclick="() => ToggleTargetSelection(item)"
-                    @onkeydown="(e) => HandleTargetItemKeyDown(e, item)">
+                <div @ref="_targetOptionReferences[index]"
+                     id="@GetTargetOptionId(index)"
+                     class="@GetOptionClass(isSelected)"
+                     @key="GetItemKey(item)"
+                     role="option"
+                     tabindex="@GetOptionTabIndex(_targetActiveIndex, index)"
+                     aria-selected="@AriaBool(isSelected)"
+                     aria-disabled="@AriaBool(Disabled)"
+                     @onclick="() => ToggleTargetSelection(item, index)"
+                     @onkeydown="(args) => HandleTargetItemKeyDown(args, item, index, filteredTargetItems.Count)"
+                     @onkeydown:preventDefault="@(!Disabled)">
                     @if (ShowCheckboxes)
                     {
-                        <input type="checkbox" checked="@isSelected" class="item-checkbox" tabindex="-1" aria-hidden="true" />
+                        <input type="checkbox"
+                               checked="@isSelected"
+                               class="item-checkbox"
+                               tabindex="-1"
+                               aria-hidden="true"
+                               disabled="@Disabled" />
                     }
                     <div class="item-content">
                         @if (ItemTemplate != null)
@@ -121,196 +183,418 @@
             }
         </div>
     </div>
+
+    <span class="transfer-status" aria-live="polite" aria-atomic="true">@_statusMessage</span>
 </div>
 
 @code {
-    private HashSet<TItem> _selectedSource = new();
-    private HashSet<TItem> _selectedTarget = new();
-    private string _sourceSearch = string.Empty;
-    private string _targetSearch = string.Empty;
+    private readonly HashSet<TItem> _selectedSource = new();
+    private readonly HashSet<TItem> _selectedTarget = new();
     private readonly string _sourceTitleId = $"transfer-source-title-{Guid.NewGuid():N}";
     private readonly string _targetTitleId = $"transfer-target-title-{Guid.NewGuid():N}";
+    private readonly string _sourceListId = $"transfer-source-list-{Guid.NewGuid():N}";
+    private readonly string _targetListId = $"transfer-target-list-{Guid.NewGuid():N}";
+    private ElementReference[] _sourceOptionReferences = [];
+    private ElementReference[] _targetOptionReferences = [];
+    private ElementReference _sourceSearchReference;
+    private ElementReference _targetSearchReference;
+    private string _sourceSearch = string.Empty;
+    private string _targetSearch = string.Empty;
+    private string _statusMessage = string.Empty;
+    private int _sourceActiveIndex;
+    private int _targetActiveIndex;
+    private PendingFocus _pendingFocus;
+    private int _pendingFocusIndex = -1;
 
+    /// <summary>Items shown in the source list.</summary>
     [Parameter]
     public List<TItem> SourceItems { get; set; } = new();
 
+    /// <summary>Items shown in the target list.</summary>
     [Parameter]
     public List<TItem> TargetItems { get; set; } = new();
 
+    /// <summary>Raised after the source collection changes.</summary>
     [Parameter]
     public EventCallback<List<TItem>> SourceItemsChanged { get; set; }
 
+    /// <summary>Raised after the target collection changes.</summary>
     [Parameter]
     public EventCallback<List<TItem>> TargetItemsChanged { get; set; }
 
+    /// <summary>Optional content used to render each option.</summary>
     [Parameter]
     public RenderFragment<TItem>? ItemTemplate { get; set; }
 
+    /// <summary>Optional text selector used for labels and filtering.</summary>
     [Parameter]
     public Func<TItem, string>? TextSelector { get; set; }
 
+    /// <summary>Optional stable key selector for rendered options.</summary>
     [Parameter]
     public Func<TItem, string>? KeySelector { get; set; }
 
+    /// <summary>Heading for the source list.</summary>
     [Parameter]
     public string SourceTitle { get; set; } = "Available";
 
+    /// <summary>Heading for the target list.</summary>
     [Parameter]
     public string TargetTitle { get; set; } = "Selected";
 
+    /// <summary>Whether each list includes a search field.</summary>
     [Parameter]
     public bool ShowSearch { get; set; } = true;
 
+    /// <summary>Whether options include a decorative selection checkbox.</summary>
     [Parameter]
     public bool ShowCheckboxes { get; set; } = true;
 
+    /// <summary>Placeholder shown in both search fields.</summary>
     [Parameter]
     public string SearchPlaceholder { get; set; } = "Search...";
 
+    /// <summary>Whether searching, selecting, and moving items is disabled.</summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>Additional CSS classes applied to the root element.</summary>
     [Parameter]
     public string? CssClass { get; set; }
 
+    /// <summary>Accessible name for the transfer control.</summary>
     [Parameter]
     public string AriaLabel { get; set; } = "Transfer items";
 
     private string CombinedCssClass => CombineClasses(
-    "vibe-transfer",
-    CssClass
-    );
+        "vibe-transfer",
+        Disabled ? "is-disabled" : null,
+        Class,
+        CssClass);
 
     protected override string ComponentClass => CombinedCssClass;
 
     protected override void OnParametersSet()
     {
         PruneSelections();
+        _sourceActiveIndex = NormalizeActiveIndex(_sourceActiveIndex, GetFilteredSourceItems().Count);
+        _targetActiveIndex = NormalizeActiveIndex(_targetActiveIndex, GetFilteredTargetItems().Count);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Disabled || _pendingFocus == PendingFocus.None)
+            return;
+
+        var pendingFocus = _pendingFocus;
+        var pendingIndex = _pendingFocusIndex;
+        _pendingFocus = PendingFocus.None;
+        _pendingFocusIndex = -1;
+
+        switch (pendingFocus)
+        {
+            case PendingFocus.SourceOption when IsValidReferenceIndex(_sourceOptionReferences, pendingIndex):
+                await _sourceOptionReferences[pendingIndex].FocusAsync();
+                break;
+            case PendingFocus.TargetOption when IsValidReferenceIndex(_targetOptionReferences, pendingIndex):
+                await _targetOptionReferences[pendingIndex].FocusAsync();
+                break;
+            case PendingFocus.SourceSearch when ShowSearch:
+                await _sourceSearchReference.FocusAsync();
+                break;
+            case PendingFocus.TargetSearch when ShowSearch:
+                await _targetSearchReference.FocusAsync();
+                break;
+        }
     }
 
     private string GetItemKey(TItem item)
     {
-        if (KeySelector != null && item != null)
+        if (KeySelector != null && item is not null)
             return KeySelector(item);
-        return item?.GetHashCode().ToString() ?? Guid.NewGuid().ToString();
+
+        return item?.GetHashCode().ToString() ?? "null-item";
     }
 
     private string GetItemText(TItem item)
     {
-        if (TextSelector != null && item != null)
+        if (TextSelector != null && item is not null)
             return TextSelector(item);
+
         return item?.ToString() ?? string.Empty;
     }
 
-    private IEnumerable<TItem> GetFilteredSourceItems()
+    private List<TItem> GetFilteredSourceItems()
     {
         if (string.IsNullOrWhiteSpace(_sourceSearch))
-            return SourceItems;
+            return SourceItems.ToList();
 
-        return SourceItems.Where(item =>
-        GetItemText(item).Contains(_sourceSearch, StringComparison.OrdinalIgnoreCase));
+        return SourceItems
+            .Where(item => GetItemText(item).Contains(_sourceSearch, StringComparison.OrdinalIgnoreCase))
+            .ToList();
     }
 
-    private IEnumerable<TItem> GetFilteredTargetItems()
+    private List<TItem> GetFilteredTargetItems()
     {
         if (string.IsNullOrWhiteSpace(_targetSearch))
-            return TargetItems;
+            return TargetItems.ToList();
 
-        return TargetItems.Where(item =>
-        GetItemText(item).Contains(_targetSearch, StringComparison.OrdinalIgnoreCase));
+        return TargetItems
+            .Where(item => GetItemText(item).Contains(_targetSearch, StringComparison.OrdinalIgnoreCase))
+            .ToList();
     }
 
-    private void ToggleSourceSelection(TItem item)
+    private void HandleSourceSearch(ChangeEventArgs args)
     {
-        if (_selectedSource.Contains(item))
-            _selectedSource.Remove(item);
-        else
-            _selectedSource.Add(item);
+        _sourceSearch = args.Value?.ToString() ?? string.Empty;
+        _sourceActiveIndex = NormalizeActiveIndex(0, GetFilteredSourceItems().Count);
     }
 
-    private void ToggleTargetSelection(TItem item)
+    private void HandleTargetSearch(ChangeEventArgs args)
     {
-        if (_selectedTarget.Contains(item))
-            _selectedTarget.Remove(item);
-        else
-            _selectedTarget.Add(item);
+        _targetSearch = args.Value?.ToString() ?? string.Empty;
+        _targetActiveIndex = NormalizeActiveIndex(0, GetFilteredTargetItems().Count);
     }
 
-    private void HandleSourceItemKeyDown(KeyboardEventArgs e, TItem item)
+    private void ToggleSourceSelection(TItem item, int index)
     {
-        if (IsSelectionKey(e.Key))
-            ToggleSourceSelection(item);
+        if (Disabled)
+            return;
+
+        _sourceActiveIndex = index;
+        ToggleSelection(_selectedSource, item);
     }
 
-    private void HandleTargetItemKeyDown(KeyboardEventArgs e, TItem item)
+    private void ToggleTargetSelection(TItem item, int index)
     {
-        if (IsSelectionKey(e.Key))
-            ToggleTargetSelection(item);
+        if (Disabled)
+            return;
+
+        _targetActiveIndex = index;
+        ToggleSelection(_selectedTarget, item);
     }
 
-    private static bool IsSelectionKey(string key)
+    private static void ToggleSelection(HashSet<TItem> selection, TItem item)
     {
-        return key is "Enter" or " " or "Spacebar";
+        if (!selection.Remove(item))
+            selection.Add(item);
+    }
+
+    private void HandleSourceItemKeyDown(KeyboardEventArgs args, TItem item, int index, int itemCount)
+    {
+        if (Disabled)
+            return;
+
+        _sourceActiveIndex = index;
+        switch (args.Key)
+        {
+            case "ArrowDown":
+                SetSourceFocus(Math.Min(index + 1, itemCount - 1));
+                break;
+            case "ArrowUp":
+                SetSourceFocus(Math.Max(index - 1, 0));
+                break;
+            case "Home":
+                SetSourceFocus(0);
+                break;
+            case "End":
+                SetSourceFocus(itemCount - 1);
+                break;
+            case "Enter":
+            case " ":
+            case "Spacebar":
+                ToggleSourceSelection(item, index);
+                break;
+        }
+    }
+
+    private void HandleTargetItemKeyDown(KeyboardEventArgs args, TItem item, int index, int itemCount)
+    {
+        if (Disabled)
+            return;
+
+        _targetActiveIndex = index;
+        switch (args.Key)
+        {
+            case "ArrowDown":
+                SetTargetFocus(Math.Min(index + 1, itemCount - 1));
+                break;
+            case "ArrowUp":
+                SetTargetFocus(Math.Max(index - 1, 0));
+                break;
+            case "Home":
+                SetTargetFocus(0);
+                break;
+            case "End":
+                SetTargetFocus(itemCount - 1);
+                break;
+            case "Enter":
+            case " ":
+            case "Spacebar":
+                ToggleTargetSelection(item, index);
+                break;
+        }
+    }
+
+    private void SetSourceFocus(int index)
+    {
+        _sourceActiveIndex = index;
+        QueueFocus(PendingFocus.SourceOption, index);
+    }
+
+    private void SetTargetFocus(int index)
+    {
+        _targetActiveIndex = index;
+        QueueFocus(PendingFocus.TargetOption, index);
     }
 
     private async Task MoveToTarget()
     {
+        if (Disabled)
+            return;
+
         var selectedItems = SourceItems.Where(item => _selectedSource.Contains(item)).ToList();
         if (selectedItems.Count == 0)
             return;
 
-        foreach (var item in selectedItems)
-        {
-            SourceItems.Remove(item);
-            TargetItems.Add(item);
-        }
-
+        MoveItems(selectedItems, SourceItems, TargetItems);
         _selectedSource.Clear();
-        await SourceItemsChanged.InvokeAsync(SourceItems);
-        await TargetItemsChanged.InvokeAsync(TargetItems);
+        PrepareFocusAfterMove(selectedItems[0], toTarget: true);
+        SetStatusMessage(selectedItems.Count, TargetTitle);
+        await NotifyCollectionsChanged();
     }
 
     private async Task MoveToSource()
     {
+        if (Disabled)
+            return;
+
         var selectedItems = TargetItems.Where(item => _selectedTarget.Contains(item)).ToList();
         if (selectedItems.Count == 0)
             return;
 
-        foreach (var item in selectedItems)
-        {
-            TargetItems.Remove(item);
-            SourceItems.Add(item);
-        }
-
+        MoveItems(selectedItems, TargetItems, SourceItems);
         _selectedTarget.Clear();
-        await SourceItemsChanged.InvokeAsync(SourceItems);
-        await TargetItemsChanged.InvokeAsync(TargetItems);
+        PrepareFocusAfterMove(selectedItems[0], toTarget: false);
+        SetStatusMessage(selectedItems.Count, SourceTitle);
+        await NotifyCollectionsChanged();
     }
 
     private async Task MoveAllToTarget()
     {
-        if (!SourceItems.Any())
+        if (Disabled || SourceItems.Count == 0)
             return;
 
-        TargetItems.AddRange(SourceItems);
-        SourceItems.Clear();
+        var movedItems = SourceItems.ToList();
+        MoveItems(movedItems, SourceItems, TargetItems);
         _selectedSource.Clear();
-        await SourceItemsChanged.InvokeAsync(SourceItems);
-        await TargetItemsChanged.InvokeAsync(TargetItems);
+        PrepareFocusAfterMove(movedItems[0], toTarget: true);
+        SetStatusMessage(movedItems.Count, TargetTitle);
+        await NotifyCollectionsChanged();
     }
 
     private async Task MoveAllToSource()
     {
-        if (!TargetItems.Any())
+        if (Disabled || TargetItems.Count == 0)
             return;
 
-        SourceItems.AddRange(TargetItems);
-        TargetItems.Clear();
+        var movedItems = TargetItems.ToList();
+        MoveItems(movedItems, TargetItems, SourceItems);
         _selectedTarget.Clear();
+        PrepareFocusAfterMove(movedItems[0], toTarget: false);
+        SetStatusMessage(movedItems.Count, SourceTitle);
+        await NotifyCollectionsChanged();
+    }
+
+    private static void MoveItems(IEnumerable<TItem> items, List<TItem> source, List<TItem> target)
+    {
+        foreach (var item in items)
+        {
+            source.Remove(item);
+            target.Add(item);
+        }
+    }
+
+    private async Task NotifyCollectionsChanged()
+    {
         await SourceItemsChanged.InvokeAsync(SourceItems);
         await TargetItemsChanged.InvokeAsync(TargetItems);
+    }
+
+    private void PrepareFocusAfterMove(TItem firstMovedItem, bool toTarget)
+    {
+        var destinationItems = toTarget ? GetFilteredTargetItems() : GetFilteredSourceItems();
+        var destinationIndex = destinationItems.FindIndex(item => EqualityComparer<TItem>.Default.Equals(item, firstMovedItem));
+
+        if (toTarget)
+        {
+            _sourceActiveIndex = NormalizeActiveIndex(_sourceActiveIndex, GetFilteredSourceItems().Count);
+            _targetActiveIndex = NormalizeActiveIndex(destinationIndex, destinationItems.Count);
+            QueueFocus(
+                destinationIndex >= 0 ? PendingFocus.TargetOption : PendingFocus.TargetSearch,
+                destinationIndex);
+        }
+        else
+        {
+            _targetActiveIndex = NormalizeActiveIndex(_targetActiveIndex, GetFilteredTargetItems().Count);
+            _sourceActiveIndex = NormalizeActiveIndex(destinationIndex, destinationItems.Count);
+            QueueFocus(
+                destinationIndex >= 0 ? PendingFocus.SourceOption : PendingFocus.SourceSearch,
+                destinationIndex);
+        }
+    }
+
+    private void SetStatusMessage(int movedCount, string destinationTitle)
+    {
+        _statusMessage = $"Moved {movedCount} {(movedCount == 1 ? "item" : "items")} to {destinationTitle}.";
+    }
+
+    private void PrepareOptionState(int sourceCount, int targetCount)
+    {
+        if (_sourceOptionReferences.Length != sourceCount)
+            _sourceOptionReferences = new ElementReference[sourceCount];
+        if (_targetOptionReferences.Length != targetCount)
+            _targetOptionReferences = new ElementReference[targetCount];
+
+        _sourceActiveIndex = NormalizeActiveIndex(_sourceActiveIndex, sourceCount);
+        _targetActiveIndex = NormalizeActiveIndex(_targetActiveIndex, targetCount);
+    }
+
+    private void QueueFocus(PendingFocus focus, int index)
+    {
+        _pendingFocus = focus;
+        _pendingFocusIndex = index;
     }
 
     private void PruneSelections()
     {
         _selectedSource.RemoveWhere(item => !SourceItems.Contains(item));
         _selectedTarget.RemoveWhere(item => !TargetItems.Contains(item));
+    }
+
+    private string GetSourceOptionId(int index) => $"{_sourceListId}-option-{index}";
+
+    private string GetTargetOptionId(int index) => $"{_targetListId}-option-{index}";
+
+    private string GetOptionClass(bool isSelected) => CombineClasses("transfer-item", isSelected ? "selected" : null);
+
+    private int GetOptionTabIndex(int activeIndex, int optionIndex)
+        => !Disabled && activeIndex == optionIndex ? 0 : -1;
+
+    private static int NormalizeActiveIndex(int activeIndex, int count)
+        => count == 0 ? -1 : Math.Clamp(activeIndex, 0, count - 1);
+
+    private static bool IsValidReferenceIndex(ElementReference[] references, int index)
+        => index >= 0 && index < references.Length;
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
+
+    private enum PendingFocus
+    {
+        None,
+        SourceOption,
+        TargetOption,
+        SourceSearch,
+        TargetSearch
     }
 }

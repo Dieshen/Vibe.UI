@@ -2,7 +2,7 @@
    IMAGE CROPPER COMPONENT
    ======================================== */
 
-:global(.vibe-image-cropper) {
+.vibe-image-cropper {
     display: block;
     border: 1px solid var(--vibe-border);
     border-radius: var(--vibe-radius, 0.5rem);
@@ -20,14 +20,7 @@
     position: relative;
     min-height: 18rem;
     overflow: hidden;
-    background:
-        linear-gradient(45deg, color-mix(in srgb, var(--vibe-muted) 70%, transparent) 25%, transparent 25%),
-        linear-gradient(-45deg, color-mix(in srgb, var(--vibe-muted) 70%, transparent) 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, color-mix(in srgb, var(--vibe-muted) 70%, transparent) 75%),
-        linear-gradient(-45deg, transparent 75%, color-mix(in srgb, var(--vibe-muted) 70%, transparent) 75%);
-    background-color: var(--vibe-background);
-    background-position: 0 0, 0 0.5rem, 0.5rem -0.5rem, -0.5rem 0;
-    background-size: 1rem 1rem;
+    background: var(--vibe-muted);
     border-radius: calc(var(--vibe-radius, 0.5rem) - 0.125rem);
 }
 
@@ -41,19 +34,14 @@
     user-select: none;
 }
 
-.crop-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgb(0 0 0 / 42%);
-    pointer-events: none;
-}
-
 .crop-box {
     position: absolute;
     z-index: 1;
     box-sizing: border-box;
     cursor: move;
     outline: none;
+    touch-action: none;
+    user-select: none;
 }
 
 .crop-box:focus-visible {
@@ -110,8 +98,8 @@
 
 .crop-handle {
     position: absolute;
-    width: 0.75rem;
-    height: 0.75rem;
+    width: 0.875rem;
+    height: 0.875rem;
     background: var(--vibe-primary);
     border: 2px solid var(--vibe-background);
     border-radius: 999px;
@@ -121,36 +109,48 @@
 .crop-handle-nw,
 .crop-handle-n,
 .crop-handle-ne {
-    top: -0.375rem;
+    top: -0.4375rem;
 }
 
 .crop-handle-sw,
 .crop-handle-s,
 .crop-handle-se {
-    bottom: -0.375rem;
+    bottom: -0.4375rem;
 }
 
 .crop-handle-nw,
 .crop-handle-w,
 .crop-handle-sw {
-    left: -0.375rem;
+    left: -0.4375rem;
 }
 
 .crop-handle-ne,
 .crop-handle-e,
 .crop-handle-se {
-    right: -0.375rem;
+    right: -0.4375rem;
 }
 
 .crop-handle-n,
 .crop-handle-s {
-    left: calc(50% - 0.375rem);
+    left: calc(50% - 0.4375rem);
 }
 
 .crop-handle-w,
 .crop-handle-e {
-    top: calc(50% - 0.375rem);
+    top: calc(50% - 0.4375rem);
 }
+
+.crop-handle-nw,
+.crop-handle-se { cursor: nwse-resize; }
+
+.crop-handle-ne,
+.crop-handle-sw { cursor: nesw-resize; }
+
+.crop-handle-n,
+.crop-handle-s { cursor: ns-resize; }
+
+.crop-handle-w,
+.crop-handle-e { cursor: ew-resize; }
 
 .cropper-controls {
     display: flex;
@@ -179,8 +179,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 2rem;
-    height: 2rem;
+    min-width: 2.25rem;
+    height: 2.25rem;
     padding: 0 0.625rem;
     border: 1px solid var(--vibe-border);
     border-radius: calc(var(--vibe-radius, 0.5rem) - 0.1875rem);
@@ -258,13 +258,13 @@
     border: 0;
 }
 
-:global(.vibe-image-cropper-disabled),
-:global(.vibe-image-cropper-readonly) {
+.vibe-image-cropper-disabled,
+.vibe-image-cropper-readonly {
     opacity: 0.68;
 }
 
-:global(.vibe-image-cropper-disabled) .crop-box,
-:global(.vibe-image-cropper-readonly) .crop-box {
+.vibe-image-cropper-disabled .crop-box,
+.vibe-image-cropper-readonly .crop-box {
     cursor: default;
 }
 
@@ -279,6 +279,11 @@
 
     .control-group {
         flex-wrap: wrap;
+    }
+
+    .control-btn {
+        min-width: 2.5rem;
+        height: 2.5rem;
     }
 
     .zoom-slider {

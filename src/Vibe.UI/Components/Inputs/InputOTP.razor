@@ -6,10 +6,10 @@
     @for (int i = 0; i < _length; i++)
     {
         var index = i;
-        <input @key="index" type="@InputType" @ref="_inputs[index]" class="@GetSlotClass(index)" maxlength="1"
+        <input @key="index" type="@InputType" @ref="_inputs[index]" class="@GetSlotClass(index)" maxlength="@GetMaxLength(index)"
             value="@GetCharAt(index)" @oninput="@(e => HandleInput(index, e))"
             @onkeydown="@(e => HandleKeyDown(index, e))" disabled="@Disabled" readonly="@ReadOnly"
-            inputmode="@InputMode" autocomplete="one-time-code" aria-label="@GetSlotAriaLabel(index)" />
+            inputmode="@InputMode" autocomplete="@GetAutocomplete(index)" aria-label="@GetSlotAriaLabel(index)" />
 
         @if (ShouldRenderSeparator(index))
         {
@@ -114,6 +114,10 @@
         var label = Pattern == OTPPattern.Numeric ? "Digit" : "Character";
         return $"{label} {index + 1} of {_length}";
     }
+
+    private int GetMaxLength(int index) => Math.Max(1, _length - index);
+
+    private static string GetAutocomplete(int index) => index == 0 ? "one-time-code" : "off";
 
     private bool ShouldRenderSeparator(int index)
     {

@@ -63,15 +63,16 @@ public class ColorPickerTests : TestBase
     }
 
     [Fact]
-    public void ColorPicker_Trigger_ReflectsOpenState_ForClickAndKeyboard()
+    public void ColorPicker_Trigger_UsesNativeButtonSemantics_AndReflectsOpenState()
     {
         // Arrange
         var cut = Render<ColorPicker>();
         var trigger = cut.Find(".vibe-color-picker-preview");
 
         // Assert
-        trigger.GetAttribute("role").ShouldBe("button");
-        trigger.GetAttribute("tabindex").ShouldBe("0");
+        trigger.TagName.ShouldBe("BUTTON");
+        trigger.HasAttribute("role").ShouldBeFalse();
+        trigger.HasAttribute("tabindex").ShouldBeFalse();
         trigger.GetAttribute("aria-haspopup").ShouldBe("dialog");
         trigger.GetAttribute("aria-expanded").ShouldBe("false");
 
@@ -86,18 +87,12 @@ public class ColorPickerTests : TestBase
         cut.Find($"#{controls}").GetAttribute("role").ShouldBe("dialog");
 
         // Act
-        trigger.KeyDown("Escape");
+        cut.Find(".vibe-color-picker-popover").KeyDown("Escape");
 
         // Assert
         trigger = cut.Find(".vibe-color-picker-preview");
         trigger.GetAttribute("aria-expanded").ShouldBe("false");
 
-        // Act
-        trigger.KeyDown("Enter");
-
-        // Assert
-        trigger = cut.Find(".vibe-color-picker-preview");
-        trigger.GetAttribute("aria-expanded").ShouldBe("true");
     }
 
     [Fact]
@@ -234,6 +229,34 @@ public class ColorPickerTests : TestBase
     }
 
     [Fact]
+    public void ColorPicker_RgbInputsUpdateTheCorrectChannel()
+    {
+        string? changedValue = null;
+        var cut = Render<ColorPicker>(parameters => parameters
+            .Add(p => p.Value, "#112233")
+            .Add(p => p.ValueChanged, value => changedValue = value));
+
+        cut.Find(".vibe-color-picker-preview").Click();
+        var redInputId = cut.FindAll("label").Single(label => label.TextContent == "R").GetAttribute("for");
+        cut.Find($"#{redInputId}").Input("255");
+
+        changedValue.ShouldBe("#FF2233");
+    }
+
+    [Fact]
+    public void ColorPicker_RendersKeyboardAccessibleSaturationAndLightnessControls()
+    {
+        var cut = Render<ColorPicker>();
+
+        cut.Find(".vibe-color-picker-preview").Click();
+
+        var saturationLabel = cut.FindAll("label").Single(label => label.TextContent == "S");
+        var lightnessLabel = cut.FindAll("label").Single(label => label.TextContent == "L");
+        cut.Find($"#{saturationLabel.GetAttribute("for")}").GetAttribute("type").ShouldBe("range");
+        cut.Find($"#{lightnessLabel.GetAttribute("for")}").GetAttribute("type").ShouldBe("range");
+    }
+
+    [Fact]
     public void ColorPicker_Applies_DisabledState()
     {
         // Act
@@ -242,6 +265,7 @@ public class ColorPickerTests : TestBase
 
         // Assert
         cut.Find(".vibe-color-picker").ClassList.ShouldContain("vibe-color-picker-disabled");
+        cut.Find("button.vibe-color-picker-preview").HasAttribute("disabled").ShouldBeTrue();
     }
 
     [Fact]

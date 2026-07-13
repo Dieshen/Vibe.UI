@@ -10,19 +10,19 @@
             <div class="toolbar-group" role="group" aria-label="Text formatting">
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("bold"))"
                     title="Bold" aria-label="Bold" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    <strong>B</strong>
+                    <Icon Name="bold" Size="16" />
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("italic"))"
                     title="Italic" aria-label="Italic" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    <em>I</em>
+                    <Icon Name="italic" Size="16" />
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("underline"))"
                     title="Underline" aria-label="Underline" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    <u>U</u>
+                    <Icon Name="underline" Size="16" />
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("strikeThrough"))"
                     title="Strikethrough" aria-label="Strikethrough" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    <s>S</s>
+                    <Icon Name="strikethrough" Size="16" />
                 </button>
             </div>
 
@@ -31,15 +31,15 @@
             <div class="toolbar-group" role="group" aria-label="Block formatting">
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("formatBlock", "h1"))"
                     title="Heading 1" aria-label="Heading 1" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    H1
+                    <Icon Name="heading-1" Size="16" />
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("formatBlock", "h2"))"
                     title="Heading 2" aria-label="Heading 2" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    H2
+                    <Icon Name="heading-2" Size="16" />
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("formatBlock", "p"))"
                     title="Paragraph" aria-label="Paragraph" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    P
+                    <Icon Name="pilcrow" Size="16" />
                 </button>
             </div>
 
@@ -48,11 +48,11 @@
             <div class="toolbar-group" role="group" aria-label="Lists">
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("insertUnorderedList"))"
                     title="Bullet list" aria-label="Bullet list" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    UL
+                    <Icon Name="list" Size="16" />
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("insertOrderedList"))"
                     title="Numbered list" aria-label="Numbered list" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    OL
+                    <Icon Name="list-ordered" Size="16" />
                 </button>
             </div>
 
@@ -61,15 +61,15 @@
             <div class="toolbar-group" role="group" aria-label="Alignment">
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("justifyLeft"))"
                     title="Align left" aria-label="Align left" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    L
+                    <Icon Name="align-left" Size="16" />
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("justifyCenter"))"
                     title="Align center" aria-label="Align center" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    C
+                    <Icon Name="align-center" Size="16" />
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("justifyRight"))"
                     title="Align right" aria-label="Align right" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    R
+                    <Icon Name="align-right" Size="16" />
                 </button>
             </div>
 
@@ -79,7 +79,7 @@
                 <div class="toolbar-group" role="group" aria-label="Links">
                     <button type="button" class="toolbar-button" @onclick="InsertLink"
                         title="Insert link" aria-label="Insert link" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                        Link
+                        <Icon Name="link" Size="16" />
                     </button>
                 </div>
             }
@@ -90,7 +90,7 @@
                 <div class="toolbar-group" role="group" aria-label="Images">
                     <button type="button" class="toolbar-button" @onclick="InsertImage"
                         title="Insert image" aria-label="Insert image" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                        Img
+                        <Icon Name="image" Size="16" />
                     </button>
                 </div>
             }
