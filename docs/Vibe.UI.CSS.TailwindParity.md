@@ -11,17 +11,18 @@ Command:
 `dotnet run --project src/Vibe.UI.CSS/Vibe.UI.CSS.csproj -- scan "samples/Vibe.UI.Docs" --patterns "*.razor,*.cshtml,*.html,*.cs"`
 
 Latest output (summary):
-- Total classes found: `513`
-- Recognized: `378`
-- Unknown: `135`
+- Total classes found: `408`
+- Recognized: `405`
+- Unknown: `3`
 
-The first unknown classes include legacy Bootstrap/nav-template classes (e.g. `navbar`, `nav-item`, `bi-*`) plus some docs-only helpers.
+The remaining names (`vibe-theme`, `vibe-my-app-theme`, and
+`vibe-theme-toggle`) are intentional component/theme hooks, not utility classes.
 
 ## Phase 0 — Ship the “Docs Experience” (Immediate ROI)
 
 ### Navigation + layout
-- [ ] Remove/replace legacy `NavMenu.razor`/Bootstrap classes in docs if still present.
-- [ ] Ensure all docs pages are centered + readable with only utilities and minimal docs CSS.
+- [x] Remove/replace legacy `NavMenu.razor`/Bootstrap classes in docs.
+- [x] Ensure docs pages are centered and readable with utilities plus scoped docs CSS.
 
 ### Typography (“Tailwind typography plugin” equivalent)
 - [x] `vibe-prose` (multi-rule) + `dark:vibe-prose-invert` (minimal but usable)
@@ -115,7 +116,7 @@ The first unknown classes include legacy Bootstrap/nav-template classes (e.g. `n
 
 - [ ] Arbitrary value support for most utilities (`bg-[...]`, `shadow-[...]`, etc.)
 - [ ] Better Razor scanning for:
-  - [ ] `class=@(...)` expressions
+  - [x] utility strings in Razor markup, C# expressions, and `@code` blocks
   - [ ] interpolated strings / conditional concatenations
   - [ ] `@attributes` patterns (where class is provided indirectly)
 
@@ -124,7 +125,7 @@ The first unknown classes include legacy Bootstrap/nav-template classes (e.g. `n
 - [ ] `--watch` mode (incremental scan + regenerate)
 - [ ] Caching (skip regenerate when no class set changes)
 - [ ] `--fail-on-unknown` (optional strict mode)
-- [ ] Stable output ordering and formatting guarantees
+- [x] Stable output ordering and formatting guarantees
 - [ ] `--report json` (recognized/unknown lists for CI dashboards)
 - [ ] First-class docs: supported utilities + variants + examples
 

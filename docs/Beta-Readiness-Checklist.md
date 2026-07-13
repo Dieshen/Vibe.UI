@@ -2,7 +2,8 @@
 
 This checklist targets the `1.0.0-beta` release line. Beta means Vibe.UI is ready for broader dogfooding across the supported hosting models, with known limitations still documented before stable 1.0.
 
-- **Status:** Passed and merged to `main` in commit `5ea53d9` on July 10, 2026.
+- **Baseline release gate:** Passed and merged to `main` in commit `5ea53d9` on July 10, 2026.
+- **Current hardening:** The `codex/visual-system-hardening` branch adds enforceable accessibility, functional, and reviewed visual-regression gates before the beta package is cut.
 - **Final pull request:** [#5 - Harden Vibe.UI for beta](https://github.com/Narcoleptic-Fox/Vibe.UI/pull/5)
 
 ## Release Metadata
@@ -45,6 +46,8 @@ This checklist targets the `1.0.0-beta` release line. Beta means Vibe.UI is read
 - [x] Local package validation creates a fresh hosted Web App with the packed CLI, configures `--with-css` on the server, and builds the init-only project twice with warnings as errors.
 - [x] CI runs the docs `Category=Integration` browser tests under Chromium.
 - [x] CI runs the docs `Category=Smoke` browser tests under Chromium.
+- [x] CI runs the complete docs `Category=Functional` browser suite under Chromium, including Axe serious/critical checks and keyboard/focus contracts.
+- [x] CI compares 24 reviewed Chromium/Windows visual baselines across six flagship surfaces, light/dark themes, and desktop/mobile viewports.
 - [x] CI installs Playwright Chromium, Firefox, and WebKit and runs `Category=Compatibility` browser tests in all three browsers.
 - [x] Docs app browser runtime uses committed local Chart.js and Shiki assets instead of browser-time CDN imports.
 - [x] NuGet publish workflow runs the all-browser compatibility tests before packing and pushing packages.
@@ -55,6 +58,8 @@ This checklist targets the `1.0.0-beta` release line. Beta means Vibe.UI is read
 - [x] NuGet publish workflow validates TypeScript source/tests and committed generated JavaScript before packaging.
 - [x] NuGet publish workflow runs the docs `Category=Integration` browser tests under Chromium before packaging.
 - [x] NuGet publish workflow runs the docs `Category=Smoke` browser tests under Chromium before packaging.
+- [x] NuGet publish workflow runs the docs `Category=Functional` browser suite under Chromium before packaging.
+- [x] NuGet publish workflow requires the reviewed Chromium/Windows visual-regression job before publishing.
 
 ## Validation Commands
 
@@ -76,6 +81,8 @@ dotnet test tests/Vibe.UI.CLI.Tests/Vibe.UI.CLI.Tests.csproj --configuration Rel
 pwsh tests/Vibe.UI.Docs.E2E/bin/Release/net10.0/playwright.ps1 install chromium firefox webkit
 BROWSER=chromium dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Integration -- RunConfiguration.TestSessionTimeout=300000
 BROWSER=chromium dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Smoke -- RunConfiguration.TestSessionTimeout=600000
+BROWSER=chromium dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Functional -- RunConfiguration.TestSessionTimeout=1200000
+BROWSER=chromium dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Visual -- RunConfiguration.TestSessionTimeout=1200000
 BROWSER=chromium dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Compatibility -- RunConfiguration.TestSessionTimeout=180000
 BROWSER=firefox dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Compatibility -- RunConfiguration.TestSessionTimeout=180000
 BROWSER=webkit dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Compatibility -- RunConfiguration.TestSessionTimeout=180000
@@ -103,8 +110,11 @@ Remove-Item Env:BROWSER
 
 ## Known Beta Debt
 
-- [ ] The docs E2E functional/mobile/accessibility suites beyond `Category=Compatibility`, `Category=Integration`, and `Category=Smoke` should be reviewed separately before stable 1.0.
+- [x] The complete docs functional suite is enforced in CI, including mobile layout contracts, Axe serious/critical scans, keyboard behavior, focus trapping, and focus restoration.
+- [x] Reviewed visual baselines cover Button, FormField, DataTable, KanbanBoard, Sidebar, and an open AlertDialog in light/dark desktop/mobile states.
 - [x] Direct component unit coverage covers 110 of 110 source components.
+- [ ] Manual screen-reader, 200% zoom/reflow, and forced-colors passes remain required before claiming formal WCAG conformance.
+- [ ] Visual baselines currently target Chromium on Windows; expand browser/platform coverage when rendering stability justifies maintaining additional baseline sets.
 - [ ] Docs Shiki browser behavior still has skipped Vitest blocks; the Chromium integration E2E suite is the current browser-level coverage.
-- [ ] Committed generated CSS still includes a timestamp header; remove or stabilize it before stable 1.0 to avoid recurring noisy diffs.
+- [x] Generated CSS output is deterministic and no longer introduces timestamp-only diffs.
 - [ ] Publish workflow still depends on `NUGET_API_KEY` for non-dry-run publishing; trusted publishing can be considered before stable 1.0.

@@ -16,6 +16,7 @@ implementation disagree.
 ## Guides
 
 - [Accessibility](ACCESSIBILITY.md) - semantics, focus, keyboard, validation, and live-region patterns
+- [Visual regression](VISUAL-REGRESSION.md) - reviewed screenshot scope, comparison policy, and update workflow
 - [Charts](CHARTS.md) - Chart.js setup and the Chart component API
 - [Theming](THEMING.md) - tokens, light and dark themes, and customization
 - [CSS setup](CSS-SETUP.md) - stylesheet loading and troubleshooting
@@ -54,4 +55,3 @@ complete.
 4. Link to source and tests instead of copying implementation details that will drift.
 5. Mark historical release material clearly and link it to the release that superseded it.
 6. Update this index when adding or removing a document.
-

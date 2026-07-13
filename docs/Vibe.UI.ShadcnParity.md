@@ -33,7 +33,7 @@ In this context:
 ### What we already have (today)
 
 - Theming model: CSS variables (`--vibe-*`) + `.dark` class toggling (shadcn-like).
-  - Source: `src/Vibe.UI.CSS/Data/vibe-base.css` (tokens + reset) and component styles using `var(--vibe-*)`.
+  - Source: `src/Vibe.UI/wwwroot/css/vibe-base.css` (tokens + reset) and component styles using `var(--vibe-*)`.
   - Runtime toggling: `src/Vibe.UI/wwwroot/js/vibe-theme.js` + `ThemeToggle`/`ThemeProvider` components.
 - Styling approach: components ship with `.razor.css` and are designed to work with tokens out of the box.
 - Component class/attrs model: common `Class` + `AdditionalAttributes` pattern via `src/Vibe.UI/Base/VibeComponent.cs` (`VibeComponent`).
@@ -71,45 +71,46 @@ In this context:
 ## Phase 1 — Core shadcn/ui Primitives (Highest adoption)
 
 ### Buttons and inputs (polish + completeness)
-- [ ] `Button` parity: icon buttons, loading state, as-child/link behavior, focus-ring consistency
-- [ ] `Input` parity: `disabled/invalid`, prefix/suffix slots, consistent heights with Select/TextArea
-- [ ] `Textarea` parity: resize rules, consistent spacing and error state
-- [ ] `Select` parity: keyboard nav, searchable select (if desired), consistent item spacing
-- [ ] `Checkbox`/`Radio` parity: hit target sizing, label alignment, indeterminate
-- [ ] `Switch` parity: animations, disabled/checked styles
+- [x] `Button` hardening: icon buttons, loading state, link behavior, and focus-ring consistency
+- [x] `Input` hardening: disabled/invalid states, prefix/suffix slots, and consistent control heights
+- [x] `Textarea` hardening: resize rules, consistent spacing, and error state
+- [x] `Select` hardening: keyboard behavior and consistent item spacing
+- [x] `Checkbox`/`Radio` hardening: hit targets, label alignment, and indeterminate state
+- [x] `Switch` hardening: animations and disabled/checked styles
 
 ### Overlay primitives (composition model)
-- [ ] `Dialog`/`AlertDialog` parity: focus trap, scroll lock, escape handling, aria labeling
-- [ ] `Popover` parity: collision handling, focus behavior
-- [ ] `Tooltip` parity: delay, hover/focus behavior, portal positioning
-- [ ] `DropdownMenu`/`ContextMenu` parity: keyboard nav, submenus, typeahead
+- [x] `Dialog`/`AlertDialog` hardening: focus trap, scroll lock, escape handling, and ARIA labeling
+- [x] `Popover` hardening: collision handling and focus behavior
+- [x] `Tooltip` hardening: delay, hover/focus behavior, and positioning
+- [x] `DropdownMenu`/`ContextMenu` hardening: keyboard navigation, submenus, and typeahead
 
 ### Navigation primitives
-- [ ] `Tabs` parity: keyboard nav, disabled tabs, vertical orientation
-- [ ] `Breadcrumb` parity: separators, truncation
-- [ ] `Pagination` parity: a11y labels + responsive collapse
-- [ ] `NavigationMenu` parity: hover intent, focus management
+- [x] `Tabs` hardening: keyboard navigation, disabled tabs, and vertical orientation
+- [x] `Breadcrumb` hardening: separators and truncation
+- [x] `Pagination` hardening: accessible labels and responsive behavior
+- [x] `NavigationMenu` hardening: hover intent and focus management
 
 ## Phase 2 — shadcn/ui “Patterns” Components (Docs site feel)
 
 These are often what makes a shadcn site feel like a shadcn site.
 
-- [ ] `Command` (command palette) parity: filtering, groups, shortcuts, empty state, accessibility
-- [ ] `DataTable` parity: sorting, filtering, pagination, selection (if you want TanStack‑like features)
-- [ ] `Toast/Sonner` parity: stacking behavior, swipe to dismiss, variants
-- [ ] `Accordion/Collapsible` parity: keyboard behavior and aria
-- [ ] `Carousel` parity: touch, snap, buttons, dots
-- [ ] `Sheet/Drawer` parity: placement variants, focus/scroll
+- [x] `Command` hardening: filtering, groups, shortcuts, empty state, and accessibility
+- [x] `DataTable` hardening: sorting, filtering, pagination, and selection
+- [x] `Toast/Sonner` hardening: stacking behavior, dismissal, and variants
+- [x] `Accordion/Collapsible` hardening: keyboard behavior and ARIA
+- [x] `Carousel` hardening: touch, snap, buttons, and dots
+- [x] `Sheet/Drawer` hardening: placement variants, focus, and scrolling
 
 ## Phase 3 — Theming + Styling Model (Vibe.UI ↔ Vibe.UI.CSS contract)
 
-- [ ] Define the contract between Vibe.UI and Vibe.UI.CSS:
+- [x] Define the contract between Vibe.UI and Vibe.UI.CSS:
   - Vibe.UI uses semantic tokens (`--vibe-*`) and/or `vibe-*` utilities
   - minimal bespoke component CSS where possible
-- [ ] Ensure every component has:
-  - consistent `dark` support
-  - consistent focus rings
-  - consistent disabled/readonly states
+- [x] Apply the shared hardening contract across all components:
+  - dark-theme styles
+  - visible focus treatment
+  - disabled/readonly behavior where applicable
+- [ ] Complete reviewed light/dark visual coverage for all 110 components
 - [ ] Add a “headless mode” guideline (optional): allow consumers to fully override classes
 
 ## Phase 4 — Copy/Paste Workflow (shadcn CLI parity)
@@ -117,7 +118,7 @@ These are often what makes a shadcn site feel like a shadcn site.
 shadcn/ui parity is as much workflow as it is visuals.
 
 - [ ] CLI parity:
-  - [ ] `vibe add <component>` supports dependencies graph (adds required peers)
+  - [x] `vibe add <component>` supports dependencies graph (adds required peers)
   - [ ] `vibe diff` and `vibe update` (optional but huge DX win)
   - [ ] component registry metadata (name, deps, files, docs links)
 - [ ] Provide canonical “recipes” (patterns):
@@ -127,14 +128,14 @@ shadcn/ui parity is as much workflow as it is visuals.
 
 ## Phase 5 — Quality Bar (What makes it “shadcn quality”)
 
-- [ ] Accessibility conformance tests for key components (keyboard + aria)
-- [ ] Visual regression screenshots for docs (light/dark)
+- [x] Automated accessibility tests for key components (Axe serious/critical, keyboard, focus, and ARIA); manual WCAG evaluation remains separate
+- [x] Reviewed Chromium/Windows visual regression screenshots for six flagship surfaces in light/dark desktop/mobile states
 - [ ] Performance checks for heavy components (DataTable, VirtualScroll, Chart)
 - [ ] API consistency review (naming: `Variant`, `Size`, `Class`, slots)
 
 ## Suggested Next Steps
 
-1) Pick 10 “flagship” components to perfect first (the ones used on the docs landing + component pages).
-2) Add visual regression screenshots to CI for those pages (home/components/button/input + overlays).
-3) Iterate tokens + focus/disabled states until the suite looks consistently “shadcn”.
+1. Add performance budgets for `DataTable`, `VirtualScroll`, and `Chart`.
+2. Complete the public API naming and composition review across all 110 components.
+3. Expand reviewed visual coverage beyond the six highest-risk surfaces and add manual screen-reader, zoom, and forced-colors release evidence.
 

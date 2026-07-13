@@ -167,10 +167,17 @@ Run docs browser coverage after building the solution and installing Playwright:
 
 ```bash
 BROWSER=chromium dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj \
-  --configuration Release --no-build --filter Category=Smoke
+  --configuration Release --no-build --filter Category=Accessibility
 ```
 
+The browser accessibility suite runs Axe against six flagship component pages
+in light and dark themes, scans the open AlertDialog state, and directly checks
+focus trapping/restoration, programmatic labels, roving tab focus, alert
+semantics, and mobile viewport fit. Serious or critical Axe violations fail the
+build. This remains an automated baseline rather than formal WCAG certification.
+
 Hosting-specific browser coverage is documented in [Compatibility](Compatibility.md).
+Screenshot comparison and baseline-update policy are documented in
+[Visual regression](VISUAL-REGRESSION.md).
 The component coverage policy is documented in
 [Beta component hardening](Beta-Component-Hardening.md).
-
