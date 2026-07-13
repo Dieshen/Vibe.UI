@@ -1,149 +1,142 @@
-/* ========================================
-   DATATABLE COMPONENT - SCOPED STYLES
-   ======================================== */
-
-/* ========================================
-   BASE CONTAINER
-   ======================================== */
-
 .vibe-datatable {
     display: flex;
     flex-direction: column;
     width: 100%;
-    font-family: var(--vibe-font);
-    background-color: var(--vibe-card);
-    border: 1px solid var(--vibe-border);
-    border-radius: var(--vibe-radius-lg);
+    min-width: 0;
     overflow: hidden;
+    color: var(--vibe-card-foreground);
+    background: var(--vibe-card);
+    border: 1px solid var(--vibe-border);
+    border-radius: var(--vibe-radius-md);
+    box-shadow: var(--vibe-shadow-xs);
 }
-
-/* ========================================
-   TOOLBAR
-   ======================================== */
 
 .datatable-toolbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--vibe-spacing-4);
-    padding: var(--vibe-spacing-4);
+    gap: var(--vibe-spacing-3);
+    padding: var(--vibe-spacing-3);
+    background: var(--vibe-card);
     border-bottom: 1px solid var(--vibe-border);
-    background-color: var(--vibe-card);
 }
-
-/* ========================================
-   SEARCH
-   ======================================== */
 
 .datatable-search {
     position: relative;
     display: flex;
     align-items: center;
-    flex: 1;
-    max-width: 400px;
+    flex: 1 1 16rem;
+    max-width: 24rem;
 }
 
 .search-icon {
     position: absolute;
-    left: 0.75rem;
-    display: flex;
-    align-items: center;
+    left: var(--vibe-spacing-3);
+    display: inline-flex;
     color: var(--vibe-muted-foreground);
     pointer-events: none;
 }
 
-.search-input {
-    width: 100%;
-    padding: 0.5rem 0.75rem 0.5rem 2.5rem;
-    border: 1px solid var(--vibe-border);
-    border-radius: var(--vibe-radius-sm);
-    background-color: var(--vibe-background);
-    color: var(--vibe-foreground);
-    font-family: var(--vibe-font);
-    font-size: 0.875rem;
-    outline: none;
-    transition: var(--vibe-transition);
+.search-icon ::deep .vibe-icon {
+    width: 1rem;
+    height: 1rem;
 }
 
-.search-input:focus {
-    border-color: var(--vibe-ring);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--vibe-ring) 10%, transparent);
+.search-input {
+    width: 100%;
+    min-height: var(--vibe-control-height-md);
+    padding: 0 var(--vibe-spacing-3) 0 2.375rem;
+    color: var(--vibe-foreground);
+    font: inherit;
+    font-size: var(--vibe-font-size-sm);
+    background: var(--vibe-background);
+    border: 1px solid var(--vibe-input);
+    border-radius: var(--vibe-radius-sm);
+    outline: none;
+    transition: var(--vibe-transition-fast);
 }
 
 .search-input::placeholder {
     color: var(--vibe-muted-foreground);
 }
 
-/* ========================================
-   TABLE CONTAINER
-   ======================================== */
+.search-input:hover {
+    border-color: color-mix(in srgb, var(--vibe-input) 60%, var(--vibe-foreground));
+}
+
+.search-input:focus-visible {
+    border-color: var(--vibe-ring);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--vibe-ring) 18%, transparent);
+}
 
 .datatable-container {
     width: 100%;
+    min-width: 0;
     overflow-x: auto;
     overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--vibe-border) transparent;
 }
 
-/* Custom scrollbar for better UX */
+.datatable-container:focus-visible {
+    outline: 2px solid var(--vibe-ring);
+    outline-offset: -2px;
+}
+
 .datatable-container::-webkit-scrollbar {
-    height: 8px;
-}
-
-.datatable-container::-webkit-scrollbar-track {
-    background-color: var(--vibe-muted);
+    height: 0.5rem;
 }
 
 .datatable-container::-webkit-scrollbar-thumb {
-    background-color: var(--vibe-border);
-    border-radius: var(--vibe-radius-sm);
+    background: var(--vibe-border);
+    background-clip: padding-box;
+    border: 0.125rem solid transparent;
+    border-radius: 999px;
 }
-
-.datatable-container::-webkit-scrollbar-thumb:hover {
-    background-color: var(--vibe-muted-foreground);
-}
-
-/* ========================================
-   TABLE
-   ======================================== */
 
 .datatable-table {
     width: 100%;
+    min-width: 40rem;
+    color: var(--vibe-card-foreground);
+    font-size: var(--vibe-font-size-sm);
+    line-height: 1.25rem;
+    background: var(--vibe-card);
     border-collapse: collapse;
-    font-size: 0.875rem;
-    background-color: var(--vibe-card);
 }
 
-/* ========================================
-   TABLE HEADER
-   ======================================== */
-
-.datatable-table thead {
-    background-color: var(--vibe-card);
+.datatable-caption {
+    padding: var(--vibe-spacing-3) var(--vibe-spacing-4);
+    color: var(--vibe-foreground);
+    font-size: var(--vibe-font-size-sm);
+    font-weight: 600;
+    text-align: left;
+    background: var(--vibe-card);
     border-bottom: 1px solid var(--vibe-border);
 }
 
-.datatable-table thead tr {
+.datatable-table thead {
+    background: var(--vibe-muted);
+}
+
+.datatable-table th,
+.datatable-table td {
+    padding: var(--vibe-spacing-3) var(--vibe-spacing-4);
+    text-align: left;
+    vertical-align: middle;
     border-bottom: 1px solid var(--vibe-border);
 }
 
 .datatable-table th {
-    padding: 0.75rem 1rem;
-    text-align: left;
-    font-weight: 600;
-    color: var(--vibe-foreground);
+    height: 3rem;
+    color: var(--vibe-muted-foreground);
+    font-size: var(--vibe-font-size-xs);
+    font-weight: 500;
     white-space: nowrap;
-    background-color: var(--vibe-card);
     user-select: none;
 }
 
 .datatable-table th.sortable {
     padding: 0;
-    cursor: pointer;
-    transition: var(--vibe-transition);
-}
-
-.datatable-table th.sortable:hover {
-    background-color: color-mix(in srgb, var(--vibe-card) 92%, var(--vibe-foreground));
 }
 
 .datatable-header-cell {
@@ -154,392 +147,179 @@
     width: 100%;
 }
 
-.datatable-sort-button {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 0;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    font-weight: inherit;
-    text-align: left;
-    cursor: pointer;
-    outline: none;
-}
-
-:global(.dark) .datatable-toolbar {
-    background-color: var(--vibe-muted);
-}
-
-:global(.dark) .datatable-table thead {
-    background-color: var(--vibe-muted);
-}
-
-:global(.dark) .datatable-table th {
-    background-color: var(--vibe-muted);
-}
-
 .header-label {
     flex: 1;
 }
 
-/* ========================================
-   SORT INDICATORS
-   ======================================== */
-
-.sort-icon {
+.datatable-sort-button {
     display: flex;
     align-items: center;
-    justify-content: center;
-    color: var(--vibe-muted-foreground);
-    opacity: 0.3;
-    transition: var(--vibe-transition);
+    width: 100%;
+    min-height: 3rem;
+    padding: var(--vibe-spacing-3) var(--vibe-spacing-4);
+    color: inherit;
+    font: inherit;
+    font-weight: inherit;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    outline: none;
+    cursor: pointer;
+    transition: var(--vibe-transition-fast);
 }
 
-.datatable-table th.sortable:hover .sort-icon {
-    opacity: 0.6;
+.datatable-sort-button:hover {
+    color: var(--vibe-foreground);
+    background: var(--vibe-accent);
+}
+
+.datatable-sort-button:focus-visible {
+    color: var(--vibe-foreground);
+    box-shadow: inset 0 0 0 2px var(--vibe-ring);
+}
+
+.sort-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    color: var(--vibe-muted-foreground);
+    opacity: 0.45;
+    transition: var(--vibe-transition-fast);
+}
+
+.sort-icon ::deep .vibe-icon {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.datatable-sort-button:hover .sort-icon {
+    opacity: 0.8;
 }
 
 .sort-icon.sort-asc,
 .sort-icon.sort-desc {
+    color: var(--vibe-foreground);
     opacity: 1;
-    color: var(--vibe-primary);
 }
-
-.sort-icon.sort-asc svg {
-    transform: rotate(180deg);
-}
-
-.sort-icon svg {
-    transition: transform 0.2s ease;
-}
-
-/* ========================================
-   TABLE BODY
-   ======================================== */
 
 .datatable-table tbody tr {
-    border-bottom: 1px solid var(--vibe-border);
-    transition: var(--vibe-transition);
-}
-
-.datatable-table tbody tr:last-child {
-    border-bottom: none;
+    transition: background-color 150ms var(--vibe-ease-standard);
 }
 
 .datatable-table tbody tr:hover {
-    background-color: var(--vibe-muted);
+    background: var(--vibe-muted);
 }
 
-.datatable-table td {
-    padding: 0.875rem 1rem;
-    color: var(--vibe-card-foreground);
-    vertical-align: middle;
+.datatable-table tbody tr:last-child td {
+    border-bottom: 0;
 }
-
-/* ========================================
-   STRIPED ROWS
-   ======================================== */
-
-.vibe-datatable.vibe-datatable-striped tbody tr:nth-child(even) {
-    background-color: color-mix(in srgb, var(--vibe-muted) 30%, transparent);
-}
-
-.vibe-datatable.vibe-datatable-striped tbody tr:nth-child(even):hover {
-    background-color: var(--vibe-muted);
-}
-
-/* ========================================
-   EMPTY STATE
-   ======================================== */
 
 .datatable-empty {
-    padding: 3rem 1rem;
+    height: 7rem;
+    color: var(--vibe-muted-foreground);
     text-align: center;
-    color: var(--vibe-muted-foreground);
-    font-size: 0.875rem;
 }
 
-/* ========================================
-   LOADING STATE
-   ======================================== */
-
-.datatable-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem 1rem;
-    color: var(--vibe-muted-foreground);
+.datatable-status {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    white-space: nowrap;
+    border: 0;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
 }
-
-.datatable-loading-spinner {
-    width: 24px;
-    height: 24px;
-    border: 2px solid var(--vibe-border);
-    border-top-color: var(--vibe-primary);
-    border-radius: 50%;
-    animation: datatable-spin 0.8s linear infinite;
-}
-
-@keyframes datatable-spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* ========================================
-   PAGINATION
-   ======================================== */
 
 .datatable-pagination {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--vibe-spacing-4);
-    padding: var(--vibe-spacing-4);
+    padding: var(--vibe-spacing-3) var(--vibe-spacing-4);
+    background: var(--vibe-card);
     border-top: 1px solid var(--vibe-border);
-    background-color: var(--vibe-muted);
 }
 
 .pagination-info {
-    font-size: 0.875rem;
+    flex: 0 0 auto;
     color: var(--vibe-muted-foreground);
+    font-size: var(--vibe-font-size-sm);
     white-space: nowrap;
 }
 
-/* ========================================
-   PAGE SIZE SELECTOR
-   ======================================== */
-
-.datatable-page-size {
-    display: flex;
-    align-items: center;
-    gap: var(--vibe-spacing-2);
-    font-size: 0.875rem;
-    color: var(--vibe-muted-foreground);
+.vibe-datatable.vibe-datatable-striped tbody tr:nth-child(even) {
+    background: color-mix(in srgb, var(--vibe-muted) 55%, transparent);
 }
 
-.datatable-page-size select {
-    padding: 0.375rem 0.75rem;
-    border: 1px solid var(--vibe-border);
-    border-radius: var(--vibe-radius-sm);
-    background-color: var(--vibe-background);
-    color: var(--vibe-foreground);
-    font-family: var(--vibe-font);
-    font-size: 0.875rem;
-    cursor: pointer;
-    outline: none;
-    transition: var(--vibe-transition);
-}
-
-.datatable-page-size select:hover {
-    border-color: var(--vibe-ring);
-}
-
-.datatable-page-size select:focus {
-    border-color: var(--vibe-ring);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--vibe-ring) 10%, transparent);
-}
-
-/* ========================================
-   SELECTION CHECKBOXES
-   ======================================== */
-
-.datatable-checkbox {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.datatable-table th.datatable-checkbox,
-.datatable-table td.datatable-checkbox {
-    width: 48px;
-    padding: 0.75rem;
-}
-
-.datatable-checkbox input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    border: 1px solid var(--vibe-border);
-    border-radius: var(--vibe-radius-sm);
-    cursor: pointer;
-    accent-color: var(--vibe-primary);
-}
-
-/* ========================================
-   ROW STATES
-   ======================================== */
-
-.datatable-table tbody tr.row-selected {
-    background-color: color-mix(in srgb, var(--vibe-primary) 5%, transparent);
-}
-
-.datatable-table tbody tr.row-selected:hover {
-    background-color: color-mix(in srgb, var(--vibe-primary) 10%, transparent);
-}
-
-.datatable-table tbody tr.row-disabled {
-    opacity: 0.5;
-    pointer-events: none;
-}
-
-.datatable-table tbody tr.row-clickable {
-    cursor: pointer;
-}
-
-:global(.dark) .datatable-table tbody tr:hover {
-    background-color: color-mix(in srgb, var(--vibe-card) 88%, var(--vibe-foreground));
-}
-
-:global(.dark) .datatable-table tbody tr:nth-child(even) {
-    background-color: color-mix(in srgb, var(--vibe-card) 94%, var(--vibe-foreground));
-}
-
-/* ========================================
-   COMPACT VARIANT
-   ======================================== */
-
-.vibe-datatable.vibe-datatable-compact .datatable-toolbar {
-    padding: var(--vibe-spacing-3);
-}
-
-.vibe-datatable.vibe-datatable-compact .datatable-table th {
-    padding: 0.5rem 0.75rem;
-}
-
-.vibe-datatable.vibe-datatable-compact .datatable-table th.sortable {
-    padding: 0;
-}
-
-.vibe-datatable.vibe-datatable-compact .datatable-sort-button {
-    padding: 0.5rem 0.75rem;
-}
-
-.vibe-datatable.vibe-datatable-compact .datatable-table td {
-    padding: 0.5rem 0.75rem;
-}
-
+.vibe-datatable.vibe-datatable-compact .datatable-toolbar,
 .vibe-datatable.vibe-datatable-compact .datatable-pagination {
-    padding: var(--vibe-spacing-3);
+    padding: var(--vibe-spacing-2) var(--vibe-spacing-3);
 }
 
-/* ========================================
-   BORDERLESS VARIANT
-   ======================================== */
+.vibe-datatable.vibe-datatable-compact .datatable-table th,
+.vibe-datatable.vibe-datatable-compact .datatable-table td,
+.vibe-datatable.vibe-datatable-compact .datatable-sort-button {
+    padding: var(--vibe-spacing-2) var(--vibe-spacing-3);
+}
 
 .vibe-datatable.vibe-datatable-borderless {
-    border: none;
+    border: 0;
+    box-shadow: none;
 }
 
-.vibe-datatable.vibe-datatable-borderless .datatable-toolbar {
-    border-bottom: none;
-}
-
-.vibe-datatable.vibe-datatable-borderless .datatable-pagination {
-    border-top: none;
-}
-
-.vibe-datatable.vibe-datatable-borderless .datatable-table tbody tr {
-    border-bottom: none;
-}
-
-/* ========================================
-   RESPONSIVE BEHAVIOR
-   ======================================== */
-
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
     .datatable-toolbar {
         flex-direction: column;
         align-items: stretch;
     }
 
     .datatable-search {
+        flex-basis: auto;
         max-width: none;
     }
 
     .datatable-pagination {
         flex-direction: column;
         align-items: stretch;
-        gap: var(--vibe-spacing-3);
+        padding: var(--vibe-spacing-3);
     }
 
     .pagination-info {
-        text-align: center;
+        text-align: left;
     }
 
-    .datatable-table th,
+    .datatable-pagination ::deep .vibe-pagination {
+        justify-content: flex-start;
+        width: 100%;
+        overflow-x: auto;
+        padding: 0.125rem;
+        scrollbar-width: thin;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .search-input,
     .datatable-sort-button,
-    .datatable-table td {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.8125rem;
-    }
-
-    .datatable-table th.sortable {
-        padding: 0;
+    .sort-icon,
+    .datatable-table tbody tr {
+        transition: none;
     }
 }
-
-@media (max-width: 480px) {
-    .datatable-table {
-        font-size: 0.75rem;
-    }
-
-    .datatable-table th,
-    .datatable-sort-button,
-    .datatable-table td {
-        padding: 0.375rem 0.5rem;
-    }
-
-    .datatable-table th.sortable {
-        padding: 0;
-    }
-
-    .header-label {
-        font-size: 0.75rem;
-    }
-
-    .sort-icon svg {
-        width: 12px;
-        height: 12px;
-    }
-}
-
-/* ========================================
-   FOCUS STYLES (Accessibility)
-   ======================================== */
-
-.datatable-sort-button:focus-visible {
-    outline: 2px solid var(--vibe-ring);
-    outline-offset: -2px;
-}
-
-.search-input:focus-visible {
-    outline: 2px solid var(--vibe-ring);
-    outline-offset: 2px;
-}
-
-.datatable-checkbox input[type="checkbox"]:focus-visible {
-    outline: 2px solid var(--vibe-ring);
-    outline-offset: 2px;
-}
-
-/* ========================================
-   PRINT STYLES
-   ======================================== */
 
 @media print {
     .datatable-toolbar,
-    .datatable-pagination {
+    .datatable-pagination,
+    .datatable-status {
         display: none;
     }
 
-    .vibe-datatable {
-        border: 1px solid black;
+    .datatable-container {
+        overflow: visible;
     }
 
-    .datatable-table tbody tr:hover {
-        background-color: transparent;
+    .datatable-table {
+        min-width: 0;
     }
 }

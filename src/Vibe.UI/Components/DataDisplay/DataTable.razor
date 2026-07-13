@@ -9,9 +9,9 @@
             @if (ShowSearch)
             {
                 <div class="datatable-search">
-                    <div class="search-icon" aria-hidden="true">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-                    </div>
+                    <span class="search-icon" aria-hidden="true">
+                        <Icon Name="search" Size="16" />
+                    </span>
                     <input 
                         type="text" 
                         class="search-input" 
@@ -25,8 +25,16 @@
         </div>
     }
 
-    <div class="datatable-container">
-        <table class="datatable-table">
+    <div class="datatable-container"
+         role="region"
+         tabindex="0"
+         aria-label="@ScrollRegionAriaLabel"
+         aria-describedby="@_statusId">
+        <table class="datatable-table" aria-label="@EffectiveTableAriaLabel">
+            @if (NormalizedCaption is not null)
+            {
+                <caption class="datatable-caption">@NormalizedCaption</caption>
+            }
             <thead>
                 <tr>
                     @foreach (var column in Columns)
@@ -42,7 +50,7 @@
                                     <span class="datatable-header-cell">
                                         <span class="header-label">@column.Title</span>
                                         <span class="sort-icon @GetSortIconClass(column.PropertyName)" aria-hidden="true">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"></path><path d="m7 9 5-5 5 5"></path></svg>
+                                            <Icon Name="@GetSortIconName(column.PropertyName)" Size="14" />
                                         </span>
                                     </span>
                                 </button>
@@ -82,13 +90,17 @@
                 else
                 {
                     <tr>
-                        <td colspan="@Columns.Count" class="datatable-empty">
+                        <td colspan="@Math.Max(1, Columns.Count)" class="datatable-empty">
                             @EmptyMessage
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
+    </div>
+
+    <div id="@_statusId" class="datatable-status" role="status" aria-live="polite" aria-atomic="true">
+        @ResultsStatus
     </div>
 
     @if (ShowPagination)
@@ -100,6 +112,7 @@
             <Pagination 
                 CurrentPage="@CurrentPage"
                 TotalPages="@TotalPages"
+                AriaLabel="@PaginationAriaLabel"
                 PageChanged="OnPageChanged" />
         </div>
     }
@@ -175,6 +188,18 @@
     public string SearchLabel { get; set; } = "Search table";
 
     /// <summary>
+    /// Gets or sets the visible table caption.
+    /// </summary>
+    [Parameter]
+    public string? Caption { get; set; }
+
+    /// <summary>
+    /// Gets or sets the accessible table label used when no caption is provided.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
     /// Gets or sets whether to enable pagination.
     /// </summary>
     [Parameter]
@@ -211,12 +236,22 @@
         get => _searchText;
         set
         {
+            if (string.Equals(_searchText, value, StringComparison.Ordinal))
+            {
+                return;
+            }
+
             _searchText = value;
             CurrentPage = 1;
             FilterItems();
+            ClampCurrentPage();
         }
     }
     private string _searchText = string.Empty;
+
+    private readonly string _statusId = $"vibe-datatable-status-{Guid.NewGuid():N}";
+
+    private int _effectivePageSize = 10;
 
     /// <summary>
     /// The current page number.
@@ -242,45 +277,70 @@
     /// The items currently displayed on the page.
     /// </summary>
     private List<TItem> DisplayItems => ShowPagination
-        ? FilteredItems.Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList()
+        ? FilteredItems.Skip((CurrentPage - 1) * _effectivePageSize).Take(_effectivePageSize).ToList()
         : FilteredItems;
 
     /// <summary>
     /// The total number of pages.
     /// </summary>
-    private int TotalPages => Math.Max(1, (int)Math.Ceiling(FilteredItems.Count / (double)PageSize));
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(FilteredItems.Count / (double)_effectivePageSize));
 
     /// <summary>
     /// The first item number shown in the current page range.
     /// </summary>
     private int PaginationStart => FilteredItems.Count == 0
         ? 0
-        : (CurrentPage - 1) * PageSize + 1;
+        : ShowPagination
+            ? (CurrentPage - 1) * _effectivePageSize + 1
+            : 1;
 
     /// <summary>
     /// The last item number shown in the current page range.
     /// </summary>
     private int PaginationEnd => FilteredItems.Count == 0
         ? 0
-        : Math.Min(CurrentPage * PageSize, FilteredItems.Count);
+        : ShowPagination
+            ? Math.Min(CurrentPage * _effectivePageSize, FilteredItems.Count)
+            : FilteredItems.Count;
 
-    /// <summary>
-    /// Initialize the component.
-    /// </summary>
-    protected override void OnInitialized()
+    private string? NormalizedCaption => NormalizeOptionalText(Caption);
+
+    private string TableAccessibleName => NormalizedCaption
+        ?? NormalizeOptionalText(AriaLabel)
+        ?? "Data table";
+
+    private string? EffectiveTableAriaLabel => NormalizedCaption is null ? TableAccessibleName : null;
+
+    private string ScrollRegionAriaLabel => $"{TableAccessibleName}, scrollable table";
+
+    private string PaginationAriaLabel => $"{TableAccessibleName} pagination";
+
+    private string ResultsStatus
     {
-        base.OnInitialized();
-        FilteredItems = Items;
+        get
+        {
+            var count = FilteredItems.Count;
+            if (count == 0)
+            {
+                return "0 entries.";
+            }
+
+            var entryLabel = count == 1 ? "entry" : "entries";
+            return ShowPagination
+                ? $"{count} {entryLabel}. Showing {PaginationStart} to {PaginationEnd}."
+                : $"{count} {entryLabel}.";
+        }
     }
 
     /// <summary>
-    /// Update filtered items when parameters change.
+    /// Updates normalized paging and filtered items when parameters change.
     /// </summary>
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
+        _effectivePageSize = Math.Max(1, PageSize);
         FilterItems();
-        SortItems();
+        ClampCurrentPage();
     }
 
     /// <summary>
@@ -290,7 +350,7 @@
     {
         if (string.IsNullOrWhiteSpace(SearchText))
         {
-            FilteredItems = Items;
+            FilteredItems = Items.ToList();
         }
         else
         {
@@ -363,6 +423,16 @@
         return SortAscending ? "sort-asc" : "sort-desc";
     }
 
+    private string GetSortIconName(string propertyName)
+    {
+        if (SortProperty != propertyName)
+        {
+            return "chevrons-up-down";
+        }
+
+        return SortAscending ? "chevron-up" : "chevron-down";
+    }
+
     /// <summary>
     /// Gets the aria-sort value for a sortable column.
     /// </summary>
@@ -420,6 +490,14 @@
     /// <param name="page">The new page number.</param>
     private void OnPageChanged(int page)
     {
-        CurrentPage = page;
+        CurrentPage = Math.Clamp(page, 1, TotalPages);
     }
+
+    private void ClampCurrentPage()
+    {
+        CurrentPage = Math.Clamp(CurrentPage, 1, TotalPages);
+    }
+
+    private static string? NormalizeOptionalText(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

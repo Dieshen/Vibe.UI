@@ -1,8 +1,10 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
+@inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
 
 <div @attributes="AdditionalAttributes"
+     @ref="_rootElement"
      class="@CombinedClass"
      aria-hidden="@AriaHiddenValue"
      role="@StatusRole"
@@ -12,16 +14,6 @@
      data-particle-count="@ParticleCountText"
      data-origin="@OriginName"
      data-pattern="@PatternName">
-    @if (_isActive && _particles.Count > 0)
-    {
-        <div class="@ContainerClass" aria-hidden="true">
-            @foreach (var particle in _particles)
-            {
-                <div class="confetti-particle" style="@particle.Style" @key="particle.Id">
-                </div>
-            }
-        </div>
-    }
 </div>
 
 @code {
@@ -40,12 +32,16 @@
         "#85C1E2"
     ];
 
-    private readonly Random _random = new();
-    private readonly List<ConfettiParticle> _particles = new();
     private List<string> _effectiveColors = DefaultColors.ToList();
-    private CancellationTokenSource? _triggerCancellation;
+    private ElementReference _rootElement;
+    private IJSObjectReference? _module;
     private bool _isActive;
+    private bool _hasRendered;
+    private bool _pendingTrigger;
+    private bool _lastActiveParameter;
     private bool _disposed;
+    private long _triggerVersion;
+    private Task _activeTriggerTask = Task.CompletedTask;
     private int _effectiveParticleCount = 50;
     private int _effectiveDuration = 3000;
     private ConfettiOrigin _effectiveOrigin = ConfettiOrigin.Center;
@@ -84,13 +80,7 @@
     protected override string ComponentClass => CombineClasses(
         "vibe-confetti",
         _isActive ? "active" : null,
-        CssClass
-    );
-
-    private string ContainerClass => CombineClasses(
-        "confetti-container",
-        $"confetti-{PatternName}"
-    );
+        CssClass);
 
     private string StateName => _isActive ? "active" : "idle";
 
@@ -124,72 +114,97 @@
             return;
         }
 
-        if (Active && !_isActive)
+        if (Active && !_lastActiveParameter)
         {
-            StartTrigger();
+            RequestTrigger();
         }
-        else if (!Active && _isActive)
+        else if (!Active && _lastActiveParameter)
         {
             CancelTrigger();
-            _isActive = false;
-            _particles.Clear();
         }
+
+        _lastActiveParameter = Active;
     }
 
-    public async Task Trigger()
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        _hasRendered = true;
+        if (_pendingTrigger && !_disposed)
+        {
+            _pendingTrigger = false;
+            StartTrigger();
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task Trigger()
     {
         if (_disposed)
         {
+            return Task.CompletedTask;
+        }
+
+        RequestTrigger();
+        return _activeTriggerTask;
+    }
+
+    private void RequestTrigger()
+    {
+        _triggerVersion++;
+        _isActive = true;
+        if (!_hasRendered)
+        {
+            _pendingTrigger = true;
             return;
         }
 
-        CancelTrigger();
-        var cancellation = new CancellationTokenSource();
-        _triggerCancellation = cancellation;
-
-        _isActive = true;
-        GenerateParticles();
-
-        await InvokeAsync(StateHasChanged);
-
-        try
-        {
-            if (_effectiveDuration > 0)
-            {
-                await Task.Delay(_effectiveDuration, cancellation.Token);
-            }
-
-            cancellation.Token.ThrowIfCancellationRequested();
-            _isActive = false;
-            _particles.Clear();
-            await OnComplete.InvokeAsync();
-
-            if (!_disposed)
-            {
-                await InvokeAsync(StateHasChanged);
-            }
-        }
-        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
-        {
-        }
-        finally
-        {
-            if (ReferenceEquals(_triggerCancellation, cancellation))
-            {
-                _triggerCancellation = null;
-            }
-
-            cancellation.Dispose();
-        }
+        StartTrigger();
+        _ = InvokeAsync(StateHasChanged);
     }
 
     private void StartTrigger()
     {
-        var triggerTask = Trigger();
-        if (!triggerTask.IsCompletedSuccessfully)
+        _activeTriggerTask = RunTriggerAsync(_triggerVersion);
+        if (!_activeTriggerTask.IsCompletedSuccessfully)
         {
-            _ = ObserveTriggerAsync(triggerTask);
+            _ = ObserveTriggerAsync(_activeTriggerTask);
         }
+    }
+
+    private async Task RunTriggerAsync(long version)
+    {
+        _module ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
+            "import",
+            "./_content/Vibe.UI/js/vibe-confetti.js");
+
+        var animationTask = _module.InvokeVoidAsync(
+            "trigger",
+            _rootElement,
+            new ConfettiOptions(
+                _effectiveParticleCount,
+                _effectiveDuration,
+                _effectiveColors,
+                OriginName,
+                PatternName)).AsTask();
+
+        if (_effectiveDuration > 0)
+        {
+            await Task.WhenAll(animationTask, Task.Delay(_effectiveDuration));
+        }
+        else
+        {
+            await animationTask;
+        }
+
+        if (_disposed || version != _triggerVersion)
+        {
+            return;
+        }
+
+        _isActive = false;
+        await OnComplete.InvokeAsync();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task ObserveTriggerAsync(Task triggerTask)
@@ -198,8 +213,13 @@
         {
             await triggerTask;
         }
-        catch (OperationCanceledException)
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
         {
+            _isActive = false;
+            if (!_disposed)
+            {
+                await InvokeAsync(StateHasChanged);
+            }
         }
         catch (Exception exception) when (!_disposed)
         {
@@ -209,83 +229,47 @@
 
     private void CancelTrigger()
     {
-        _triggerCancellation?.Cancel();
-        _triggerCancellation = null;
-    }
-
-    private void GenerateParticles()
-    {
-        _particles.Clear();
-
-        for (int i = 0; i < _effectiveParticleCount; i++)
+        _triggerVersion++;
+        _pendingTrigger = false;
+        _isActive = false;
+        if (_module is not null && _hasRendered)
         {
-            var color = _effectiveColors[_random.Next(_effectiveColors.Count)];
-            var size = _random.Next(8, 15);
-            var rotation = _random.Next(0, 360);
-            var particle = new ConfettiParticle
-            {
-                Id = i,
-                Color = color,
-                Size = size,
-                Rotation = rotation,
-                Style = GenerateParticleStyle(color, size, rotation)
-            };
-
-            _particles.Add(particle);
+            _ = StopAsync();
         }
     }
 
-    private string GenerateParticleStyle(string color, int size, int rotation)
+    private async Task StopAsync()
     {
-        var (startX, startY) = GetStartPosition();
-        var endX = _random.Next(-200, 200);
-        var endY = _random.Next(100, 300);
-
-        var delay = _random.Next(0, 200);
-        var duration = _effectiveDuration;
-
-        var style = $@"
---confetti-color: {color};
---confetti-size: {size}px;
---confetti-rotation: {rotation}deg;
---start-x: {startX}%;
---start-y: {startY}%;
---end-x: {endX}%;
---end-y: {endY}%;
---duration: {duration}ms;
---delay: {delay}ms;
-";
-
-        return style;
-    }
-
-    private (int x, int y) GetStartPosition()
-    {
-        return _effectiveOrigin switch
+        try
         {
-            ConfettiOrigin.Top => (50, 0),
-            ConfettiOrigin.Bottom => (50, 100),
-            ConfettiOrigin.Left => (0, 50),
-            ConfettiOrigin.Right => (100, 50),
-            ConfettiOrigin.TopLeft => (0, 0),
-            ConfettiOrigin.TopRight => (100, 0),
-            ConfettiOrigin.BottomLeft => (0, 100),
-            ConfettiOrigin.BottomRight => (100, 100),
-            _ => (50, 50) // Center
-        };
+            await _module!.InvokeVoidAsync("stop", _rootElement);
+        }
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+        {
+        }
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         if (_disposed)
         {
-            return ValueTask.CompletedTask;
+            return;
         }
 
         _disposed = true;
         CancelTrigger();
-        _particles.Clear();
-        return ValueTask.CompletedTask;
+
+        if (_module is not null)
+        {
+            await StopAsync();
+            try
+            {
+                await _module.DisposeAsync();
+            }
+            catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+            {
+            }
+        }
     }
 
     private static List<string> NormalizeColors(IEnumerable<string>? colors)
@@ -320,16 +304,17 @@
     private static ConfettiPattern NormalizePattern(ConfettiPattern pattern) =>
         Enum.IsDefined(typeof(ConfettiPattern), pattern) ? pattern : ConfettiPattern.Explosion;
 
+    private static bool IsRecoverableJsInteropException(Exception exception) =>
+        exception is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException;
+
     private static string AriaBool(bool value) => value ? "true" : "false";
 
-    private class ConfettiParticle
-    {
-        public int Id { get; set; }
-        public string Color { get; set; } = string.Empty;
-        public int Size { get; set; }
-        public int Rotation { get; set; }
-        public string Style { get; set; } = string.Empty;
-    }
+    private sealed record ConfettiOptions(
+        int ParticleCount,
+        int Duration,
+        IReadOnlyList<string> Colors,
+        string Origin,
+        string Pattern);
 
     public enum ConfettiOrigin
     {

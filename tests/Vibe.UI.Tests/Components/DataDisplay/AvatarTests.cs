@@ -25,6 +25,25 @@ public class AvatarTests : TestBase
     }
 
     [Fact]
+    public void Avatar_Renders_Image_WhenSrcAliasProvided()
+    {
+        var cut = Render<Avatar>(parameters => parameters
+            .Add(p => p.Src, "profile.jpg"));
+
+        cut.Find(".avatar-image").GetAttribute("src")!.ShouldBe("profile.jpg");
+    }
+
+    [Fact]
+    public void Avatar_ImageUrl_TakesPrecedenceOverSrcAlias()
+    {
+        var cut = Render<Avatar>(parameters => parameters
+            .Add(p => p.ImageUrl, "canonical.jpg")
+            .Add(p => p.Src, "alias.jpg"));
+
+        cut.Find(".avatar-image").GetAttribute("src")!.ShouldBe("canonical.jpg");
+    }
+
+    [Fact]
     public void Avatar_Shows_Initials_WhenNoImage()
     {
         // Act
@@ -46,6 +65,16 @@ public class AvatarTests : TestBase
         // Assert
         var icon = cut.Find(".avatar-icon");
         icon.TextContent.ShouldBe("👤");
+    }
+
+    [Fact]
+    public void Avatar_Shows_RenderFragmentFallback_WhenProvided()
+    {
+        var cut = Render<Avatar>(parameters => parameters
+            .Add(p => p.FallbackContent, builder =>
+                builder.AddMarkupContent(0, "<svg class='user-icon'></svg>")));
+
+        cut.Find(".avatar-icon .user-icon").ShouldNotBeNull();
     }
 
     [Fact]

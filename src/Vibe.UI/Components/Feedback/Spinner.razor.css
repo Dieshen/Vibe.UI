@@ -1,18 +1,18 @@
 /* Spinner baseline styles */
 
-:global(.vibe-spinner) {
+.vibe-spinner {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
 }
 
-:global(.vibe-spinner[aria-disabled="true"]) {
+.vibe-spinner[aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.6;
 }
 
-:global(.vibe-spinner .spinner) {
+.vibe-spinner .spinner {
   display: inline-block;
   border-radius: 9999px;
   border-style: solid;
@@ -21,16 +21,16 @@
   animation: vibe-spin 1s linear infinite;
 }
 
-:global(.vibe-spinner.spinner-disabled .spinner) {
+.vibe-spinner.spinner-disabled .spinner {
   animation: none;
 }
 
-:global(.vibe-spinner .spinner-label) {
+.vibe-spinner .spinner-label {
   color: var(--vibe-muted-foreground);
   font-size: 0.875rem;
 }
 
-:global(.vibe-spinner .sr-only) {
+.vibe-spinner .sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -42,52 +42,52 @@
   border: 0;
 }
 
-:global(.spinner-small .spinner) {
+.spinner-small .spinner {
   width: 0.75rem;
   height: 0.75rem;
   border-width: 2px;
 }
 
-:global(.spinner-default .spinner) {
+.spinner-default .spinner {
   width: 1rem;
   height: 1rem;
   border-width: 2px;
 }
 
-:global(.spinner-medium .spinner) {
+.spinner-medium .spinner {
   width: 1.25rem;
   height: 1.25rem;
   border-width: 3px;
 }
 
-:global(.spinner-large .spinner) {
+.spinner-large .spinner {
   width: 1.5rem;
   height: 1.5rem;
   border-width: 3px;
 }
 
-:global(.spinner-primary .spinner) {
+.spinner-primary .spinner {
   border-top-color: var(--vibe-primary);
 }
 
-:global(.spinner-secondary .spinner) {
+.spinner-secondary .spinner {
   border-top-color: var(--vibe-secondary-foreground);
 }
 
-:global(.spinner-success .spinner) {
+.spinner-success .spinner {
   border-top-color: var(--vibe-success);
 }
 
-:global(.spinner-danger .spinner) {
+.spinner-danger .spinner {
   border-top-color: var(--vibe-destructive);
 }
 
-:global(.spinner-warning .spinner) {
+.spinner-warning .spinner {
   border-top-color: var(--vibe-warning);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :global(.vibe-spinner .spinner) {
+  .vibe-spinner .spinner {
     animation: none;
   }
 }

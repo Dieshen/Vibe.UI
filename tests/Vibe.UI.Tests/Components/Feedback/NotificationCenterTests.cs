@@ -16,6 +16,7 @@ public class NotificationCenterTests : TestBase
         trigger.GetAttribute("aria-haspopup").ShouldBe("dialog");
         trigger.GetAttribute("aria-expanded").ShouldBe("false");
         trigger.GetAttribute("aria-controls").ShouldNotBeNullOrWhiteSpace();
+        trigger.QuerySelector("svg").ShouldNotBeNull();
 
         var liveRegion = cut.Find(".notification-live-region");
         liveRegion.GetAttribute("role").ShouldBe("status");
@@ -67,6 +68,31 @@ public class NotificationCenterTests : TestBase
 
         cut.FindAll(".notification-panel").ShouldBeEmpty();
         cut.Find(".notification-trigger").GetAttribute("aria-expanded").ShouldBe("false");
+    }
+
+    [Fact]
+    public void NotificationCenter_EscapeFromTriggerClosesOpenPanel()
+    {
+        var cut = Render<NotificationCenter>();
+        var trigger = cut.Find(".notification-trigger");
+        trigger.Click();
+
+        trigger.KeyDown("Escape");
+
+        cut.FindAll(".notification-panel").ShouldBeEmpty();
+        trigger.GetAttribute("aria-expanded").ShouldBe("false");
+    }
+
+    [Fact]
+    public void NotificationCenter_BackdropClosesOpenPanel()
+    {
+        var cut = Render<NotificationCenter>();
+        cut.Find(".notification-trigger").Click();
+
+        cut.Find(".notification-backdrop").Click();
+
+        cut.FindAll(".notification-panel").ShouldBeEmpty();
+        cut.FindAll(".notification-backdrop").ShouldBeEmpty();
     }
 
     [Fact]

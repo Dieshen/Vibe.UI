@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Components.Web;
+
 namespace Vibe.UI.Tests.Components.Disclosure;
 
 public class CarouselTests : TestBase
@@ -283,6 +285,50 @@ public class CarouselTests : TestBase
         // Assert
         endStyle!.ShouldContain("translateX(-200%)");
         cut.Find(".carousel-container").GetAttribute("style")!.ShouldContain("translateX(0%)");
+    }
+
+    [Fact]
+    public void Carousel_NavigationUsesSharedIcons()
+    {
+        var cut = RenderCarouselWithItems("One", "Two");
+
+        cut.FindAll(".carousel-button svg.vibe-icon").Count.ShouldBe(2);
+        cut.FindAll(".carousel-button svg:not(.vibe-icon)").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Carousel_AutoPlayRendersUserPauseControl()
+    {
+        var cut = RenderCarouselWithItems(new[] { "One", "Two" }, parameters => parameters
+            .Add(p => p.AutoPlay, true));
+
+        var pause = cut.Find(".carousel-autoplay-button");
+        pause.GetAttribute("aria-label").ShouldBe("Pause automatic slide rotation");
+        pause.GetAttribute("aria-pressed").ShouldBe("false");
+        pause.ParentElement?.ClassList.ShouldContain("carousel-controls");
+        cut.Find(".carousel-indicators").ParentElement?.ClassList.ShouldContain("carousel-controls");
+        cut.FindAll(".carousel-viewport .carousel-indicators").ShouldBeEmpty();
+        pause.Click();
+
+        var resume = cut.Find(".carousel-autoplay-button");
+        resume.GetAttribute("aria-label").ShouldBe("Resume automatic slide rotation");
+        resume.GetAttribute("aria-pressed").ShouldBe("true");
+    }
+
+    [Fact]
+    public void Carousel_PointerSwipeChangesSlide()
+    {
+        var changedIndex = -1;
+        var cut = RenderCarouselWithItems(new[] { "One", "Two" }, parameters => parameters
+            .Add(p => p.ActiveIndexChanged, index => changedIndex = index));
+        var viewport = cut.Find(".carousel-viewport");
+
+        viewport.TriggerEvent("onpointerdown", new PointerEventArgs { PointerId = 7, Button = 0, ClientX = 220, ClientY = 80 });
+        viewport.TriggerEvent("onpointermove", new PointerEventArgs { PointerId = 7, ClientX = 140, ClientY = 80 });
+        viewport.TriggerEvent("onpointerup", new PointerEventArgs { PointerId = 7, ClientX = 140, ClientY = 80 });
+
+        changedIndex.ShouldBe(1);
+        cut.Find(".carousel-container").GetAttribute("style")!.ShouldContain("translateX(-100%)");
     }
 
     private IRenderedComponent<Carousel> RenderCarouselWithItems(params string[] items)

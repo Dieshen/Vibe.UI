@@ -1,17 +1,17 @@
 /* Collapsible baseline styles */
 
-:global(.vibe-collapsible) {
+.vibe-collapsible {
   display: block;
 }
 
-:global(.vibe-collapsible-content) {
+.vibe-collapsible-content {
   max-height: 0;
   opacity: 0;
   overflow: hidden;
   transition: max-height 0.3s ease, opacity 0.2s ease;
 }
 
-:global(.vibe-collapsible-content.expanded) {
+.vibe-collapsible-content.expanded {
   max-height: 1000px;
   opacity: 1;
 }

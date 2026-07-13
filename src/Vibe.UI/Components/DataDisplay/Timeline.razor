@@ -26,6 +26,11 @@
                 </div>
 
                 <div class="timeline-content">
+                    @if (GetEffectiveStatus(item.Status) != TimelineStatus.Default)
+                    {
+                        <span class="@GetStatusLabelClass(item.Status)">@GetStatusLabel(item.Status)</span>
+                    }
+
                     @if (title is not null)
                     {
                         <h4 class="timeline-title">@title</h4>
@@ -127,8 +132,17 @@
     private static string GetMarkerClass(TimelineItem item) =>
         CombineClasses("timeline-marker", $"marker-{GetStatusClass(item.Status)}");
 
+    private static string GetStatusLabelClass(TimelineStatus status) =>
+        CombineClasses("timeline-status", $"status-{GetStatusClass(status)}");
+
     private static string GetStatusClass(TimelineStatus status) =>
-        Enum.IsDefined(status) ? status.ToString().ToLowerInvariant() : TimelineStatus.Default.ToString().ToLowerInvariant();
+        GetEffectiveStatus(status).ToString().ToLowerInvariant();
+
+    private static string GetStatusLabel(TimelineStatus status) =>
+        GetEffectiveStatus(status).ToString();
+
+    private static TimelineStatus GetEffectiveStatus(TimelineStatus status) =>
+        Enum.IsDefined(status) ? status : TimelineStatus.Default;
 
     private static string GetPositionClass(TimelinePosition position) =>
         Enum.IsDefined(position) ? position.ToString().ToLowerInvariant() : TimelinePosition.Left.ToString().ToLowerInvariant();

@@ -4,17 +4,21 @@
 <div @attributes="AdditionalAttributes"
      class="@CombinedClass"
      role="@EffectiveRole"
-     aria-label="@EffectiveAssistiveText"
+     aria-label="@EffectiveAssistiveTextAttribute"
      aria-live="@EffectiveAriaLive"
      aria-atomic="@AriaAtomicValue"
      aria-busy="@AriaBusyValue"
-     aria-disabled="@AriaDisabledValue">
+     aria-disabled="@AriaDisabledValue"
+     aria-hidden="@AriaHiddenValue">
     <span class="spinner" aria-hidden="true"></span>
     @if (ShowLabel && HasVisibleLabel)
     {
         <span class="spinner-label">@Label!.Trim()</span>
     }
-    <span class="sr-only">@EffectiveAssistiveText</span>
+    @if (!Decorative)
+    {
+        <span class="sr-only">@EffectiveAssistiveText</span>
+    }
 </div>
 
 @code {
@@ -43,6 +47,9 @@
     public bool ShowLabel { get; set; } = false;
 
     [Parameter]
+    public bool Decorative { get; set; }
+
+    [Parameter]
     public bool Disabled { get; set; }
 
     [Parameter]
@@ -62,15 +69,19 @@
 
     private string EffectiveAssistiveText => FirstNonEmpty(AriaLabel, Label, "Loading...");
 
-    private string EffectiveRole => string.IsNullOrWhiteSpace(Role) ? "status" : Role.Trim();
+    private string? EffectiveRole => Decorative ? null : string.IsNullOrWhiteSpace(Role) ? "status" : Role.Trim();
 
-    private string EffectiveAriaLive => string.IsNullOrWhiteSpace(AriaLive) ? "polite" : AriaLive.Trim();
+    private string? EffectiveAssistiveTextAttribute => Decorative ? null : EffectiveAssistiveText;
 
-    private string AriaAtomicValue => AriaBool(AriaAtomic);
+    private string? EffectiveAriaLive => Decorative ? null : string.IsNullOrWhiteSpace(AriaLive) ? "polite" : AriaLive.Trim();
 
-    private string AriaBusyValue => AriaBool(!Disabled);
+    private string? AriaAtomicValue => Decorative ? null : AriaBool(AriaAtomic);
 
-    private string AriaDisabledValue => AriaBool(Disabled);
+    private string? AriaBusyValue => Decorative ? null : AriaBool(!Disabled);
+
+    private string? AriaDisabledValue => Decorative ? null : AriaBool(Disabled);
+
+    private string? AriaHiddenValue => Decorative ? "true" : null;
 
     private string EffectiveColor => NormalizeCssToken(Color, "primary");
 

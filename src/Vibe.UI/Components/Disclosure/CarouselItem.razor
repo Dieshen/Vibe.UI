@@ -1,5 +1,6 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
+@implements IDisposable
 
 <div class="@CombinedClass"
      role="group"
@@ -28,4 +29,6 @@
         base.OnInitialized();
         ParentCarousel?.AddItem(this);
     }
+
+    public void Dispose() => ParentCarousel?.RemoveItem(this);
 }

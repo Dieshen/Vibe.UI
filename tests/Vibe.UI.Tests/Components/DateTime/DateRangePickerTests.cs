@@ -101,6 +101,24 @@ public class DateRangePickerTests : TestBase
     }
 
     [Fact]
+    public void DateRangePicker_MarksOnlySelectedDatesAsInRange()
+    {
+        // Arrange
+        var cut = Render<DateRangePicker>(parameters => parameters
+            .Add(p => p.StartDate, new System.DateTime(2024, 6, 10))
+            .Add(p => p.EndDate, new System.DateTime(2024, 6, 15)));
+
+        // Act
+        cut.Find(".daterange-icon").Click();
+
+        // Assert
+        FindStartDateButton(cut, new System.DateTime(2024, 6, 9)).ClassList.Contains("in-range").ShouldBeFalse();
+        FindStartDateButton(cut, new System.DateTime(2024, 6, 10)).ClassList.Contains("range-start").ShouldBeTrue();
+        FindStartDateButton(cut, new System.DateTime(2024, 6, 12)).ClassList.Contains("in-range").ShouldBeTrue();
+        FindStartDateButton(cut, new System.DateTime(2024, 6, 16)).ClassList.Contains("in-range").ShouldBeFalse();
+    }
+
+    [Fact]
     public void DateRangePicker_InvokesOnChange_WhenApplyClicked()
     {
         // Arrange

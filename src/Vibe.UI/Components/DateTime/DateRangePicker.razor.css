@@ -1,17 +1,17 @@
 /* DateRangePicker baseline styles */
 
-:global(.vibe-daterange-picker) {
+.vibe-daterange-picker {
   position: relative;
   display: block;
 }
 
-:global(.daterange-input-wrapper) {
+.daterange-input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-:global(.daterange-inputs) {
+.daterange-inputs {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   gap: 0.5rem;
@@ -19,19 +19,19 @@
   width: 100%;
 }
 
-:global(.daterange-start-input),
-:global(.daterange-end-input) {
+::deep .daterange-start-input,
+::deep .daterange-end-input {
   min-width: 0;
 }
 
-:global(.daterange-separator) {
+.daterange-separator {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--vibe-muted-foreground);
 }
 
-:global(.daterange-icon) {
+.daterange-icon {
   position: absolute;
   right: 0.75rem;
   display: inline-flex;
@@ -44,14 +44,15 @@
   cursor: pointer;
 }
 
-:global(.daterange-icon:disabled) {
+.daterange-icon:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-:global(.daterange-popup) {
+.daterange-popup {
   position: absolute;
   z-index: 50;
+  box-sizing: border-box;
   margin-top: 0.5rem;
   background: var(--vibe-popover);
   color: var(--vibe-popover-foreground);
@@ -61,33 +62,34 @@
   padding: 0.75rem;
 }
 
-:global(.daterange-backdrop) {
+.daterange-backdrop {
   position: fixed;
   inset: 0;
   z-index: 40;
 }
 
-:global(.daterange-header) {
+.daterange-header {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 0.75rem;
 }
 
-:global(.daterange-header-section) {
+.daterange-header-section {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.5rem;
 }
 
-:global(.daterange-header-label) {
+.daterange-header-label {
   display: flex;
   gap: 0.5rem;
   align-items: center;
 }
 
-:global(.daterange-month-select),
-:global(.daterange-year-select) {
+.daterange-month-select,
+.daterange-year-select {
   border: 1px solid var(--vibe-border);
   background: var(--vibe-background);
   color: var(--vibe-foreground);
@@ -96,7 +98,7 @@
   font-size: 0.85rem;
 }
 
-:global(.daterange-nav-btn) {
+.daterange-nav-btn {
   border: 1px solid var(--vibe-border);
   background: transparent;
   color: var(--vibe-foreground);
@@ -106,35 +108,35 @@
   cursor: pointer;
 }
 
-:global(.daterange-calendars) {
+.daterange-calendars {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
 
-:global(.daterange-day-names),
-:global(.daterange-week) {
+.daterange-day-names,
+.daterange-week {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 0.25rem;
 }
 
-:global(.daterange-day-names) {
+.daterange-day-names {
   margin-bottom: 0.25rem;
 }
 
-:global(.daterange-week) {
+.daterange-week {
   margin-bottom: 0.25rem;
 }
 
-:global(.daterange-day-name) {
+.daterange-day-name {
   text-align: center;
   font-size: 0.75rem;
   color: var(--vibe-muted-foreground);
   padding: 0.25rem 0;
 }
 
-:global(.daterange-day) {
+.daterange-day {
   border: 1px solid transparent;
   background: transparent;
   color: var(--vibe-foreground);
@@ -143,35 +145,35 @@
   cursor: pointer;
 }
 
-:global(.daterange-day:hover:not(:disabled)) {
+.daterange-day:hover:not(:disabled) {
   background: var(--vibe-muted);
 }
 
-:global(.daterange-day:disabled) {
+.daterange-day:disabled {
   cursor: not-allowed;
   opacity: 0.45;
 }
 
-:global(.daterange-day.today) {
+.daterange-day.today {
   border-color: var(--vibe-ring);
 }
 
-:global(.daterange-day.outside-month) {
+.daterange-day.outside-month {
   opacity: 0.5;
 }
 
-:global(.daterange-day.in-range) {
+.daterange-day.in-range {
   background: var(--vibe-muted);
 }
 
-:global(.daterange-day.selected),
-:global(.daterange-day.range-start),
-:global(.daterange-day.range-end) {
+.daterange-day.selected,
+.daterange-day.range-start,
+.daterange-day.range-end {
   background: var(--vibe-primary);
   color: var(--vibe-primary-foreground);
 }
 
-:global(.daterange-footer) {
+.daterange-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -179,14 +181,14 @@
   margin-top: 0.75rem;
 }
 
-:global(.daterange-presets) {
+.daterange-presets {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-:global(.daterange-preset-btn),
-:global(.daterange-apply-btn) {
+.daterange-preset-btn,
+.daterange-apply-btn {
   border: 1px solid var(--vibe-border);
   background: transparent;
   color: var(--vibe-foreground);
@@ -195,24 +197,48 @@
   cursor: pointer;
 }
 
-:global(.daterange-apply-btn) {
+.daterange-apply-btn {
   background: var(--vibe-primary);
   color: var(--vibe-primary-foreground);
   border-color: var(--vibe-primary);
 }
 
 @media (max-width: 640px) {
-  :global(.daterange-popup) {
-    left: 0;
-    right: 0;
+  .daterange-popup {
+    position: fixed;
+    inset: 1rem;
+    width: auto;
+    max-height: calc(100dvh - 2rem);
+    margin: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
-  :global(.daterange-calendars) {
+  .daterange-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .daterange-header-section {
+    width: 100%;
+  }
+
+  .daterange-calendars {
     grid-template-columns: 1fr;
   }
 
-  :global(.daterange-footer) {
+  .daterange-footer {
     align-items: stretch;
     flex-direction: column;
+    position: sticky;
+    bottom: -0.75rem;
+    margin: 0 -0.75rem -0.75rem;
+    padding: 0.75rem;
+    border-top: 1px solid var(--vibe-border);
+    background: var(--vibe-popover);
+  }
+
+  .daterange-apply-btn {
+    min-height: 2.5rem;
   }
 }

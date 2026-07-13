@@ -35,7 +35,7 @@ public class ChartTests : TestBase
     }
 
     [Fact]
-    public void Chart_HidesCustomLegend_WhenDisabledOrBuiltIn()
+    public void Chart_HidesVisualLegend_WhenDisabledOrBuiltIn()
     {
         var hidden = Render<Chart>(parameters => parameters
             .Add(p => p.Data, CreateData())
@@ -46,7 +46,7 @@ public class ChartTests : TestBase
             .Add(p => p.UseBuiltInLegend, true));
 
         hidden.FindAll(".vibe-chart-legend").ShouldBeEmpty();
-        builtIn.FindAll(".vibe-chart-legend").ShouldBeEmpty();
+        builtIn.Find(".vibe-chart-legend--screen-reader-only").GetAttribute("role").ShouldBe("list");
     }
 
     [Fact]
@@ -123,11 +123,31 @@ public class ChartTests : TestBase
 
         var titleId = cut.Find(".vibe-chart-title").Id;
         var descriptionId = cut.Find(".vibe-chart-description").Id;
+        var summaryId = cut.Find(".vibe-chart-accessible-data p").Id;
         var canvas = cut.Find("canvas.vibe-chart-canvas");
 
         canvas.GetAttribute("aria-labelledby").ShouldBe(titleId);
-        canvas.GetAttribute("aria-describedby").ShouldBe(descriptionId);
+        canvas.GetAttribute("aria-describedby").ShouldBe($"{descriptionId} {summaryId}");
         canvas.HasAttribute("aria-label").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Chart_RendersAccessibleDataSummaryAndTable()
+    {
+        var cut = Render<Chart>(parameters => parameters
+            .Add(p => p.Data, CreateData())
+            .Add(p => p.Title, "Revenue"));
+
+        var summary = cut.Find(".vibe-chart-accessible-data p");
+        var table = cut.Find(".vibe-chart-accessible-data table");
+        var canvas = cut.Find("canvas.vibe-chart-canvas");
+
+        summary.TextContent.ShouldContain("Revenue has 2 data points across 2 series.");
+        table.QuerySelector("caption")!.TextContent.ShouldBe("Data table for Revenue");
+        table.QuerySelectorAll("thead th")[1].TextContent.ShouldBe("Series A");
+        table.QuerySelectorAll("tbody tr")[0].TextContent.ShouldContain("Jan");
+        table.QuerySelectorAll("tbody tr")[0].TextContent.ShouldContain("1");
+        canvas.GetAttribute("aria-describedby").ShouldBe(summary.Id);
     }
 
     [Fact]
@@ -166,7 +186,7 @@ public class ChartTests : TestBase
     }
 
     [Fact]
-    public void Chart_UsesStructuredSliceColors_ForPieDatasets()
+    public void Chart_UsesStructuredSliceColorsAndSemanticSliceLegend_ForPieDatasets()
     {
         JSInterop.Setup<bool>("vibeChart.createChart", _ => true).SetResult(true);
 
@@ -194,7 +214,12 @@ public class ChartTests : TestBase
         var configJson = JsonSerializer.Serialize(invocation.Arguments[1]);
         configJson.ShouldContain(@"""backgroundColor"":[""#ff6384"",""#36a2eb"",""#ffce56""]");
         configJson.ShouldContain(@"""borderColor"":[""#c21d52"",""#1f6ea5"",""#d4a315""]");
-        cut.Find(".vibe-chart-legend-color").GetAttribute("style")!.ShouldContain("background-color: #ff6384");
+        var legendItems = cut.FindAll(".vibe-chart-legend-item");
+        legendItems.Count.ShouldBe(3);
+        legendItems[0].TextContent.ShouldContain("North");
+        legendItems[0].TextContent.ShouldContain("35");
+        legendItems[1].TextContent.ShouldContain("South");
+        legendItems[1].QuerySelector(".vibe-chart-legend-color")!.GetAttribute("style")!.ShouldContain("background-color: #36a2eb");
     }
 
     private static Chart.ChartData CreateData() => new()

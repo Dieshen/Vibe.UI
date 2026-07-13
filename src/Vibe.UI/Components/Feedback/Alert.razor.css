@@ -8,47 +8,66 @@
 .vibe-alert {
     position: relative;
     display: flex;
-    padding: var(--vibe-spacing-4);
+    align-items: flex-start;
+    gap: var(--vibe-spacing-3);
+    width: 100%;
+    padding: var(--vibe-spacing-3) var(--vibe-spacing-4);
     border-radius: var(--vibe-radius-md);
-    border-left: 4px solid;
+    border: 1px solid var(--vibe-border);
+    background: var(--vibe-background);
+    color: var(--vibe-foreground);
     font-family: var(--vibe-font);
-    animation: vibe-slideIn 0.2s ease-in-out;
 }
 
 .vibe-alert-dismissible {
-    padding-right: calc(var(--vibe-spacing-4) + 2rem);
+    padding-right: 3rem;
 }
 
 .vibe-alert-disabled {
-    opacity: 0.7;
+    opacity: 0.5;
 }
 
 /* Alert Variants
    ========================================================================== */
 
 .vibe-alert-default {
-    background-color: var(--vibe-muted);
-    border-left-color: var(--vibe-border);
+    border-color: var(--vibe-border);
 }
 
 .vibe-alert-destructive {
-    background-color: color-mix(in srgb, var(--vibe-destructive) 10%, var(--vibe-background));
-    border-left-color: var(--vibe-destructive);
+    border-color: color-mix(in srgb, var(--vibe-destructive) 50%, var(--vibe-border));
+    color: color-mix(in srgb, var(--vibe-destructive) 55%, var(--vibe-foreground));
 }
 
 .vibe-alert-success {
-    background-color: color-mix(in srgb, var(--vibe-success) 10%, var(--vibe-background));
-    border-left-color: var(--vibe-success);
+    border-color: color-mix(in srgb, var(--vibe-success) 45%, var(--vibe-border));
+    background-color: color-mix(in srgb, var(--vibe-success) 4%, var(--vibe-background));
 }
 
 .vibe-alert-info {
-    background-color: color-mix(in srgb, var(--vibe-info) 10%, var(--vibe-background));
-    border-left-color: var(--vibe-info);
+    border-color: color-mix(in srgb, var(--vibe-info) 45%, var(--vibe-border));
+    background-color: color-mix(in srgb, var(--vibe-info) 4%, var(--vibe-background));
 }
 
 .vibe-alert-warning {
-    background-color: color-mix(in srgb, var(--vibe-warning) 10%, var(--vibe-background));
-    border-left-color: var(--vibe-warning);
+    border-color: color-mix(in srgb, var(--vibe-warning) 45%, var(--vibe-border));
+    background-color: color-mix(in srgb, var(--vibe-warning) 4%, var(--vibe-background));
+}
+
+.vibe-alert-destructive .vibe-alert-description {
+    color: currentColor;
+}
+
+.vibe-alert-success .vibe-alert-icon {
+    color: var(--vibe-success);
+}
+
+.vibe-alert-info .vibe-alert-icon {
+    color: var(--vibe-info);
+}
+
+.vibe-alert-warning .vibe-alert-icon {
+    color: var(--vibe-warning);
 }
 
 /* Alert Sub-elements
@@ -56,11 +75,17 @@
 
 .vibe-alert-icon {
     display: flex;
-    align-items: flex-start;
-    margin-right: var(--vibe-spacing-3);
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1rem;
+    height: 1rem;
+    margin-top: 0.125rem;
+}
+
+.vibe-alert-icon ::deep svg {
+    width: 1rem;
+    height: 1rem;
 }
 
 .vibe-alert-content {
@@ -69,16 +94,16 @@
 }
 
 .vibe-alert-title {
-    margin: 0 0 var(--vibe-spacing-2) 0;
-    font-size: 1rem;
+    margin: 0 0 0.125rem;
+    font-size: 0.875rem;
     font-weight: 600;
-    color: var(--vibe-foreground);
-    line-height: 1.25;
+    color: currentColor;
+    line-height: 1.4;
 }
 
 .vibe-alert-description {
     font-size: 0.875rem;
-    color: var(--vibe-foreground);
+    color: var(--vibe-muted-foreground);
     line-height: 1.5;
     margin: 0;
     overflow-wrap: anywhere;
@@ -89,18 +114,18 @@
 
 .vibe-alert-close {
     position: absolute;
-    top: var(--vibe-spacing-2);
-    right: var(--vibe-spacing-2);
+    top: 0.5rem;
+    right: 0.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 2rem;
+    height: 2rem;
     background: transparent;
     border: none;
-    border-radius: 9999px;
+    border-radius: var(--vibe-radius-md);
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background-color 0.15s ease, color 0.15s ease;
     color: var(--vibe-muted-foreground);
     padding: 0;
 }
@@ -127,54 +152,7 @@
     color: var(--vibe-muted-foreground);
 }
 
-/* Close Icon (X)
-   ========================================================================== */
-
-.vibe-alert-close-icon {
-    position: relative;
-    width: 1rem;
-    height: 1rem;
-}
-
-.vibe-alert-close-icon::before,
-.vibe-alert-close-icon::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 2px;
-    background-color: currentColor;
-    top: 50%;
-    left: 0;
-}
-
-.vibe-alert-close-icon::before {
-    transform: translateY(-50%) rotate(45deg);
-}
-
-.vibe-alert-close-icon::after {
-    transform: translateY(-50%) rotate(-45deg);
-}
-
-/* Animations
-   ========================================================================== */
-
-@keyframes vibe-slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-0.5rem);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 @media (prefers-reduced-motion: reduce) {
-    .vibe-alert {
-        animation: none;
-    }
-
     .vibe-alert-close {
         transition: none;
     }

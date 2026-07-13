@@ -92,8 +92,8 @@ public class ConfettiTests : TestBase
             .Add(p => p.Active, true));
 
         // Assert
-        var particles = cut.FindAll(".confetti-particle");
-        particles.Count.ShouldBe(particleCount);
+        cut.Find(".vibe-confetti").GetAttribute("data-particle-count").ShouldBe("100");
+        cut.FindAll(".confetti-particle").ShouldBeEmpty();
     }
 
     [Fact]
@@ -153,15 +153,15 @@ public class ConfettiTests : TestBase
     }
 
     [Fact]
-    public void Confetti_GeneratesParticles_WhenActive()
+    public void Confetti_DoesNotGenerateHandRolledParticleElements()
     {
         // Act
         var cut = Render<Confetti>(parameters => parameters
             .Add(p => p.Active, true));
 
         // Assert
-        var particles = cut.FindAll(".confetti-particle");
-        particles.ShouldNotBeEmpty();
+        cut.FindAll(".confetti-particle").ShouldBeEmpty();
+        cut.Find(".vibe-confetti").GetAttribute("data-state").ShouldBe("active");
     }
 
     [Fact]
@@ -174,11 +174,10 @@ public class ConfettiTests : TestBase
             .Add(p => p.Colors, [null!, " ", "red; background: url(javascript:alert(1))"]));
 
         // Assert
-        var style = cut.Find(".confetti-particle").GetAttribute("style");
-        style.ShouldNotBeNull();
-        style!.ShouldContain("--confetti-color: #");
-        style.ShouldNotContain("javascript");
-        style.ShouldNotContain("background:");
+        var markup = cut.Markup;
+        markup.ShouldNotContain("javascript");
+        markup.ShouldNotContain("background:");
+        markup.ShouldNotContain("confetti-particle");
     }
 
     [Fact]

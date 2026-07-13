@@ -240,6 +240,23 @@ public class SpinnerTests : TestBase
     }
 
     [Fact]
+    public void Spinner_Decorative_HidesStatusSemantics()
+    {
+        var cut = Render<Spinner>(parameters => parameters
+            .Add(p => p.Decorative, true));
+
+        var spinner = cut.Find(".vibe-spinner");
+        spinner.GetAttribute("aria-hidden").ShouldBe("true");
+        spinner.HasAttribute("role").ShouldBeFalse();
+        spinner.HasAttribute("aria-label").ShouldBeFalse();
+        spinner.HasAttribute("aria-live").ShouldBeFalse();
+        spinner.HasAttribute("aria-atomic").ShouldBeFalse();
+        spinner.HasAttribute("aria-busy").ShouldBeFalse();
+        spinner.HasAttribute("aria-disabled").ShouldBeFalse();
+        cut.FindAll(".sr-only").ShouldBeEmpty();
+    }
+
+    [Fact]
     public void Spinner_CustomRoleAndAriaLive_AreApplied()
     {
         // Act

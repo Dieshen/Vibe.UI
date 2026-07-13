@@ -19,6 +19,10 @@
     {
         <div class="avatar-initials" aria-hidden="true">@NormalizedInitials</div>
     }
+    else if (FallbackContent is not null)
+    {
+        <div class="avatar-icon" aria-hidden="true">@FallbackContent</div>
+    }
     else if (NormalizedFallbackIcon is not null)
     {
         <div class="avatar-icon" aria-hidden="true">@NormalizedFallbackIcon</div>
@@ -37,6 +41,12 @@
     public string? ImageUrl { get; set; }
 
     /// <summary>
+    /// Gets or sets an alias for <see cref="ImageUrl"/>.
+    /// </summary>
+    [Parameter]
+    public string? Src { get; set; }
+
+    /// <summary>
     /// Gets or sets the accessible text for the avatar.
     /// </summary>
     [Parameter]
@@ -53,6 +63,12 @@
     /// </summary>
     [Parameter]
     public string? FallbackIcon { get; set; }
+
+    /// <summary>
+    /// Gets or sets custom fallback content when no image or initials are available.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? FallbackContent { get; set; }
 
     /// <summary>
     /// Gets or sets the size of the avatar in pixels.
@@ -101,7 +117,7 @@
 
     private int EffectiveSize => Size > 0 ? Size : 40;
 
-    private string? NormalizedImageUrl => string.IsNullOrWhiteSpace(ImageUrl) ? null : ImageUrl.Trim();
+    private string? NormalizedImageUrl => Normalize(ImageUrl) ?? Normalize(Src);
 
     private string? NormalizedInitials => string.IsNullOrWhiteSpace(Initials) ? null : Initials.Trim();
 
@@ -149,4 +165,6 @@
 
     private bool HasAdditionalAttribute(string attributeName) =>
         AdditionalAttributes?.Keys.Any(key => string.Equals(key, attributeName, StringComparison.OrdinalIgnoreCase)) == true;
+
+    private static string? Normalize(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }

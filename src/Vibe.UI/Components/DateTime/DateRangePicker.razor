@@ -672,7 +672,8 @@
             classes.Add("range-start");
         }
 
-        if (IsInRange(day.Date))
+        if (TempStartDate.HasValue && TempEndDate.HasValue &&
+            day.Date >= TempStartDate.Value.Date && day.Date <= TempEndDate.Value.Date)
         {
             classes.Add("in-range");
         }

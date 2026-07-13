@@ -36,7 +36,9 @@ public class AlertTests : TestBase
             .AddChildContent("Dismissible alert"));
 
         // Assert
-        cut.FindAll("button").ShouldNotBeEmpty();
+        var closeButton = cut.Find("button.vibe-alert-close");
+        closeButton.QuerySelector("svg.vibe-icon").ShouldNotBeNull();
+        cut.FindAll(".vibe-alert-close-icon").ShouldBeEmpty();
     }
 
     [Fact]
@@ -127,6 +129,7 @@ public class AlertTests : TestBase
         // Assert
         var title = cut.Find(".vibe-alert-title");
         title.ShouldNotBeNull();
+        title.TagName.ShouldBe("DIV");
         title.TextContent.ShouldBe("Important Notice");
     }
 
