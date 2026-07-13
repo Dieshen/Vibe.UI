@@ -80,8 +80,9 @@ public class CommandPaletteTests : E2ETestBase
         await commandPalette.PressEnterAsync();
 
         // Assert
-        // Wait for navigation to complete
-        await Page.WaitForURLAsync("**/components/alert");
+        // Blazor updates browser history without a full document navigation.
+        await Page.WaitForFunctionAsync("() => window.location.pathname === '/components/alert'");
+        await commandPalette.WaitForModalCloseAsync();
 
         var url = Page.Url;
         url.ShouldContain("/components/alert", Case.Insensitive, "Should navigate to Alert component page");

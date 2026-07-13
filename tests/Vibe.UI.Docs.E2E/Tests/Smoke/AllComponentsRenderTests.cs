@@ -64,11 +64,15 @@ public class AllComponentsRenderTests : E2ETestBase
     [InlineData("form", "Form")]
     [InlineData("formfield", "Form Field")]
     [InlineData("input", "Input")]
+    [InlineData("inputotp", "Input OTP")]
+    [InlineData("mentions", "Mentions")]
     [InlineData("radiogroup", "Radio Group")]
     [InlineData("select", "Select")]
     [InlineData("slider", "Slider")]
     [InlineData("switch", "Switch")]
     [InlineData("textarea", "Textarea")]
+    [InlineData("togglegroup", "Toggle Group")]
+    [InlineData("transferlist", "Transfer List")]
     [InlineData("timepicker", "Time Picker")]
     [InlineData("validatedinput", "Validated Input")]
     public async Task FormComponentPageRenders(string componentPath, string componentName)
@@ -97,6 +101,7 @@ public class AllComponentsRenderTests : E2ETestBase
     [InlineData("stepper", "Stepper")]
     [InlineData("table", "Table")]
     [InlineData("tag", "Tag")]
+    [InlineData("timeline", "Timeline")]
     [InlineData("tooltip", "Tooltip")]
     public async Task DisplayComponentPageRenders(string componentPath, string componentName)
     {
@@ -151,6 +156,14 @@ public class AllComponentsRenderTests : E2ETestBase
     [Theory]
     [InlineData("dragdrop", "Drag Drop")]
     [InlineData("kanbanboard", "Kanban Board")]
+    [InlineData("sheet", "Sheet")]
+    [InlineData("splitter", "Splitter")]
+    [InlineData("confetti", "Confetti")]
+    [InlineData("sidebar", "Sidebar")]
+    [InlineData("resizable", "Resizable")]
+    [InlineData("rating", "Rating")]
+    [InlineData("imagecropper", "Image Cropper")]
+    [InlineData("alertdialog", "Alert Dialog")]
     [InlineData("richtexteditor", "Rich Text Editor")]
     public async Task AdvancedComponentPageRenders(string componentPath, string componentName)
     {
@@ -244,6 +257,112 @@ public class AllComponentsRenderTests : E2ETestBase
 
             codeBlocks.ShouldBeGreaterThan(0, $"Component page {path} should have code examples");
         }
+    }
+
+    [Fact]
+    public async Task DropdownPreviewUsesNativeTriggersWithoutNestedButtons()
+    {
+        await NavigateAndWaitForBlazorAsync("/components/dropdown");
+
+        var triggers = Page.Locator(".dropdown-trigger");
+        (await triggers.CountAsync()).ShouldBe(2);
+        (await Page.Locator(".dropdown-trigger button").CountAsync()).ShouldBe(0);
+
+        foreach (var trigger in await triggers.AllAsync())
+        {
+            (await trigger.EvaluateAsync<string>("element => element.tagName")).ShouldBe("BUTTON");
+            (await trigger.GetAttributeAsync("aria-haspopup")).ShouldBe("menu");
+        }
+
+        await triggers.First.ClickAsync();
+
+        (await Page.Locator("[role='menu'] [role='menuitem']").CountAsync()).ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task MenuPreviewsUseNativeTriggersWithoutNestedButtons()
+    {
+        await NavigateAndWaitForBlazorAsync("/components/menu");
+
+        var triggers = Page.Locator(".vibe-menu-trigger");
+        (await triggers.CountAsync()).ShouldBeGreaterThan(0);
+        (await Page.Locator(".vibe-menu-trigger button").CountAsync()).ShouldBe(0);
+
+        foreach (var trigger in await triggers.AllAsync())
+        {
+            (await trigger.EvaluateAsync<string>("element => element.tagName")).ShouldBe("BUTTON");
+            (await trigger.GetAttributeAsync("aria-haspopup")).ShouldBe("menu");
+        }
+
+        await triggers.First.ClickAsync();
+
+        (await Page.Locator(".vibe-menu-content [role='menuitem']").CountAsync()).ShouldBeGreaterThan(0);
+        (await Page.Locator(".vibe-menu-content .menu-item-icon svg").CountAsync()).ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task PopoverPreviewUsesNativeTriggerWithoutNestedButtons()
+    {
+        await NavigateAndWaitForBlazorAsync("/components/popover");
+
+        var trigger = Page.Locator(".popover-trigger").First;
+        (await trigger.EvaluateAsync<string>("element => element.tagName")).ShouldBe("BUTTON");
+        (await Page.Locator(".popover-trigger button").CountAsync()).ShouldBe(0);
+
+        await trigger.ClickAsync();
+
+        await Page.Locator(".popover-content[role='dialog']").WaitForAsync();
+        (await trigger.GetAttributeAsync("aria-expanded")).ShouldBe("true");
+    }
+
+    [Fact]
+    public async Task NotificationPageRendersInteractiveNotificationCenter()
+    {
+        await NavigateAndWaitForBlazorAsync("/components/notification");
+
+        (await Page.GetByText("Component preview will be shown here when installed.").CountAsync()).ShouldBe(0);
+
+        var trigger = Page.Locator(".notification-trigger");
+        await trigger.ClickAsync();
+
+        await Page.Locator(".notification-panel[role='dialog']").WaitForAsync();
+        (await Page.Locator(".notification-item").CountAsync()).ShouldBe(4);
+        (await Page.Locator(".notification-icon svg").CountAsync()).ShouldBe(4);
+        (await Page.Locator(".filter-btn").CountAsync()).ShouldBeGreaterThan(1);
+
+        await Page.Locator(".notification-backdrop").ClickAsync(new() { Position = new() { X = 4, Y = 4 } });
+        (await Page.Locator(".notification-panel").CountAsync()).ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task DragDropPreviewSupportsKeyboardAndPointerReordering()
+    {
+        await NavigateAndWaitForBlazorAsync("/components/dragdrop");
+
+        (await Page.GetByText("DragDrop component not found in Advanced folder.").CountAsync()).ShouldBe(0);
+        (await Page.Locator(".dragdrop-item").CountAsync()).ShouldBe(4);
+        (await Page.Locator(".dragdrop-handle:disabled").CountAsync()).ShouldBe(1);
+
+        var handles = Page.Locator(".dragdrop-handle");
+        await handles.First.FocusAsync();
+        await Page.Keyboard.PressAsync("Alt+ArrowDown");
+        await Page.WaitForTimeoutAsync(100);
+
+        var firstItemContent = await Page.Locator(".dragdrop-item-content").First.TextContentAsync();
+        firstItemContent.ShouldNotBeNull();
+        firstItemContent.ShouldContain("Prepare release notes");
+
+        var liveAnnouncement = await Page.Locator(".dragdrop-live-region").TextContentAsync();
+        liveAnnouncement.ShouldNotBeNull();
+        liveAnnouncement.ShouldContain("Moved Run compatibility tests to position 2 of 4");
+
+        await Page.Locator(".dragdrop-handle").Nth(1)
+            .DragToAsync(Page.Locator(".dragdrop-item").Last);
+        await Page.WaitForTimeoutAsync(100);
+
+        var lastItemContent = await Page.Locator(".dragdrop-item-content").Last.TextContentAsync();
+        lastItemContent.ShouldNotBeNull();
+        lastItemContent.ShouldContain("Run compatibility tests");
     }
 
     #endregion

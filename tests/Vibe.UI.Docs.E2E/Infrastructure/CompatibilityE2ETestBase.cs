@@ -114,7 +114,8 @@ public abstract class CompatibilityE2ETestBase : IAsyncLifetime
             $"[data-testid='{prefix}-increment']",
             "Current interaction count: 1");
 
-        await Page.Locator($"[data-testid='{prefix}-dialog']").ClickAsync();
+        var dialogTrigger = Page.Locator($"[data-testid='{prefix}-dialog']");
+        await dialogTrigger.ClickAsync();
 
         var dialog = Page.Locator("[role='dialog']").First;
         await dialog.WaitForAsync(new() { State = WaitForSelectorState.Visible });
@@ -123,6 +124,15 @@ public abstract class CompatibilityE2ETestBase : IAsyncLifetime
         dialogText.ShouldNotBeNull();
         dialogText.ShouldContain("dialog", Case.Insensitive);
 
+        await Page.WaitForTimeoutAsync(50);
+        await Page.Keyboard.PressAsync("Escape");
+        await dialog.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
+        await Page.WaitForFunctionAsync(
+            $"() => document.activeElement === document.querySelector(\"[data-testid='{prefix}-dialog']\")");
+        (await dialogTrigger.EvaluateAsync<bool>("element => document.activeElement === element")).ShouldBeTrue();
+
+        await dialogTrigger.ClickAsync();
+        await dialog.WaitForAsync(new() { State = WaitForSelectorState.Visible });
         await dialog.Locator("button:has-text('Close')").ClickAsync();
         await dialog.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
     }

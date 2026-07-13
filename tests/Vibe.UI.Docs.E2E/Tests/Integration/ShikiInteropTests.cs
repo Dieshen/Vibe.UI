@@ -71,10 +71,17 @@ public class ShikiInteropTests : E2ETestBase
             return;
         }
 
-        // Get initial code block styles
+        await Page.WaitForShikiReadyAsync(timeout: 10000);
+
+        // Inspect the highlighted surface, not just the outer code-block shell.
         var codeBlock = componentPage.FirstCodeBlock;
-        var initialBgColor = await codeBlock.EvaluateAsync<string>(
+        var highlightedSurface = codeBlock.Locator("pre.shiki");
+        await highlightedSurface.WaitForAsync();
+        var initialBgColor = await highlightedSurface.EvaluateAsync<string>(
             "el => window.getComputedStyle(el).backgroundColor"
+        );
+        var initialTokenColor = await highlightedSurface.Locator("span").First.EvaluateAsync<string>(
+            "el => window.getComputedStyle(el).color"
         );
 
         // Act - Toggle theme
@@ -82,14 +89,19 @@ public class ShikiInteropTests : E2ETestBase
         await Page.WaitForTimeoutAsync(500); // Wait for theme transition
 
         // Get code block styles after theme change
-        var afterBgColor = await codeBlock.EvaluateAsync<string>(
+        var afterBgColor = await highlightedSurface.EvaluateAsync<string>(
             "el => window.getComputedStyle(el).backgroundColor"
         );
+        var afterTokenColor = await highlightedSurface.Locator("span").First.EvaluateAsync<string>(
+            "el => window.getComputedStyle(el).color"
+        );
 
-        // Assert - Background color should change (light vs dark theme)
-        // Note: Exact colors depend on theme configuration
         afterBgColor.ShouldNotBe(initialBgColor,
-            "Code block background should change when theme is toggled");
+            "Highlighted code surface should change when theme is toggled");
+        afterTokenColor.ShouldNotBe(initialTokenColor,
+            "Highlighted tokens should use the active theme colors");
+        afterBgColor.ShouldNotBe("rgb(255, 255, 255)",
+            "Dark highlighted code surface should not remain white");
     }
 
     [Fact]
