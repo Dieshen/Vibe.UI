@@ -107,7 +107,7 @@ This design provides:
 - **Easier discovery**: All components visible in one directory
 - **Less cognitive load**: No need to remember which category a component belongs to
 - **Cleaner autocomplete**: Better IDE experience
-- **Scalable**: Works well even with 110 components
+- **Scalable**: Works well even with 111 components
 
 **Why not category subdirectories?**
 

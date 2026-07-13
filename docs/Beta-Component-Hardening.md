@@ -4,12 +4,12 @@ This tracker defines the beta confidence bar for component hardening. It is inte
 
 ## Target
 
-- Source component set: 110 Razor components in `src/Vibe.UI/Components`.
+- Source component set: 111 Razor components in `src/Vibe.UI/Components`.
 - Beta hardening target: at least 80% direct unit-test coverage across source components.
-- Numeric target: 88 of 110 components with direct component tests.
-- Current direct unit coverage: 110 of 110 components, or 100.0%.
+- Numeric target: 89 of 111 components with direct component tests.
+- Current direct unit coverage: 111 of 111 components, or 100.0%.
 - Remaining direct unit tests needed for 80%: 0 components.
-- Current docs browser smoke coverage: 53 component routes.
+- Current docs browser smoke coverage: 70 component routes.
 - Browser smoke target: every top-level documented component page must stay in `Category=Smoke`.
 
 Direct unit coverage means a component has an explicit `*Tests.cs` file under `tests/Vibe.UI.Tests/Components`. Browser smoke coverage means the docs route is included in `tests/Vibe.UI.Docs.E2E/Tests/Smoke/AllComponentsRenderTests.cs`.
@@ -18,7 +18,7 @@ Direct unit coverage means a component has an explicit `*Tests.cs` file under `t
 
 | Category    | Total | Direct unit tests | Docs smoke routes |
 | ----------- | ----: | ----------------: | ----------------: |
-| Advanced    |     4 |                 4 |                 3 |
+| Advanced    |     5 |                 5 |                 4 |
 | DataDisplay |     8 |                 8 |                 7 |
 | DateTime    |     3 |                 3 |                 3 |
 | Disclosure  |     5 |                 5 |                 3 |
@@ -33,7 +33,7 @@ Direct unit coverage means a component has an explicit `*Tests.cs` file under `t
 
 ## 80% Target Status
 
-The 80% direct component unit-test target is complete at 110 of 110 components.
+The 80% direct component unit-test target is complete at 111 of 111 components.
 
 Post-target hardening can continue with deeper browser coverage for JS-heavy components, accessibility-focused interaction checks, and docs parity for top-level component routes.
 
@@ -43,7 +43,7 @@ Direct test-file coverage is complete, but production hardening is tracked separ
 
 Depth-hardened components completed for the beta release:
 
-- Advanced: KanbanBoard, TreeView, TreeViewNode, VirtualScroll.
+- Advanced: DragDrop, KanbanBoard, TreeView, TreeViewNode, VirtualScroll.
 - DateTime: Calendar, DatePicker, DateRangePicker.
 - DataDisplay: Avatar, Badge, Chart, DataTable, Progress, Table, Tag, Timeline.
 - Disclosure: Accordion, AccordionItem, Carousel, CarouselItem, Collapsible.
@@ -56,11 +56,11 @@ Depth-hardened components completed for the beta release:
 - Theme: ThemeProvider, ThemeToggle.
 - Utility: Command, DropdownMenu, Icon, Kbd, QRCode, ScrollArea.
 
-Final beta depth-hardened count: 110 components.
+Final beta depth-hardened count: 111 components.
 
 Next priority depth candidates:
 
-None. All 110 source components have direct unit coverage and depth-hardening coverage for the beta release.
+None. All 111 source components have direct unit coverage and depth-hardening coverage for the beta release.
 
 ## Mutation-Style Quality Checks
 

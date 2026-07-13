@@ -13,7 +13,7 @@ This checklist targets the `1.0.0-beta` release line. Beta means Vibe.UI is read
   - `src/Vibe.UI.CSS`
   - `src/Vibe.UI.CLI`
 - [x] README release banner updated from alpha to beta.
-- [x] Public component count normalized to the source-backed 110 Razor components.
+- [x] Public component count normalized to the source-backed 111 Razor components.
 - [x] NuGet/package README files use beta-ready component counts and setup guidance.
 - [x] Beta install commands pin prerelease package/tool versions.
 - [x] Publish workflow validates the requested beta version against all shipping project versions before packing.
@@ -112,7 +112,7 @@ Remove-Item Env:BROWSER
 
 - [x] The complete docs functional suite is enforced in CI, including mobile layout contracts, Axe serious/critical scans, keyboard behavior, focus trapping, and focus restoration.
 - [x] Reviewed visual baselines cover Button, FormField, DataTable, KanbanBoard, Sidebar, and an open AlertDialog in light/dark desktop/mobile states.
-- [x] Direct component unit coverage covers 110 of 110 source components.
+- [x] Direct component unit coverage covers 111 of 111 source components.
 - [ ] Manual screen-reader, 200% zoom/reflow, and forced-colors passes remain required before claiming formal WCAG conformance.
 - [ ] Visual baselines currently target Chromium on Windows; expand browser/platform coverage when rendering stability justifies maintaining additional baseline sets.
 - [ ] Docs Shiki browser behavior still has skipped Vitest blocks; the Chromium integration E2E suite is the current browser-level coverage.

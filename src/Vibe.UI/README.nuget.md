@@ -1,6 +1,6 @@
 # Vibe.UI
 
-Modern Blazor component library with 110 components. Inspired by shadcn/ui.
+Modern Blazor component library with 111 components. Inspired by shadcn/ui.
 
 ## Installation
 
@@ -87,7 +87,7 @@ If using the `Chart` component, add Chart.js:
 
 ## Features
 
-- 110 production-ready components
+- 111 production-ready components
 - Built-in theming system (light/dark mode)
 - Chart.js integration
 - Form validation helpers

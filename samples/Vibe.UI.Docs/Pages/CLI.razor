@@ -136,7 +136,7 @@
 
     <section>
         <h2>Available Components</h2>
-        <p>The CLI provides access to 110 components across 11 categories:</p>
+        <p>The CLI provides access to 111 components across 12 categories. Representative components:</p>
 
         <div class="vibe-grid md:vibe-grid-cols-2 vibe-gap-6">
             @foreach (var category in ComponentCategories)
@@ -294,7 +294,8 @@ vibe update --all";
         ["Advanced"] = new() { "DragDrop", "FileUpload", "KanbanBoard", "RichTextEditor", "TreeView", "VirtualScroll" },
         ["Disclosure"] = new() { "Accordion", "Carousel", "Collapsible" },
         ["DateTime"] = new() { "Calendar", "DatePicker", "DateRangePicker" },
-        ["Theme"] = new() { "ThemeToggle", "ThemeProvider" }
+        ["Theme"] = new() { "ThemeToggle", "ThemeProvider" },
+        ["Utility"] = new() { "Command", "DropdownMenu", "Icon", "Kbd", "QRCode", "ScrollArea" }
     };
 
     private string GetUrl(string path)

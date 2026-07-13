@@ -7,7 +7,7 @@
 
 > **Beta Release (1.0.0-beta)** - This library is ready for broader dogfooding across supported Blazor hosting models. APIs may still change before stable 1.0. See [Known Limitations](#known-limitations) below.
 
-A comprehensive Blazor component library inspired by Shadcn UI, built with Razor components and C#. Complete with **110 components**, comprehensive theming, Chart.js integration, form validation, icon library, testing infrastructure, CLI tooling, and IDE extensions.
+A comprehensive Blazor component library inspired by Shadcn UI, built with Razor components and C#. Complete with **111 components**, comprehensive theming, Chart.js integration, form validation, icon library, testing infrastructure, CLI tooling, and IDE extensions.
 
 Project documentation is indexed in [`docs/README.md`](docs/README.md).
 
@@ -16,7 +16,7 @@ Project documentation is indexed in [`docs/README.md`](docs/README.md).
 ## Features
 
 ### Components & Features
-- **110 UI Components** - Comprehensive component library with accessibility-minded Input, Form, Data Display, Navigation, Overlay, Feedback, and Advanced components
+- **111 UI Components** - Comprehensive component library with accessibility-minded Input, Form, Data Display, Navigation, Overlay, Feedback, and Advanced components
 - **Chart.js Integration** - Full-featured data visualization with 7 chart types (Line, Bar, Pie, Doughnut, Radar, PolarArea, Area)
 - **Icon Library** - 70+ Lucide icons built-in with SVG support and customizable styling
 - **Form Validation** - Built-in validators (email, phone, password strength, credit card, etc.) with real-time feedback
@@ -390,7 +390,7 @@ Vibe.UI uses CSS variables for theming. Here are the main variables:
 
 ## Available Components
 
-Vibe.UI includes a comprehensive set of **110 production-ready components**:
+Vibe.UI includes a comprehensive set of **111 production-ready components**:
 
 ### Layout Components
 - **AspectRatio** - Container maintaining a specific aspect ratio

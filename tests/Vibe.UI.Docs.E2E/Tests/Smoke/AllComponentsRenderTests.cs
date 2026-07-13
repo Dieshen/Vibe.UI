@@ -6,7 +6,7 @@ namespace Vibe.UI.Docs.E2E.Tests.Smoke;
 
 /// <summary>
 /// Smoke tests that verify each component page loads without errors.
-/// These tests ensure basic rendering works for all 57 component pages.
+/// These tests ensure basic rendering works for all 70 component pages.
 /// </summary>
 [Trait("Category", TestCategories.Smoke)]
 public class AllComponentsRenderTests : E2ETestBase

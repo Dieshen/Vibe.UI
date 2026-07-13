@@ -85,7 +85,7 @@ duplicate static web assets during repeat builds.
 
 ## Component registry and templates
 
-`ComponentService.InitializeComponents()` is the registry for the 110 source
+`ComponentService.InitializeComponents()` is the registry for the 111 source
 components. Each entry records:
 
 - the command name and Razor component name;
@@ -155,4 +155,3 @@ pwsh scripts/Validate-LocalPackages.ps1 -PackagesPath ./packages
 The package validator installs the packed global tool, checks required template
 assets, builds a source-installed JavaScript component, and builds a fresh
 hosted Web App twice with server-owned CSS.
-

@@ -2,7 +2,7 @@
 
 Vibe.UI components are built around native HTML semantics, explicit accessible
 names, keyboard interaction, visible focus, and state communication. The beta
-test suite directly exercises all 110 source components, including focused ARIA
+test suite directly exercises all 111 source components, including focused ARIA
 and keyboard assertions for interactive components.
 
 This is an implementation guide, not a claim of formal WCAG certification.

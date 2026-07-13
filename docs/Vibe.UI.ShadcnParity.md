@@ -6,7 +6,7 @@ This document is a pragmatic checklist (phased) rather than a strict 1:1 port. S
 
 ## Current Inventory (Repo Snapshot)
 
-`src/Vibe.UI/Components` currently contains ~`110` Razor components grouped into:
+`src/Vibe.UI/Components` currently contains `111` Razor components grouped into:
 - Layout, Inputs, Form, DataDisplay, Navigation, Overlay, Feedback, Disclosure, DateTime, Utility, Theme, Advanced
 
 Examples present already:
@@ -110,7 +110,7 @@ These are often what makes a shadcn site feel like a shadcn site.
   - dark-theme styles
   - visible focus treatment
   - disabled/readonly behavior where applicable
-- [ ] Complete reviewed light/dark visual coverage for all 110 components
+- [ ] Complete reviewed light/dark visual coverage for all 111 components
 - [ ] Add a “headless mode” guideline (optional): allow consumers to fully override classes
 
 ## Phase 4 — Copy/Paste Workflow (shadcn CLI parity)
@@ -136,6 +136,6 @@ shadcn/ui parity is as much workflow as it is visuals.
 ## Suggested Next Steps
 
 1. Add performance budgets for `DataTable`, `VirtualScroll`, and `Chart`.
-2. Complete the public API naming and composition review across all 110 components.
+2. Complete the public API naming and composition review across all 111 components.
 3. Expand reviewed visual coverage beyond the six highest-risk surfaces and add manual screen-reader, zoom, and forced-colors release evidence.
 
