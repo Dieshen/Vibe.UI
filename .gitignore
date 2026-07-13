@@ -491,3 +491,5 @@ $RECYCLE.BIN/
 **/**settings.local.json
 
 **/**.tmp*
+output/
+.playwright-cli/
