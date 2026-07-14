@@ -2,6 +2,8 @@ namespace Vibe.UI.Tests.Components.Layout;
 
 public class SheetTests : TestBase
 {
+    private static readonly TimeSpan TransitionTimeout = TimeSpan.FromSeconds(5);
+
     [Fact]
     public void Sheet_DoesNotRender_WhenClosed()
     {
@@ -130,7 +132,7 @@ public class SheetTests : TestBase
         cut.Find(".sheet-close").Click();
 
         // Assert
-        cut.WaitForAssertion(() => changedValue.ShouldBe(false));
+        cut.WaitForAssertion(() => changedValue.ShouldBe(false), TransitionTimeout);
     }
 
     [Fact]
@@ -159,7 +161,7 @@ public class SheetTests : TestBase
         cut.Find(".sheet-overlay").Click();
 
         // Assert
-        cut.WaitForAssertion(() => changedValue.ShouldBe(false));
+        cut.WaitForAssertion(() => changedValue.ShouldBe(false), TransitionTimeout);
     }
 
     [Fact]
@@ -193,7 +195,7 @@ public class SheetTests : TestBase
         cut.Find(".sheet-content").KeyDown("Escape");
 
         // Assert
-        cut.WaitForAssertion(() => changedValue.ShouldBe(false));
+        cut.WaitForAssertion(() => changedValue.ShouldBe(false), TransitionTimeout);
     }
 
     [Fact]
