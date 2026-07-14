@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Vibe.UI.CSS.Generator;
@@ -85,38 +86,13 @@ public partial class UtilityGenerator
 
         while (true)
         {
-            var idx = name.IndexOf(':');
+            var idx = FindVariantDelimiter(name);
             if (idx <= 0)
                 break;
 
             var candidate = name[..idx];
 
-            // Check for dark mode
-            if (candidate == "dark")
-            {
-                variants.Add(candidate);
-                name = name[(idx + 1)..];
-                continue;
-            }
-
-            // Check for responsive variants: sm:, md:, lg:, xl:, 2xl:
-            if (_config.Breakpoints.ContainsKey(candidate))
-            {
-                variants.Add(candidate);
-                name = name[(idx + 1)..];
-                continue;
-            }
-
-            // Check for state/structural/group variants: hover:, focus:, active:, etc.
-            var stateVariants = new[]
-            {
-                "hover", "focus", "active", "disabled", "visited", "focus-visible", "focus-within",
-                "first", "last", "odd", "even",
-                "group-hover", "group-focus", "group-focus-within",
-                "placeholder"
-            };
-
-            if (stateVariants.Contains(candidate))
+            if (IsSupportedVariant(candidate))
             {
                 variants.Add(candidate);
                 name = name[(idx + 1)..];
@@ -129,17 +105,61 @@ public partial class UtilityGenerator
         return (variants, name);
     }
 
-    private CssRule ApplyVariant(CssRule rule, string variant)
+    private static int FindVariantDelimiter(string name)
     {
-        static string MapSelectors(string selector, Func<string, string> map)
+        var bracketDepth = 0;
+
+        for (var index = 0; index < name.Length; index++)
         {
-            var parts = selector.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(p => p.Trim())
-                .Where(p => p.Length > 0)
-                .Select(map);
-            return string.Join(", ", parts);
+            if (name[index] == '\\' && index + 1 < name.Length)
+            {
+                index++;
+                continue;
+            }
+
+            if (name[index] == '[')
+            {
+                bracketDepth++;
+            }
+            else if (name[index] == ']' && bracketDepth > 0)
+            {
+                bracketDepth--;
+            }
+            else if (name[index] == ':' && bracketDepth == 0)
+            {
+                return index;
+            }
         }
 
+        return -1;
+    }
+
+    private bool IsSupportedVariant(string candidate)
+    {
+        if (candidate == "dark" || _config.Breakpoints.ContainsKey(candidate))
+            return true;
+
+        if (candidate is
+            "hover" or "focus" or "active" or "disabled" or "visited" or
+            "focus-visible" or "focus-within" or "checked" or "indeterminate" or
+            "required" or "optional" or "invalid" or "valid" or "read-only" or
+            "open" or "first" or "last" or "odd" or "even" or "only" or "empty" or
+            "first-of-type" or "last-of-type" or "only-of-type" or "placeholder" or
+            "motion-safe" or "motion-reduce" or "contrast-more" or "contrast-less" or
+            "forced-colors" or "portrait" or "landscape" or "print")
+        {
+            return true;
+        }
+
+        if (TryGetAttributeSelector(candidate, out _))
+            return true;
+
+        return TryParseMarkerVariant(candidate, "group", out _, out _) ||
+               TryParseMarkerVariant(candidate, "peer", out _, out _);
+    }
+
+    private CssRule ApplyVariant(CssRule rule, string variant)
+    {
         // Placeholder pseudo-element
         if (variant is "placeholder")
         {
@@ -150,91 +170,75 @@ public partial class UtilityGenerator
             };
         }
 
-        // State variants (pseudo-classes)
-        if (variant is "hover" or "focus" or "active" or "disabled" or "visited" or "focus-visible" or "focus-within")
+        var pseudoClass = variant switch
+        {
+            "hover" => ":hover",
+            "focus" => ":focus",
+            "active" => ":active",
+            "disabled" => ":disabled",
+            "visited" => ":visited",
+            "focus-visible" => ":focus-visible",
+            "focus-within" => ":focus-within",
+            "checked" => ":checked",
+            "indeterminate" => ":indeterminate",
+            "required" => ":required",
+            "optional" => ":optional",
+            "invalid" => ":invalid",
+            "valid" => ":valid",
+            "read-only" => ":read-only",
+            "open" => ":is([open], :popover-open)",
+            _ => null
+        };
+
+        if (pseudoClass != null)
         {
             return rule with
             {
-                Selector = MapSelectors(rule.Selector, s => $"{s}:{variant}"),
+                Selector = MapSelectors(rule.Selector, s => $"{s}{pseudoClass}"),
                 Order = rule.Order + CssOrder.StateVariants
             };
         }
 
-        // Structural pseudo-classes
-        if (variant is "first")
+        var structuralPseudoClass = variant switch
+        {
+            "first" => ":first-child",
+            "last" => ":last-child",
+            "odd" => ":nth-child(odd)",
+            "even" => ":nth-child(even)",
+            "only" => ":only-child",
+            "empty" => ":empty",
+            "first-of-type" => ":first-of-type",
+            "last-of-type" => ":last-of-type",
+            "only-of-type" => ":only-of-type",
+            _ => null
+        };
+
+        if (structuralPseudoClass != null)
         {
             return rule with
             {
-                Selector = MapSelectors(rule.Selector, s => $"{s}:first-child"),
+                Selector = MapSelectors(rule.Selector, s => $"{s}{structuralPseudoClass}"),
                 Order = rule.Order + CssOrder.StateVariants
             };
         }
 
-        if (variant is "last")
+        if (TryGetAttributeSelector(variant, out var attributeSelector))
         {
             return rule with
             {
-                Selector = MapSelectors(rule.Selector, s => $"{s}:last-child"),
+                Selector = MapSelectors(rule.Selector, s => $"{s}{attributeSelector}"),
                 Order = rule.Order + CssOrder.StateVariants
             };
         }
 
-        if (variant is "odd")
+        if (TryParseMarkerVariant(variant, "group", out var groupCondition, out var groupCombinator))
         {
-            return rule with
-            {
-                Selector = MapSelectors(rule.Selector, s => $"{s}:nth-child(odd)"),
-                Order = rule.Order + CssOrder.StateVariants
-            };
+            return ApplyMarkerVariant(rule, "group", groupCondition, groupCombinator);
         }
 
-        if (variant is "even")
+        if (TryParseMarkerVariant(variant, "peer", out var peerCondition, out var peerCombinator))
         {
-            return rule with
-            {
-                Selector = MapSelectors(rule.Selector, s => $"{s}:nth-child(even)"),
-                Order = rule.Order + CssOrder.StateVariants
-            };
-        }
-
-        // Group variants
-        if (variant is "group-hover")
-        {
-            var groupSelector = string.IsNullOrEmpty(_prefix) ? ".group" : $".{_prefix}-group";
-            var groupHover = MapSelectors(rule.Selector, s => $".group:hover {s}");
-            var prefixedHover = groupSelector == ".group" ? string.Empty : MapSelectors(rule.Selector, s => $"{groupSelector}:hover {s}");
-            var selectors = string.IsNullOrEmpty(prefixedHover) ? groupHover : $"{groupHover}, {prefixedHover}";
-            return rule with
-            {
-                Selector = selectors,
-                Order = rule.Order + CssOrder.StateVariants
-            };
-        }
-
-        if (variant is "group-focus")
-        {
-            var groupSelector = string.IsNullOrEmpty(_prefix) ? ".group" : $".{_prefix}-group";
-            var groupFocus = MapSelectors(rule.Selector, s => $".group:focus {s}");
-            var prefixedFocus = groupSelector == ".group" ? string.Empty : MapSelectors(rule.Selector, s => $"{groupSelector}:focus {s}");
-            var selectors = string.IsNullOrEmpty(prefixedFocus) ? groupFocus : $"{groupFocus}, {prefixedFocus}";
-            return rule with
-            {
-                Selector = selectors,
-                Order = rule.Order + CssOrder.StateVariants
-            };
-        }
-
-        if (variant is "group-focus-within")
-        {
-            var groupSelector = string.IsNullOrEmpty(_prefix) ? ".group" : $".{_prefix}-group";
-            var groupFocusWithin = MapSelectors(rule.Selector, s => $".group:focus-within {s}");
-            var prefixedFocusWithin = groupSelector == ".group" ? string.Empty : MapSelectors(rule.Selector, s => $"{groupSelector}:focus-within {s}");
-            var selectors = string.IsNullOrEmpty(prefixedFocusWithin) ? groupFocusWithin : $"{groupFocusWithin}, {prefixedFocusWithin}";
-            return rule with
-            {
-                Selector = selectors,
-                Order = rule.Order + CssOrder.StateVariants
-            };
+            return ApplyMarkerVariant(rule, "peer", peerCondition, peerCombinator);
         }
 
         // Dark mode
@@ -247,19 +251,251 @@ public partial class UtilityGenerator
             };
         }
 
+        var mediaQuery = variant switch
+        {
+            "motion-safe" => "@media (prefers-reduced-motion: no-preference)",
+            "motion-reduce" => "@media (prefers-reduced-motion: reduce)",
+            "contrast-more" => "@media (prefers-contrast: more)",
+            "contrast-less" => "@media (prefers-contrast: less)",
+            "forced-colors" => "@media (forced-colors: active)",
+            "portrait" => "@media (orientation: portrait)",
+            "landscape" => "@media (orientation: landscape)",
+            "print" => "@media print",
+            _ => null
+        };
+
+        if (mediaQuery != null)
+        {
+            return rule with
+            {
+                MediaQuery = CombineMediaQueries(rule.MediaQuery, mediaQuery),
+                Order = rule.Order + CssOrder.ResponsiveVariants
+            };
+        }
+
         // Responsive variants
         if (_config.Breakpoints.TryGetValue(variant, out var minWidth))
         {
             return rule with
             {
                 Selector = rule.Selector,
-                MediaQuery = $"@media (min-width: {minWidth})",
+                MediaQuery = CombineMediaQueries(rule.MediaQuery, $"@media (min-width: {minWidth})"),
                 Order = rule.Order + CssOrder.ResponsiveVariants
             };
         }
 
         return rule;
     }
+
+    private CssRule ApplyMarkerVariant(CssRule rule, string marker, string condition, string combinator)
+    {
+        var selectors = new List<string>
+        {
+            MapSelectors(rule.Selector, selector => $".{marker}{condition}{combinator}{selector}")
+        };
+
+        if (!string.IsNullOrEmpty(_prefix))
+        {
+            selectors.Add(MapSelectors(
+                rule.Selector,
+                selector => $".{_prefix}-{marker}{condition}{combinator}{selector}"));
+        }
+
+        return rule with
+        {
+            Selector = string.Join(", ", selectors),
+            Order = rule.Order + CssOrder.StateVariants
+        };
+    }
+
+    private static bool TryParseMarkerVariant(
+        string variant,
+        string marker,
+        out string condition,
+        out string combinator)
+    {
+        condition = string.Empty;
+        combinator = marker == "peer" ? " ~ " : " ";
+
+        var prefix = $"{marker}-";
+        if (!variant.StartsWith(prefix, StringComparison.Ordinal))
+            return false;
+
+        var state = variant[prefix.Length..];
+        condition = state switch
+        {
+            "hover" => ":hover",
+            "focus" => ":focus",
+            "focus-visible" => ":focus-visible",
+            "focus-within" => ":focus-within",
+            "active" => ":active",
+            "checked" => ":checked",
+            "disabled" => ":disabled",
+            "invalid" => ":invalid",
+            "required" => ":required",
+            "open" => ":is([open], :popover-open)",
+            _ => string.Empty
+        };
+
+        if (condition.Length > 0)
+            return true;
+
+        return TryGetAttributeSelector(state, out condition);
+    }
+
+    private static bool TryGetAttributeSelector(string variant, out string selector)
+    {
+        selector = string.Empty;
+
+        var ariaStates = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "busy", "checked", "disabled", "expanded", "hidden", "pressed",
+            "readonly", "required", "selected"
+        };
+
+        if (variant.StartsWith("aria-", StringComparison.Ordinal))
+        {
+            var expression = variant["aria-".Length..];
+            if (ariaStates.Contains(expression))
+            {
+                selector = $"[aria-{expression}=\"true\"]";
+                return true;
+            }
+
+            return TryParseAttributeExpression(expression, "aria", out selector);
+        }
+
+        if (variant.StartsWith("data-", StringComparison.Ordinal))
+        {
+            return TryParseAttributeExpression(variant["data-".Length..], "data", out selector);
+        }
+
+        return false;
+    }
+
+    private static bool TryParseAttributeExpression(string expression, string attributePrefix, out string selector)
+    {
+        selector = string.Empty;
+        if (expression.Length < 3 || expression[0] != '[' || expression[^1] != ']')
+            return false;
+
+        var body = expression[1..^1];
+        var equalsIndex = body.IndexOf('=');
+        var name = equalsIndex >= 0 ? body[..equalsIndex] : body;
+        var value = equalsIndex >= 0 ? body[(equalsIndex + 1)..] : null;
+
+        if (!AttributeNameRegex().IsMatch(name) ||
+            (value != null && !AttributeValueRegex().IsMatch(value)))
+        {
+            return false;
+        }
+
+        selector = value == null
+            ? $"[{attributePrefix}-{name}]"
+            : $"[{attributePrefix}-{name}=\"{value}\"]";
+        return true;
+    }
+
+    private static string CombineMediaQueries(string? existing, string incoming)
+    {
+        if (string.IsNullOrWhiteSpace(existing))
+            return incoming;
+
+        const string prefix = "@media ";
+        if (!existing.StartsWith(prefix, StringComparison.Ordinal) ||
+            !incoming.StartsWith(prefix, StringComparison.Ordinal))
+        {
+            return incoming;
+        }
+
+        SplitMediaQueryBody(existing[prefix.Length..], out var existingMediaType, out var existingConditions);
+        SplitMediaQueryBody(incoming[prefix.Length..], out var incomingMediaType, out var incomingConditions);
+
+        var mediaType = existingMediaType ?? incomingMediaType;
+        if (existingMediaType != null &&
+            incomingMediaType != null &&
+            !string.Equals(existingMediaType, incomingMediaType, StringComparison.OrdinalIgnoreCase))
+        {
+            return incoming;
+        }
+
+        var conditions = new[] { existingConditions, incomingConditions }
+            .Where(condition => condition.Length > 0)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+
+        var body = mediaType ?? string.Empty;
+        if (conditions.Count > 0)
+        {
+            body = body.Length > 0
+                ? $"{body} and {string.Join(" and ", conditions)}"
+                : string.Join(" and ", conditions);
+        }
+
+        return $"{prefix}{body}";
+    }
+
+    private static void SplitMediaQueryBody(
+        string body,
+        out string? mediaType,
+        out string conditions)
+    {
+        body = body.Trim();
+        if (body.StartsWith('('))
+        {
+            mediaType = null;
+            conditions = body;
+            return;
+        }
+
+        var separatorIndex = body.IndexOf(" and ", StringComparison.Ordinal);
+        if (separatorIndex < 0)
+        {
+            mediaType = body;
+            conditions = string.Empty;
+            return;
+        }
+
+        mediaType = body[..separatorIndex];
+        conditions = body[(separatorIndex + " and ".Length)..];
+    }
+
+    private static string MapSelectors(string selector, Func<string, string> map) =>
+        string.Join(", ", SplitSelectorList(selector).Select(map));
+
+    private static IEnumerable<string> SplitSelectorList(string selector)
+    {
+        var start = 0;
+        var depth = 0;
+
+        for (var index = 0; index < selector.Length; index++)
+        {
+            depth += selector[index] switch
+            {
+                '(' or '[' => 1,
+                ')' or ']' => -1,
+                _ => 0
+            };
+
+            if (selector[index] == ',' && depth == 0)
+            {
+                var part = selector[start..index].Trim();
+                if (part.Length > 0)
+                    yield return part;
+                start = index + 1;
+            }
+        }
+
+        var finalPart = selector[start..].Trim();
+        if (finalPart.Length > 0)
+            yield return finalPart;
+    }
+
+    [GeneratedRegex(@"^[A-Za-z_][A-Za-z0-9_-]*$")]
+    private static partial Regex AttributeNameRegex();
+
+    [GeneratedRegex(@"^[A-Za-z0-9_.:-]+$")]
+    private static partial Regex AttributeValueRegex();
 
     private CssRule? GenerateBaseRule(string name, string fullClassName)
     {
@@ -2202,7 +2438,7 @@ public partial class UtilityGenerator
             return new CssRule
             {
                 Selector = selector,
-                Declarations = "box-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);",
+                Declarations = "box-shadow: var(--tw-ring-inset,) 0 0 0 calc(3px + var(--tw-ring-offset-width, 0px)) var(--tw-ring-color, var(--vibe-ring, currentColor));",
                 Order = CssOrder.Effects
             };
         }
@@ -2222,7 +2458,7 @@ public partial class UtilityGenerator
             return new CssRule
             {
                 Selector = selector,
-                Declarations = $"box-shadow: var(--tw-ring-inset) 0 0 0 calc({rw} + var(--tw-ring-offset-width)) var(--tw-ring-color);",
+                Declarations = $"box-shadow: var(--tw-ring-inset,) 0 0 0 calc({rw} + var(--tw-ring-offset-width, 0px)) var(--tw-ring-color, var(--vibe-ring, currentColor));",
                 Order = CssOrder.Effects
             };
         }
@@ -2592,8 +2828,8 @@ public partial class UtilityGenerator
 
     private CssRule? TryGenerateLayout(string name, string selector)
     {
-        // Structural class for group-* variants (no declarations, but should be recognized)
-        if (name is "group")
+        // Structural marker classes for group-* and peer-* variants.
+        if (name is "group" or "peer")
         {
             return new CssRule
             {
@@ -3029,16 +3265,40 @@ public partial class UtilityGenerator
 
     private CssRule? TryGenerateArbitrary(string name, string selector)
     {
-        // Arbitrary values: property-[value]
-        // e.g., w-[500px], bg-[#ff0000], text-[14px]
+        var customPropertyMatch = ArbitraryCustomPropertyRegex().Match(name);
+        if (customPropertyMatch.Success)
+        {
+            var customPropertyValue = DecodeArbitraryValue(customPropertyMatch.Groups[2].Value);
+            if (!IsSafeArbitraryValue(customPropertyValue))
+                return null;
+
+            return new CssRule
+            {
+                Selector = selector,
+                Declarations = $"{customPropertyMatch.Groups[1].Value}: {customPropertyValue};",
+                Order = CssOrder.Base
+            };
+        }
+
+        // Arbitrary values: property-[value], for example w-[500px],
+        // bg-[#ff0000], text-[14px], or grid-cols-[12rem_minmax(0,1fr)].
         var match = ArbitraryValueRegex().Match(name);
         if (!match.Success)
             return null;
 
         var property = match.Groups[1].Value;
-        var value = match.Groups[2].Value;
+        var value = DecodeArbitraryValue(match.Groups[2].Value);
+        if (!IsSafeArbitraryValue(value))
+            return null;
 
-        // Map property prefixes to CSS properties
+        var explicitType = string.Empty;
+        var typeSeparator = value.IndexOf(':');
+        if (typeSeparator > 0 && value[..typeSeparator] is "color" or "length")
+        {
+            explicitType = value[..typeSeparator];
+            value = value[(typeSeparator + 1)..];
+        }
+
         var propertyMap = new Dictionary<string, (string Css, int Order)>
         {
             ["w"] = ("width", CssOrder.Sizing),
@@ -3054,6 +3314,8 @@ public partial class UtilityGenerator
             ["pl"] = ("padding-left", CssOrder.Spacing),
             ["px"] = ("padding-left|padding-right", CssOrder.Spacing),
             ["py"] = ("padding-top|padding-bottom", CssOrder.Spacing),
+            ["ps"] = ("padding-inline-start", CssOrder.Spacing),
+            ["pe"] = ("padding-inline-end", CssOrder.Spacing),
             ["m"] = ("margin", CssOrder.Spacing),
             ["mt"] = ("margin-top", CssOrder.Spacing),
             ["mr"] = ("margin-right", CssOrder.Spacing),
@@ -3061,12 +3323,12 @@ public partial class UtilityGenerator
             ["ml"] = ("margin-left", CssOrder.Spacing),
             ["mx"] = ("margin-left|margin-right", CssOrder.Spacing),
             ["my"] = ("margin-top|margin-bottom", CssOrder.Spacing),
+            ["ms"] = ("margin-inline-start", CssOrder.Spacing),
+            ["me"] = ("margin-inline-end", CssOrder.Spacing),
             ["gap"] = ("gap", CssOrder.Flexbox),
             ["gap-x"] = ("column-gap", CssOrder.Flexbox),
             ["gap-y"] = ("row-gap", CssOrder.Flexbox),
-            ["text"] = ("font-size", CssOrder.Typography),
             ["bg"] = ("background-color", CssOrder.Background),
-            ["border"] = ("border-width", CssOrder.Border),
             ["rounded"] = ("border-radius", CssOrder.Border),
             ["top"] = ("top", CssOrder.Layout),
             ["right"] = ("right", CssOrder.Layout),
@@ -3080,8 +3342,65 @@ public partial class UtilityGenerator
             ["grid-cols"] = ("grid-template-columns", CssOrder.Grid),
             ["grid-rows"] = ("grid-template-rows", CssOrder.Grid),
             ["col-span"] = ("grid-column", CssOrder.Grid),
-            ["row-span"] = ("grid-row", CssOrder.Grid)
+            ["row-span"] = ("grid-row", CssOrder.Grid),
+            ["basis"] = ("flex-basis", CssOrder.Flexbox),
+            ["order"] = ("order", CssOrder.Flexbox),
+            ["fill"] = ("fill", CssOrder.Effects),
+            ["stroke"] = ("stroke", CssOrder.Effects),
+            ["accent"] = ("accent-color", CssOrder.Interactivity),
+            ["caret"] = ("caret-color", CssOrder.Interactivity)
         };
+
+        if (property == "size")
+        {
+            propertyMap[property] = ("width|height", CssOrder.Sizing);
+        }
+
+        if (property == "bg" &&
+            explicitType.Length == 0 &&
+            value.StartsWith("url(", StringComparison.OrdinalIgnoreCase))
+        {
+            propertyMap[property] = ("background-image", CssOrder.Background);
+        }
+
+        var colorValue = explicitType == "color" ||
+                         (explicitType.Length == 0 && LooksLikeArbitraryColor(value));
+
+        if (property == "text")
+        {
+            propertyMap[property] = colorValue
+                ? ("color", CssOrder.Typography)
+                : ("font-size", CssOrder.Typography);
+        }
+
+        if (property == "border")
+        {
+            propertyMap[property] = colorValue
+                ? ("border-color", CssOrder.Border)
+                : ("border-width", CssOrder.Border);
+        }
+
+        if (property == "outline")
+        {
+            propertyMap[property] = colorValue
+                ? ("outline-color", CssOrder.Border)
+                : ("outline-width", CssOrder.Border);
+        }
+
+        if (property == "ring")
+        {
+            if (!colorValue)
+            {
+                return new CssRule
+                {
+                    Selector = selector,
+                    Declarations = $"box-shadow: var(--tw-ring-inset,) 0 0 0 calc({value} + var(--tw-ring-offset-width, 0px)) var(--tw-ring-color, var(--vibe-ring, currentColor));",
+                    Order = CssOrder.Effects
+                };
+            }
+
+            propertyMap[property] = ("--tw-ring-color", CssOrder.Effects);
+        }
 
         if (propertyMap.TryGetValue(property, out var mapping))
         {
@@ -3100,8 +3419,227 @@ public partial class UtilityGenerator
         return null;
     }
 
+    private static bool LooksLikeArbitraryColor(string value) =>
+        value.StartsWith('#') ||
+        value.StartsWith("var(", StringComparison.OrdinalIgnoreCase) ||
+        value.StartsWith("rgb(", StringComparison.OrdinalIgnoreCase) ||
+        value.StartsWith("rgba(", StringComparison.OrdinalIgnoreCase) ||
+        value.StartsWith("hsl(", StringComparison.OrdinalIgnoreCase) ||
+        value.StartsWith("hsla(", StringComparison.OrdinalIgnoreCase) ||
+        value.StartsWith("oklab(", StringComparison.OrdinalIgnoreCase) ||
+        value.StartsWith("oklch(", StringComparison.OrdinalIgnoreCase) ||
+        value.StartsWith("color(", StringComparison.OrdinalIgnoreCase) ||
+        value is "transparent" or "currentColor";
+
+    // Unescaped underscores represent spaces except in url() contents and var() names;
+    // an escaped underscore is always literal.
+    private static string DecodeArbitraryValue(string value)
+    {
+        var decoded = new StringBuilder(value.Length);
+        var functionNames = new List<string>();
+        var argumentSeparators = new List<bool>();
+
+        for (var index = 0; index < value.Length; index++)
+        {
+            var character = value[index];
+            if (character == '\\' && index + 1 < value.Length && value[index + 1] == '_')
+            {
+                decoded.Append('_');
+                index++;
+                continue;
+            }
+
+            if (character == '(')
+            {
+                functionNames.Add(GetFunctionName(value, index));
+                argumentSeparators.Add(false);
+                decoded.Append(character);
+                continue;
+            }
+
+            if (character == ')')
+            {
+                if (functionNames.Count > 0)
+                {
+                    functionNames.RemoveAt(functionNames.Count - 1);
+                    argumentSeparators.RemoveAt(argumentSeparators.Count - 1);
+                }
+
+                decoded.Append(character);
+                continue;
+            }
+
+            if (character == ',' && functionNames.Count > 0)
+            {
+                var currentFunction = functionNames[^1];
+                if (currentFunction.Equals("var", StringComparison.OrdinalIgnoreCase))
+                {
+                    argumentSeparators[^1] = true;
+                }
+
+                decoded.Append(character);
+                continue;
+            }
+
+            if (character == '_')
+            {
+                var insideUrl = functionNames.Any(
+                    functionName => functionName.Equals("url", StringComparison.OrdinalIgnoreCase));
+                var insideCustomPropertyName = functionNames.Count > 0 &&
+                    functionNames[^1].Equals("var", StringComparison.OrdinalIgnoreCase) &&
+                    !argumentSeparators[^1];
+
+                decoded.Append(insideUrl || insideCustomPropertyName ? '_' : ' ');
+                continue;
+            }
+
+            decoded.Append(character);
+        }
+
+        return decoded.ToString();
+    }
+
+    private static string GetFunctionName(string value, int openParenthesisIndex)
+    {
+        var start = openParenthesisIndex;
+        while (start > 0 && IsFunctionNameCharacter(value[start - 1]))
+        {
+            start--;
+        }
+
+        return value[start..openParenthesisIndex];
+    }
+
+    private static bool IsFunctionNameCharacter(char character) =>
+        char.IsLetterOrDigit(character) || character is '-' or '_';
+
+    private static bool IsSafeArbitraryValue(string value) =>
+        value.Length > 0 &&
+        !value.Contains(';') &&
+        !value.Contains('{') &&
+        !value.Contains('}') &&
+        !value.Contains('\r') &&
+        !value.Contains('\n') &&
+        !value.Contains("/*", StringComparison.Ordinal) &&
+        !value.Contains("*/", StringComparison.Ordinal) &&
+        HasValidCustomPropertyReferences(value);
+
+    private static bool HasValidCustomPropertyReferences(string value)
+    {
+        var functionNames = new List<string>();
+        var quote = '\0';
+
+        for (var index = 0; index < value.Length; index++)
+        {
+            var character = value[index];
+            if (character == '\\' && index + 1 < value.Length)
+            {
+                index++;
+                continue;
+            }
+
+            if (quote != '\0')
+            {
+                if (character == quote)
+                    quote = '\0';
+                continue;
+            }
+
+            if (character is '\'' or '"')
+            {
+                quote = character;
+                continue;
+            }
+
+            if (character == ')')
+            {
+                if (functionNames.Count > 0)
+                    functionNames.RemoveAt(functionNames.Count - 1);
+                continue;
+            }
+
+            if (character != '(')
+                continue;
+
+            var insideUrl = functionNames.Any(
+                functionName => functionName.Equals("url", StringComparison.OrdinalIgnoreCase));
+            var functionName = GetFunctionName(value, index);
+            functionNames.Add(functionName);
+
+            if (insideUrl || !functionName.Equals("var", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (!TryGetFirstFunctionArgument(value, index, out var customPropertyName) ||
+                !CustomPropertyNameRegex().IsMatch(customPropertyName.Trim()))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool TryGetFirstFunctionArgument(
+        string value,
+        int openParenthesisIndex,
+        out string argument)
+    {
+        var nestedDepth = 0;
+        var quote = '\0';
+
+        for (var index = openParenthesisIndex + 1; index < value.Length; index++)
+        {
+            var character = value[index];
+            if (character == '\\' && index + 1 < value.Length)
+            {
+                index++;
+                continue;
+            }
+
+            if (quote != '\0')
+            {
+                if (character == quote)
+                    quote = '\0';
+                continue;
+            }
+
+            if (character is '\'' or '"')
+            {
+                quote = character;
+                continue;
+            }
+
+            if (character == '(')
+            {
+                nestedDepth++;
+                continue;
+            }
+
+            if (character == ')' && nestedDepth > 0)
+            {
+                nestedDepth--;
+                continue;
+            }
+
+            if ((character == ',' || character == ')') && nestedDepth == 0)
+            {
+                argument = value[(openParenthesisIndex + 1)..index];
+                return true;
+            }
+        }
+
+        argument = string.Empty;
+        return false;
+    }
+
     [GeneratedRegex(@"^(.+)-\[(.+)\]$")]
     private static partial Regex ArbitraryValueRegex();
+
+    [GeneratedRegex(@"^\[(--[A-Za-z_][A-Za-z0-9_-]*):(.+)\]$")]
+    private static partial Regex ArbitraryCustomPropertyRegex();
+
+    [GeneratedRegex(@"^--[A-Za-z_][A-Za-z0-9_-]*$")]
+    private static partial Regex CustomPropertyNameRegex();
 
     #endregion
 
@@ -3111,6 +3649,7 @@ public partial class UtilityGenerator
     {
         // Escape special CSS characters in selectors
         return selector
+            .Replace("\\", "\\\\")
             .Replace(":", "\\:")
             .Replace("/", "\\/")
             .Replace("[", "\\[")
@@ -3120,7 +3659,12 @@ public partial class UtilityGenerator
             .Replace("(", "\\(")
             .Replace(")", "\\)")
             .Replace(",", "\\,")
-            .Replace("%", "\\%");
+            .Replace("%", "\\%")
+            .Replace("=", "\\=")
+            .Replace("!", "\\!")
+            .Replace("@", "\\@")
+            .Replace("+", "\\+")
+            .Replace("*", "\\*");
     }
 
     #endregion

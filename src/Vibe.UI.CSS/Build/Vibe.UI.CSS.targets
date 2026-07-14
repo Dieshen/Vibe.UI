@@ -8,6 +8,8 @@
     <VibeCssPrefix Condition="'$(VibeCssPrefix)' == ''">vibe</VibeCssPrefix>
     <VibeCssIncludeBase Condition="'$(VibeCssIncludeBase)' == ''">true</VibeCssIncludeBase>
     <VibeCssScanPatterns Condition="'$(VibeCssScanPatterns)' == ''">*.razor,*.cshtml,*.html</VibeCssScanPatterns>
+    <VibeCssFailOnUnknown Condition="'$(VibeCssFailOnUnknown)' == ''">false</VibeCssFailOnUnknown>
+    <VibeCssIgnoredClasses Condition="'$(VibeCssIgnoredClasses)' == ''"></VibeCssIgnoredClasses>
     <VibeCssUseDotnetToolFallback Condition="'$(VibeCssUseDotnetToolFallback)' == ''">false</VibeCssUseDotnetToolFallback>
     <VibeCssFailOnMissingTool Condition="'$(VibeCssFailOnMissingTool)' == ''">false</VibeCssFailOnMissingTool>
     <_VibeCssOwnStaticWebAssetDefault Condition="'$(StaticWebAssetProjectMode)' == 'Default'">false</_VibeCssOwnStaticWebAssetDefault>
@@ -16,6 +18,8 @@
     <_VibeCssOutputFullPath>$([System.IO.Path]::GetFullPath('$(VibeCssOutput)', '$(MSBuildProjectDirectory)'))</_VibeCssOutputFullPath>
     <_VibeCssScanRootFullPath>$([System.IO.Path]::GetFullPath('$(VibeCssScanRoot)', '$(MSBuildProjectDirectory)'))</_VibeCssScanRootFullPath>
     <_VibeCssOutputDirectory>$([System.IO.Path]::GetDirectoryName('$(_VibeCssOutputFullPath)'))</_VibeCssOutputDirectory>
+    <_VibeCssIncrementalStateDirectory>$(BaseIntermediateOutputPath)Vibe.UI.CSS</_VibeCssIncrementalStateDirectory>
+    <_VibeCssGenerationOptionsFile>$(_VibeCssIncrementalStateDirectory)/generation.options</_VibeCssGenerationOptionsFile>
 
     <!-- Tool assembly path resolution (package-relative) -->
     <_VibeCssToolFromTools>$(MSBuildThisFileDirectory)../tools/net10.0/Vibe.UI.CSS.dll</_VibeCssToolFromTools>
@@ -46,10 +50,20 @@
              Text="Vibe.UI.CSS: Skipping CSS asset ownership for $(MSBuildProjectName) because StaticWebAssetProjectMode=$(StaticWebAssetProjectMode)." />
   </Target>
 
+  <Target Name="_VibeCssWriteIncrementalState"
+          Condition="'$(VibeCssEnabled)' == 'true' and '$(VibeCssOwnStaticWebAsset)' == 'true'">
+    <MakeDir Directories="$(_VibeCssIncrementalStateDirectory)" />
+    <WriteLinesToFile File="$(_VibeCssGenerationOptionsFile)"
+                      Lines="VibeCssScanRoot=$(_VibeCssScanRootFullPath)|VibeCssOutput=$(_VibeCssOutputFullPath)|VibeCssPrefix=$(VibeCssPrefix)|VibeCssIncludeBase=$(VibeCssIncludeBase)|VibeCssScanPatterns=$(VibeCssScanPatterns)|VibeCssFailOnUnknown=$(VibeCssFailOnUnknown)|VibeCssIgnoredClasses=$(VibeCssIgnoredClasses)|VibeCssToolPath=$(VibeCssToolPath)|VibeCssUseDotnetToolFallback=$(VibeCssUseDotnetToolFallback)|VibeCssFailOnMissingTool=$(VibeCssFailOnMissingTool)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+  </Target>
+
   <!-- Run CSS generation before build -->
   <Target Name="VibeCssGenerate"
           BeforeTargets="BeforeBuild"
-          Inputs="$(MSBuildProjectFullPath);$(MSBuildThisFileFullPath);$(VibeCssToolPath);@(_VibeCssScanInput)"
+          DependsOnTargets="_VibeCssWriteIncrementalState"
+          Inputs="$(MSBuildProjectFullPath);$(MSBuildThisFileFullPath);$(VibeCssToolPath);$(_VibeCssGenerationOptionsFile);@(_VibeCssScanInput)"
           Outputs="$(_VibeCssOutputFullPath)"
           Condition="'$(VibeCssEnabled)' == 'true' and '$(VibeCssOwnStaticWebAsset)' == 'true'">
 
@@ -57,8 +71,10 @@
 
     <!-- Determine include-base flag -->
     <PropertyGroup>
-      <_VibeCssIncludeBaseArg Condition="'$(VibeCssIncludeBase)' == 'true'">--with-base</_VibeCssIncludeBaseArg>
+      <_VibeCssIncludeBaseArg Condition="'$(VibeCssIncludeBase)' == 'true'">--with-base true</_VibeCssIncludeBaseArg>
       <_VibeCssIncludeBaseArg Condition="'$(VibeCssIncludeBase)' != 'true'">--with-base false</_VibeCssIncludeBaseArg>
+      <_VibeCssFailOnUnknownArg Condition="'$(VibeCssFailOnUnknown)' == 'true'">--fail-on-unknown</_VibeCssFailOnUnknownArg>
+      <_VibeCssIgnoredClassesArg Condition="'$(VibeCssIgnoredClasses)' != ''">--ignore &quot;$(VibeCssIgnoredClasses)&quot;</_VibeCssIgnoredClassesArg>
     </PropertyGroup>
 
     <MakeDir Directories="$(_VibeCssOutputDirectory)" Condition="'$(_VibeCssOutputDirectory)' != ''" />
@@ -70,14 +86,14 @@
              Text="Vibe.UI.CSS: Tool assembly not found at $(VibeCssToolPath); skipping CSS generation. Set VibeCssToolPath or set VibeCssUseDotnetToolFallback=true to try a dotnet tool." />
 
     <!-- Call Vibe.UI.CSS via dotnet exec (preferred when referenced via PackageReference) -->
-    <Exec Command="dotnet &quot;$(VibeCssToolPath)&quot; generate &quot;$(_VibeCssScanRootFullPath)&quot; -o &quot;$(_VibeCssOutputFullPath)&quot; --prefix &quot;$(VibeCssPrefix)&quot; $(_VibeCssIncludeBaseArg) --patterns=&quot;$(VibeCssScanPatterns)&quot;"
+    <Exec Command="dotnet &quot;$(VibeCssToolPath)&quot; generate &quot;$(_VibeCssScanRootFullPath)&quot; -o &quot;$(_VibeCssOutputFullPath)&quot; --prefix &quot;$(VibeCssPrefix)&quot; $(_VibeCssIncludeBaseArg) --patterns &quot;$(VibeCssScanPatterns)&quot; $(_VibeCssFailOnUnknownArg) $(_VibeCssIgnoredClassesArg)"
           Condition="Exists('$(VibeCssToolPath)')"
           ConsoleToMSBuild="true"
           StandardOutputImportance="Normal"
           StandardErrorImportance="High" />
 
     <!-- Optional fallback: Use dotnet tool if package assembly isn't available -->
-    <Exec Command="dotnet vibe-css generate &quot;$(_VibeCssScanRootFullPath)&quot; -o &quot;$(_VibeCssOutputFullPath)&quot; --prefix &quot;$(VibeCssPrefix)&quot; $(_VibeCssIncludeBaseArg) --patterns=&quot;$(VibeCssScanPatterns)&quot;"
+    <Exec Command="dotnet vibe-css generate &quot;$(_VibeCssScanRootFullPath)&quot; -o &quot;$(_VibeCssOutputFullPath)&quot; --prefix &quot;$(VibeCssPrefix)&quot; $(_VibeCssIncludeBaseArg) --patterns &quot;$(VibeCssScanPatterns)&quot; $(_VibeCssFailOnUnknownArg) $(_VibeCssIgnoredClassesArg)"
           Condition="!Exists('$(VibeCssToolPath)') and '$(VibeCssUseDotnetToolFallback)' == 'true'"
           ConsoleToMSBuild="true"
           StandardOutputImportance="Normal"

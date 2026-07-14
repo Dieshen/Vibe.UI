@@ -5,6 +5,9 @@ It recognizes `vibe-*` classes, emits only supported rules that are present in
 the scanned source, and can include the shared Vibe.UI design-token foundation.
 Node.js is not required for generation.
 
+The versioned Tailwind-style compatibility promise for beta is the
+[beta core profile](Vibe.UI.CSS.CoreProfile.md).
+
 For consumer stylesheet loading, start with [CSS setup](CSS-SETUP.md). This
 document describes the generator and its build integration.
 
@@ -49,8 +52,9 @@ docs application, including:
 - semantic and palette colors;
 - borders, radii, rings, shadows, and opacity;
 - transforms, transitions, and selected animations;
-- responsive, dark, state, group, and structural variants; and
-- supported arbitrary values such as `vibe-w-[500px]`.
+- responsive, dark, form-state, group, peer, ARIA, data, accessibility-media,
+  and structural variants; and
+- supported arbitrary values such as `vibe-w-[var(--panel-width)]`.
 
 Examples:
 
@@ -83,9 +87,22 @@ Generate options:
 | `--allow-unprefixed` | `false`           | Also recognize unprefixed utilities     |
 | `--with-base`        | `true`            | Include base variables and theme tokens |
 | `--patterns`         | Razor/CSHTML/HTML | Comma-separated scan patterns           |
+| `--fail-on-unknown`  | `false`           | Exit non-zero for unknown utilities     |
+| `--ignore`           | empty             | Known non-utility classes to exclude    |
 
 `Vibe.UI.CLI` exposes the same generator through `vibe css`, with watch,
 scan-only, and verbose modes. See [CLI](CLI.md).
+
+For application CI, enable strict scanning so unsupported classes cannot be
+silently skipped:
+
+```bash
+vibe css . --scan-only --fail-on-unknown
+```
+
+Strict generation validates the complete scan before writing, so a failed run
+does not replace the existing stylesheet. Use `--ignore` only for intentional
+non-utility hooks that share the configured prefix.
 
 ## MSBuild integration
 
@@ -104,6 +121,8 @@ Adding the `Vibe.UI.CSS` package imports targets from both `build` and
   <VibeCssPrefix>vibe</VibeCssPrefix>
   <VibeCssIncludeBase>true</VibeCssIncludeBase>
   <VibeCssScanPatterns>*.razor,*.cshtml,*.html</VibeCssScanPatterns>
+  <VibeCssFailOnUnknown>true</VibeCssFailOnUnknown>
+  <VibeCssIgnoredClasses>vibe-theme-hook</VibeCssIgnoredClasses>
 </PropertyGroup>
 ```
 
@@ -117,6 +136,8 @@ Adding the `Vibe.UI.CSS` package imports targets from both `build` and
 | `VibeCssPrefix`                | `vibe`                    | Utility prefix                                                  |
 | `VibeCssIncludeBase`           | `true`                    | Includes the embedded base stylesheet                           |
 | `VibeCssScanPatterns`          | Razor/CSHTML/HTML         | Source patterns                                                 |
+| `VibeCssFailOnUnknown`         | `false`                   | Fails generation before writing when unknown utilities exist    |
+| `VibeCssIgnoredClasses`        | empty                     | Comma-separated known non-utility class names                   |
 | `VibeCssOwnStaticWebAsset`     | topology-derived          | Controls whether this project generates and publishes the asset |
 | `VibeCssUseDotnetToolFallback` | `false`                   | Uses `dotnet vibe-css` if the packaged assembly is unavailable  |
 | `VibeCssFailOnMissingTool`     | `false`                   | Promotes a missing generator assembly to an error               |
@@ -165,4 +186,3 @@ Run the suite with:
 ```bash
 dotnet test tests/Vibe.UI.CSS.Tests/Vibe.UI.CSS.Tests.csproj --configuration Release
 ```
-

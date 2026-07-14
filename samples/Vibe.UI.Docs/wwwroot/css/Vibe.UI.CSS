@@ -690,6 +690,7 @@ video {
 .vibe-min-h-\[100px\] { min-height: 100px; }
 .vibe-min-h-\[200px\] { min-height: 200px; }
 .vibe-min-h-\[90vh\] { min-height: 90vh; }
+.vibe-min-h-32 { min-height: 8rem; }
 .vibe-min-h-screen { min-height: 100vh; }
 .vibe-min-w-0 { min-width: 0; }
 .vibe-w-\[300px\] { width: 300px; }
@@ -815,6 +816,7 @@ video {
 .vibe-border { border-width: 1px; }
 .vibe-border-b { border-bottom-width: 1px; }
 .vibe-border-brand-teal\/20 { border-color: rgb(6 84 101 / 0.2); }
+.vibe-border-dashed { border-style: dashed; }
 .vibe-border-l { border-left-width: 1px; }
 .vibe-border-l-2 { border-left-width: 2px; }
 .vibe-border-none { border-style: none; }
@@ -920,7 +922,7 @@ video {
 .focus\:vibe-ring-brand-teal:focus { --tw-ring-color: #065465; }
 .focus\:vibe-ring-brand-teal\/50:focus { --tw-ring-color: rgb(6 84 101 / 0.5); }
 .hover\:vibe-border-brand-teal:hover { border-color: #065465; }
-.focus\:vibe-ring-2:focus { box-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color); }
+.focus\:vibe-ring-2:focus { box-shadow: var(--tw-ring-inset,) 0 0 0 calc(2px + var(--tw-ring-offset-width, 0px)) var(--tw-ring-color, var(--vibe-ring, currentColor)); }
 .group:hover .group-hover\:vibe-opacity-100, .vibe-group:hover .group-hover\:vibe-opacity-100 { opacity: 1; }
 .group:hover .group-hover\:vibe-scale-110, .vibe-group:hover .group-hover\:vibe-scale-110 { --tw-scale-x: 1.1; --tw-scale-y: 1.1; transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0)) rotate(var(--tw-rotate, 0)) scaleX(var(--tw-scale-x, 1)) scaleY(var(--tw-scale-y, 1)); }
 .hover\:vibe--translate-y-1:hover { --tw-translate-y: -0.25rem; transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0)) rotate(var(--tw-rotate, 0)) scaleX(var(--tw-scale-x, 1)) scaleY(var(--tw-scale-y, 1)); }

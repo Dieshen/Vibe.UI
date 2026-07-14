@@ -164,7 +164,7 @@ Add CSS links to `wwwroot/index.html`:
 </html>
 ```
 
-### .NET 8+ Blazor Web App (Auto/InteractiveServer/InteractiveWebAssembly)
+### .NET 10 Blazor Web App (Auto/InteractiveServer/InteractiveWebAssembly)
 
 Add CSS links to `Components/App.razor`:
 
@@ -335,8 +335,8 @@ Typical CSS sizes when using Vibe.UI:
 1. **Use minimal setup** - Only include `vibe-base.css` and `Vibe.UI.bundle.scp.css` if you don't need utilities
 2. **Enable HTTP compression** - CSS compresses extremely well (70-80% reduction)
 3. **Use CDN caching** - Static CSS files cache well
-4. **Tree-shaking** - Blazor only includes scoped CSS for components you actually use
-5. **Custom builds** - If using the CLI approach, only install components you need
+4. **Generated utilities** - Vibe.UI.CSS emits only recognized utilities found in scanned source
+5. **Source installs** - If using the CLI approach, install only the components you need
 
 ### Loading Order
 
@@ -524,7 +524,7 @@ No scoped styles bundle needed with CLI - styles are integrated directly into yo
 
 ## Additional Resources
 
-- [Vibe.UI Documentation](https://github.com/Dieshen/Vibe.UI)
+- [Vibe.UI repository](https://github.com/Narcoleptic-Fox/Vibe.UI)
 - [Theming Guide](THEMING.md)
 - [Blazor CSS Isolation](https://docs.microsoft.com/en-us/aspnet/core/blazor/components/css-isolation)
 - [CSS Variables (MDN)](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)

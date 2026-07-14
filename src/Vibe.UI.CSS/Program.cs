@@ -39,13 +39,15 @@ static int PrintUsage()
     Console.WriteLine("  generate   Generate CSS file from scanned classes");
     Console.WriteLine("  test       Run built-in tests");
     Console.WriteLine();
-    Console.WriteLine("Generate Options:");
+    Console.WriteLine("Scan and Generate Options:");
     Console.WriteLine("  -o, --output <file>     Output CSS file path (default: Vibe.UI.CSS)");
     Console.WriteLine("  --prefix <prefix>       CSS class prefix (default: vibe)");
     Console.WriteLine("  --allow-unprefixed [true|false] Generate unprefixed utilities too (default: false)");
     Console.WriteLine("  --with-base [true|false] Include base CSS variables (default: true)");
     Console.WriteLine("  --patterns <patterns>   Comma-separated file patterns to scan");
     Console.WriteLine("                          (default: *.razor,*.cshtml,*.html)");
+    Console.WriteLine("  --ignore <classes>      Comma-separated known non-utility class names");
+    Console.WriteLine("  --fail-on-unknown [true|false] Exit non-zero when unknown utilities are found");
     Console.WriteLine();
     Console.WriteLine("Examples:");
     Console.WriteLine("  vibe-css generate . -o wwwroot/css/Vibe.UI.CSS");
@@ -82,39 +84,41 @@ static int RunScan(string[] args)
     var patterns = new[] { "*.razor", "*.cshtml", "*.html" };
     var prefix = "vibe";
     var allowUnprefixed = false;
+    var failOnUnknown = false;
+    var ignoredClasses = Array.Empty<string>();
 
     // Parse arguments
     for (int i = 0; i < args.Length; i++)
     {
         var arg = args[i];
+        var (option, inlineValue) = SplitOption(arg);
 
-        if (!arg.StartsWith("-") && !arg.StartsWith("--"))
+        if (!option.StartsWith('-'))
         {
             // Positional argument - directory
             directory = arg;
             continue;
         }
 
-        switch (arg)
+        switch (option)
         {
             case "--patterns":
-                if (i + 1 < args.Length)
-                    patterns = args[++i].Split(',', StringSplitOptions.RemoveEmptyEntries);
+                if (ReadOptionValue(args, ref i, inlineValue) is { } patternValue)
+                    patterns = SplitList(patternValue);
                 break;
             case "--prefix":
-                if (i + 1 < args.Length)
-                    prefix = args[++i];
+                if (ReadOptionValue(args, ref i, inlineValue) is { } prefixValue)
+                    prefix = prefixValue;
                 break;
             case "--allow-unprefixed":
-                if (i + 1 < args.Length)
-                {
-                    var value = args[++i].ToLowerInvariant();
-                    allowUnprefixed = value == "true" || value == "1" || value == "yes";
-                }
-                else
-                {
-                    allowUnprefixed = true;
-                }
+                allowUnprefixed = ReadBooleanOption(args, ref i, inlineValue);
+                break;
+            case "--fail-on-unknown":
+                failOnUnknown = ReadBooleanOption(args, ref i, inlineValue);
+                break;
+            case "--ignore":
+                if (ReadOptionValue(args, ref i, inlineValue) is { } ignoreValue)
+                    ignoredClasses = SplitList(ignoreValue);
                 break;
         }
     }
@@ -131,7 +135,7 @@ static int RunScan(string[] args)
     Console.WriteLine($"Allow unprefixed: {allowUnprefixed}");
     Console.WriteLine();
 
-    var result = VibeCss.Scan(directory, patterns, prefix, allowUnprefixed);
+    var result = VibeCss.Scan(directory, patterns, prefix, allowUnprefixed, ignoredClasses);
 
     Console.WriteLine($"Total classes found: {result.TotalClasses}");
     Console.WriteLine($"Recognized: {result.RecognizedClasses.Count}");
@@ -151,6 +155,12 @@ static int RunScan(string[] args)
         }
     }
 
+    if (failOnUnknown && result.UnknownClasses.Count > 0)
+    {
+        Console.Error.WriteLine("Strict scan failed because unknown utility classes were found.");
+        return 1;
+    }
+
     return 0;
 }
 
@@ -162,51 +172,49 @@ static int RunGenerate(string[] args)
     var allowUnprefixed = false;
     var includeBase = true;
     var patterns = new[] { "*.razor", "*.cshtml", "*.html" };
+    var failOnUnknown = false;
+    var ignoredClasses = Array.Empty<string>();
 
     // Parse arguments
     for (int i = 0; i < args.Length; i++)
     {
         var arg = args[i];
+        var (option, inlineValue) = SplitOption(arg);
 
-        if (!arg.StartsWith("-") && !arg.StartsWith("--"))
+        if (!option.StartsWith('-'))
         {
             // Positional argument - directory
             directory = arg;
             continue;
         }
 
-        switch (arg)
+        switch (option)
         {
             case "-o":
             case "--output":
-                if (i + 1 < args.Length)
-                    output = args[++i];
+                if (ReadOptionValue(args, ref i, inlineValue) is { } outputValue)
+                    output = outputValue;
                 break;
             case "--prefix":
-                if (i + 1 < args.Length)
-                    prefix = args[++i];
+                if (ReadOptionValue(args, ref i, inlineValue) is { } prefixValue)
+                    prefix = prefixValue;
                 break;
             case "--allow-unprefixed":
-                if (i + 1 < args.Length)
-                {
-                    var value = args[++i].ToLowerInvariant();
-                    allowUnprefixed = value == "true" || value == "1" || value == "yes";
-                }
-                else
-                {
-                    allowUnprefixed = true;
-                }
+                allowUnprefixed = ReadBooleanOption(args, ref i, inlineValue);
                 break;
             case "--with-base":
-                if (i + 1 < args.Length)
-                {
-                    var value = args[++i].ToLower();
-                    includeBase = value != "false" && value != "0" && value != "no";
-                }
+                includeBase = ReadBooleanOption(args, ref i, inlineValue);
                 break;
             case "--patterns":
-                if (i + 1 < args.Length)
-                    patterns = args[++i].Split(',', StringSplitOptions.RemoveEmptyEntries);
+                if (ReadOptionValue(args, ref i, inlineValue) is { } patternValue)
+                    patterns = SplitList(patternValue);
+                break;
+            case "--fail-on-unknown":
+                failOnUnknown = ReadBooleanOption(args, ref i, inlineValue);
+                break;
+            case "--ignore":
+                if (ReadOptionValue(args, ref i, inlineValue) is { } ignoreValue)
+                    ignoredClasses = SplitList(ignoreValue);
                 break;
         }
     }
@@ -229,7 +237,9 @@ static int RunGenerate(string[] args)
         Prefix = prefix,
         IncludeBase = includeBase,
         ScanPatterns = patterns,
-        AllowUnprefixedUtilities = allowUnprefixed
+        AllowUnprefixedUtilities = allowUnprefixed,
+        FailOnUnknown = failOnUnknown,
+        IgnoredClasses = ignoredClasses
     };
 
     var result = VibeCss.Generate(directory, output, options);
@@ -251,6 +261,67 @@ static int RunGenerate(string[] args)
 
     return 0;
 }
+
+static (string Option, string? InlineValue) SplitOption(string argument)
+{
+    var equalsIndex = argument.IndexOf('=');
+    return equalsIndex > 0
+        ? (argument[..equalsIndex], argument[(equalsIndex + 1)..])
+        : (argument, null);
+}
+
+static string? ReadOptionValue(string[] args, ref int index, string? inlineValue)
+{
+    if (inlineValue != null)
+        return inlineValue;
+
+    if (index + 1 >= args.Length || args[index + 1].StartsWith('-'))
+        return null;
+
+    return args[++index];
+}
+
+static bool ReadBooleanOption(string[] args, ref int index, string? inlineValue)
+{
+    if (inlineValue != null)
+        return ParseBoolean(inlineValue, defaultValue: true);
+
+    if (index + 1 < args.Length && TryParseBoolean(args[index + 1], out var value))
+    {
+        index++;
+        return value;
+    }
+
+    return true;
+}
+
+static bool ParseBoolean(string value, bool defaultValue) =>
+    TryParseBoolean(value, out var parsed) ? parsed : defaultValue;
+
+static bool TryParseBoolean(string value, out bool parsed)
+{
+    switch (value.ToLowerInvariant())
+    {
+        case "true":
+        case "1":
+        case "yes":
+        case "on":
+            parsed = true;
+            return true;
+        case "false":
+        case "0":
+        case "no":
+        case "off":
+            parsed = false;
+            return true;
+        default:
+            parsed = false;
+            return false;
+    }
+}
+
+static string[] SplitList(string value) =>
+    value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
 static int RunTest()
 {

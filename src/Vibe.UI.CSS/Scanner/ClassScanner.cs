@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using Vibe.UI.CSS.Generator;
 
 namespace Vibe.UI.CSS.Scanner;
 
@@ -7,9 +8,20 @@ namespace Vibe.UI.CSS.Scanner;
 /// </summary>
 public partial class ClassScanner
 {
+    private static readonly HashSet<string> ExcludedDirectoryNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ".git",
+        "bin",
+        "node_modules",
+        "obj"
+    };
+
     private readonly string _prefix;
     private readonly bool _allowUnprefixed;
-    private readonly HashSet<string> _ignoredClasses = [];
+    private readonly UtilityGenerator _utilityGenerator;
+    private readonly HashSet<string> _ignoredClasses = new(
+        VibeComponentClassManifest.Classes,
+        StringComparer.Ordinal);
 
     /// <summary>
     /// Initializes a new instance of the ClassScanner.
@@ -20,6 +32,11 @@ public partial class ClassScanner
     {
         _prefix = prefix;
         _allowUnprefixed = allowUnprefixed;
+        _utilityGenerator = new UtilityGenerator(new VibeConfig
+        {
+            Prefix = prefix,
+            AllowUnprefixedUtilities = allowUnprefixed
+        });
     }
 
     /// <summary>
@@ -32,10 +49,11 @@ public partial class ClassScanner
     {
         patterns ??= ["*.razor", "*.cshtml", "*.html", "*.cs"];
         var classes = new HashSet<string>();
+        var authoredComponentClasses = ScanAuthoredComponentClasses(directory);
 
         foreach (var pattern in patterns)
         {
-            var files = Directory.GetFiles(directory, pattern, SearchOption.AllDirectories);
+            var files = EnumerateSourceFiles(directory, pattern);
             foreach (var file in files)
             {
                 var fileClasses = ScanFile(file);
@@ -46,7 +64,49 @@ public partial class ClassScanner
             }
         }
 
+        foreach (var authoredComponentClass in authoredComponentClasses)
+        {
+            if (_utilityGenerator.Generate(authoredComponentClass) is null)
+            {
+                classes.Remove(authoredComponentClass);
+            }
+        }
+
         return classes;
+    }
+
+    private static HashSet<string> ScanAuthoredComponentClasses(string directory)
+    {
+        var classes = new HashSet<string>(StringComparer.Ordinal);
+
+        foreach (var file in EnumerateSourceFiles(directory, "*.razor.css"))
+        {
+            var content = File.ReadAllText(file);
+            foreach (Match match in CssSelectorClassRegex().Matches(content))
+            {
+                classes.Add(match.Groups[1].Value);
+            }
+        }
+
+        return classes;
+    }
+
+    private static IEnumerable<string> EnumerateSourceFiles(string directory, string pattern)
+    {
+        return Directory
+            .EnumerateFiles(directory, pattern, SearchOption.AllDirectories)
+            .Where(file => !HasExcludedDirectory(directory, file));
+    }
+
+    private static bool HasExcludedDirectory(string root, string file)
+    {
+        var relativePath = Path.GetRelativePath(root, file);
+        var segments = relativePath.Split(
+            [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar],
+            StringSplitOptions.RemoveEmptyEntries);
+
+        return segments.Length > 1 &&
+               segments[..^1].Any(ExcludedDirectoryNames.Contains);
     }
 
     /// <summary>
@@ -151,12 +211,7 @@ public partial class ClassScanner
         foreach (Match match in CSharpStringLiteralRegex().Matches(content))
         {
             var stringValue = match.Groups[1].Value;
-
-            // Only process if it looks like it contains CSS classes
-            if (LooksLikeCssClasses(stringValue))
-            {
-                ExtractClasses(stringValue, classes);
-            }
+            ExtractClasses(stringValue, classes);
         }
 
         // Look for specific patterns like: CssClass = "..."
@@ -196,7 +251,6 @@ public partial class ClassScanner
             if (string.IsNullOrEmpty(trimmed) ||
                 _ignoredClasses.Contains(trimmed) ||
                 trimmed.StartsWith("@") ||
-                trimmed.Contains("(") ||
                 trimmed.Contains("{") ||
                 trimmed.Contains("}"))
             {
@@ -225,21 +279,12 @@ public partial class ClassScanner
         }
     }
 
-    private bool LooksLikeCssClasses(string value)
-    {
-        // Heuristics to determine if a string might contain CSS classes
-        if (string.IsNullOrWhiteSpace(value))
-            return false;
-
-        if (_allowUnprefixed)
-            return true;
-
-        return LooksLikeUtilityToken(value);
-    }
-
     private bool LooksLikeUtilityToken(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        if (IsStaticAssetReference(value))
             return false;
 
         if (string.IsNullOrEmpty(_prefix))
@@ -259,6 +304,14 @@ public partial class ClassScanner
         }
 
         return false;
+    }
+
+    private static bool IsStaticAssetReference(string value)
+    {
+        return value.EndsWith(".css", StringComparison.OrdinalIgnoreCase) ||
+               value.EndsWith(".js", StringComparison.OrdinalIgnoreCase) ||
+               value.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ||
+               value.EndsWith(".map", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
@@ -307,8 +360,13 @@ public partial class ClassScanner
     private static partial Regex CssClassAssignmentRegex();
 
     // Rough validation for class tokens (supports variants + arbitrary values)
-    [GeneratedRegex(@"^[A-Za-z0-9_:\[\]\-./%]+$", RegexOptions.Compiled)]
+    [GeneratedRegex(@"^[A-Za-z0-9_:\[\]\-./%#(),=+*]+$", RegexOptions.Compiled)]
     private static partial Regex CssClassTokenRegex();
+
+    // Simple classes declared by a component's scoped stylesheet are component hooks,
+    // not generated utility candidates.
+    [GeneratedRegex(@"\.([A-Za-z_][A-Za-z0-9_-]*)", RegexOptions.Compiled)]
+    private static partial Regex CssSelectorClassRegex();
 
     #endregion
 }

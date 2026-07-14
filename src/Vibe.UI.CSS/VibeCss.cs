@@ -18,7 +18,15 @@ public static class VibeCss
     public static GenerationResult Generate(string projectDirectory, string outputPath, GenerationOptions? options = null)
     {
         options ??= new GenerationOptions();
-        return Generate(projectDirectory, outputPath, options.ScanPatterns, options.Prefix, options.IncludeBase, options.AllowUnprefixedUtilities);
+        return Generate(
+            projectDirectory,
+            outputPath,
+            options.ScanPatterns,
+            options.Prefix,
+            options.IncludeBase,
+            options.AllowUnprefixedUtilities,
+            options.FailOnUnknown,
+            options.IgnoredClasses);
     }
 
     /// <summary>
@@ -30,7 +38,17 @@ public static class VibeCss
     /// <param name="prefix">CSS class prefix</param>
     /// <param name="includeBase">Whether to include base CSS variables</param>
     /// <param name="allowUnprefixedUtilities">When true, generate utilities without the prefix</param>
-    public static GenerationResult Generate(string projectDirectory, string outputPath, string[]? patterns, string prefix = "vibe", bool includeBase = true, bool allowUnprefixedUtilities = false)
+    /// <param name="failOnUnknown">When true, fail before writing output if unknown utilities are found</param>
+    /// <param name="ignoredClasses">Known non-utility class names to exclude from the scan</param>
+    public static GenerationResult Generate(
+        string projectDirectory,
+        string outputPath,
+        string[]? patterns,
+        string prefix = "vibe",
+        bool includeBase = true,
+        bool allowUnprefixedUtilities = false,
+        bool failOnUnknown = false,
+        string[]? ignoredClasses = null)
     {
         patterns ??= ["*.razor", "*.cshtml", "*.html"];
 
@@ -44,12 +62,34 @@ public static class VibeCss
 
             var emitter = new CssEmitter(config);
             var scanner = new ClassScanner(prefix, allowUnprefixedUtilities);
+            if (ignoredClasses is { Length: > 0 })
+            {
+                scanner.IgnoreClasses(ignoredClasses);
+            }
 
             // Scan for classes
             var classes = scanner.ScanDirectory(projectDirectory, patterns);
 
             // Get stats before generating
             var stats = emitter.GetStats(classes);
+            if (failOnUnknown && stats.UnknownClasses.Count > 0)
+            {
+                var unknownSummary = string.Join(", ", stats.UnknownClasses.OrderBy(name => name).Take(20));
+                if (stats.UnknownClasses.Count > 20)
+                {
+                    unknownSummary += $", and {stats.UnknownClasses.Count - 20} more";
+                }
+
+                return new GenerationResult
+                {
+                    Success = false,
+                    Error = $"Unknown utility classes found: {unknownSummary}",
+                    OutputPath = outputPath,
+                    TotalClassesFound = stats.TotalClasses,
+                    ClassesGenerated = stats.GeneratedClasses,
+                    UnknownClasses = stats.UnknownClasses
+                };
+            }
 
             // Generate CSS
             var baseCssPath = Path.Combine(projectDirectory, "wwwroot", "css", "vibe-base.css");
@@ -104,9 +144,19 @@ public static class VibeCss
     /// <summary>
     /// Scan a project for CSS classes without generating.
     /// </summary>
-    public static ScanResult Scan(string projectDirectory, string[]? patterns = null, string prefix = "vibe", bool allowUnprefixedUtilities = false)
+    public static ScanResult Scan(
+        string projectDirectory,
+        string[]? patterns = null,
+        string prefix = "vibe",
+        bool allowUnprefixedUtilities = false,
+        string[]? ignoredClasses = null)
     {
         var scanner = new ClassScanner(prefix, allowUnprefixedUtilities);
+        if (ignoredClasses is { Length: > 0 })
+        {
+            scanner.IgnoreClasses(ignoredClasses);
+        }
+
         var classes = scanner.ScanDirectory(projectDirectory, patterns);
 
         var config = new VibeConfig { Prefix = prefix, AllowUnprefixedUtilities = allowUnprefixedUtilities };
@@ -150,6 +200,16 @@ public class GenerationOptions
     /// When true, generate utilities for unprefixed class names too.
     /// </summary>
     public bool AllowUnprefixedUtilities { get; set; } = false;
+
+    /// <summary>
+    /// When true, generation fails without modifying the output file if unknown utilities are found.
+    /// </summary>
+    public bool FailOnUnknown { get; set; }
+
+    /// <summary>
+    /// Known non-utility class names that should be excluded from scanning.
+    /// </summary>
+    public string[] IgnoredClasses { get; set; } = [];
 
     /// <summary>
     /// Whether to include vibe-base.css content

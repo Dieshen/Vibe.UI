@@ -52,6 +52,16 @@ public class CssCommand : AsyncCommand<CssCommand.Settings>
         [CommandOption("--patterns")]
         [DefaultValue("*.razor,*.cshtml,*.html")]
         public string Patterns { get; init; } = "*.razor,*.cshtml,*.html";
+
+        [Description("Exit non-zero when unknown utility classes are found")]
+        [CommandOption("--fail-on-unknown")]
+        [DefaultValue(false)]
+        public bool FailOnUnknown { get; init; }
+
+        [Description("Known non-utility class names to ignore (comma-separated)")]
+        [CommandOption("--ignore")]
+        [DefaultValue("")]
+        public string IgnoredClasses { get; init; } = string.Empty;
     }
 
     public Task<int> ExecuteAsync(CommandContext context, Settings settings) =>
@@ -75,10 +85,11 @@ public class CssCommand : AsyncCommand<CssCommand.Settings>
         }
 
         var patterns = settings.Patterns.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var ignoredClasses = SplitList(settings.IgnoredClasses);
 
         if (settings.ScanOnly)
         {
-            return await ScanOnlyAsync(projectPath, patterns, settings);
+            return await ScanOnlyAsync(projectPath, patterns, ignoredClasses, settings);
         }
 
         if (settings.Watch)
@@ -92,11 +103,19 @@ public class CssCommand : AsyncCommand<CssCommand.Settings>
     private static bool PathsEqual(string left, string right) =>
         string.Equals(Path.GetFullPath(left), Path.GetFullPath(right), StringComparison.OrdinalIgnoreCase);
 
-    private static async Task<int> ScanOnlyAsync(string projectPath, string[] patterns, Settings settings)
+    private static async Task<int> ScanOnlyAsync(
+        string projectPath,
+        string[] patterns,
+        string[] ignoredClasses,
+        Settings settings)
     {
         AnsiConsole.MarkupLine($"[blue]Scanning[/] {projectPath} for CSS classes...\n");
 
-        var result = VibeCss.Scan(projectPath, patterns, settings.Prefix);
+        var result = VibeCss.Scan(
+            projectPath,
+            patterns,
+            settings.Prefix,
+            ignoredClasses: ignoredClasses);
 
         // Display results in a table
         var table = new Table();
@@ -115,7 +134,7 @@ public class CssCommand : AsyncCommand<CssCommand.Settings>
             AnsiConsole.MarkupLine("[green]Recognized classes:[/]");
             foreach (var cls in result.RecognizedClasses.OrderBy(c => c).Take(50))
             {
-                AnsiConsole.MarkupLine($"  - {cls}");
+                AnsiConsole.MarkupLine($"  - {Markup.Escape(cls)}");
             }
             if (result.RecognizedClasses.Count > 50)
             {
@@ -129,7 +148,7 @@ public class CssCommand : AsyncCommand<CssCommand.Settings>
             AnsiConsole.MarkupLine("[yellow]Unknown classes (not generated):[/]");
             foreach (var cls in result.UnknownClasses.OrderBy(c => c).Take(20))
             {
-                AnsiConsole.MarkupLine($"  - {cls}");
+                AnsiConsole.MarkupLine($"  - {Markup.Escape(cls)}");
             }
             if (result.UnknownClasses.Count > 20)
             {
@@ -137,7 +156,13 @@ public class CssCommand : AsyncCommand<CssCommand.Settings>
             }
         }
 
-        return await Task.FromResult(0);
+        var exitCode = settings.FailOnUnknown && result.UnknownClasses.Count > 0 ? 1 : 0;
+        if (exitCode != 0)
+        {
+            AnsiConsole.MarkupLine("[red]Strict scan failed because unknown utility classes were found.[/]");
+        }
+
+        return await Task.FromResult(exitCode);
     }
 
     private static async Task<int> GenerateOnceAsync(string projectPath, Settings settings, string[] patterns)
@@ -154,14 +179,16 @@ public class CssCommand : AsyncCommand<CssCommand.Settings>
             {
                 Prefix = settings.Prefix,
                 IncludeBase = settings.IncludeBase,
-                ScanPatterns = patterns
+                ScanPatterns = patterns,
+                FailOnUnknown = settings.FailOnUnknown,
+                IgnoredClasses = SplitList(settings.IgnoredClasses)
             };
 
             var result = VibeCss.Generate(projectPath, outputPath, options);
 
             if (!result.Success)
             {
-                AnsiConsole.MarkupLine($"[red]Error:[/] {result.Error}");
+                AnsiConsole.MarkupLine($"[red]Error:[/] {Markup.Escape(result.Error ?? "CSS generation failed.")}");
                 return 1;
             }
 
@@ -184,7 +211,7 @@ public class CssCommand : AsyncCommand<CssCommand.Settings>
                 AnsiConsole.MarkupLine($"[yellow]Warning:[/] {result.UnknownClasses.Count} unknown classes were skipped:");
                 foreach (var cls in result.UnknownClasses.Take(10))
                 {
-                    AnsiConsole.MarkupLine($"  - {cls}");
+                    AnsiConsole.MarkupLine($"  - {Markup.Escape(cls)}");
                 }
                 if (result.UnknownClasses.Count > 10)
                 {
@@ -301,5 +328,8 @@ public class CssCommand : AsyncCommand<CssCommand.Settings>
             return $"{bytes / 1024.0:F1} KB";
         return $"{bytes / (1024.0 * 1024.0):F2} MB";
     }
+
+    private static string[] SplitList(string value) =>
+        value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 }
 

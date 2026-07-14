@@ -165,6 +165,17 @@ public class ClassScannerTests
     }
 
     [Fact]
+    public void ScanContent_CSharpMixedString_ExtractsPrefixedUtilityTokens()
+    {
+        const string content = "private const string Classes = \"local-hook vibe-not-a-utility\";";
+
+        var classes = _scanner.ScanContent(content, ".cs");
+
+        Assert.DoesNotContain("local-hook", classes);
+        Assert.Contains("vibe-not-a-utility", classes);
+    }
+
+    [Fact]
     public void ScanContent_CSharpCssClassAssignment_ExtractsClasses()
     {
         var content = @"
@@ -285,6 +296,91 @@ public class ClassScannerTests
 
         Assert.Single(classes);
         Assert.Contains("vibe-flex", classes);
+    }
+
+    [Theory]
+    [InlineData("vibe-base.css")]
+    [InlineData("vibe-runtime.js")]
+    [InlineData("vibe.config.json")]
+    [InlineData("vibe-source.map")]
+    public void ScanContent_StaticAssetReferences_AreNotUtilityCandidates(string assetName)
+    {
+        var content = $"private const string Asset = \"{assetName}\";";
+
+        var classes = _scanner.ScanContent(content, ".cs");
+
+        Assert.Empty(classes);
+    }
+
+    [Fact]
+    public void ScanDirectory_ComponentScopedCssHooks_SuppressOnlyUnknownUtilities()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"vibe-scanner-tests-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+
+        try
+        {
+            File.WriteAllText(
+                Path.Combine(root, "Example.razor"),
+                "<button class=\"vibe-button vibe-grid vibe-flex\">Example</button>");
+            File.WriteAllText(
+                Path.Combine(root, "Example.razor.css"),
+                ".vibe-button:hover { color: red; } .vibe-grid { gap: 1rem; }");
+
+            var classes = _scanner.ScanDirectory(root);
+
+            Assert.DoesNotContain("vibe-button", classes);
+            Assert.Contains("vibe-grid", classes);
+            Assert.Contains("vibe-flex", classes);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ScanContent_ReservedVibeComponentHooks_AreNotUtilityCandidates()
+    {
+        const string content = """
+            <div class="vibe-dialog-actions vibe-flex"></div>
+            """;
+
+        var classes = _scanner.ScanContent(content);
+
+        Assert.DoesNotContain("vibe-dialog-actions", classes);
+        Assert.Contains("vibe-flex", classes);
+    }
+
+    [Theory]
+    [InlineData("bin")]
+    [InlineData("obj")]
+    [InlineData("node_modules")]
+    [InlineData(".git")]
+    public void ScanDirectory_GeneratedAndToolDirectories_AreExcluded(string directoryName)
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"vibe-scanner-tests-{Guid.NewGuid():N}");
+        var excludedDirectory = Path.Combine(root, directoryName);
+        Directory.CreateDirectory(excludedDirectory);
+
+        try
+        {
+            File.WriteAllText(
+                Path.Combine(root, "Index.razor"),
+                "<div class=\"vibe-flex\"></div>");
+            File.WriteAllText(
+                Path.Combine(excludedDirectory, "Generated.razor"),
+                "<div class=\"vibe-not-a-real-utility\"></div>");
+
+            var classes = _scanner.ScanDirectory(root);
+
+            Assert.Contains("vibe-flex", classes);
+            Assert.DoesNotContain("vibe-not-a-real-utility", classes);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
     }
 
     #endregion
