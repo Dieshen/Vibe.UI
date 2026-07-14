@@ -5,8 +5,8 @@ using Xunit;
 namespace Vibe.UI.Docs.E2E.Tests.Smoke;
 
 /// <summary>
-/// Smoke tests that verify each component page loads without errors.
-/// These tests ensure basic rendering works for all 70 component pages.
+/// Smoke tests that verify every routed component page loads without errors.
+/// Route cases are derived from the documentation source so additions and aliases cannot drift.
 /// </summary>
 [Trait("Category", TestCategories.Smoke)]
 public class AllComponentsRenderTests : E2ETestBase
@@ -32,186 +32,22 @@ public class AllComponentsRenderTests : E2ETestBase
         };
     }
 
-    #region Layout Components
-
-    [Theory]
-    [InlineData("accordion", "Accordion")]
-    [InlineData("aspectratio", "Aspect Ratio")]
-    [InlineData("card", "Card")]
-    [InlineData("collapsible", "Collapsible")]
-    [InlineData("container", "Container")]
-    [InlineData("divider", "Divider")]
-    [InlineData("grid", "Grid")]
-    [InlineData("separator", "Separator")]
-    [InlineData("stack", "Stack")]
-    public async Task LayoutComponentPageRenders(string componentPath, string componentName)
+    [Fact]
+    public async Task AllRoutedComponentPagesRenderTheirExpectedHeadings()
     {
-        await VerifyComponentPageRenders(componentPath, componentName);
+        foreach (var page in ComponentPageManifest.Pages)
+        {
+            foreach (var route in page.Routes)
+            {
+                await VerifyComponentPageRenders(route, page.Heading);
+            }
+        }
     }
-
-    #endregion
-
-    #region Form Components
-
-    [Theory]
-    [InlineData("button", "Button")]
-    [InlineData("checkbox", "Checkbox")]
-    [InlineData("colorpicker", "Color Picker")]
-    [InlineData("datepicker", "Date Picker")]
-    [InlineData("daterangepicker", "Date Range Picker")]
-    [InlineData("dropdown", "Dropdown")]
-    [InlineData("fileupload", "File Upload")]
-    [InlineData("form", "Form")]
-    [InlineData("formfield", "Form Field")]
-    [InlineData("input", "Input")]
-    [InlineData("inputotp", "Input OTP")]
-    [InlineData("mentions", "Mentions")]
-    [InlineData("radiogroup", "Radio Group")]
-    [InlineData("select", "Select")]
-    [InlineData("slider", "Slider")]
-    [InlineData("switch", "Switch")]
-    [InlineData("textarea", "Textarea")]
-    [InlineData("togglegroup", "Toggle Group")]
-    [InlineData("transferlist", "Transfer List")]
-    [InlineData("timepicker", "Time Picker")]
-    [InlineData("validatedinput", "Validated Input")]
-    public async Task FormComponentPageRenders(string componentPath, string componentName)
-    {
-        await VerifyComponentPageRenders(componentPath, componentName);
-    }
-
-    #endregion
-
-    #region Display Components
-
-    [Theory]
-    [InlineData("alert", "Alert")]
-    [InlineData("avatar", "Avatar")]
-    [InlineData("badge", "Badge")]
-    [InlineData("breadcrumb", "Breadcrumb")]
-    [InlineData("calendar", "Calendar")]
-    [InlineData("carousel", "Carousel")]
-    [InlineData("chart", "Chart")]
-    [InlineData("link", "Link")]
-    [InlineData("notification", "Notification")]
-    [InlineData("pagination", "Pagination")]
-    [InlineData("progress", "Progress")]
-    [InlineData("skeleton", "Skeleton")]
-    [InlineData("spinner", "Spinner")]
-    [InlineData("stepper", "Stepper")]
-    [InlineData("table", "Table")]
-    [InlineData("tag", "Tag")]
-    [InlineData("timeline", "Timeline")]
-    [InlineData("tooltip", "Tooltip")]
-    public async Task DisplayComponentPageRenders(string componentPath, string componentName)
-    {
-        await VerifyComponentPageRenders(componentPath, componentName);
-    }
-
-    #endregion
-
-    #region Overlay Components
-
-    [Theory]
-    [InlineData("dialog", "Dialog")]
-    [InlineData("drawer", "Drawer")]
-    [InlineData("menu", "Menu")]
-    [InlineData("modal", "Modal")]
-    [InlineData("popover", "Popover")]
-    [InlineData("toast", "Toast")]
-    public async Task OverlayComponentPageRenders(string componentPath, string componentName)
-    {
-        await VerifyComponentPageRenders(componentPath, componentName);
-    }
-
-    #endregion
-
-    #region Navigation Components
-
-    [Theory]
-    [InlineData("tabs", "Tabs")]
-    [InlineData("themetoggle", "Theme Toggle")]
-    public async Task NavigationComponentPageRenders(string componentPath, string componentName)
-    {
-        await VerifyComponentPageRenders(componentPath, componentName);
-    }
-
-    #endregion
-
-    #region Data Components
-
-    [Theory]
-    [InlineData("datagrid", "Data Grid")]
-    [InlineData("treeview", "Tree View")]
-    [InlineData("virtualscroll", "Virtual Scroll")]
-    public async Task DataComponentPageRenders(string componentPath, string componentName)
-    {
-        await VerifyComponentPageRenders(componentPath, componentName);
-    }
-
-    #endregion
-
-    #region Advanced Components
-
-    [Theory]
-    [InlineData("dragdrop", "Drag Drop")]
-    [InlineData("kanbanboard", "Kanban Board")]
-    [InlineData("sheet", "Sheet")]
-    [InlineData("splitter", "Splitter")]
-    [InlineData("confetti", "Confetti")]
-    [InlineData("sidebar", "Sidebar")]
-    [InlineData("resizable", "Resizable")]
-    [InlineData("rating", "Rating")]
-    [InlineData("imagecropper", "Image Cropper")]
-    [InlineData("alertdialog", "Alert Dialog")]
-    [InlineData("richtexteditor", "Rich Text Editor")]
-    public async Task AdvancedComponentPageRenders(string componentPath, string componentName)
-    {
-        await VerifyComponentPageRenders(componentPath, componentName);
-    }
-
-    #endregion
 
     #region Page Content Validation
 
     [Fact]
-    public async Task AllComponentPagesHaveTitle()
-    {
-        var componentPaths = new[]
-        {
-            "button", "card", "alert", "modal", "toast", "tabs",
-            "input", "checkbox", "select", "slider", "switch"
-        };
-
-        foreach (var path in componentPaths)
-        {
-            _consoleErrors.Clear();
-            await NavigateAndWaitForBlazorAsync($"/components/{path}");
-
-            // Verify page has a title
-            var titleLocator = Page.Locator("h1").First;
-            try
-            {
-                await titleLocator.WaitForAsync(new()
-                {
-                    State = Microsoft.Playwright.WaitForSelectorState.Visible,
-                    Timeout = 30000
-                });
-            }
-            catch (TimeoutException ex)
-            {
-                throw new TimeoutException(
-                    $"Timed out waiting for title on component page {path}. Current URL: {Page.Url}",
-                    ex);
-            }
-
-            var title = await titleLocator.TextContentAsync();
-            title.ShouldNotBeNullOrWhiteSpace($"Component page {path} should have a title");
-        }
-    }
-
-    [Fact]
-    public async Task AllComponentPagesHaveExamples()
+    public async Task RepresentativeComponentPagesHaveExamples()
     {
         var componentPaths = new[]
         {
@@ -237,7 +73,7 @@ public class AllComponentsRenderTests : E2ETestBase
     }
 
     [Fact]
-    public async Task AllComponentPagesHaveCodeBlocks()
+    public async Task RepresentativeComponentPagesHaveCodeBlocks()
     {
         var componentPaths = new[]
         {
@@ -369,37 +205,48 @@ public class AllComponentsRenderTests : E2ETestBase
 
     #region Helper Methods
 
-    private async Task VerifyComponentPageRenders(string componentPath, string componentName)
+    private async Task VerifyComponentPageRenders(string route, string expectedHeading)
     {
-        // Clear errors
         _consoleErrors.Clear();
 
-        // Navigate
-        await NavigateAndWaitForBlazorAsync($"/components/{componentPath}");
+        await NavigateAndWaitForBlazorAsync(route);
 
-        // Wait for content to load - Blazor WASM needs time to render
-        await Page.WaitForTimeoutAsync(2000);
+        var actualPath = new Uri(Page.Url).AbsolutePath.TrimEnd('/');
+        var expectedPath = route.TrimEnd('/');
+        string.Equals(actualPath, expectedPath, StringComparison.OrdinalIgnoreCase).ShouldBeTrue(
+            $"Navigation should remain on {route}, but the browser resolved to {actualPath}");
 
-        // Verify page loaded by checking for actual content (h1 title, sections, etc.)
-        var pageTitle = Page.Locator("h1").First;
-        var hasTitleVisible = await pageTitle.IsVisibleAsync();
+        (await Page.GetByText("Sorry, there's nothing at this address.", new() { Exact = true }).CountAsync())
+            .ShouldBe(0, $"{route} rendered the NotFound shell");
 
-        // Also check for the component's main section
-        var mainContent = Page.Locator("main, .docs-container, .max-w-4xl").First;
-        var hasMainContent = await mainContent.IsVisibleAsync();
+        var errorUi = Page.Locator("#blazor-error-ui");
+        if (await errorUi.CountAsync() > 0)
+        {
+            (await errorUi.IsVisibleAsync()).ShouldBeFalse($"{route} displayed the Blazor error shell");
+        }
 
-        // Page should have either title visible or main content rendered
-        (hasTitleVisible || hasMainContent).ShouldBeTrue(
-            $"{componentName} page at /components/{componentPath} should render with visible content");
+        var pageHeading = Page.Locator("main h1").First;
+        await pageHeading.WaitForAsync(new()
+        {
+            State = Microsoft.Playwright.WaitForSelectorState.Visible,
+            Timeout = 30000
+        });
 
-        // Verify no critical errors
+        var actualHeading = NormalizeWhitespace(await pageHeading.InnerTextAsync());
+        actualHeading.ShouldBe(
+            expectedHeading,
+            $"{route} should render its route-specific component heading");
+
         var criticalErrors = _consoleErrors
             .Where(e => !IsIgnorableError(e))
             .ToList();
 
         criticalErrors.ShouldBeEmpty(
-            $"{componentName} page should have no console errors. Found:\n{string.Join("\n", criticalErrors)}");
+            $"{route} should have no console errors. Found:\n{string.Join("\n", criticalErrors)}");
     }
+
+    private static string NormalizeWhitespace(string value) =>
+        string.Join(' ', value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
     private static bool IsIgnorableError(string error)
     {

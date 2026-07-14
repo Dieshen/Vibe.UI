@@ -43,7 +43,7 @@ public class NavigationSmokeTests : E2ETestBase
         await Page.GotoAsync($"{BaseUrl}/components");
         await Page.WaitForBlazorReadyAsync();
 
-        var componentLink = Page.Locator("a[href^='components/']:not([href='components'])").First;
+        var componentLink = Page.Locator("a[data-component-route^='/components/']").First;
         await componentLink.ClickAsync();
 
         // Wait for navigation
