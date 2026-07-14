@@ -67,23 +67,34 @@ public abstract class CompatibilityE2ETestBase : IAsyncLifetime
 
     public virtual async Task DisposeAsync()
     {
-        if (Page != null)
+        try
         {
-            await Page.CloseAsync();
-        }
+            if (Page != null)
+            {
+                await Page.CloseAsync();
+            }
 
-        if (Context != null)
+            if (Context != null)
+            {
+                await Context.CloseAsync();
+            }
+
+            if (Browser != null)
+            {
+                await Browser.CloseAsync();
+            }
+        }
+        finally
         {
-            await Context.CloseAsync();
+            try
+            {
+                Playwright?.Dispose();
+            }
+            finally
+            {
+                await CompatibilityServerManager.ReleaseAsync(App, BaseUrl);
+            }
         }
-
-        if (Browser != null)
-        {
-            await Browser.CloseAsync();
-        }
-
-        Playwright?.Dispose();
-        CompatibilityServerManager.Release(App, BaseUrl);
     }
 
     protected async Task NavigateToSmokePageAsync(string path, string smokeTestId)
