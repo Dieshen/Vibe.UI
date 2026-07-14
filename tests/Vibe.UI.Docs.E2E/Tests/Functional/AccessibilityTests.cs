@@ -51,6 +51,35 @@ public class AccessibilityTests : E2ETestBase
             Environment.NewLine + string.Join(Environment.NewLine, failures));
     }
 
+    [Theory]
+    [InlineData("/components/datepicker", ".date-icon", ".date-popup")]
+    [InlineData("/components/daterangepicker", ".daterange-icon", ".daterange-popup")]
+    public async Task OpenDatePickerStatesHaveNoSeriousOrCriticalAxeViolations(
+        string route,
+        string triggerSelector,
+        string popupSelector)
+    {
+        await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
+        await NavigateAndWaitForBlazorAsync(route);
+
+        var preview = Page.Locator("main section").First;
+        await preview.Locator(triggerSelector).ClickAsync();
+        var popup = preview.Locator(popupSelector);
+        await popup.WaitForAsync();
+
+        var result = await popup.RunAxe();
+        var failures = result.Violations
+            .Where(violation =>
+                string.Equals(violation.Impact, "critical", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(violation.Impact, "serious", StringComparison.OrdinalIgnoreCase))
+            .Select(violation => FormatViolation($"{route}#open", "light", violation))
+            .ToArray();
+
+        failures.ShouldBeEmpty(
+            $"The open picker state at {route} must not have serious or critical automated accessibility violations." +
+            Environment.NewLine + string.Join(Environment.NewLine, failures));
+    }
+
     [Fact]
     public async Task OpenAlertDialogHasNoSeriousOrCriticalAxeViolations()
     {

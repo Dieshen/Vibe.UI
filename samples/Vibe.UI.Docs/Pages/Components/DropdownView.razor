@@ -72,6 +72,27 @@
         </div>
     </section>
 
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Context Menu</h2>
+        <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
+            Right-click the target, or focus it and press Shift+F10, to open document actions.
+        </p>
+        <div class="vibe-p-6 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-800 vibe-bg-white dark:vibe-bg-zinc-900">
+            <ContextMenu MenuAriaLabel="Document actions">
+                <TriggerContent>
+                    <div class="vibe-w-full vibe-min-h-32 vibe-p-6 vibe-rounded-md vibe-border vibe-border-dashed vibe-border-zinc-300 dark:vibe-border-zinc-700 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-flex vibe-items-center vibe-justify-center vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-300">
+                        Document workspace
+                    </div>
+                </TriggerContent>
+                <Content>
+                    <ContextMenuItem>Open</ContextMenuItem>
+                    <ContextMenuItem>Rename</ContextMenuItem>
+                    <ContextMenuItem>Download</ContextMenuItem>
+                </Content>
+            </ContextMenu>
+        </div>
+    </section>
+
     <!-- Examples Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>

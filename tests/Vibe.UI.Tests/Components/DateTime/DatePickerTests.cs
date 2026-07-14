@@ -184,6 +184,21 @@ public class DatePickerTests : TestBase
     }
 
     [Fact]
+    public void DatePicker_GridContainsWeekdayHeaderRow()
+    {
+        var cut = Render<DatePicker>(parameters => parameters
+            .Add(p => p.Date, new System.DateTime(2024, 6, 15)));
+
+        cut.Find(".date-icon").Click();
+
+        var grid = cut.Find(".date-grid[role='grid']");
+        var headerRow = cut.Find(".date-day-names[role='row']");
+        headerRow.ParentElement.ShouldBe(grid);
+        headerRow.Children.Length.ShouldBe(7);
+        headerRow.Children.ShouldAllBe(header => header.GetAttribute("role") == "columnheader");
+    }
+
+    [Fact]
     public void DatePicker_DisablesDatesOutsideMinAndMax()
     {
         // Arrange
@@ -231,6 +246,103 @@ public class DatePickerTests : TestBase
         // Assert
         var popup = cut.Find(".date-popup");
         popup.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void DatePicker_InvokesBindingAndCompatibilityCallbacksOnce_WhenDateSelected()
+    {
+        var expectedDate = new System.DateTime(2024, 6, 18);
+        System.DateTime? boundDate = null;
+        System.DateTime? compatibilityDate = null;
+        var bindingCallbackCount = 0;
+        var compatibilityCallbackCount = 0;
+        var cut = Render<DatePicker>(parameters => parameters
+            .Add(p => p.Date, new System.DateTime(2024, 6, 15))
+            .Add(p => p.DateChanged, date =>
+            {
+                bindingCallbackCount++;
+                boundDate = date;
+            })
+            .Add(p => p.OnChange, date =>
+            {
+                compatibilityCallbackCount++;
+                compatibilityDate = date;
+            }));
+
+        cut.Find(".date-icon").Click();
+        FindDateButton(cut, expectedDate).Click();
+
+        bindingCallbackCount.ShouldBe(1);
+        compatibilityCallbackCount.ShouldBe(1);
+        boundDate.ShouldBe(expectedDate);
+        compatibilityDate.ShouldBe(expectedDate);
+        cut.FindAll(".date-popup").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void DatePicker_InputKeyboardOpen_FocusesSelectedDay()
+    {
+        JSInterop.SetupModule("./_content/Vibe.UI/js/vibe-dom.js");
+        var selectedDate = new System.DateTime(2024, 6, 15);
+        var cut = Render<DatePicker>(parameters => parameters.Add(p => p.Date, selectedDate));
+
+        cut.Find(".date-input-wrapper input").KeyDown("Enter");
+
+        var selectedDay = FindDateButton(cut, selectedDate);
+        selectedDay.GetAttribute("tabindex")!.ShouldBe("0");
+        cut.FindAll(".date-day").Count(day => day.GetAttribute("tabindex") == "0").ShouldBe(1);
+        JSInterop.Invocations.Last().Identifier.ShouldBe("focusElement");
+        JSInterop.Invocations.Last().Arguments[0].ShouldBe(selectedDay.Id);
+    }
+
+    [Fact]
+    public void DatePicker_RightArrow_MovesFocusAcrossMonthBoundary()
+    {
+        JSInterop.SetupModule("./_content/Vibe.UI/js/vibe-dom.js");
+        var selectedDate = new System.DateTime(2024, 6, 30);
+        var nextDate = selectedDate.AddDays(1);
+        var cut = Render<DatePicker>(parameters => parameters.Add(p => p.Date, selectedDate));
+
+        cut.Find(".date-icon").Click();
+        FindDateButton(cut, selectedDate).KeyDown("ArrowRight");
+
+        var focusedDay = FindDateButton(cut, nextDate);
+        focusedDay.GetAttribute("tabindex")!.ShouldBe("0");
+        cut.Find(".date-grid").GetAttribute("aria-label")!.ShouldContain("July 2024");
+        JSInterop.Invocations.Last().Identifier.ShouldBe("focusElement");
+        JSInterop.Invocations.Last().Arguments[0].ShouldBe(focusedDay.Id);
+    }
+
+    [Fact]
+    public void DatePicker_EscapeClosesPopup_AndRestoresOriginatingInputFocus()
+    {
+        JSInterop.SetupModule("./_content/Vibe.UI/js/vibe-dom.js");
+        var cut = Render<DatePicker>(parameters => parameters
+            .Add(p => p.Date, new System.DateTime(2024, 6, 15)));
+        var input = cut.Find(".date-input-wrapper input");
+
+        input.Click();
+        cut.Find(".date-popup").KeyDown("Escape");
+
+        cut.FindAll(".date-popup").ShouldBeEmpty();
+        JSInterop.Invocations.Last().Identifier.ShouldBe("focusElement");
+        JSInterop.Invocations.Last().Arguments[0].ShouldBe(input.Id);
+    }
+
+    [Fact]
+    public void DatePicker_InsideFormField_RestoresTheRenderedControlId()
+    {
+        JSInterop.SetupModule("./_content/Vibe.UI/js/vibe-dom.js");
+        var cut = Render<FormField<System.DateTime?>>(parameters => parameters
+            .Add(p => p.Label, "Appointment date")
+            .AddChildContent<DatePicker>());
+        var input = cut.Find(".date-input-wrapper input");
+
+        input.Click();
+        cut.Find(".date-popup").KeyDown("Escape");
+
+        JSInterop.Invocations.Last().Identifier.ShouldBe("focusElement");
+        JSInterop.Invocations.Last().Arguments[0].ShouldBe(input.Id);
     }
 
     private static AngleSharp.Dom.IElement FindDateButton(IRenderedComponent<DatePicker> cut, System.DateTime date)

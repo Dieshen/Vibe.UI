@@ -23,6 +23,10 @@ public class ContextMenuTests : TestBase
         trigger.GetAttribute("aria-disabled").ShouldBe("false");
         trigger.GetAttribute("aria-controls").ShouldNotBeNullOrWhiteSpace();
         trigger.GetAttribute("data-state").ShouldBe("closed");
+        JSInterop.Invocations.ShouldContain(invocation =>
+            invocation.Identifier == "import" &&
+            invocation.Arguments[0] != null &&
+            invocation.Arguments[0]!.ToString() == "./_content/Vibe.UI/js/vibe-menu-keyboard.js");
     }
 
     [Fact]
@@ -162,6 +166,7 @@ public class ContextMenuTests : TestBase
         openCount.ShouldBe(1);
         cut.Find(".context-content").TextContent.ShouldContain("Keyboard menu");
         cut.Find(".context-content").GetAttribute("style").ShouldBe("left: 0px; top: 0px;");
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "focusFirstItem");
 
         cut.Find(".context-content").KeyDown("Escape");
 
@@ -172,6 +177,120 @@ public class ContextMenuTests : TestBase
         openCount.ShouldBe(2);
         cut.Find(".context-trigger").KeyDown("Escape");
         closeCount.ShouldBe(2);
+    }
+
+    [Fact]
+    public void ContextMenu_ArrowKeysOpenAndRequestBoundaryFocus()
+    {
+        var cut = Render<ContextMenu>(parameters => parameters
+            .Add(p => p.Content, builder =>
+            {
+                builder.OpenComponent<ContextMenuItem>(0);
+                builder.AddAttribute(1, nameof(ContextMenuItem.ChildContent), (RenderFragment)(itemBuilder => itemBuilder.AddContent(0, "Alpha")));
+                builder.CloseComponent();
+                builder.OpenComponent<ContextMenuItem>(2);
+                builder.AddAttribute(3, nameof(ContextMenuItem.ChildContent), (RenderFragment)(itemBuilder => itemBuilder.AddContent(0, "Beta")));
+                builder.CloseComponent();
+            }));
+
+        var trigger = cut.Find(".context-trigger");
+        trigger.KeyDown("ArrowDown");
+
+        cut.Find(".context-content").ShouldNotBeNull();
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "focusFirstItem");
+
+        cut.Find(".context-content").KeyDown("Escape");
+        trigger = cut.Find(".context-trigger");
+        trigger.KeyDown("ArrowUp");
+
+        cut.Find(".context-content").ShouldNotBeNull();
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "focusLastItem");
+    }
+
+    [Fact]
+    public void ContextMenu_DelegatesRovingNavigationAndTypeahead()
+    {
+        var cut = Render<ContextMenu>(parameters => parameters
+            .Add(p => p.Content, builder => builder.AddMarkupContent(0,
+                "<button role=\"menuitem\">Alpha</button>" +
+                "<button role=\"menuitem\">Beta</button>")));
+
+        cut.Find(".context-trigger").KeyDown("Enter");
+        var menu = cut.Find(".context-content");
+
+        menu.KeyDown("ArrowDown");
+        menu.KeyDown("ArrowUp");
+        menu.KeyDown("Home");
+        menu.KeyDown("End");
+        menu.KeyDown("b");
+
+        JSInterop.Invocations.Count(invocation => invocation.Identifier == "moveFocus").ShouldBe(2);
+        JSInterop.Invocations.Count(invocation => invocation.Identifier == "focusFirstItem").ShouldBeGreaterThanOrEqualTo(2);
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "focusLastItem");
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "focusByTypeahead");
+    }
+
+    [Fact]
+    public void ContextMenu_TabClosesWithoutRestoringTriggerFocus()
+    {
+        var cut = Render<ContextMenu>(parameters => parameters
+            .Add(p => p.Content, builder => builder.AddMarkupContent(0, "<button role=\"menuitem\">Alpha</button>")));
+
+        cut.Find(".context-trigger").KeyDown("ArrowDown");
+        cut.Find(".context-content").KeyDown("Tab");
+
+        cut.FindAll(".context-content").ShouldBeEmpty();
+        cut.Find(".context-trigger").GetAttribute("aria-expanded").ShouldBe("false");
+    }
+
+    [Fact]
+    public void ContextMenu_SelectionClosesUnlessConfiguredToStayOpen()
+    {
+        var cut = Render<ContextMenu>(parameters => parameters
+            .Add(p => p.Content, builder => builder.AddMarkupContent(0, "<button role=\"menuitem\">Alpha</button>")));
+
+        OpenWithContextMenu(cut);
+        cut.Find("[role='menuitem']").Click();
+        cut.FindAll(".context-content").ShouldBeEmpty();
+
+        cut = Render<ContextMenu>(parameters => parameters
+            .Add(p => p.CloseOnSelect, false)
+            .Add(p => p.Content, builder => builder.AddMarkupContent(0, "<button role=\"menuitem\">Alpha</button>")));
+
+        OpenWithContextMenu(cut);
+        cut.Find("[role='menuitem']").Click();
+        cut.Find(".context-content").ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void ContextMenuItem_KeyboardSelectionClosesButDisabledSelectionDoesNot()
+    {
+        var cut = Render<ContextMenu>(parameters => parameters
+            .Add(p => p.Content, builder =>
+            {
+                builder.OpenComponent<ContextMenuItem>(0);
+                builder.AddAttribute(1, nameof(ContextMenuItem.ChildContent),
+                    (RenderFragment)(content => content.AddContent(0, "Open")));
+                builder.CloseComponent();
+            }));
+
+        OpenWithContextMenu(cut);
+        cut.Find("[role='menuitem']").KeyDown("Enter");
+        cut.FindAll(".context-content").ShouldBeEmpty();
+
+        cut = Render<ContextMenu>(parameters => parameters
+            .Add(p => p.Content, builder =>
+            {
+                builder.OpenComponent<ContextMenuItem>(0);
+                builder.AddAttribute(1, nameof(ContextMenuItem.Disabled), true);
+                builder.AddAttribute(2, nameof(ContextMenuItem.ChildContent),
+                    (RenderFragment)(content => content.AddContent(0, "Unavailable")));
+                builder.CloseComponent();
+            }));
+
+        OpenWithContextMenu(cut);
+        cut.Find("[role='menuitem']").Click();
+        cut.Find(".context-content").ShouldNotBeNull();
     }
 
     [Fact]
@@ -208,6 +327,7 @@ public class ContextMenuTests : TestBase
 
         OpenWithContextMenu(cut);
         cut.Find(".context-trigger").KeyDown("Enter");
+        cut.Find(".context-trigger").KeyDown("ArrowDown");
         cut.Find(".context-trigger").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "F10", ShiftKey = true });
 
         openCount.ShouldBe(0);

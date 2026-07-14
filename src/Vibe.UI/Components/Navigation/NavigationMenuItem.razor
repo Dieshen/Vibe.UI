@@ -20,6 +20,7 @@
             aria-expanded="@AriaExpanded"
             aria-controls="@AriaControls"
             aria-label="@EffectiveTriggerAriaLabel"
+            @ref="_triggerReference"
             @onclick="HandleClick"
             @onkeydown="HandleTriggerKeyDown">
         @if (TriggerContent != null)
@@ -37,8 +38,10 @@
         <div id="@ContentElementId"
              class="navigation-menu-item-content"
              role="region"
+             tabindex="-1"
              aria-label="@EffectiveContentAriaLabel"
              data-state="open"
+             @ref="_contentReference"
              @onkeydown="HandleContentKeyDown">
             @Content
         </div>
@@ -46,6 +49,19 @@
 </div>
 
 @code {
+    private const string KeyboardModulePath = "./_content/Vibe.UI/js/vibe-menu-keyboard.js";
+
+    private readonly string _generatedId = $"vibe-navigation-menu-item-{Guid.NewGuid():N}";
+    private ElementReference _elementReference;
+    private ElementReference _triggerReference;
+    private ElementReference _contentReference;
+    private IJSObjectReference? _domModule;
+    private IJSObjectReference? _keyboardModule;
+    private NavigationMenu? _registeredParent;
+    private PendingFocus _pendingContentFocus;
+    private bool _restoreTriggerFocus;
+    private bool _keyboardActivationPending;
+
     /// <summary>
     /// Gets or sets the ID of the menu item.
     /// </summary>
@@ -117,8 +133,6 @@
     /// </summary>
     private bool IsActive { get; set; }
 
-    private readonly string _generatedId = $"vibe-navigation-menu-item-{Guid.NewGuid():N}";
-
     private bool HasContent => Content != null;
 
     private string EffectiveId => string.IsNullOrWhiteSpace(Id) ? _generatedId : Id.Trim();
@@ -140,18 +154,10 @@
         string.IsNullOrWhiteSpace(ContentAriaLabel) ? "Navigation menu content" : ContentAriaLabel.Trim();
 
     /// <summary>
-    /// Reference to the menu item element.
-    /// </summary>
-    private ElementReference _elementReference;
-
-    /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
     protected override string ComponentClass => "vibe-navigation-menu-item";
 
-    /// <summary>
-    /// Gets the combined CSS class.
-    /// </summary>
     protected override string GetCombinedClass()
     {
         return CombineClasses(
@@ -163,9 +169,20 @@
             Class);
     }
 
-    /// <summary>
-    /// Updates the menu item position after rendering.
-    /// </summary>
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (ReferenceEquals(_registeredParent, ParentMenu))
+        {
+            return;
+        }
+
+        _registeredParent?.UnregisterKeyboardItem(this);
+        _registeredParent = ParentMenu;
+        _registeredParent?.RegisterKeyboardItem(this);
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
@@ -174,13 +191,47 @@
         {
             await UpdatePosition();
         }
+
+        try
+        {
+            var module = await GetKeyboardModuleAsync();
+            await module.InvokeVoidAsync("initializeTrigger", _triggerReference, false, true);
+
+            if (IsActive)
+            {
+                await module.InvokeVoidAsync("initializeContainer", _contentReference, "focusable");
+
+                if (_pendingContentFocus == PendingFocus.First)
+                {
+                    await module.InvokeVoidAsync("focusFirstItem", _contentReference, "focusable");
+                    _pendingContentFocus = PendingFocus.None;
+                }
+                else if (_pendingContentFocus == PendingFocus.Last)
+                {
+                    await module.InvokeVoidAsync("focusLastItem", _contentReference, "focusable");
+                    _pendingContentFocus = PendingFocus.None;
+                }
+            }
+            else if (_restoreTriggerFocus)
+            {
+                await FocusTriggerAsync();
+                _restoreTriggerFocus = false;
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            // JS interop is unavailable during static prerendering.
+        }
+        catch (JSDisconnectedException)
+        {
+            // The server-side circuit disconnected before focus could be updated.
+        }
+        catch (TaskCanceledException)
+        {
+            // The browser disconnected while focus work was pending.
+        }
     }
 
-    private IJSObjectReference? _domModule;
-
-    /// <summary>
-    /// Updates the menu item position.
-    /// </summary>
     private async Task UpdatePosition()
     {
         if (ParentMenu == null)
@@ -190,7 +241,6 @@
 
         try
         {
-            // Import DOM utilities module if not already loaded
             _domModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
                 "import", "./_content/Vibe.UI/js/vibe-dom.js");
 
@@ -205,29 +255,20 @@
         }
         catch
         {
-            // Ignore errors when updating position
+            // Position measurement is decorative and should not block interaction.
         }
     }
 
-    /// <summary>
-    /// Handles mouse enter events.
-    /// </summary>
     private void HandleMouseEnter()
     {
         SetActive(true);
     }
 
-    /// <summary>
-    /// Handles mouse leave events.
-    /// </summary>
     private void HandleMouseLeave()
     {
         SetActive(false);
     }
 
-    /// <summary>
-    /// Handles click events.
-    /// </summary>
     private async Task HandleClick(MouseEventArgs args)
     {
         if (Disabled)
@@ -235,37 +276,105 @@
             return;
         }
 
+        var focusContent = _keyboardActivationPending;
+        _keyboardActivationPending = false;
+
         if (OpenOnClick && HasContent)
         {
-            SetActive(!IsActive);
+            var opening = !IsActive;
+            SetActive(opening);
+
+            if (opening && focusContent)
+            {
+                _pendingContentFocus = PendingFocus.First;
+            }
         }
 
         await OnClick.InvokeAsync(args);
     }
 
-    private void HandleTriggerKeyDown(KeyboardEventArgs args)
+    private async Task HandleTriggerKeyDown(KeyboardEventArgs args)
     {
         if (Disabled)
         {
             return;
         }
 
-        if (HasContent && args.Key is "ArrowDown" or "ArrowUp")
+        switch (args.Key)
         {
-            SetActive(true);
-        }
-        else if (args.Key == "Escape")
-        {
-            SetActive(false);
+            case "Enter":
+            case " ":
+            case "Spacebar":
+                _keyboardActivationPending = HasContent && OpenOnClick;
+                break;
+            case "ArrowDown" when HasContent:
+                OpenContent(PendingFocus.First);
+                break;
+            case "ArrowUp" when HasContent:
+                OpenContent(PendingFocus.Last);
+                break;
+            case "ArrowRight" when ParentMenu != null:
+                await ParentMenu.FocusRelativeItemAsync(this, 1);
+                break;
+            case "ArrowLeft" when ParentMenu != null:
+                await ParentMenu.FocusRelativeItemAsync(this, -1);
+                break;
+            case "Home" when ParentMenu != null:
+                await ParentMenu.FocusBoundaryItemAsync(last: false);
+                break;
+            case "End" when ParentMenu != null:
+                await ParentMenu.FocusBoundaryItemAsync(last: true);
+                break;
+            case "Escape":
+                SetActive(false);
+                _restoreTriggerFocus = true;
+                break;
         }
     }
 
-    private void HandleContentKeyDown(KeyboardEventArgs args)
+    private async Task HandleContentKeyDown(KeyboardEventArgs args)
     {
         if (args.Key == "Escape")
         {
             SetActive(false);
+            _restoreTriggerFocus = true;
+            return;
         }
+
+        var module = await GetKeyboardModuleAsync();
+        if (await module.InvokeAsync<bool>("isActiveElementEditable", _contentReference))
+        {
+            return;
+        }
+
+        switch (args.Key)
+        {
+            case "ArrowDown":
+                await module.InvokeVoidAsync("moveFocus", _contentReference, "focusable", 1);
+                break;
+            case "ArrowUp":
+                await module.InvokeVoidAsync("moveFocus", _contentReference, "focusable", -1);
+                break;
+            case "Home":
+                await module.InvokeVoidAsync("focusFirstItem", _contentReference, "focusable");
+                break;
+            case "End":
+                await module.InvokeVoidAsync("focusLastItem", _contentReference, "focusable");
+                break;
+            default:
+                if (IsTypeaheadKey(args))
+                {
+                    await module.InvokeVoidAsync("focusByTypeahead", _contentReference, "focusable", args.Key);
+                }
+                break;
+        }
+    }
+
+    private void OpenContent(PendingFocus pendingFocus)
+    {
+        SetActive(true);
+        _pendingContentFocus = pendingFocus;
+        _restoreTriggerFocus = false;
     }
 
     private void SetActive(bool active)
@@ -276,6 +385,10 @@
         }
 
         IsActive = active;
+        if (!active)
+        {
+            _pendingContentFocus = PendingFocus.None;
+        }
 
         if (UseViewport)
         {
@@ -292,31 +405,75 @@
         StateHasChanged();
     }
 
-    /// <summary>
-    /// Disposes the component.
-    /// </summary>
+    internal async Task FocusTriggerAsync()
+    {
+        if (!Disabled)
+        {
+            await _triggerReference.FocusAsync();
+        }
+    }
+
+    private async ValueTask<IJSObjectReference> GetKeyboardModuleAsync()
+    {
+        _keyboardModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>("import", KeyboardModulePath);
+        return _keyboardModule;
+    }
+
+    private static bool IsTypeaheadKey(KeyboardEventArgs e)
+    {
+        return e.Key.Length == 1 &&
+               !char.IsWhiteSpace(e.Key[0]) &&
+               !e.AltKey &&
+               !e.CtrlKey &&
+               !e.MetaKey;
+    }
+
     public async ValueTask DisposeAsync()
     {
+        _registeredParent?.UnregisterKeyboardItem(this);
+        _registeredParent = null;
+
+        if (_keyboardModule != null)
+        {
+            try
+            {
+                await _keyboardModule.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+            catch (TaskCanceledException)
+            {
+            }
+        }
+
         if (_domModule != null)
         {
             try
             {
                 await _domModule.DisposeAsync();
             }
-            catch
+            catch (JSDisconnectedException)
             {
-                // Ignore disposal errors
+            }
+            catch (TaskCanceledException)
+            {
             }
         }
+
         GC.SuppressFinalize(this);
     }
 
     private static string AriaBool(bool value) => value ? "true" : "false";
 
-    /// <summary>
-    /// DOM rectangle structure for JS interop.
-    /// </summary>
-    private class DOMRect
+    private enum PendingFocus
+    {
+        None,
+        First,
+        Last
+    }
+
+    private sealed class DOMRect
     {
         public double X { get; set; }
         public double Y { get; set; }

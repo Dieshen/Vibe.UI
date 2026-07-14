@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Components.Rendering;
+
 namespace Vibe.UI.Tests.Components.Navigation;
 
 public class NavigationMenuTests : TestBase
@@ -163,5 +165,40 @@ public class NavigationMenuTests : TestBase
         cut.Find(".navigation-menu-list").TextContent.Trim().ShouldBeEmpty();
         cut.FindAll(".navigation-menu-viewport").ShouldBeEmpty();
         cut.FindAll(".navigation-menu-viewport-indicator").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void NavigationMenu_ArrowAndBoundaryKeysMoveFocusAcrossEnabledTriggers()
+    {
+        var cut = Render<NavigationMenu>(parameters => parameters
+            .Add(p => p.ChildContent, builder =>
+            {
+                AddNavigationItem(builder, 0, "First", disabled: false);
+                AddNavigationItem(builder, 10, "Disabled", disabled: true);
+                AddNavigationItem(builder, 20, "Last", disabled: false);
+            }));
+
+        var triggers = cut.FindAll(".navigation-menu-item-trigger");
+        triggers.Count.ShouldBe(3);
+
+        var initialFocusCalls = JSInterop.Invocations.Count(invocation =>
+            invocation.Identifier == "Blazor._internal.domWrapper.focus");
+
+        triggers[0].KeyDown("ArrowRight");
+        triggers[2].KeyDown("ArrowLeft");
+        triggers[2].KeyDown("Home");
+        triggers[0].KeyDown("End");
+
+        JSInterop.Invocations.Count(invocation =>
+            invocation.Identifier == "Blazor._internal.domWrapper.focus").ShouldBe(initialFocusCalls + 4);
+    }
+
+    private static void AddNavigationItem(RenderTreeBuilder builder, int sequence, string label, bool disabled)
+    {
+        builder.OpenComponent<NavigationMenuItem>(sequence);
+        builder.AddAttribute(sequence + 1, nameof(NavigationMenuItem.Disabled), disabled);
+        builder.AddAttribute(sequence + 2, nameof(NavigationMenuItem.TriggerContent),
+            (RenderFragment)(contentBuilder => contentBuilder.AddContent(0, label)));
+        builder.CloseComponent();
     }
 }

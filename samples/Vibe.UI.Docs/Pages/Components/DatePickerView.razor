@@ -109,7 +109,7 @@
                     </thead>
                     <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Value</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Date</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="DateTime?" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Selected date value</td>
@@ -144,12 +144,6 @@
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Disable the input</td>
                         </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ShowClearButton</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">true</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Show button to clear selection</td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -169,19 +163,14 @@
                     </thead>
                     <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ValueChanged</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">DateChanged</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<DateTime?>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when date is selected</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Binding callback used by <code>@@bind-Date</code></td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnOpen</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when calendar popup opens</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnClose</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when calendar popup closes</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnChange</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<DateTime?>" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Compatibility callback invoked after a date is selected</td>
                         </tr>
                     </tbody>
                 </table>
@@ -207,7 +196,7 @@
                     <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                     </svg>
-                    Input field is fully keyboard accessible
+                    Input and trigger open the calendar from the keyboard
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
                     <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -219,7 +208,7 @@
                     <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                     </svg>
-                    Uses <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">role="combobox"</code> pattern
+                    Input and trigger expose popup state with <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">aria-expanded</code> and <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">aria-controls</code>
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
                     <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -262,7 +251,7 @@
 @code {
     private DateTime? selectedDate;
 
-    private string BasicCode => @"<DatePicker @bind-Value=""@selectedDate"" />
+    private string BasicCode => @"<DatePicker @bind-Date=""@selectedDate"" />
 
 @if (selectedDate.HasValue)
 {
@@ -277,7 +266,7 @@
     <DataAnnotationsValidator />
 
     <FormField Label=""Birth Date"">
-        <DatePicker @bind-Value=""@model.BirthDate"" />
+        <DatePicker @bind-Date=""@model.BirthDate"" />
         <ValidationMessage For=""@(() => model.BirthDate)"" />
     </FormField>
 
@@ -301,7 +290,7 @@
 }";
 
     private string LimitsCode => @"<FormField Label=""Appointment Date"">
-    <DatePicker @bind-Value=""@appointmentDate""
+    <DatePicker @bind-Date=""@appointmentDate""
                 MinDate=""@DateTime.Today""
                 MaxDate=""@DateTime.Today.AddMonths(3)""
                 Placeholder=""Select date within 3 months"" />
@@ -320,22 +309,22 @@
 
     private string FormatCode => @"<div class=""date-format-examples"">
     <FormField Label=""US Format (MM/dd/yyyy)"">
-        <DatePicker @bind-Value=""@date1""
+        <DatePicker @bind-Date=""@date1""
                     Format=""MM/dd/yyyy"" />
     </FormField>
 
     <FormField Label=""European Format (dd/MM/yyyy)"">
-        <DatePicker @bind-Value=""@date2""
+        <DatePicker @bind-Date=""@date2""
                     Format=""dd/MM/yyyy"" />
     </FormField>
 
     <FormField Label=""ISO Format (yyyy-MM-dd)"">
-        <DatePicker @bind-Value=""@date3""
+        <DatePicker @bind-Date=""@date3""
                     Format=""yyyy-MM-dd"" />
     </FormField>
 
     <FormField Label=""Long Format"">
-        <DatePicker @bind-Value=""@date4""
+        <DatePicker @bind-Date=""@date4""
                     Format=""dddd, MMMM dd, yyyy"" />
     </FormField>
 </div>
@@ -356,14 +345,14 @@
     </FormField>
 
     <FormField Label=""Check-in Date"">
-        <DatePicker @bind-Value=""@reservation.CheckInDate""
+        <DatePicker @bind-Date=""@reservation.CheckInDate""
                     MinDate=""@DateTime.Today""
                     Placeholder=""Select check-in date"" />
         <ValidationMessage For=""@(() => reservation.CheckInDate)"" />
     </FormField>
 
     <FormField Label=""Check-out Date"">
-        <DatePicker @bind-Value=""@reservation.CheckOutDate""
+        <DatePicker @bind-Date=""@reservation.CheckOutDate""
                     MinDate=""@reservation.CheckInDate?.AddDays(1)""
                     Placeholder=""Select check-out date"" />
         <ValidationMessage For=""@(() => reservation.CheckOutDate)"" />

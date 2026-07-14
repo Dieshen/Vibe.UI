@@ -119,7 +119,7 @@ export function activate(key, dialogElement, dotNetRef = null, closeOnEscape = f
  */
 export function deactivate(key) {
   const state = dialogStates.get(key);
-  if (!state) return;
+  if (!state) return false;
 
   document.removeEventListener('keydown', state.onKeyDown, true);
   const activeIndex = activeDialogKeys.lastIndexOf(key);
@@ -128,11 +128,14 @@ export function deactivate(key) {
   }
   unlockBodyScroll();
 
+  dialogStates.delete(key);
+
   if (state.prevFocused && document.contains(state.prevFocused)) {
-    setTimeout(() => state.prevFocused.focus(), 0);
+    state.prevFocused.focus({ preventScroll: true });
+    return document.activeElement === state.prevFocused;
   }
 
-  dialogStates.delete(key);
+  return false;
 }
 
 // Global access fallback

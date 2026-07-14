@@ -1,35 +1,53 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
-<div class="@CombinedClass" @ref="DropdownRef" @attributes="AdditionalAttributes">
-    <button type="button"
-         class="@CombineClasses("dropdown-trigger", TriggerClass)"
-         disabled="@Disabled"
-         aria-label="@TriggerAriaLabel"
-         aria-haspopup="menu"
-         aria-expanded="@IsOpen.ToString().ToLowerInvariant()"
-         aria-controls="@_contentId"
-         @onclick="ToggleDropdown"
-         @onkeydown="HandleTriggerKeyDown">
+<div class="@CombinedClass" @attributes="AdditionalAttributes">
+    <button id="@_triggerId"
+            type="button"
+            class="@CombineClasses("dropdown-trigger", TriggerClass)"
+            disabled="@Disabled"
+            aria-label="@TriggerAriaLabel"
+            aria-haspopup="menu"
+            aria-expanded="@_isOpen.ToString().ToLowerInvariant()"
+            aria-controls="@_contentId"
+            @ref="_triggerReference"
+            @onclick="ToggleDropdown"
+            @onkeydown="HandleTriggerKeyDown">
         @TriggerContent
     </button>
 
-    @if (IsOpen)
+    @if (_isOpen)
     {
         <div id="@_contentId"
              class="@CombineClasses("dropdown-content", PositionClass, ContentClass)"
              style="@ContentStyle"
              role="menu"
+             tabindex="-1"
+             aria-labelledby="@_triggerId"
+             @ref="_contentReference"
              @onclick="HandleContentClick"
-             @onclick:stopPropagation="true">
+             @onclick:stopPropagation="true"
+             @onkeydown="HandleContentKeyDown">
             @Content
         </div>
-        @* Backdrop handles click-outside without JS *@
-        <div class="dropdown-backdrop" @onclick="CloseDropdown"></div>
+        <div class="dropdown-backdrop" aria-hidden="true" @onclick="HandleBackdropClick"></div>
     }
 </div>
 
 @code {
+    private const string KeyboardModulePath = "./_content/Vibe.UI/js/vibe-menu-keyboard.js";
+
+    private readonly string _triggerId = $"dropdown-trigger-{Guid.NewGuid():N}";
+    private readonly string _contentId = $"dropdown-content-{Guid.NewGuid():N}";
+    private bool _isOpen;
+    private ElementReference _triggerReference;
+    private ElementReference _contentReference;
+    private PendingFocus _pendingFocus;
+    private bool _restoreTriggerFocus;
+    private IJSObjectReference? _keyboardModule;
+
     /// <summary>
     /// Gets or sets the trigger content.
     /// </summary>
@@ -95,26 +113,52 @@
     /// </summary>
     protected override string ComponentClass => "vibe-dropdown";
 
-    /// <summary>
-    /// Gets the CSS class for the dropdown position/alignment.
-    /// </summary>
     private string PositionClass => $"dropdown-{Position} dropdown-{Align}";
 
-    /// <summary>
-    /// Flag to track if the dropdown is open.
-    /// </summary>
-    private bool IsOpen = false;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
 
-    /// <summary>
-    /// Reference to the dropdown element.
-    /// </summary>
-    private ElementReference DropdownRef;
+        try
+        {
+            var module = await GetKeyboardModuleAsync();
+            await module.InvokeVoidAsync("initializeTrigger", _triggerReference, false, false);
 
-    private readonly string _contentId = $"dropdown-content-{Guid.NewGuid():N}";
+            if (_isOpen)
+            {
+                await module.InvokeVoidAsync("initializeContainer", _contentReference, "menu");
 
-    /// <summary>
-    /// Toggles the dropdown state.
-    /// </summary>
+                if (_pendingFocus == PendingFocus.First)
+                {
+                    await module.InvokeVoidAsync("focusFirstItem", _contentReference, "menu");
+                    _pendingFocus = PendingFocus.None;
+                }
+                else if (_pendingFocus == PendingFocus.Last)
+                {
+                    await module.InvokeVoidAsync("focusLastItem", _contentReference, "menu");
+                    _pendingFocus = PendingFocus.None;
+                }
+            }
+            else if (_restoreTriggerFocus)
+            {
+                await _triggerReference.FocusAsync();
+                _restoreTriggerFocus = false;
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            // JS interop is unavailable during static prerendering.
+        }
+        catch (JSDisconnectedException)
+        {
+            // The server-side circuit disconnected before focus could be updated.
+        }
+        catch (TaskCanceledException)
+        {
+            // The browser disconnected while focus work was pending.
+        }
+    }
+
     private void ToggleDropdown()
     {
         if (Disabled)
@@ -122,15 +166,71 @@
             return;
         }
 
-        IsOpen = !IsOpen;
+        if (_isOpen)
+        {
+            CloseDropdown();
+        }
+        else
+        {
+            OpenDropdown(PendingFocus.First);
+        }
     }
 
     private void HandleTriggerKeyDown(KeyboardEventArgs e)
     {
+        if (Disabled)
+        {
+            return;
+        }
+
         switch (e.Key)
         {
+            case "ArrowDown":
+                OpenDropdown(PendingFocus.First);
+                break;
+            case "ArrowUp":
+                OpenDropdown(PendingFocus.Last);
+                break;
             case "Escape":
-                CloseDropdown();
+                CloseDropdown(restoreTriggerFocus: true);
+                break;
+        }
+    }
+
+    private async Task HandleContentKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Tab")
+        {
+            CloseDropdown();
+            return;
+        }
+
+        if (e.Key == "Escape")
+        {
+            CloseDropdown(restoreTriggerFocus: true);
+            return;
+        }
+
+        var module = await GetKeyboardModuleAsync();
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                await module.InvokeVoidAsync("moveFocus", _contentReference, "menu", 1);
+                break;
+            case "ArrowUp":
+                await module.InvokeVoidAsync("moveFocus", _contentReference, "menu", -1);
+                break;
+            case "Home":
+                await module.InvokeVoidAsync("focusFirstItem", _contentReference, "menu");
+                break;
+            case "End":
+                await module.InvokeVoidAsync("focusLastItem", _contentReference, "menu");
+                break;
+            default:
+                if (IsTypeaheadKey(e))
+                {
+                    await module.InvokeVoidAsync("focusByTypeahead", _contentReference, "menu", e.Key);
+                }
                 break;
         }
     }
@@ -139,16 +239,72 @@
     {
         if (CloseOnSelect)
         {
-            CloseDropdown();
+            CloseDropdown(restoreTriggerFocus: true);
         }
     }
 
-    /// <summary>
-    /// Closes the dropdown.
-    /// </summary>
-    private void CloseDropdown()
+    private void HandleBackdropClick()
     {
-        IsOpen = false;
+        CloseDropdown();
     }
 
+    private void OpenDropdown(PendingFocus pendingFocus)
+    {
+        _isOpen = true;
+        _pendingFocus = pendingFocus;
+        _restoreTriggerFocus = false;
+    }
+
+    private void CloseDropdown(bool restoreTriggerFocus = false)
+    {
+        if (!_isOpen)
+        {
+            return;
+        }
+
+        _isOpen = false;
+        _pendingFocus = PendingFocus.None;
+        _restoreTriggerFocus = restoreTriggerFocus;
+    }
+
+    private async ValueTask<IJSObjectReference> GetKeyboardModuleAsync()
+    {
+        _keyboardModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>("import", KeyboardModulePath);
+        return _keyboardModule;
+    }
+
+    private static bool IsTypeaheadKey(KeyboardEventArgs e)
+    {
+        return e.Key.Length == 1 &&
+               !char.IsWhiteSpace(e.Key[0]) &&
+               !e.AltKey &&
+               !e.CtrlKey &&
+               !e.MetaKey;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_keyboardModule != null)
+        {
+            try
+            {
+                await _keyboardModule.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+            catch (TaskCanceledException)
+            {
+            }
+        }
+
+        GC.SuppressFinalize(this);
+    }
+
+    private enum PendingFocus
+    {
+        None,
+        First,
+        Last
+    }
 }

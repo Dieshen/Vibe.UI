@@ -3,6 +3,8 @@
  * CSP-safe DOM operations for Blazor components
  */
 
+const initializedGridNavigationGuards = new WeakSet();
+
 /**
  * Gets the bounding client rect for an element by ID
  * @param {string} elementId - The element ID
@@ -30,8 +32,41 @@ export function getParentBoundingRect(elementId) {
  * @param {string} elementId - The element ID
  */
 export function focusElement(elementId) {
-    const element = document.getElementById(elementId);
-    if (element) element.focus();
+    return new Promise(resolve => {
+        requestAnimationFrame(() => {
+            const element = document.getElementById(elementId);
+            if (!element) {
+                resolve(false);
+                return;
+            }
+
+            element.focus({ preventScroll: true });
+            resolve(document.activeElement === element);
+        });
+    });
+}
+
+/**
+ * Prevents browser scrolling for arrow keys handled by an ARIA gridcell.
+ * @param {HTMLElement} gridElement - The grid container
+ */
+export function initializeGridNavigationGuard(gridElement) {
+    if (!gridElement || initializedGridNavigationGuards.has(gridElement)) {
+        return;
+    }
+
+    gridElement.addEventListener('keydown', event => {
+        const target = event.target;
+        const isGridCell = target instanceof Element && target.getAttribute('role') === 'gridcell';
+        const isNavigationKey = event.key === 'ArrowLeft' || event.key === 'ArrowRight' ||
+            event.key === 'ArrowUp' || event.key === 'ArrowDown';
+
+        if (isGridCell && isNavigationKey) {
+            event.preventDefault();
+        }
+    });
+
+    initializedGridNavigationGuards.add(gridElement);
 }
 
 /**
@@ -74,6 +109,7 @@ window.VibeDom = {
     getBoundingRect,
     getParentBoundingRect,
     focusElement,
+    initializeGridNavigationGuard,
     scrollIntoView,
     getScrollPosition,
     setScrollPosition

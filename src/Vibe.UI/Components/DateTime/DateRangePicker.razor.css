@@ -49,6 +49,17 @@
   opacity: 0.5;
 }
 
+.daterange-icon:focus-visible,
+.daterange-nav-btn:focus-visible,
+.daterange-month-select:focus-visible,
+.daterange-year-select:focus-visible,
+.daterange-day:focus-visible,
+.daterange-preset-btn:focus-visible,
+.daterange-apply-btn:focus-visible {
+  outline: 2px solid var(--vibe-ring);
+  outline-offset: 2px;
+}
+
 .daterange-popup {
   position: absolute;
   z-index: 50;
@@ -137,6 +148,8 @@
 }
 
 .daterange-day {
+  min-width: 2rem;
+  min-height: 2rem;
   border: 1px solid transparent;
   background: transparent;
   color: var(--vibe-foreground);
