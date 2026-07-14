@@ -3,16 +3,19 @@
 
 <label class="@CombinedClass" aria-disabled="@(Disabled ? "true" : null)" @attributes="AdditionalAttributes">
     <input type="checkbox"
-        id="@Id"
+        id="@EffectiveId"
         name="@Name"
         value="@Value"
         class="vibe-checkbox-input"
         checked="@currentChecked"
         disabled="@Disabled"
-        required="@Required"
+        required="@EffectiveRequired"
         aria-label="@EffectiveAriaLabel"
         aria-checked="@AriaCheckedValue"
         aria-invalid="@AriaInvalidValue"
+        aria-errormessage="@EffectiveErrorMessageId"
+        aria-describedby="@EffectiveDescribedBy"
+        aria-required="@(EffectiveRequired ? "true" : null)"
         data-indeterminate="@IndeterminateValue"
         @onchange="OnCheckboxChange" />
     <span class="vibe-checkbox-control" aria-hidden="true">
@@ -43,6 +46,12 @@
 @code {
     private bool currentChecked;
     private bool currentIndeterminate;
+
+    /// <summary>
+    /// Gets the relationships cascaded by an ancestor <see cref="FormField{TValue}"/>, if any.
+    /// </summary>
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
 
     /// <summary>
     /// Gets or sets the label content
@@ -133,7 +142,7 @@
         .Add("vibe-checkbox")
         .AddIf("vibe-checkbox-disabled", Disabled)
         .AddIf("vibe-checkbox-indeterminate", currentIndeterminate)
-        .AddIf("vibe-checkbox-error", AriaInvalid)
+        .AddIf("vibe-checkbox-error", EffectiveAriaInvalid)
         .Build();
 
     protected override void OnParametersSet()
@@ -184,7 +193,19 @@
 
     private string AriaCheckedValue => currentIndeterminate ? "mixed" : currentChecked ? "true" : "false";
 
-    private string? AriaInvalidValue => AriaInvalid ? "true" : null;
+    private string? EffectiveId => FieldContext?.ControlId ?? Id;
+
+    private string? EffectiveDescribedBy => FieldContext?.DescribedBy;
+
+    private bool EffectiveRequired => Required || FieldContext?.IsRequired == true;
+
+    private bool EffectiveAriaInvalid => AriaInvalid || FieldContext?.IsInvalid == true;
+
+    private string? AriaInvalidValue => EffectiveAriaInvalid ? "true" : null;
+
+    private string? EffectiveErrorMessageId => EffectiveAriaInvalid && !string.IsNullOrWhiteSpace(FieldContext?.ErrorId)
+        ? FieldContext?.ErrorId
+        : null;
 
     private string IndeterminateValue => currentIndeterminate ? "true" : "false";
 }

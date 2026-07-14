@@ -3,7 +3,7 @@
 @inherits VibeComponent
 
 <div @attributes="AdditionalAttributes" class="@CombinedCssClass">
-    <button type="button"
+    <button id="@EffectiveId" type="button"
          @ref="_triggerElement"
          class="vibe-color-picker-preview"
          aria-label="@TriggerAriaLabel"
@@ -11,6 +11,9 @@
          aria-expanded="@ExpandedAriaValue"
          aria-controls="@_popoverId"
          aria-disabled="@DisabledAriaValue"
+         aria-describedby="@EffectiveDescribedBy"
+         aria-invalid="@AriaInvalidValue"
+         aria-errormessage="@EffectiveErrorMessageId"
          disabled="@Disabled"
          @onclick="TogglePicker">
         <div class="vibe-color-picker-swatch" style="background-color: @PreviewColor;" aria-hidden="true"></div>
@@ -139,6 +142,12 @@
     [Parameter]
     public string? CssClass { get; set; }
 
+    /// <summary>
+    /// Gets the relationships cascaded by an ancestor <see cref="FormField{TValue}"/>, if any.
+    /// </summary>
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
+
     private readonly string _popoverId = $"vibe-color-picker-popover-{Guid.NewGuid():N}";
     private readonly string _popoverLabelId = $"vibe-color-picker-label-{Guid.NewGuid():N}";
     private readonly string _presetsLabelId = $"vibe-color-picker-presets-{Guid.NewGuid():N}";
@@ -169,6 +178,12 @@
     private string TriggerAriaLabel => $"Color picker, selected {DisplayValue}";
     private string ExpandedAriaValue => IsOpen ? "true" : "false";
     private string DisabledAriaValue => Disabled ? "true" : "false";
+    private string? EffectiveId => FieldContext?.ControlId;
+    private string? EffectiveDescribedBy => FieldContext?.DescribedBy;
+    private string? AriaInvalidValue => FieldContext?.IsInvalid == true ? "true" : null;
+    private string? EffectiveErrorMessageId => FieldContext?.IsInvalid == true && !string.IsNullOrWhiteSpace(FieldContext.ErrorId)
+        ? FieldContext.ErrorId
+        : null;
 
     private string CombinedCssClass => CombineClasses(
     "vibe-color-picker",

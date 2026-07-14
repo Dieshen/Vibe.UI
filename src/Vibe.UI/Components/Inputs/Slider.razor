@@ -26,6 +26,11 @@
                 aria-valuemin="@FormatNumber(Min)"
                 aria-valuemax="@FormatNumber(Max)"
                 aria-valuenow="@FormatNumber(Value)"
+                aria-describedby="@EffectiveDescribedBy"
+                aria-invalid="@AriaInvalidValue"
+                aria-errormessage="@EffectiveErrorMessageId"
+                required="@EffectiveRequired"
+                aria-required="@(EffectiveRequired ? "true" : null)"
                 @oninput="HandleInputEvent"
                 @onchange="HandleChangeEvent" />
         </div>
@@ -39,6 +44,12 @@
 
 @code {
     private string _id = Guid.NewGuid().ToString();
+
+    /// <summary>
+    /// Gets the relationships cascaded by an ancestor <see cref="FormField{TValue}"/>, if any.
+    /// </summary>
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
 
     /// <summary>
     /// Gets or sets the ID of the slider
@@ -119,12 +130,27 @@
     public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
     /// <inheritdoc/>
-    protected override string ComponentClass => $"vibe-slider {(Disabled ? "vibe-slider-disabled" : "")}";
+    protected override string ComponentClass => new ClassBuilder()
+        .Add("vibe-slider")
+        .AddIf("vibe-slider-disabled", Disabled)
+        .AddIf("vibe-slider-error", FieldContext?.IsInvalid == true)
+        .Build();
 
     /// <summary>
     /// Gets the ID of the slider element
     /// </summary>
-    private string ElementId => string.IsNullOrEmpty(Id) ? _id : Id;
+    private string ElementId => FieldContext?.ControlId
+        ?? (string.IsNullOrEmpty(Id) ? _id : Id);
+
+    private bool EffectiveRequired => FieldContext?.IsRequired == true;
+
+    private string? EffectiveDescribedBy => FieldContext?.DescribedBy;
+
+    private string? AriaInvalidValue => FieldContext?.IsInvalid == true ? "true" : null;
+
+    private string? EffectiveErrorMessageId => FieldContext?.IsInvalid == true && !string.IsNullOrWhiteSpace(FieldContext.ErrorId)
+        ? FieldContext.ErrorId
+        : null;
 
     private string? EffectiveAriaLabel
     {

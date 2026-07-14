@@ -8,11 +8,14 @@
     PrepareOptionState(filteredSourceItems.Count, filteredTargetItems.Count);
 }
 
-<div @attributes="AdditionalAttributes"
+<div id="@EffectiveId" @attributes="AdditionalAttributes"
      class="@CombinedCssClass"
      role="group"
      aria-label="@AriaLabel"
-     aria-disabled="@AriaBool(Disabled)">
+     aria-disabled="@AriaBool(Disabled)"
+     aria-describedby="@EffectiveDescribedBy"
+     aria-invalid="@AriaInvalidValue"
+     aria-errormessage="@EffectiveErrorMessageId">
     <div class="transfer-panel">
         <div class="transfer-panel-header">
             <h4 id="@_sourceTitleId" class="panel-title">@SourceTitle</h4>
@@ -206,6 +209,12 @@
     private PendingFocus _pendingFocus;
     private int _pendingFocusIndex = -1;
 
+    /// <summary>
+    /// Gets the relationships cascaded by an ancestor <see cref="FormField{TValue}"/>, if any.
+    /// </summary>
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
+
     /// <summary>Items shown in the source list.</summary>
     [Parameter]
     public List<TItem> SourceItems { get; set; } = new();
@@ -269,10 +278,21 @@
     private string CombinedCssClass => CombineClasses(
         "vibe-transfer",
         Disabled ? "is-disabled" : null,
+        FieldContext?.IsInvalid == true ? "is-invalid" : null,
         Class,
         CssClass);
 
     protected override string ComponentClass => CombinedCssClass;
+
+    private string? EffectiveId => FieldContext?.ControlId;
+
+    private string? EffectiveDescribedBy => FieldContext?.DescribedBy;
+
+    private string? AriaInvalidValue => FieldContext?.IsInvalid == true ? "true" : null;
+
+    private string? EffectiveErrorMessageId => FieldContext?.IsInvalid == true && !string.IsNullOrWhiteSpace(FieldContext.ErrorId)
+        ? FieldContext.ErrorId
+        : null;
 
     protected override void OnParametersSet()
     {

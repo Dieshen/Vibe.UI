@@ -14,8 +14,9 @@ public class FormFieldTests : TestBase
     [Fact]
     public void FormField_RendersChildContentAndBaseClass()
     {
-        var cut = Render<FormField<string>>(parameters => parameters
-            .AddChildContent("<input id=\"email\" />"));
+        var cut = Render<FormField<string>>(parameters =>
+            parameters.AddChildContent("<input id=\"email\" />")
+        );
 
         cut.Find(".vibe-form-field").ShouldNotBeNull();
         cut.Find(".form-field-input input").GetAttribute("id").ShouldBe("email");
@@ -24,11 +25,13 @@ public class FormFieldTests : TestBase
     [Fact]
     public void FormField_RendersLabelAndDescription_WhenProvided()
     {
-        var cut = Render<FormField<string>>(parameters => parameters
-            .Add(p => p.Id, "email")
-            .Add(p => p.Label, "Email")
-            .Add(p => p.Description, "Use your work email")
-            .Add(p => p.ChildContent, RenderInput()));
+        var cut = Render<FormField<string>>(parameters =>
+            parameters
+                .Add(p => p.Id, "email")
+                .Add(p => p.Label, "Email")
+                .Add(p => p.Description, "Use your work email")
+                .Add(p => p.ChildContent, RenderInput())
+        );
 
         var label = cut.Find(".form-field-label");
         label.TextContent.ShouldBe("Email");
@@ -39,9 +42,9 @@ public class FormFieldTests : TestBase
     [Fact]
     public void FormField_GeneratesId_WhenIdIsMissing()
     {
-        var cut = Render<FormField<string>>(parameters => parameters
-            .Add(p => p.Label, "Email")
-            .Add(p => p.ChildContent, RenderInput()));
+        var cut = Render<FormField<string>>(parameters =>
+            parameters.Add(p => p.Label, "Email").Add(p => p.ChildContent, RenderInput())
+        );
 
         var labelFor = cut.Find(".form-field-label").GetAttribute("for");
         labelFor.ShouldNotBeNullOrWhiteSpace();
@@ -52,8 +55,7 @@ public class FormFieldTests : TestBase
     [Fact]
     public void FormField_OmitsOptionalLabelAndDescription_WhenNotProvided()
     {
-        var cut = Render<FormField<string>>(parameters => parameters
-            .AddChildContent("<input />"));
+        var cut = Render<FormField<string>>(parameters => parameters.AddChildContent("<input />"));
 
         cut.FindAll(".form-field-label").ShouldBeEmpty();
         cut.FindAll(".form-field-description").ShouldBeEmpty();
@@ -62,9 +64,9 @@ public class FormFieldTests : TestBase
     [Fact]
     public void FormField_AppliesHasErrorClass_WhenHasError()
     {
-        var cut = Render<FormField<string>>(parameters => parameters
-            .Add(p => p.HasError, true)
-            .AddChildContent("<input />"));
+        var cut = Render<FormField<string>>(parameters =>
+            parameters.Add(p => p.HasError, true).AddChildContent("<input />")
+        );
 
         cut.Find(".form-field-container").ClassList.ShouldContain("has-error");
     }
@@ -72,10 +74,12 @@ public class FormFieldTests : TestBase
     [Fact]
     public void FormField_ForwardsAdditionalAttributesAndClass()
     {
-        var cut = Render<FormField<string>>(parameters => parameters
-            .Add(p => p.Class, "stacked")
-            .AddUnmatched("data-testid", "email-field")
-            .AddChildContent("<input />"));
+        var cut = Render<FormField<string>>(parameters =>
+            parameters
+                .Add(p => p.Class, "stacked")
+                .AddUnmatched("data-testid", "email-field")
+                .AddChildContent("<input />")
+        );
 
         var root = cut.Find(".vibe-form-field");
         root.ClassList.ShouldContain("stacked");
@@ -86,13 +90,15 @@ public class FormFieldTests : TestBase
     [Fact]
     public void FormField_LinksLabelDescriptionAndExplicitError()
     {
-        var cut = Render<FormField<string>>(parameters => parameters
-            .Add(p => p.Id, "email")
-            .Add(p => p.Label, "Email")
-            .Add(p => p.Description, "Use your work email")
-            .Add(p => p.ErrorMessage, "Email is required")
-            .Add(p => p.Required, true)
-            .Add(p => p.ChildContent, RenderInput()));
+        var cut = Render<FormField<string>>(parameters =>
+            parameters
+                .Add(p => p.Id, "email")
+                .Add(p => p.Label, "Email")
+                .Add(p => p.Description, "Use your work email")
+                .Add(p => p.ErrorMessage, "Email is required")
+                .Add(p => p.Required, true)
+                .Add(p => p.ChildContent, RenderInput())
+        );
 
         var root = cut.Find(".vibe-form-field");
         root.HasAttribute("aria-describedby").ShouldBeFalse();
@@ -117,14 +123,18 @@ public class FormFieldTests : TestBase
     [Fact]
     public void FormField_PreservesInputDescribedBy_WhenAddingDescriptionAndError()
     {
-        var cut = Render<FormField<string>>(parameters => parameters
-            .Add(p => p.Id, "email")
-            .Add(p => p.Description, "Help")
-            .Add(p => p.ErrorMessage, "Error")
-            .Add(p => p.ChildContent, RenderInput(new Dictionary<string, object>
-            {
-                ["aria-describedby"] = "external-help"
-            })));
+        var cut = Render<FormField<string>>(parameters =>
+            parameters
+                .Add(p => p.Id, "email")
+                .Add(p => p.Description, "Help")
+                .Add(p => p.ErrorMessage, "Error")
+                .Add(
+                    p => p.ChildContent,
+                    RenderInput(
+                        new Dictionary<string, object> { ["aria-describedby"] = "external-help" }
+                    )
+                )
+        );
 
         cut.Find("input")
             .GetAttribute("aria-describedby")
@@ -141,16 +151,22 @@ public class FormFieldTests : TestBase
         {
             builder.OpenComponent<Vibe.UI.Components.Form<FieldValidationModel>>(0);
             builder.AddAttribute(1, "Model", model);
-            builder.AddAttribute(2, "ChildContent", (RenderFragment)(childBuilder =>
-            {
-                childBuilder.OpenComponent<FormField<string>>(0);
-                childBuilder.AddAttribute(1, "Id", "name");
-                childBuilder.AddAttribute(2, "Label", "Name");
-                childBuilder.AddAttribute(3, "ValidationFor", validationFor);
-                childBuilder.AddAttribute(4, "ChildContent", RenderInput());
-                childBuilder.CloseComponent();
-                childBuilder.AddMarkupContent(5, "<button type=\"submit\">Submit</button>");
-            }));
+            builder.AddAttribute(
+                2,
+                "ChildContent",
+                (RenderFragment)(
+                    childBuilder =>
+                    {
+                        childBuilder.OpenComponent<FormField<string>>(0);
+                        childBuilder.AddAttribute(1, "Id", "name");
+                        childBuilder.AddAttribute(2, "Label", "Name");
+                        childBuilder.AddAttribute(3, "ValidationFor", validationFor);
+                        childBuilder.AddAttribute(4, "ChildContent", RenderInput());
+                        childBuilder.CloseComponent();
+                        childBuilder.AddMarkupContent(5, "<button type=\"submit\">Submit</button>");
+                    }
+                )
+            );
             builder.CloseComponent();
         });
 
@@ -170,9 +186,11 @@ public class FormFieldTests : TestBase
         var model = new FieldValidationModel();
         Expression<Func<string>> validationFor = () => model.Name;
 
-        var cut = Render<FormField<string>>(parameters => parameters
-            .Add(p => p.ValidationFor, validationFor)
-            .AddChildContent("<input id=\"name\" />"));
+        var cut = Render<FormField<string>>(parameters =>
+            parameters
+                .Add(p => p.ValidationFor, validationFor)
+                .AddChildContent("<input id=\"name\" />")
+        );
 
         cut.Find(".vibe-form-field").ShouldNotBeNull();
         cut.FindAll(".form-validation-message").ShouldBeEmpty();
@@ -181,19 +199,33 @@ public class FormFieldTests : TestBase
     [Fact]
     public void FormField_CascadesRelationshipsToSelect()
     {
-        var cut = Render<FormField<string>>(parameters => parameters
-            .Add(p => p.Id, "country")
-            .Add(p => p.Label, "Country")
-            .Add(p => p.Description, "Choose your billing country")
-            .Add(p => p.ErrorMessage, "Country is required")
-            .Add(p => p.Required, true)
-            .Add(p => p.ChildContent, builder =>
-            {
-                builder.OpenComponent<Select>(0);
-                builder.AddAttribute(1, nameof(Select.ChildContent), (RenderFragment)(options =>
-                    options.AddMarkupContent(0, "<option value='us'>United States</option>")));
-                builder.CloseComponent();
-            }));
+        var cut = Render<FormField<string>>(parameters =>
+            parameters
+                .Add(p => p.Id, "country")
+                .Add(p => p.Label, "Country")
+                .Add(p => p.Description, "Choose your billing country")
+                .Add(p => p.ErrorMessage, "Country is required")
+                .Add(p => p.Required, true)
+                .Add(
+                    p => p.ChildContent,
+                    builder =>
+                    {
+                        builder.OpenComponent<Select>(0);
+                        builder.AddAttribute(
+                            1,
+                            nameof(Select.ChildContent),
+                            (RenderFragment)(
+                                options =>
+                                    options.AddMarkupContent(
+                                        0,
+                                        "<option value='us'>United States</option>"
+                                    )
+                            )
+                        );
+                        builder.CloseComponent();
+                    }
+                )
+        );
 
         var select = cut.Find("select");
         select.GetAttribute("id").ShouldBe("country");
@@ -206,16 +238,21 @@ public class FormFieldTests : TestBase
     [Fact]
     public void FormField_CascadesRelationshipsToTextArea()
     {
-        var cut = Render<FormField<string>>(parameters => parameters
-            .Add(p => p.Id, "notes")
-            .Add(p => p.Label, "Notes")
-            .Add(p => p.Description, "Add delivery instructions")
-            .Add(p => p.Required, true)
-            .Add(p => p.ChildContent, builder =>
-            {
-                builder.OpenComponent<TextArea>(0);
-                builder.CloseComponent();
-            }));
+        var cut = Render<FormField<string>>(parameters =>
+            parameters
+                .Add(p => p.Id, "notes")
+                .Add(p => p.Label, "Notes")
+                .Add(p => p.Description, "Add delivery instructions")
+                .Add(p => p.Required, true)
+                .Add(
+                    p => p.ChildContent,
+                    builder =>
+                    {
+                        builder.OpenComponent<TextArea>(0);
+                        builder.CloseComponent();
+                    }
+                )
+        );
 
         var textArea = cut.Find("textarea");
         textArea.GetAttribute("id").ShouldBe("notes");
@@ -224,7 +261,127 @@ public class FormFieldTests : TestBase
         textArea.HasAttribute("required").ShouldBeTrue();
     }
 
-    private static RenderFragment RenderInput(IReadOnlyDictionary<string, object>? attributes = null)
+    [Fact]
+    public void FormField_CascadesRelationshipsToCombobox()
+    {
+        var cut = Render<FormField<string>>(parameters =>
+            parameters
+                .Add(p => p.Id, "country")
+                .Add(p => p.Label, "Country")
+                .Add(p => p.Description, "Choose your billing country")
+                .Add(p => p.ErrorMessage, "Country is required")
+                .Add(p => p.Required, true)
+                .Add(
+                    p => p.ChildContent,
+                    builder =>
+                    {
+                        builder.OpenComponent<Combobox>(0);
+                        builder.CloseComponent();
+                    }
+                )
+        );
+
+        var input = cut.Find("input");
+        input.GetAttribute("id").ShouldBe("country");
+        input.GetAttribute("aria-describedby").ShouldBe("country-description country-error");
+        input.GetAttribute("aria-errormessage").ShouldBe("country-error");
+        input.GetAttribute("aria-invalid").ShouldBe("true");
+        input.GetAttribute("aria-required").ShouldBe("true");
+        input.HasAttribute("required").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void FormField_CascadesRelationshipsToCheckbox()
+    {
+        var cut = Render<FormField<string>>(parameters =>
+            parameters
+                .Add(p => p.Id, "terms")
+                .Add(p => p.Label, "Terms")
+                .Add(p => p.Description, "You must accept the terms")
+                .Add(p => p.ErrorMessage, "Acceptance is required")
+                .Add(p => p.Required, true)
+                .Add(
+                    p => p.ChildContent,
+                    builder =>
+                    {
+                        builder.OpenComponent<Checkbox>(0);
+                        builder.CloseComponent();
+                    }
+                )
+        );
+
+        var input = cut.Find("input[type='checkbox']");
+        input.GetAttribute("id").ShouldBe("terms");
+        input.GetAttribute("aria-describedby").ShouldBe("terms-description terms-error");
+        input.GetAttribute("aria-errormessage").ShouldBe("terms-error");
+        input.GetAttribute("aria-invalid").ShouldBe("true");
+        input.GetAttribute("aria-required").ShouldBe("true");
+        input.HasAttribute("required").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void FormField_CascadesRelationshipsToSwitch()
+    {
+        var cut = Render<FormField<string>>(parameters =>
+            parameters
+                .Add(p => p.Id, "notifications")
+                .Add(p => p.Label, "Notifications")
+                .Add(p => p.Description, "Receive updates by email")
+                .Add(p => p.ErrorMessage, "Selection is required")
+                .Add(p => p.Required, true)
+                .Add(
+                    p => p.ChildContent,
+                    builder =>
+                    {
+                        builder.OpenComponent<Switch>(0);
+                        builder.CloseComponent();
+                    }
+                )
+        );
+
+        var input = cut.Find("input[type='checkbox']");
+        input.GetAttribute("id").ShouldBe("notifications");
+        input
+            .GetAttribute("aria-describedby")
+            .ShouldBe("notifications-description notifications-error");
+        input.GetAttribute("aria-errormessage").ShouldBe("notifications-error");
+        input.GetAttribute("aria-invalid").ShouldBe("true");
+        input.GetAttribute("aria-required").ShouldBe("true");
+        input.HasAttribute("required").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void FormField_CascadesRelationshipsToSlider()
+    {
+        var cut = Render<FormField<string>>(parameters =>
+            parameters
+                .Add(p => p.Id, "volume")
+                .Add(p => p.Label, "Volume")
+                .Add(p => p.Description, "Set the playback volume")
+                .Add(p => p.ErrorMessage, "Volume is required")
+                .Add(p => p.Required, true)
+                .Add(
+                    p => p.ChildContent,
+                    builder =>
+                    {
+                        builder.OpenComponent<Slider>(0);
+                        builder.CloseComponent();
+                    }
+                )
+        );
+
+        var input = cut.Find("input[type='range']");
+        input.GetAttribute("id").ShouldBe("volume");
+        input.GetAttribute("aria-describedby").ShouldBe("volume-description volume-error");
+        input.GetAttribute("aria-errormessage").ShouldBe("volume-error");
+        input.GetAttribute("aria-invalid").ShouldBe("true");
+        input.GetAttribute("aria-required").ShouldBe("true");
+        input.HasAttribute("required").ShouldBeTrue();
+    }
+
+    private static RenderFragment RenderInput(
+        IReadOnlyDictionary<string, object>? attributes = null
+    )
     {
         return builder =>
         {

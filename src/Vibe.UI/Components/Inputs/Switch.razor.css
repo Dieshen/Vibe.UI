@@ -4,103 +4,112 @@
 
 /* Container - label wrapper for switch + optional text */
 .vibe-switch {
-    --vibe-switch-width: 42px;
-    --vibe-switch-height: 24px;
-    --vibe-switch-thumb-size: 18px;
-    --vibe-switch-thumb-travel: 18px;
+  --vibe-switch-width: 42px;
+  --vibe-switch-height: 24px;
+  --vibe-switch-thumb-size: 18px;
+  --vibe-switch-thumb-travel: 18px;
 
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    width: var(--vibe-switch-width);
-    height: var(--vibe-switch-height);
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: var(--vibe-switch-width);
+  height: var(--vibe-switch-height);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .vibe-switch-sm {
-    --vibe-switch-width: 34px;
-    --vibe-switch-height: 20px;
-    --vibe-switch-thumb-size: 14px;
-    --vibe-switch-thumb-travel: 14px;
+  --vibe-switch-width: 34px;
+  --vibe-switch-height: 20px;
+  --vibe-switch-thumb-size: 14px;
+  --vibe-switch-thumb-travel: 14px;
 }
 
 .vibe-switch-lg {
-    --vibe-switch-width: 50px;
-    --vibe-switch-height: 28px;
-    --vibe-switch-thumb-size: 22px;
-    --vibe-switch-thumb-travel: 22px;
+  --vibe-switch-width: 50px;
+  --vibe-switch-height: 28px;
+  --vibe-switch-thumb-size: 22px;
+  --vibe-switch-thumb-travel: 22px;
 }
 
 /* Disabled state - reduced opacity and no pointer cursor */
 .vibe-switch.disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 /* Hidden checkbox input - positioned over track for accessibility */
 .switch-input {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 2;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
 }
 
 /* Disabled input cursor override */
 .vibe-switch.disabled .switch-input {
-    cursor: not-allowed;
+  cursor: not-allowed;
 }
 
 /* Switch track - background container for the thumb */
 .switch-thumb {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--vibe-muted);
-    border: 2px solid var(--vibe-border);
-    border-radius: 20px;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--vibe-muted);
+  border: 2px solid var(--vibe-border);
+  border-radius: 20px;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+/* Error state - applied when the field is invalid (aria-invalid). */
+.vibe-switch-error .switch-thumb {
+  border-color: var(--vibe-destructive);
 }
 
 /* Switch thumb indicator - circular sliding element */
 .switch-thumb::before {
-    content: "";
-    position: absolute;
-    height: var(--vibe-switch-thumb-size);
-    width: var(--vibe-switch-thumb-size);
-    left: 3px;
-    bottom: 3px;
-    background-color: var(--vibe-background);
-    border-radius: 50%;
-    transition: transform 0.15s ease, background-color 0.15s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  content: "";
+  position: absolute;
+  height: var(--vibe-switch-thumb-size);
+  width: var(--vibe-switch-thumb-size);
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--vibe-background);
+  border-radius: 50%;
+  transition:
+    transform 0.15s ease,
+    background-color 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* Checked state - primary colored track */
 .switch-input:checked + .switch-thumb {
-    background-color: var(--vibe-primary);
+  background-color: var(--vibe-primary);
 }
 
 /* Checked state - thumb slides to right */
 .switch-input:checked + .switch-thumb::before {
-    transform: translateX(var(--vibe-switch-thumb-travel));
+  transform: translateX(var(--vibe-switch-thumb-travel));
 }
 
 /* Focus state - accessible outline ring */
 .switch-input:focus-visible + .switch-thumb {
-    outline: 2px solid var(--vibe-ring);
-    outline-offset: 2px;
+  outline: 2px solid var(--vibe-ring);
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .switch-thumb,
-    .switch-thumb::before {
-        transition: none;
-    }
+  .switch-thumb,
+  .switch-thumb::before {
+    transition: none;
+  }
 }

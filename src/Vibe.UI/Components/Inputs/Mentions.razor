@@ -26,12 +26,15 @@
         }
 
         <span class="mentions-input-shell" @onkeydown="HandleKeyDown">
-            <input type="text" class="mentions-input" value="@_inputValue" @oninput="HandleInput"
+            <input id="@EffectiveId" type="text" class="mentions-input" value="@_inputValue" @oninput="HandleInput"
                 @onfocus="HandleFocus" @onblur="HandleBlur" placeholder="@Placeholder" disabled="@Disabled"
                 readonly="@ReadOnly" aria-label="@EffectiveAriaLabel" aria-autocomplete="list" aria-haspopup="listbox"
                 aria-controls="@_suggestionsId" aria-expanded="@(_showSuggestions ? "true" : "false")"
                 aria-activedescendant="@ActiveSuggestionId" aria-readonly="@(ReadOnly ? "true" : null)"
-                aria-disabled="@(Disabled ? "true" : null)" autocomplete="off" role="combobox"
+                aria-disabled="@(Disabled ? "true" : null)" aria-describedby="@EffectiveDescribedBy"
+                aria-invalid="@AriaInvalidValue" aria-errormessage="@EffectiveErrorMessageId"
+                required="@EffectiveRequired" aria-required="@(EffectiveRequired ? "true" : null)"
+                autocomplete="off" role="combobox"
                 onkeydown="if (this.getAttribute('aria-expanded') === 'true' && (event.key === 'Enter' || event.key === 'ArrowDown' || event.key === 'ArrowUp')) event.preventDefault();" />
         </span>
     </div>
@@ -79,6 +82,12 @@
     private int _activeSuggestionIndex = -1;
     private MentionType _activeMentionType = MentionType.User;
     private string _suggestionsId => $"vibe-mentions-suggestions-{_instanceId}";
+
+    /// <summary>
+    /// Gets the relationships cascaded by an ancestor <see cref="FormField{TValue}"/>, if any.
+    /// </summary>
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
 
     [Parameter]
     public List<MentionItem> Items { get; set; } = new();
@@ -137,6 +146,18 @@
     private string InteractionState => Disabled ? "disabled" : ReadOnly ? "readonly" : "enabled";
 
     private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel) ? "Mention input" : AriaLabel;
+
+    private string? EffectiveId => FieldContext?.ControlId;
+
+    private string? EffectiveDescribedBy => FieldContext?.DescribedBy;
+
+    private bool EffectiveRequired => FieldContext?.IsRequired == true;
+
+    private string? AriaInvalidValue => FieldContext?.IsInvalid == true ? "true" : null;
+
+    private string? EffectiveErrorMessageId => FieldContext?.IsInvalid == true && !string.IsNullOrWhiteSpace(FieldContext.ErrorId)
+        ? FieldContext.ErrorId
+        : null;
 
     private List<MentionSuggestion> FilteredSuggestions => string.IsNullOrWhiteSpace(_searchQuery)
     ? (Suggestions ?? new List<MentionSuggestion>()).ToList()

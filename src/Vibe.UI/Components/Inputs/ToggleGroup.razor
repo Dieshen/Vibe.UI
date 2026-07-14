@@ -3,8 +3,9 @@
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="group" aria-label="@AriaLabel"
-    aria-orientation="@EffectiveOrientation.ToString().ToLowerInvariant()" aria-disabled="@AriaBool(Disabled)">
+<div id="@EffectiveId" @attributes="AdditionalAttributes" class="@CombinedCssClass" role="group" aria-label="@AriaLabel"
+    aria-orientation="@EffectiveOrientation.ToString().ToLowerInvariant()" aria-disabled="@AriaBool(Disabled)"
+    aria-describedby="@EffectiveDescribedBy" aria-invalid="@AriaInvalidValue" aria-errormessage="@EffectiveErrorMessageId">
     <CascadingValue Value="this" IsFixed="true">
         @ChildContent
     </CascadingValue>
@@ -17,6 +18,12 @@
     private IJSObjectReference? _domModule;
     private string? _rovingItemId;
     private string? _pendingFocusId;
+
+    /// <summary>
+    /// Gets the relationships cascaded by an ancestor <see cref="FormField{TValue}"/>, if any.
+    /// </summary>
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
 
     /// <summary>
     /// The content of the toggle group (ToggleGroupItem components).
@@ -101,6 +108,16 @@
         => Enum.IsDefined(typeof(ToggleGroupOrientation), Orientation) ? Orientation : ToggleGroupOrientation.Horizontal;
 
     private ToggleGroupSize EffectiveSize => Enum.IsDefined(typeof(ToggleGroupSize), Size) ? Size : ToggleGroupSize.Default;
+
+    private string? EffectiveId => FieldContext?.ControlId;
+
+    private string? EffectiveDescribedBy => FieldContext?.DescribedBy;
+
+    private string? AriaInvalidValue => FieldContext?.IsInvalid == true ? "true" : null;
+
+    private string? EffectiveErrorMessageId => FieldContext?.IsInvalid == true && !string.IsNullOrWhiteSpace(FieldContext.ErrorId)
+        ? FieldContext.ErrorId
+        : null;
 
     protected override void OnParametersSet()
     {

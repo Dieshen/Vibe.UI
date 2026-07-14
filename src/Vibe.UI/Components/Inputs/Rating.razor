@@ -3,8 +3,10 @@
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="radiogroup" aria-label="@AriaLabel"
-    aria-orientation="horizontal" aria-disabled="@AriaBool(Disabled)" aria-readonly="@AriaBool(ReadOnly)">
+<div id="@EffectiveId" @attributes="AdditionalAttributes" class="@CombinedCssClass" role="radiogroup" aria-label="@AriaLabel"
+    aria-orientation="horizontal" aria-disabled="@AriaBool(Disabled)" aria-readonly="@AriaBool(ReadOnly)"
+    aria-describedby="@EffectiveDescribedBy" aria-invalid="@AriaInvalidValue" aria-errormessage="@EffectiveErrorMessageId"
+    aria-required="@(EffectiveRequired ? "true" : null)">
     @for (int i = 1; i <= EffectiveMaxRating; i++)
     {
         var index = i;
@@ -46,6 +48,12 @@
     private readonly string _ratingId = $"vibe-rating-{Guid.NewGuid():N}";
     private IJSObjectReference? _domModule;
     private int? _pendingFocusIndex;
+
+    /// <summary>
+    /// Gets the relationships cascaded by an ancestor <see cref="FormField{TValue}"/>, if any.
+    /// </summary>
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
 
     [Parameter]
     public double Value { get; set; }
@@ -113,6 +121,18 @@
     };
 
     private static string AriaBool(bool value) => value ? "true" : "false";
+
+    private string? EffectiveId => FieldContext?.ControlId;
+
+    private string? EffectiveDescribedBy => FieldContext?.DescribedBy;
+
+    private bool EffectiveRequired => FieldContext?.IsRequired == true;
+
+    private string? AriaInvalidValue => FieldContext?.IsInvalid == true ? "true" : null;
+
+    private string? EffectiveErrorMessageId => FieldContext?.IsInvalid == true && !string.IsNullOrWhiteSpace(FieldContext.ErrorId)
+        ? FieldContext.ErrorId
+        : null;
 
     private async Task HandleClick(int rating)
     {

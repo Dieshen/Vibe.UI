@@ -5,7 +5,7 @@
 <div @attributes="AdditionalAttributes" class="@CombinedClass">
     @if (!string.IsNullOrEmpty(Label))
     {
-        <label id="@LabelId" class="multiselect-label" for="@Id">@Label</label>
+        <label id="@LabelId" class="multiselect-label" for="@EffectiveId">@Label</label>
     }
 
     <div class="multiselect-container" @onclick="ToggleDropdown">
@@ -23,11 +23,13 @@
                     </div>
                 }
             }
-            <input id="@Id" type="text" class="multiselect-input" @bind-value="SearchText" @bind-value:event="oninput"
+            <input id="@EffectiveId" type="text" class="multiselect-input" @bind-value="SearchText" @bind-value:event="oninput"
                 @onfocus="OpenDropdown" @onclick:stopPropagation="true" @onkeydown="OnKeyDown"
                 placeholder="@(CurrentSelectedItems.Any() ? "" : Placeholder)" disabled="@Disabled"
                 role="combobox" aria-expanded="@AriaBool(IsOpen)" aria-haspopup="listbox" aria-controls="@DropdownId"
-                aria-autocomplete="list" aria-activedescendant="@ActiveDescendantId" aria-describedby="@HelperTextId"
+                aria-autocomplete="list" aria-activedescendant="@ActiveDescendantId" aria-describedby="@InputDescribedBy"
+                aria-invalid="@AriaInvalidValue" aria-errormessage="@EffectiveErrorMessageId"
+                required="@EffectiveRequired" aria-required="@(EffectiveRequired ? "true" : null)"
                 aria-disabled="@AriaBool(Disabled)" />
         </div>
 
@@ -97,6 +99,12 @@
     private readonly string _labelId = $"multiselect-label-{Guid.NewGuid():N}";
     private readonly string _helperTextId = $"multiselect-helper-{Guid.NewGuid():N}";
     private List<TItem> _selectedItems = new();
+
+    /// <summary>
+    /// Gets the relationships cascaded by an ancestor <see cref="FormField{TValue}"/>, if any.
+    /// </summary>
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
 
     /// <summary>
     /// Gets or sets the collection of items to choose from.
@@ -206,9 +214,21 @@
 
     private string DropdownId => _dropdownId;
 
+    private string EffectiveId => FieldContext?.ControlId ?? Id;
+
     private string? LabelId => string.IsNullOrEmpty(Label) ? null : _labelId;
 
     private string? HelperTextId => string.IsNullOrEmpty(HelperText) ? null : _helperTextId;
+
+    private string? InputDescribedBy => CombineIds(HelperTextId, FieldContext?.DescribedBy);
+
+    private bool EffectiveRequired => FieldContext?.IsRequired == true;
+
+    private string? AriaInvalidValue => FieldContext?.IsInvalid == true ? "true" : null;
+
+    private string? EffectiveErrorMessageId => FieldContext?.IsInvalid == true && !string.IsNullOrWhiteSpace(FieldContext.ErrorId)
+        ? FieldContext.ErrorId
+        : null;
 
     private string? ActiveDescendantId
         => IsOpen && HighlightedIndex >= 0 && HighlightedIndex < FilteredItems.Count
@@ -243,6 +263,16 @@
     }
 
     private static string AriaBool(bool value) => value ? "true" : "false";
+
+    private static string? CombineIds(params string?[] ids)
+    {
+        var combined = ids
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Select(id => id!.Trim())
+            .ToList();
+
+        return combined.Count == 0 ? null : string.Join(" ", combined);
+    }
 
     private string GetOptionId(int index) => $"{DropdownId}-option-{index}";
 

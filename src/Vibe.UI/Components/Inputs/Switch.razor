@@ -2,16 +2,23 @@
 @inherits Base.VibeComponent
 
 <label class="@CombinedClass" aria-disabled="@(Disabled ? "true" : null)">
-    <input type="checkbox" id="@Id" name="@Name" value="@Value" class="switch-input" role="switch"
+    <input type="checkbox" id="@EffectiveId" name="@Name" value="@Value" class="switch-input" role="switch"
         checked="@currentChecked" aria-checked="@currentChecked.ToString().ToLowerInvariant()" aria-label="@EffectiveAriaLabel"
+        aria-describedby="@EffectiveDescribedBy" aria-invalid="@AriaInvalidValue" aria-errormessage="@EffectiveErrorMessageId"
         @onchange="OnToggleChanged" disabled="@Disabled"
-        required="@Required"
+        required="@EffectiveRequired" aria-required="@(EffectiveRequired ? "true" : null)"
         @attributes="AdditionalAttributes" />
     <span class="switch-thumb"></span>
 </label>
 
 @code {
     private bool currentChecked;
+
+    /// <summary>
+    /// Gets the relationships cascaded by an ancestor <see cref="FormField{TValue}"/>, if any.
+    /// </summary>
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
 
     /// <summary>
     /// Gets or sets whether the switch is checked.
@@ -80,6 +87,7 @@
         .Add("vibe-switch")
         .AddIf($"vibe-switch-{NormalizedSize}", !string.Equals(NormalizedSize, "default", StringComparison.Ordinal))
         .AddIf("disabled", Disabled)
+        .AddIf("vibe-switch-error", FieldContext?.IsInvalid == true)
         .Build();
 
     protected override void OnParametersSet()
@@ -101,6 +109,18 @@
         currentChecked = value;
         return CheckedChanged.InvokeAsync(value);
     }
+
+    private string? EffectiveId => FieldContext?.ControlId ?? Id;
+
+    private string? EffectiveDescribedBy => FieldContext?.DescribedBy;
+
+    private bool EffectiveRequired => Required || FieldContext?.IsRequired == true;
+
+    private string? AriaInvalidValue => FieldContext?.IsInvalid == true ? "true" : null;
+
+    private string? EffectiveErrorMessageId => FieldContext?.IsInvalid == true && !string.IsNullOrWhiteSpace(FieldContext.ErrorId)
+        ? FieldContext.ErrorId
+        : null;
 
     private string NormalizedSize => NormalizeSize(Size);
 

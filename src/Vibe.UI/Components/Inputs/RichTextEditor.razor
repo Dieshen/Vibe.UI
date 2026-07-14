@@ -97,10 +97,12 @@
         </div>
     }
 
-    <div class="richtext-editor" contenteditable="@IsEditableContentEditableValue" @ref="_editorRef"
+    <div id="@EffectiveId" class="richtext-editor" contenteditable="@IsEditableContentEditableValue" @ref="_editorRef"
         @oninput="HandleInput" @onfocus="HandleFocus" @onblur="HandleBlur"
         data-placeholder="@Placeholder" aria-placeholder="@Placeholder" role="textbox" aria-multiline="true"
         aria-label="@EffectiveAriaLabel" aria-readonly="@ReadOnlyAriaValue" aria-disabled="@DisabledAriaValue"
+        aria-describedby="@EffectiveDescribedBy" aria-invalid="@AriaInvalidValue" aria-errormessage="@EffectiveErrorMessageId"
+        aria-required="@(EffectiveRequired ? "true" : null)"
         tabindex="@EditorTabIndex" spellcheck="@IsEditableContentEditableValue" style="@EditorStyle">
         @if (RenderTrustedHtml)
         {
@@ -127,6 +129,12 @@
     private ElementReference _editorRef;
     private RichTextEditorInterop? _interop;
     private string _content = string.Empty;
+
+    /// <summary>
+    /// Gets the relationships cascaded by an ancestor <see cref="FormField{TValue}"/>, if any.
+    /// </summary>
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
 
     /// <summary>
     /// Gets or sets the editor content. By default this value is rendered as encoded text.
@@ -252,11 +260,19 @@
     private int EditorTabIndex => Disabled ? -1 : 0;
     private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel) ? DefaultAriaLabel : AriaLabel!;
     private string EffectiveToolbarAriaLabel => string.IsNullOrWhiteSpace(ToolbarAriaLabel) ? DefaultToolbarAriaLabel : ToolbarAriaLabel!;
+    private string? EffectiveId => FieldContext?.ControlId;
+    private string? EffectiveDescribedBy => FieldContext?.DescribedBy;
+    private bool EffectiveRequired => FieldContext?.IsRequired == true;
+    private string? AriaInvalidValue => FieldContext?.IsInvalid == true ? "true" : null;
+    private string? EffectiveErrorMessageId => FieldContext?.IsInvalid == true && !string.IsNullOrWhiteSpace(FieldContext.ErrorId)
+        ? FieldContext.ErrorId
+        : null;
 
     private string CombinedCssClass => CombineClasses(
         "vibe-richtext",
         Disabled ? "richtext-disabled" : null,
         ReadOnly ? "richtext-readonly" : null,
+        FieldContext?.IsInvalid == true ? "richtext-error" : null,
         CssClass,
         Class
     );
