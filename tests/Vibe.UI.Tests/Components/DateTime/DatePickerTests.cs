@@ -308,7 +308,9 @@ public class DatePickerTests : TestBase
 
         var focusedDay = FindDateButton(cut, nextDate);
         focusedDay.GetAttribute("tabindex")!.ShouldBe("0");
-        cut.Find(".date-grid").GetAttribute("aria-label")!.ShouldContain("July 2024");
+        var gridLabel = cut.Find(".date-grid").GetAttribute("aria-label")!;
+        gridLabel.ShouldContain(nextDate.ToString("MMMM", System.Globalization.CultureInfo.CurrentCulture));
+        gridLabel.ShouldContain(nextDate.ToString("yyyy", System.Globalization.CultureInfo.CurrentCulture));
         JSInterop.Invocations.Last().Identifier.ShouldBe("focusElement");
         JSInterop.Invocations.Last().Arguments[0].ShouldBe(focusedDay.Id);
     }
