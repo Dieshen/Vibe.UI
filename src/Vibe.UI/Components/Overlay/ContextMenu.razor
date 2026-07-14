@@ -166,17 +166,9 @@
                 _restoreTriggerFocus = false;
             }
         }
-        catch (InvalidOperationException)
+        catch (Exception ex) when (IsRecoverableJsInteropException(ex))
         {
-            // JS interop is unavailable during static prerendering.
-        }
-        catch (JSDisconnectedException)
-        {
-            // The server-side circuit disconnected before focus could be updated.
-        }
-        catch (TaskCanceledException)
-        {
-            // The browser disconnected while focus work was pending.
+            // JS interop is unavailable (prerendering, circuit teardown, or navigation).
         }
     }
 
@@ -345,10 +337,7 @@
             {
                 await _keyboardModule.DisposeAsync();
             }
-            catch (JSDisconnectedException)
-            {
-            }
-            catch (TaskCanceledException)
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
             {
             }
         }
@@ -359,10 +348,7 @@
             {
                 await _domModule.DisposeAsync();
             }
-            catch (JSDisconnectedException)
-            {
-            }
-            catch (TaskCanceledException)
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
             {
             }
         }

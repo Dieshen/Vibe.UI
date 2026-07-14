@@ -1,5 +1,7 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
 <div class="@CombinedClass" data-state="@CurrentState" @attributes="AdditionalAttributes">
     <button type="button"
@@ -11,6 +13,7 @@
          aria-controls="@ContentId"
          aria-disabled="@AriaDisabled"
          data-state="@CurrentState"
+         @ref="_triggerReference"
          @onclick="ToggleMenu"
          @onkeydown="HandleTriggerKeyDown">
         @if (Trigger != null)
@@ -34,22 +37,30 @@
              aria-orientation="vertical"
              data-state="open"
              style="@PlacementStyle"
+             @ref="_contentReference"
              @onclick="HandleMenuContentClick"
              @onkeydown="HandleMenuKeyDown">
             @ChildContent
         </div>
         @if (CloseOnClickOutside)
         {
-            <div class="menu-backdrop" aria-hidden="true" @onclick="CloseMenu"></div>
+            <div class="menu-backdrop" aria-hidden="true" @onclick="HandleBackdropClick"></div>
         }
     }
 </div>
 
 @code {
+    private const string KeyboardModulePath = "./_content/Vibe.UI/js/vibe-menu-keyboard.js";
+
     private readonly string ContentId = $"vibe-menu-content-{Guid.NewGuid():N}";
     private bool _hasAppliedInitialIsOpen;
     private bool _isOpen;
     private bool _lastIsOpenParameter;
+    private ElementReference _triggerReference;
+    private ElementReference _contentReference;
+    private PendingFocus _pendingFocus;
+    private bool _restoreTriggerFocus;
+    private IJSObjectReference? _keyboardModule;
 
     /// <summary>
     /// Gets or sets the menu content
@@ -144,6 +155,44 @@
         {
             _isOpen = false;
             _lastIsOpenParameter = false;
+            _pendingFocus = PendingFocus.None;
+            _restoreTriggerFocus = false;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        try
+        {
+            var module = await GetKeyboardModuleAsync();
+            await module.InvokeVoidAsync("initializeTrigger", _triggerReference, false, false);
+
+            if (_isOpen)
+            {
+                await module.InvokeVoidAsync("initializeContainer", _contentReference, "menu");
+
+                if (_pendingFocus == PendingFocus.First)
+                {
+                    await module.InvokeVoidAsync("focusFirstItem", _contentReference, "menu");
+                    _pendingFocus = PendingFocus.None;
+                }
+                else if (_pendingFocus == PendingFocus.Last)
+                {
+                    await module.InvokeVoidAsync("focusLastItem", _contentReference, "menu");
+                    _pendingFocus = PendingFocus.None;
+                }
+            }
+            else if (_restoreTriggerFocus)
+            {
+                await _triggerReference.FocusAsync();
+                _restoreTriggerFocus = false;
+            }
+        }
+        catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+        {
+            // JS interop is unavailable (prerendering, circuit teardown, or navigation).
         }
     }
 
@@ -171,14 +220,14 @@
         _ => "top: 100%; left: 0; margin-top: 0.25rem;"
     };
 
-    private async Task ToggleMenu()
+    private Task ToggleMenu()
     {
         if (Disabled)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        await SetOpenStateAsync(!_isOpen);
+        return _isOpen ? CloseMenu() : OpenMenu(PendingFocus.First);
     }
 
     private async Task HandleTriggerKeyDown(KeyboardEventArgs e)
@@ -188,40 +237,87 @@
             return;
         }
 
-        if (e.Key is "ArrowDown" or "ArrowUp")
+        switch (e.Key)
         {
-            await OpenMenu();
-        }
-        else if (e.Key == "Escape")
-        {
-            await CloseMenu();
+            case "ArrowDown":
+                await OpenMenu(PendingFocus.First);
+                break;
+            case "ArrowUp":
+                await OpenMenu(PendingFocus.Last);
+                break;
+            case "Escape":
+                await CloseMenu(restoreTriggerFocus: true);
+                break;
         }
     }
 
     private async Task HandleMenuKeyDown(KeyboardEventArgs e)
     {
+        if (e.Key == "Tab")
+        {
+            await CloseMenu();
+            return;
+        }
+
         if (e.Key == "Escape")
         {
-            await CloseMenu();
+            await CloseMenu(restoreTriggerFocus: true);
+            return;
         }
-    }
 
-    private async Task HandleMenuContentClick()
-    {
-        if (CloseOnSelect)
+        var module = await GetKeyboardModuleAsync();
+        switch (e.Key)
         {
-            await CloseMenu();
+            case "ArrowDown":
+                await module.InvokeVoidAsync("moveFocus", _contentReference, "menu", 1);
+                break;
+            case "ArrowUp":
+                await module.InvokeVoidAsync("moveFocus", _contentReference, "menu", -1);
+                break;
+            case "Home":
+                await module.InvokeVoidAsync("focusFirstItem", _contentReference, "menu");
+                break;
+            case "End":
+                await module.InvokeVoidAsync("focusLastItem", _contentReference, "menu");
+                break;
+            default:
+                if (IsTypeaheadKey(e))
+                {
+                    await module.InvokeVoidAsync("focusByTypeahead", _contentReference, "menu", e.Key);
+                }
+                break;
         }
     }
 
-    private Task OpenMenu()
+    private Task HandleMenuContentClick()
     {
+        return CloseOnSelect ? CloseMenu(restoreTriggerFocus: true) : Task.CompletedTask;
+    }
+
+    private Task HandleBackdropClick()
+    {
+        return CloseMenu();
+    }
+
+    private Task OpenMenu(PendingFocus pendingFocus)
+    {
+        if (_isOpen)
+        {
+            // Already open (e.g. Arrow key repeated on the trigger) - avoid re-queuing
+            // a stale pending-focus request that would yank focus on the next render.
+            return Task.CompletedTask;
+        }
+
+        _pendingFocus = pendingFocus;
+        _restoreTriggerFocus = false;
         return SetOpenStateAsync(true);
     }
 
-    private async Task CloseMenu()
+    private Task CloseMenu(bool restoreTriggerFocus = false)
     {
-        await SetOpenStateAsync(false);
+        _pendingFocus = PendingFocus.None;
+        _restoreTriggerFocus = restoreTriggerFocus;
+        return SetOpenStateAsync(false);
     }
 
     private async Task SetOpenStateAsync(bool isOpen)
@@ -238,6 +334,47 @@
 
         _isOpen = isOpen;
         await IsOpenChanged.InvokeAsync(isOpen);
+    }
+
+    private async ValueTask<IJSObjectReference> GetKeyboardModuleAsync()
+    {
+        _keyboardModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>("import", KeyboardModulePath);
+        return _keyboardModule;
+    }
+
+    private static bool IsTypeaheadKey(KeyboardEventArgs e)
+    {
+        return e.Key.Length == 1 &&
+               !char.IsWhiteSpace(e.Key[0]) &&
+               !e.AltKey &&
+               !e.CtrlKey &&
+               !e.MetaKey;
+    }
+
+    private static bool IsRecoverableJsInteropException(Exception exception) =>
+        exception is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_keyboardModule != null)
+        {
+            try
+            {
+                await _keyboardModule.DisposeAsync();
+            }
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+            {
+            }
+        }
+
+        GC.SuppressFinalize(this);
+    }
+
+    private enum PendingFocus
+    {
+        None,
+        First,
+        Last
     }
 
     public enum MenuPlacement

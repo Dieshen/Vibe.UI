@@ -1,5 +1,7 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
 <div @attributes="RootAttributes" @ref="_popoverRef">
     <button type="button"
@@ -25,6 +27,7 @@
              aria-labelledby="@NormalizedAriaLabelledBy"
              aria-describedby="@NormalizedAriaDescribedBy"
              data-state="open"
+             @ref="_contentRef"
              @onkeydown="HandleContentKeyDownAsync">
             @Content
         </div>
@@ -35,9 +38,15 @@
 
 @code {
     private readonly string _contentId = $"vibe-popover-content-{Guid.NewGuid():N}";
+    private readonly string _dialogKey = $"vibe-popover-{Guid.NewGuid():N}";
     private bool _hasSeenIsOpenParameter;
     private bool _isOpen;
     private bool _lastIsOpenParameter;
+    private ElementReference _contentRef;
+    private IJSObjectReference? _dialogModule;
+    private DotNetObjectReference<Popover>? _dotNetReference;
+    private bool _focusTrapActive;
+    private bool _disposed;
 
     /// <summary>
     /// Gets or sets the trigger content.
@@ -213,6 +222,55 @@
         }
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (_isOpen && !_focusTrapActive)
+        {
+            try
+            {
+                _dialogModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
+                    "import", "./_content/Vibe.UI/js/vibe-dialog.js");
+
+                if (_disposed)
+                {
+                    return;
+                }
+
+                _dotNetReference ??= DotNetObjectReference.Create(this);
+
+                await _dialogModule.InvokeVoidAsync(
+                    "activate",
+                    _dialogKey,
+                    _contentRef,
+                    _dotNetReference,
+                    CloseOnEscape);
+
+                if (_disposed)
+                {
+                    return;
+                }
+            }
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+            {
+                return;
+            }
+
+            _focusTrapActive = true;
+        }
+        else if (!_isOpen && _focusTrapActive)
+        {
+            await DeactivateFocusTrapAsync();
+        }
+    }
+
+    [JSInvokable]
+    public Task HandleDialogEscape() => CloseOnEscape ? SetOpenAsync(false) : Task.CompletedTask;
+
     /// <summary>
     /// Toggles the popover state.
     /// </summary>
@@ -271,4 +329,49 @@
 
     private static string? NormalizeOptionalText(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
+        await DeactivateFocusTrapAsync();
+
+        if (_dialogModule != null)
+        {
+            try
+            {
+                await _dialogModule.DisposeAsync();
+            }
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+            {
+            }
+        }
+
+        _dotNetReference?.Dispose();
+        _dotNetReference = null;
+    }
+
+    private async Task DeactivateFocusTrapAsync()
+    {
+        if (_dialogModule != null)
+        {
+            try
+            {
+                await _dialogModule.InvokeVoidAsync("deactivate", _dialogKey);
+            }
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+            {
+            }
+        }
+
+        _focusTrapActive = false;
+    }
+
+    private static bool IsRecoverableJsInteropException(Exception exception) =>
+        exception is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException;
 }
