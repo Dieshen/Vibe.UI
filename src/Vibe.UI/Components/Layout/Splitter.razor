@@ -181,9 +181,23 @@
 
         try
         {
-            _module ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
-                "import",
-                "./_content/Vibe.UI/js/splitter.js");
+            if (_module is null)
+            {
+                var importedModule = await JSRuntime.InvokeAsync<IJSObjectReference>(
+                    "import",
+                    "./_content/Vibe.UI/js/splitter.js");
+
+                if (_disposed)
+                {
+                    // Disposal landed while the import was in flight; the component
+                    // never gets to see this reference, so we own cleaning it up.
+                    await DisposeModuleSafelyAsync(importedModule);
+                    return;
+                }
+
+                _module = importedModule;
+            }
+
             _dotNetReference ??= DotNetObjectReference.Create(this);
 
             if (_connectedOrientation != NormalizedOrientation)
@@ -199,6 +213,15 @@
                     _dividerReference,
                     _dotNetReference,
                     NormalizedOrientation == SplitterOrientation.Horizontal);
+
+                if (_disposed)
+                {
+                    // Disposal landed while "connect" was in flight, wiring live pointer
+                    // listeners into a disposed component; tear that wiring back down.
+                    await _module.InvokeVoidAsync("disconnect", _rootReference);
+                    return;
+                }
+
                 _connectedOrientation = NormalizedOrientation;
             }
         }
@@ -336,6 +359,17 @@
         }
 
         _dotNetReference?.Dispose();
+    }
+
+    private static async Task DisposeModuleSafelyAsync(IJSObjectReference module)
+    {
+        try
+        {
+            await module.DisposeAsync();
+        }
+        catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+        {
+        }
     }
 
     private static bool IsRecoverableJsInteropException(Exception exception) =>

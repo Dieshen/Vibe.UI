@@ -56,7 +56,7 @@
                          role="list"
                          aria-label="@GetCardListLabel(column)"
                          @ondragover="() => HandleDragOver(column)"
-                         @ondragover:preventDefault="@CanReceiveDrop(column)"
+                         @ondragover:preventDefault="true"
                          @ondrop="() => HandleDrop(column)"
                          @ondrop:preventDefault="@CanReceiveDrop(column)">
                         @if (cards.Count == 0)
@@ -212,17 +212,38 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !_disposed)
+        if (_disposed)
         {
-            _module = await JSRuntime.InvokeAsync<IJSObjectReference>(
-                "import",
-                "./_content/Vibe.UI/js/kanbanBoard.js");
+            return;
         }
 
-        if (_module is not null && _pendingFocusCardId is string cardId)
+        try
         {
-            _pendingFocusCardId = null;
-            await _module.InvokeVoidAsync("focusCard", _rootElement, cardId);
+            if (firstRender && _module is null)
+            {
+                var importedModule = await JSRuntime.InvokeAsync<IJSObjectReference>(
+                    "import",
+                    "./_content/Vibe.UI/js/kanbanBoard.js");
+
+                if (_disposed)
+                {
+                    // Disposal landed while the import was in flight; the component
+                    // never gets to see this reference, so we own cleaning it up.
+                    await DisposeModuleSafelyAsync(importedModule);
+                    return;
+                }
+
+                _module = importedModule;
+            }
+
+            if (_module is not null && _pendingFocusCardId is string cardId)
+            {
+                _pendingFocusCardId = null;
+                await _module.InvokeVoidAsync("focusCard", _rootElement, cardId);
+            }
+        }
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+        {
         }
     }
 
@@ -498,14 +519,22 @@
             return;
         }
 
+        await DisposeModuleSafelyAsync(_module);
+    }
+
+    private static async Task DisposeModuleSafelyAsync(IJSObjectReference module)
+    {
         try
         {
-            await _module.DisposeAsync();
+            await module.DisposeAsync();
         }
-        catch (JSDisconnectedException)
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
         {
         }
     }
+
+    private static bool IsRecoverableJsInteropException(Exception exception) =>
+        exception is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException;
 
     public class KanbanColumn
     {

@@ -190,6 +190,7 @@
     /// </summary>
     private IJSObjectReference? _dragRef;
     private bool? _connectedIsHorizontal;
+    private bool _disposed;
 
     /// <summary>
     /// Initializes the component.
@@ -231,21 +232,51 @@
     {
         await base.OnAfterRenderAsync(firstRender);
 
+        if (_disposed)
+        {
+            return;
+        }
+
         try
         {
             _dotNetRef ??= DotNetObjectReference.Create(this);
-            _dragModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
-                "import", "./_content/Vibe.UI/js/vibe-resizable.js");
+
+            if (_dragModule is null)
+            {
+                var importedModule = await JSRuntime.InvokeAsync<IJSObjectReference>(
+                    "import", "./_content/Vibe.UI/js/vibe-resizable.js");
+
+                if (_disposed)
+                {
+                    // Disposal landed while the import was in flight; the component
+                    // never gets to see this reference, so we own cleaning it up.
+                    await DisposeModuleSafelyAsync(importedModule);
+                    return;
+                }
+
+                _dragModule = importedModule;
+            }
 
             if (_dragRef is null || _connectedIsHorizontal != IsHorizontal)
             {
                 await DisposeDragHandlerAsync();
-                _dragRef = await _dragModule.InvokeAsync<IJSObjectReference>(
+
+                var dragRef = await _dragModule.InvokeAsync<IJSObjectReference>(
                     "createDragHandler",
                     _rootReference,
                     _handleReference,
                     _dotNetRef,
                     IsHorizontal);
+
+                if (_disposed)
+                {
+                    // Disposal landed while the handler was being wired up, attaching
+                    // live pointer listeners to a disposed component; tear it back down.
+                    await DisposeHandlerReferenceAsync(dragRef);
+                    return;
+                }
+
+                _dragRef = dragRef;
                 _connectedIsHorizontal = IsHorizontal;
             }
         }
@@ -413,17 +444,18 @@
     /// </summary>
     public async ValueTask DisposeAsync()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+
         await DisposeDragHandlerAsync();
 
         if (_dragModule != null)
         {
-            try
-            {
-                await _dragModule.DisposeAsync();
-            }
-            catch (Exception exception) when (IsRecoverableJsInteropException(exception))
-            {
-            }
+            await DisposeModuleSafelyAsync(_dragModule);
         }
 
         _dotNetRef?.Dispose();
@@ -436,17 +468,33 @@
             return;
         }
 
+        await DisposeHandlerReferenceAsync(_dragRef);
+
+        _dragRef = null;
+        _connectedIsHorizontal = null;
+    }
+
+    private static async Task DisposeHandlerReferenceAsync(IJSObjectReference dragRef)
+    {
         try
         {
-            await _dragRef.InvokeVoidAsync("dispose");
-            await _dragRef.DisposeAsync();
+            await dragRef.InvokeVoidAsync("dispose");
+            await dragRef.DisposeAsync();
         }
         catch (Exception exception) when (IsRecoverableJsInteropException(exception))
         {
         }
+    }
 
-        _dragRef = null;
-        _connectedIsHorizontal = null;
+    private static async Task DisposeModuleSafelyAsync(IJSObjectReference module)
+    {
+        try
+        {
+            await module.DisposeAsync();
+        }
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+        {
+        }
     }
 
     private static bool IsRecoverableJsInteropException(Exception exception) =>
