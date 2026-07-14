@@ -21,7 +21,7 @@ This project adheres to a code of conduct. By participating, you are expected to
 
 1. **Fork the repository** - Click the "Fork" button at the top right
 2. **Clone your fork** - `git clone https://github.com/YOUR-USERNAME/Vibe.UI.git`
-3. **Add upstream remote** - `git remote add upstream https://github.com/Dieshen/Vibe.UI.git`
+3. **Add upstream remote** - `git remote add upstream https://github.com/Narcoleptic-Fox/Vibe.UI.git`
 4. **Create a branch** - `git checkout -b feature/your-feature-name`
 
 ## Development Setup
@@ -77,7 +77,7 @@ Vibe.UI/
 - Use the [Feature Request template](.github/ISSUE_TEMPLATE/feature_request.yml)
 - Explain the use case and benefits
 - Provide examples or mockups if possible
-- Discuss in [GitHub Discussions](https://github.com/Dieshen/Vibe.UI/discussions) first for major changes
+- Discuss in [GitHub Discussions](https://github.com/Narcoleptic-Fox/Vibe.UI/discussions) first for major changes
 
 ### Improving Documentation
 - Use the [Documentation template](.github/ISSUE_TEMPLATE/documentation.yml)
@@ -283,9 +283,9 @@ dotnet test --collect:"XPlat Code Coverage"
 
 ## Questions?
 
-- Open a [Discussion](https://github.com/Dieshen/Vibe.UI/discussions)
-- Check existing [Issues](https://github.com/Dieshen/Vibe.UI/issues)
-- Read the [Documentation](https://github.com/Dieshen/Vibe.UI#readme)
+- Open a [Discussion](https://github.com/Narcoleptic-Fox/Vibe.UI/discussions)
+- Check existing [Issues](https://github.com/Narcoleptic-Fox/Vibe.UI/issues)
+- Read the [Documentation](https://github.com/Narcoleptic-Fox/Vibe.UI#readme)
 
 ## License
 

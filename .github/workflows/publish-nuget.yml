@@ -29,10 +29,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v7.0.0
 
-    - name: Setup .NET
+    - name: Setup pinned .NET SDK
       uses: actions/setup-dotnet@v5.4.0
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+        global-json-file: global.json
 
     - name: Restore visual test dependencies
       run: |
@@ -77,10 +77,10 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Setup .NET
+    - name: Setup pinned .NET SDK
       uses: actions/setup-dotnet@v5.4.0
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+        global-json-file: global.json
 
     - name: Setup Node.js
       uses: actions/setup-node@v6.4.0
@@ -221,10 +221,7 @@ jobs:
         dotnet build tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
 
     - name: Validate CSS beta core profile
-      run: |
-        dotnet run --project src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build -- scan src/Vibe.UI --patterns "*.razor,*.cshtml,*.html,*.cs" --fail-on-unknown
-        dotnet run --project src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build -- scan src/Vibe.UI.CLI --patterns "*.razor,*.cshtml,*.html,*.cs" --fail-on-unknown
-        dotnet run --project src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build -- scan samples/Vibe.UI.Docs --patterns "*.razor,*.cshtml,*.html,*.cs" --fail-on-unknown --ignore "vibe-theme,vibe-my-app-theme,vibe-theme-toggle"
+      uses: ./.github/actions/validate-css-core-profile
 
     - name: Restore unit tests
       run: |

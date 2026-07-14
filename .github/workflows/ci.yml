@@ -76,10 +76,7 @@ jobs:
         dotnet build tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
 
     - name: Validate CSS beta core profile
-      run: |
-        dotnet run --project src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build -- scan src/Vibe.UI --patterns "*.razor,*.cshtml,*.html,*.cs" --fail-on-unknown
-        dotnet run --project src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build -- scan src/Vibe.UI.CLI --patterns "*.razor,*.cshtml,*.html,*.cs" --fail-on-unknown
-        dotnet run --project src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build -- scan samples/Vibe.UI.Docs --patterns "*.razor,*.cshtml,*.html,*.cs" --fail-on-unknown --ignore "vibe-theme,vibe-my-app-theme,vibe-theme-toggle"
+      uses: ./.github/actions/validate-css-core-profile
 
     - name: Pack shipping packages
       run: |
@@ -180,14 +177,25 @@ jobs:
       with:
         global-json-file: global.json
 
+    # global.json sets rollForward=latestFeature, so the selected SDK is allowed to be a
+    # newer feature band than the pinned floor. Asserting exact equality here would fail
+    # the build the first time the runner image ships a newer 10.0.x SDK.
     - name: Verify pinned .NET SDK
       shell: pwsh
       run: |
-        $expectedVersion = (Get-Content -LiteralPath global.json -Raw | ConvertFrom-Json).sdk.version
-        $actualVersion = dotnet --version
-        if ($actualVersion -ne $expectedVersion) {
-          throw "Expected .NET SDK $expectedVersion from global.json, but dotnet selected $actualVersion."
+        $sdk = (Get-Content -LiteralPath global.json -Raw | ConvertFrom-Json).sdk
+        $expected = [version]($sdk.version -replace '-.*$', '')
+        $actual = [version]((dotnet --version) -replace '-.*$', '')
+
+        if ($actual.Major -ne $expected.Major -or $actual.Minor -ne $expected.Minor) {
+          throw "global.json pins .NET $($expected.Major).$($expected.Minor), but dotnet selected $actual."
         }
+
+        if ($actual -lt $expected) {
+          throw "global.json requires .NET SDK $expected or newer, but dotnet selected $actual."
+        }
+
+        Write-Host "Using .NET SDK $actual (global.json floor: $expected, rollForward: $($sdk.rollForward))."
 
     - name: Restore shipping projects
       run: |
@@ -218,10 +226,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v7.0.0
 
-    - name: Setup .NET
+    - name: Setup pinned .NET SDK
       uses: actions/setup-dotnet@v5.4.0
       with:
-        dotnet-version: '10.0.x'
+        global-json-file: global.json
 
     - name: Restore visual test dependencies
       run: |
@@ -234,10 +242,7 @@ jobs:
         dotnet build tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
 
     - name: Validate CSS beta core profile
-      run: |
-        dotnet run --project src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build -- scan src/Vibe.UI --patterns "*.razor,*.cshtml,*.html,*.cs" --fail-on-unknown
-        dotnet run --project src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build -- scan src/Vibe.UI.CLI --patterns "*.razor,*.cshtml,*.html,*.cs" --fail-on-unknown
-        dotnet run --project src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build -- scan samples/Vibe.UI.Docs --patterns "*.razor,*.cshtml,*.html,*.cs" --fail-on-unknown --ignore "vibe-theme,vibe-my-app-theme,vibe-theme-toggle"
+      uses: ./.github/actions/validate-css-core-profile
 
     - name: Install Chromium
       run: pwsh tests/Vibe.UI.Docs.E2E/bin/Release/net10.0/playwright.ps1 install chromium

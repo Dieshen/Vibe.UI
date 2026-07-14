@@ -18,7 +18,7 @@ We take the security of Vibe.UI seriously. If you believe you have found a secur
 - Discuss the vulnerability in public forums or social media
 
 ### Please DO:
-1. **Report privately** via [GitHub Security Advisories](https://github.com/Dieshen/Vibe.UI/security/advisories/new)
+1. **Report privately** via [GitHub Security Advisories](https://github.com/Narcoleptic-Fox/Vibe.UI/security/advisories/new)
 2. **Include details**:
    - Description of the vulnerability
    - Steps to reproduce
@@ -66,6 +66,6 @@ Security updates will be:
 
 For urgent security matters, you can also reach out to:
 - Email: (Add your security contact email)
-- GitHub: @Dieshen
+- GitHub: @Narcoleptic-Fox
 
 Thank you for helping keep Vibe.UI and its users safe!
