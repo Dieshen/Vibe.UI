@@ -263,6 +263,7 @@
                     _currentWidth = Math.Clamp((int)Math.Round(storedWidth), EffectiveMinWidth, EffectiveMaxWidth);
                     Width = _currentWidth;
                     _lastWidthParameter = _currentWidth;
+                    await WidthChanged.InvokeAsync(_currentWidth);
                     StateHasChanged();
                 }
             }

@@ -138,6 +138,8 @@
     private ElementReference _sheetRef;
     private readonly string _sheetKey = $"vibe-sheet-{Guid.NewGuid():N}";
     private bool _focusTrapActive;
+    private bool _closing;
+    private bool _disposed;
 
     private readonly string _titleId = $"vibe-sheet-title-{Guid.NewGuid():N}";
     private readonly string _descriptionId = $"vibe-sheet-description-{Guid.NewGuid():N}";
@@ -245,19 +247,48 @@
     /// </summary>
     private async Task Close()
     {
-        IsClosing = true;
-        StateHasChanged();
+        // Guard against re-entrancy: a double-Escape or Escape + close-button click
+        // would otherwise start two overlapping close flows, each independently
+        // invoking IsOpenChanged for a single close gesture.
+        if (_closing || _disposed)
+        {
+            return;
+        }
 
-        // Wait for the animation to complete
-        await Task.Delay(300);
+        _closing = true;
+        try
+        {
+            IsClosing = true;
+            StateHasChanged();
 
-        IsClosing = false;
-        await IsOpenChanged.InvokeAsync(false);
-        StateHasChanged();
+            // Wait for the animation to complete
+            await Task.Delay(300);
+
+            if (_disposed)
+            {
+                return;
+            }
+
+            IsClosing = false;
+            await IsOpenChanged.InvokeAsync(false);
+
+            if (_disposed)
+            {
+                return;
+            }
+
+            StateHasChanged();
+        }
+        finally
+        {
+            _closing = false;
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
+        _disposed = true;
+
         await DeactivateFocusTrapAsync();
 
         if (_dialogModule is not null)

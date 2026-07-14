@@ -58,7 +58,7 @@
                         }
                     </select>
                     <select class="date-year-select" value="@CurrentYear" aria-label="Year" @onchange="HandleYearChange">
-                        @for (int i = EffectiveMinYear; i <= EffectiveMaxYear; i++)
+                        @for (int i = EffectiveMinDateYear; i <= EffectiveMaxDateYear; i++)
                         {
                             <option value="@i">@i</option>
                         }
@@ -199,8 +199,30 @@
     private int CurrentYear { get; set; }
     private int EffectiveMinYear => Math.Clamp(Math.Min(MinYear, MaxYear), 1, 9999);
     private int EffectiveMaxYear => Math.Clamp(Math.Max(MinYear, MaxYear), 1, 9999);
-    private bool IsPreviousMonthDisabled => CurrentYear == EffectiveMinYear && CurrentMonth == 0;
-    private bool IsNextMonthDisabled => CurrentYear == EffectiveMaxYear && CurrentMonth == 11;
+
+    // These fold MinDate/MaxDate in on top of the MinYear/MaxYear window (see
+    // GetEffectiveMinDate/GetEffectiveMaxDate), so navigation bounds and the year
+    // <select> stay consistent with which days are actually selectable.
+    private int EffectiveMinDateYear => GetEffectiveMinDate().Year;
+    private int EffectiveMaxDateYear => GetEffectiveMaxDate().Year;
+
+    private bool IsPreviousMonthDisabled
+    {
+        get
+        {
+            var minDate = GetEffectiveMinDate();
+            return CurrentYear == minDate.Year && CurrentMonth == minDate.Month - 1;
+        }
+    }
+
+    private bool IsNextMonthDisabled
+    {
+        get
+        {
+            var maxDate = GetEffectiveMaxDate();
+            return CurrentYear == maxDate.Year && CurrentMonth == maxDate.Month - 1;
+        }
+    }
     private string FormattedDate => Date.HasValue ? Date.Value.ToString(Format, CultureInfo.CurrentCulture) : string.Empty;
     private string[] DayNames => GetDayNames();
     private List<List<CalendarDay>> CalendarDays => GenerateCalendar(CurrentYear, CurrentMonth);
@@ -331,7 +353,7 @@
 
     private void HandleYearChange(ChangeEventArgs args)
     {
-        if (int.TryParse(args.Value?.ToString(), out var year) && year >= EffectiveMinYear && year <= EffectiveMaxYear)
+        if (int.TryParse(args.Value?.ToString(), out var year) && year >= EffectiveMinDateYear && year <= EffectiveMaxDateYear)
         {
             CurrentYear = year;
             FocusFirstSelectableDayInCurrentMonth();
@@ -479,6 +501,8 @@
     {
         var firstOfMonth = new DateTime(CurrentYear, CurrentMonth + 1, 1);
         var lastOfMonth = firstOfMonth.AddMonths(1).AddDays(-1);
+        var minDate = GetEffectiveMinDate();
+        var maxDate = GetEffectiveMaxDate();
         var targetDate = _focusedDate?.Date ?? firstOfMonth;
 
         if (targetDate < firstOfMonth || targetDate > lastOfMonth)
@@ -486,12 +510,17 @@
             targetDate = firstOfMonth;
         }
 
-        targetDate = targetDate < GetEffectiveMinDate() ? GetEffectiveMinDate() : targetDate;
-        targetDate = targetDate > GetEffectiveMaxDate() ? GetEffectiveMaxDate() : targetDate;
+        targetDate = targetDate < minDate ? minDate : targetDate;
+        targetDate = targetDate > maxDate ? maxDate : targetDate;
 
         if (targetDate.Month != CurrentMonth + 1 || targetDate.Year != CurrentYear)
         {
-            return;
+            // The displayed month has no selectable day at all (e.g. it falls
+            // entirely outside MinDate/MaxDate). Fall back to the nearest
+            // selectable boundary date and bring its month into view so the
+            // roving-tabindex grid never ends up with zero tabbable cells.
+            targetDate = firstOfMonth < minDate ? minDate : maxDate;
+            SetCalendarMonth(targetDate);
         }
 
         _focusedDate = targetDate;

@@ -80,7 +80,7 @@
                             }
                         </select>
                         <select class="daterange-year-select" value="@CurrentStartYear" aria-label="Start year" @onchange="HandleStartYearChange">
-                            @for (var i = EffectiveMinYear; i <= EffectiveMaxYear; i++)
+                            @for (var i = EffectiveMinDateYear; i <= EffectiveMaxDateYear; i++)
                             {
                                 <option value="@i">@i</option>
                             }
@@ -97,7 +97,7 @@
                             }
                         </select>
                         <select class="daterange-year-select" value="@CurrentEndYear" aria-label="End year" @onchange="HandleEndYearChange">
-                            @for (var i = EffectiveMinYear; i <= EffectiveMaxYear; i++)
+                            @for (var i = EffectiveMinDateYear; i <= EffectiveMaxDateYear; i++)
                             {
                                 <option value="@i">@i</option>
                             }
@@ -227,8 +227,11 @@
     private string? _pendingFocusElementId;
     private string? _restoreFocusElementId;
 
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
+
     private string _popupId => $"{_componentId}-popup";
-    private string _startInputId => $"{_componentId}-start-input";
+    private string _startInputId => FieldContext?.ControlId ?? $"{_componentId}-start-input";
     private string _endInputId => $"{_componentId}-end-input";
     private string _triggerId => $"{_componentId}-trigger";
 
@@ -289,6 +292,13 @@
     private bool StartDateFocused { get; set; } = true;
     private int EffectiveMinYear => Math.Clamp(Math.Min(MinYear, MaxYear), 1, 9999);
     private int EffectiveMaxYear => Math.Clamp(Math.Max(MinYear, MaxYear), 1, 9999);
+
+    // These fold MinDate/MaxDate in on top of the MinYear/MaxYear window (see
+    // GetEffectiveMinDate/GetEffectiveMaxDate), so navigation bounds and the year
+    // <select> stay consistent with which days are actually selectable.
+    private int EffectiveMinDateYear => GetEffectiveMinDate().Year;
+    private int EffectiveMaxDateYear => GetEffectiveMaxDate().Year;
+
     private bool IsPreviousMonthDisabled => !CanShiftPairedCalendars(-1);
     private bool IsNextMonthDisabled => !CanShiftPairedCalendars(1);
     private string FormattedStartDate => StartDate.HasValue ? StartDate.Value.ToString(Format, CultureInfo.CurrentCulture) : string.Empty;
@@ -449,7 +459,7 @@
 
     private void HandleStartYearChange(ChangeEventArgs args)
     {
-        if (int.TryParse(args.Value?.ToString(), out var year) && year >= EffectiveMinYear && year <= EffectiveMaxYear)
+        if (int.TryParse(args.Value?.ToString(), out var year) && year >= EffectiveMinDateYear && year <= EffectiveMaxDateYear)
         {
             CurrentStartYear = year;
             FocusFirstSelectableDay(true);
@@ -467,7 +477,7 @@
 
     private void HandleEndYearChange(ChangeEventArgs args)
     {
-        if (int.TryParse(args.Value?.ToString(), out var year) && year >= EffectiveMinYear && year <= EffectiveMaxYear)
+        if (int.TryParse(args.Value?.ToString(), out var year) && year >= EffectiveMinDateYear && year <= EffectiveMaxDateYear)
         {
             CurrentEndYear = year;
             FocusFirstSelectableDay(false);
@@ -481,8 +491,10 @@
     private bool CanShiftCalendar(int year, int month, int monthOffset)
     {
         var targetMonthIndex = year * 12 + month + monthOffset;
-        var minimumMonthIndex = EffectiveMinYear * 12;
-        var maximumMonthIndex = EffectiveMaxYear * 12 + 11;
+        var minDate = GetEffectiveMinDate();
+        var maxDate = GetEffectiveMaxDate();
+        var minimumMonthIndex = minDate.Year * 12 + (minDate.Month - 1);
+        var maximumMonthIndex = maxDate.Year * 12 + (maxDate.Month - 1);
         return targetMonthIndex >= minimumMonthIndex && targetMonthIndex <= maximumMonthIndex;
     }
 
@@ -731,24 +743,45 @@
         var month = isStartCalendar ? CurrentStartMonth : CurrentEndMonth;
         var firstOfMonth = new DateTime(year, month + 1, 1);
         var lastOfMonth = firstOfMonth.AddMonths(1).AddDays(-1);
-        var targetDate = _focusedDate?.Date ?? firstOfMonth;
+        var minDate = GetEffectiveMinDate();
+        var maxDate = GetEffectiveMaxDate();
 
+        // Only when the entire displayed month falls outside the hard MinDate/MaxDate
+        // bounds does it have no selectable day; relocate to the nearest in-bounds
+        // month so the roving-tabindex grid never ends up with zero tabbable cells.
+        // A month that is merely before the paired start date still displays (its
+        // earlier days are disabled) - that is normal range navigation, not a dead month.
+        if (lastOfMonth < minDate || firstOfMonth > maxDate)
+        {
+            var relocated = firstOfMonth > maxDate ? maxDate : minDate;
+            SetCalendarMonth(relocated, isStartCalendar);
+            StartDateFocused = isStartCalendar;
+            _focusedDate = relocated;
+            QueueFocus(GetDayId(relocated, isStartCalendar));
+            return;
+        }
+
+        var targetDate = _focusedDate?.Date ?? firstOfMonth;
         if (targetDate < firstOfMonth || targetDate > lastOfMonth)
         {
             targetDate = firstOfMonth;
         }
 
-        if (!isStartCalendar && TempStartDate.HasValue && targetDate < TempStartDate.Value.Date)
+        // Keep the tab stop within the displayed month, clamped to the selectable
+        // range (hard bounds, and - for the end calendar - at/after the pending start).
+        var lowerBound = minDate;
+        if (!isStartCalendar && TempStartDate.HasValue && TempStartDate.Value.Date > lowerBound)
         {
-            targetDate = TempStartDate.Value.Date;
+            lowerBound = TempStartDate.Value.Date;
         }
 
-        targetDate = targetDate < GetEffectiveMinDate() ? GetEffectiveMinDate() : targetDate;
-        targetDate = targetDate > GetEffectiveMaxDate() ? GetEffectiveMaxDate() : targetDate;
-
-        if (targetDate.Month != month + 1 || targetDate.Year != year)
+        if (targetDate < lowerBound)
         {
-            return;
+            targetDate = lowerBound <= lastOfMonth ? lowerBound : lastOfMonth;
+        }
+        if (targetDate > maxDate)
+        {
+            targetDate = maxDate;
         }
 
         StartDateFocused = isStartCalendar;
