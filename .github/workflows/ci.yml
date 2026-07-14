@@ -7,6 +7,9 @@ on:
     branches: [ main, develop ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -72,11 +75,48 @@ jobs:
         dotnet build tests/Vibe.UI.CLI.Tests/Vibe.UI.CLI.Tests.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
         dotnet build tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
 
+    - name: Validate CSS beta core profile
+      run: |
+        dotnet run --project src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build -- scan src/Vibe.UI --patterns "*.razor,*.cshtml,*.html,*.cs" --fail-on-unknown
+        dotnet run --project src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build -- scan src/Vibe.UI.CLI --patterns "*.razor,*.cshtml,*.html,*.cs" --fail-on-unknown
+        dotnet run --project src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build -- scan samples/Vibe.UI.Docs --patterns "*.razor,*.cshtml,*.html,*.cs" --fail-on-unknown --ignore "vibe-theme,vibe-my-app-theme,vibe-theme-toggle"
+
     - name: Pack shipping packages
       run: |
         dotnet pack src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build --output ./packages
         dotnet pack src/Vibe.UI/Vibe.UI.csproj --configuration Release --no-build --output ./packages
         dotnet pack src/Vibe.UI.CLI/Vibe.UI.CLI.csproj --configuration Release --no-build --output ./packages
+
+    - name: Configure candidate package source mapping
+      shell: pwsh
+      run: |
+        $localSource = [System.Security.SecurityElement]::Escape((Resolve-Path ./packages).Path)
+        $globalPackages = [System.Security.SecurityElement]::Escape(
+          (Join-Path $env:RUNNER_TEMP "vibe-candidate-packages"))
+        $configPath = Join-Path $env:RUNNER_TEMP "vibe-candidate-nuget.config"
+        Set-Content -LiteralPath $configPath -Encoding utf8NoBOM -Value @"
+        <?xml version="1.0" encoding="utf-8"?>
+        <configuration>
+          <config>
+            <add key="globalPackagesFolder" value="$globalPackages" />
+          </config>
+          <packageSources>
+            <clear />
+            <add key="candidate" value="$localSource" />
+            <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+          </packageSources>
+          <packageSourceMapping>
+            <clear />
+            <packageSource key="candidate">
+              <package pattern="Vibe.UI" />
+              <package pattern="Vibe.UI.*" />
+            </packageSource>
+            <packageSource key="nuget.org">
+              <package pattern="*" />
+            </packageSource>
+          </packageSourceMapping>
+        </configuration>
+        "@
 
     - name: Validate local packages
       run: pwsh scripts/Validate-LocalPackages.ps1 -PackagesPath ./packages
@@ -84,10 +124,13 @@ jobs:
     - name: Rebuild compatibility fixtures from local packages
       run: |
         PACKAGE_VERSION="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' src/Vibe.UI/Vibe.UI.csproj | head -n 1)"
-        dotnet restore samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --source ./packages --source https://api.nuget.org/v3/index.json -p:VibeUsePackageReferences=true -p:VibePackageVersion="${PACKAGE_VERSION}"
-        dotnet restore samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --source ./packages --source https://api.nuget.org/v3/index.json -p:VibeUsePackageReferences=true -p:VibePackageVersion="${PACKAGE_VERSION}"
+        if [[ ! "${PACKAGE_VERSION}" =~ ^1\.0\.0-beta(\.[0-9]+)?$ ]]; then
+          echo "::error::Package version is not an anchored beta version: '${PACKAGE_VERSION}'"
+          exit 1
+        fi
+        dotnet restore samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --configfile "$RUNNER_TEMP/vibe-candidate-nuget.config" -p:VibeUsePackageReferences=true -p:VibePackageVersion="${PACKAGE_VERSION}"
+        dotnet restore samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configfile "$RUNNER_TEMP/vibe-candidate-nuget.config" -p:VibeUsePackageReferences=true -p:VibePackageVersion="${PACKAGE_VERSION}"
         dotnet build samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion="${PACKAGE_VERSION}"
-        dotnet build samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion="${PACKAGE_VERSION}"
         dotnet build samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion="${PACKAGE_VERSION}"
 
     - name: Install Playwright browsers
@@ -125,6 +168,49 @@ jobs:
         fail_ci_if_error: false
         verbose: true
 
+  package-validation-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v7.0.0
+
+    - name: Setup pinned .NET SDK
+      uses: actions/setup-dotnet@v5.4.0
+      with:
+        global-json-file: global.json
+
+    - name: Verify pinned .NET SDK
+      shell: pwsh
+      run: |
+        $expectedVersion = (Get-Content -LiteralPath global.json -Raw | ConvertFrom-Json).sdk.version
+        $actualVersion = dotnet --version
+        if ($actualVersion -ne $expectedVersion) {
+          throw "Expected .NET SDK $expectedVersion from global.json, but dotnet selected $actualVersion."
+        }
+
+    - name: Restore shipping projects
+      run: |
+        dotnet restore src/Vibe.UI.CSS/Vibe.UI.CSS.csproj
+        dotnet restore src/Vibe.UI/Vibe.UI.csproj
+        dotnet restore src/Vibe.UI.CLI/Vibe.UI.CLI.csproj
+
+    - name: Build shipping projects
+      run: |
+        dotnet build src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+        dotnet build src/Vibe.UI/Vibe.UI.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+        dotnet build src/Vibe.UI.CLI/Vibe.UI.CLI.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+
+    - name: Pack shipping packages
+      run: |
+        dotnet pack src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build --output ./packages
+        dotnet pack src/Vibe.UI/Vibe.UI.csproj --configuration Release --no-build --output ./packages
+        dotnet pack src/Vibe.UI.CLI/Vibe.UI.CLI.csproj --configuration Release --no-build --output ./packages
+
+    - name: Validate packages and repeat builds
+      shell: pwsh
+      run: ./scripts/Validate-LocalPackages.ps1 -PackagesPath ./packages
+
   visual-regression:
     runs-on: windows-latest
 
@@ -146,6 +232,12 @@ jobs:
       run: |
         dotnet build samples/Vibe.UI.Docs/Vibe.UI.Docs.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
         dotnet build tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+
+    - name: Validate CSS beta core profile
+      run: |
+        dotnet run --project src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build -- scan src/Vibe.UI --patterns "*.razor,*.cshtml,*.html,*.cs" --fail-on-unknown
+        dotnet run --project src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build -- scan src/Vibe.UI.CLI --patterns "*.razor,*.cshtml,*.html,*.cs" --fail-on-unknown
+        dotnet run --project src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build -- scan samples/Vibe.UI.Docs --patterns "*.razor,*.cshtml,*.html,*.cs" --fail-on-unknown --ignore "vibe-theme,vibe-my-app-theme,vibe-theme-toggle"
 
     - name: Install Chromium
       run: pwsh tests/Vibe.UI.Docs.E2E/bin/Release/net10.0/playwright.ps1 install chromium
