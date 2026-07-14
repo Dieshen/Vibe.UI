@@ -135,6 +135,9 @@
             <None Include="../Vibe.UI/wwwroot/css/vibe-base.css"
                   Pack="true"
                   PackagePath="Templates/wwwroot/css/" />
+            <None Include="../Vibe.UI/wwwroot/css/vibe-preflight.css"
+                  Pack="true"
+                  PackagePath="Templates/wwwroot/css/" />
             <None Include="../Vibe.UI/wwwroot/css/vibe-utilities.css"
                   Pack="true"
                   PackagePath="Templates/wwwroot/css/" />

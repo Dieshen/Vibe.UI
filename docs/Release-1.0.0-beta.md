@@ -24,6 +24,29 @@
 Beta does not claim full shadcn/ui or Tailwind compiler parity. Stable 1.0
 targets 100% of the two published Vibe compatibility matrices.
 
+## Breaking changes from alpha
+
+- **`vibe-base.css` no longer ships the Tailwind-style Preflight reset.** The
+  base stylesheet now contains only design tokens and a minimal, non-invasive
+  reset (box-sizing, margin/padding, base document font), so upgrading no longer
+  silently restyles native HTML across a consumer's whole page. The full reset
+  (border normalization, unstyled headings/links/lists, form-control resets)
+  moved to an **opt-in** `vibe-preflight.css`.
+
+  Opt back in one of two ways:
+
+  - Link the shipped asset before your generated utilities:
+
+    ```html
+    <link rel="stylesheet" href="_content/Vibe.UI/css/vibe-preflight.css" />
+    <link rel="stylesheet" href="css/Vibe.UI.CSS" />
+    ```
+
+  - Or inline it into the generated file: pass `--with-preflight` to
+    `vibe css` / the Vibe.UI.CSS generator, or set
+    `<VibeCssIncludePreflight>true</VibeCssIncludePreflight>` for the MSBuild
+    integration.
+
 ## Known limitations
 
 - APIs may still change before stable 1.0.

@@ -86,6 +86,7 @@ Generate options:
 | `--prefix`           | `vibe`            | Required utility prefix                 |
 | `--allow-unprefixed` | `false`           | Also recognize unprefixed utilities     |
 | `--with-base`        | `true`            | Include base variables and theme tokens |
+| `--with-preflight`   | `false`           | Prepend the opt-in Tailwind reset       |
 | `--patterns`         | Razor/CSHTML/HTML | Comma-separated scan patterns           |
 | `--fail-on-unknown`  | `false`           | Exit non-zero for unknown utilities     |
 | `--ignore`           | empty             | Known non-utility classes to exclude    |
@@ -104,6 +105,26 @@ Strict generation validates the complete scan before writing, so a failed run
 does not replace the existing stylesheet. Use `--ignore` only for intentional
 non-utility hooks that share the configured prefix.
 
+## Base stylesheet and preflight
+
+`vibe-base.css` ships the design tokens (`:root` / `.dark` variables) plus a
+minimal, non-invasive reset (box-sizing, margin/padding, base document font). It
+is safe to include app-wide and does not restyle native HTML.
+
+The Tailwind-compatible **preflight** — border normalization, unstyled
+headings/links/lists, and form-control resets — is a separate, **opt-in**
+`vibe-preflight.css`. It is off by default because it restyles native elements
+across the entire page. Enable it with `--with-preflight` /
+`VibeCssIncludePreflight` to inline it ahead of the generated utilities, or link
+the shipped asset before them:
+
+```html
+<link rel="stylesheet" href="_content/Vibe.UI/css/vibe-preflight.css" />
+<link rel="stylesheet" href="css/Vibe.UI.CSS" />
+```
+
+Load preflight before the utilities so utility declarations win the cascade.
+
 ## MSBuild integration
 
 Adding the `Vibe.UI.CSS` package imports targets from both `build` and
@@ -120,6 +141,7 @@ Adding the `Vibe.UI.CSS` package imports targets from both `build` and
   <VibeCssScanRoot>$(MSBuildProjectDirectory)</VibeCssScanRoot>
   <VibeCssPrefix>vibe</VibeCssPrefix>
   <VibeCssIncludeBase>true</VibeCssIncludeBase>
+  <VibeCssIncludePreflight>false</VibeCssIncludePreflight>
   <VibeCssScanPatterns>*.razor,*.cshtml,*.html</VibeCssScanPatterns>
   <VibeCssFailOnUnknown>true</VibeCssFailOnUnknown>
   <VibeCssIgnoredClasses>vibe-theme-hook</VibeCssIgnoredClasses>
@@ -134,7 +156,8 @@ Adding the `Vibe.UI.CSS` package imports targets from both `build` and
 | `VibeCssOutput`                | `wwwroot/css/Vibe.UI.CSS` | Generated static asset                                          |
 | `VibeCssScanRoot`              | project directory         | Root scanned for source files                                   |
 | `VibeCssPrefix`                | `vibe`                    | Utility prefix                                                  |
-| `VibeCssIncludeBase`           | `true`                    | Includes the embedded base stylesheet                           |
+| `VibeCssIncludeBase`           | `true`                    | Includes the embedded base stylesheet (tokens + minimal reset)  |
+| `VibeCssIncludePreflight`      | `false`                   | Prepends the opt-in Tailwind-compatible preflight reset         |
 | `VibeCssScanPatterns`          | Razor/CSHTML/HTML         | Source patterns                                                 |
 | `VibeCssFailOnUnknown`         | `false`                   | Fails generation before writing when unknown utilities exist    |
 | `VibeCssIgnoredClasses`        | empty                     | Comma-separated known non-utility class names                   |

@@ -15,7 +15,11 @@ public static class VibeCss
     /// <param name="projectDirectory">Root directory of the project</param>
     /// <param name="outputPath">Path to write the generated CSS</param>
     /// <param name="options">Generation options</param>
-    public static GenerationResult Generate(string projectDirectory, string outputPath, GenerationOptions? options = null)
+    public static GenerationResult Generate(
+        string projectDirectory,
+        string outputPath,
+        GenerationOptions? options = null
+    )
     {
         options ??= new GenerationOptions();
         return Generate(
@@ -26,7 +30,9 @@ public static class VibeCss
             options.IncludeBase,
             options.AllowUnprefixedUtilities,
             options.FailOnUnknown,
-            options.IgnoredClasses);
+            options.IgnoredClasses,
+            options.IncludePreflight
+        );
     }
 
     /// <summary>
@@ -40,6 +46,7 @@ public static class VibeCss
     /// <param name="allowUnprefixedUtilities">When true, generate utilities without the prefix</param>
     /// <param name="failOnUnknown">When true, fail before writing output if unknown utilities are found</param>
     /// <param name="ignoredClasses">Known non-utility class names to exclude from the scan</param>
+    /// <param name="includePreflight">When true, prepend the opt-in Tailwind-compatible preflight reset</param>
     public static GenerationResult Generate(
         string projectDirectory,
         string outputPath,
@@ -48,7 +55,9 @@ public static class VibeCss
         bool includeBase = true,
         bool allowUnprefixedUtilities = false,
         bool failOnUnknown = false,
-        string[]? ignoredClasses = null)
+        string[]? ignoredClasses = null,
+        bool includePreflight = false
+    )
     {
         patterns ??= ["*.razor", "*.cshtml", "*.html"];
 
@@ -57,7 +66,7 @@ public static class VibeCss
             var config = new VibeConfig
             {
                 Prefix = prefix,
-                AllowUnprefixedUtilities = allowUnprefixedUtilities
+                AllowUnprefixedUtilities = allowUnprefixedUtilities,
             };
 
             var emitter = new CssEmitter(config);
@@ -74,7 +83,10 @@ public static class VibeCss
             var stats = emitter.GetStats(classes);
             if (failOnUnknown && stats.UnknownClasses.Count > 0)
             {
-                var unknownSummary = string.Join(", ", stats.UnknownClasses.OrderBy(name => name).Take(20));
+                var unknownSummary = string.Join(
+                    ", ",
+                    stats.UnknownClasses.OrderBy(name => name).Take(20)
+                );
                 if (stats.UnknownClasses.Count > 20)
                 {
                     unknownSummary += $", and {stats.UnknownClasses.Count - 20} more";
@@ -87,13 +99,25 @@ public static class VibeCss
                     OutputPath = outputPath,
                     TotalClassesFound = stats.TotalClasses,
                     ClassesGenerated = stats.GeneratedClasses,
-                    UnknownClasses = stats.UnknownClasses
+                    UnknownClasses = stats.UnknownClasses,
                 };
             }
 
             // Generate CSS
             var baseCssPath = Path.Combine(projectDirectory, "wwwroot", "css", "vibe-base.css");
-            var css = emitter.GenerateCss(classes, includeBase, baseCssPath);
+            var preflightCssPath = Path.Combine(
+                projectDirectory,
+                "wwwroot",
+                "css",
+                "vibe-preflight.css"
+            );
+            var css = emitter.GenerateCss(
+                classes,
+                includeBase,
+                baseCssPath,
+                includePreflight,
+                preflightCssPath
+            );
 
             // Write output
             var outputDir = Path.GetDirectoryName(outputPath);
@@ -111,16 +135,12 @@ public static class VibeCss
                 TotalClassesFound = stats.TotalClasses,
                 ClassesGenerated = stats.GeneratedClasses,
                 UnknownClasses = stats.UnknownClasses,
-                CssSize = css.Length
+                CssSize = css.Length,
             };
         }
         catch (Exception ex)
         {
-            return new GenerationResult
-            {
-                Success = false,
-                Error = ex.Message
-            };
+            return new GenerationResult { Success = false, Error = ex.Message };
         }
     }
 
@@ -134,7 +154,7 @@ public static class VibeCss
         var config = new VibeConfig
         {
             Prefix = options.Prefix,
-            AllowUnprefixedUtilities = options.AllowUnprefixedUtilities
+            AllowUnprefixedUtilities = options.AllowUnprefixedUtilities,
         };
 
         var emitter = new CssEmitter(config);
@@ -149,7 +169,8 @@ public static class VibeCss
         string[]? patterns = null,
         string prefix = "vibe",
         bool allowUnprefixedUtilities = false,
-        string[]? ignoredClasses = null)
+        string[]? ignoredClasses = null
+    )
     {
         var scanner = new ClassScanner(prefix, allowUnprefixedUtilities);
         if (ignoredClasses is { Length: > 0 })
@@ -159,7 +180,11 @@ public static class VibeCss
 
         var classes = scanner.ScanDirectory(projectDirectory, patterns);
 
-        var config = new VibeConfig { Prefix = prefix, AllowUnprefixedUtilities = allowUnprefixedUtilities };
+        var config = new VibeConfig
+        {
+            Prefix = prefix,
+            AllowUnprefixedUtilities = allowUnprefixedUtilities,
+        };
         var generator = new UtilityGenerator(config);
 
         var recognized = new List<string>();
@@ -181,7 +206,7 @@ public static class VibeCss
         {
             TotalClasses = classes.Count,
             RecognizedClasses = recognized,
-            UnknownClasses = unknown
+            UnknownClasses = unknown,
         };
     }
 }
@@ -215,6 +240,12 @@ public class GenerationOptions
     /// Whether to include vibe-base.css content
     /// </summary>
     public bool IncludeBase { get; set; } = true;
+
+    /// <summary>
+    /// When true, prepend the opt-in Tailwind-compatible preflight reset (vibe-preflight.css).
+    /// Off by default because it restyles native HTML across the whole page.
+    /// </summary>
+    public bool IncludePreflight { get; set; }
 
     /// <summary>
     /// File patterns to scan (default: *.razor, *.cshtml, *.html)
@@ -283,4 +314,3 @@ public class ScanResult
     /// </summary>
     public List<string> UnknownClasses { get; init; } = [];
 }
-

@@ -7,6 +7,7 @@
     <VibeCssScanRoot Condition="'$(VibeCssScanRoot)' == ''">$(MSBuildProjectDirectory)</VibeCssScanRoot>
     <VibeCssPrefix Condition="'$(VibeCssPrefix)' == ''">vibe</VibeCssPrefix>
     <VibeCssIncludeBase Condition="'$(VibeCssIncludeBase)' == ''">true</VibeCssIncludeBase>
+    <VibeCssIncludePreflight Condition="'$(VibeCssIncludePreflight)' == ''">false</VibeCssIncludePreflight>
     <VibeCssScanPatterns Condition="'$(VibeCssScanPatterns)' == ''">*.razor,*.cshtml,*.html</VibeCssScanPatterns>
     <VibeCssFailOnUnknown Condition="'$(VibeCssFailOnUnknown)' == ''">false</VibeCssFailOnUnknown>
     <VibeCssIgnoredClasses Condition="'$(VibeCssIgnoredClasses)' == ''"></VibeCssIgnoredClasses>
@@ -54,7 +55,7 @@
           Condition="'$(VibeCssEnabled)' == 'true' and '$(VibeCssOwnStaticWebAsset)' == 'true'">
     <MakeDir Directories="$(_VibeCssIncrementalStateDirectory)" />
     <WriteLinesToFile File="$(_VibeCssGenerationOptionsFile)"
-                      Lines="VibeCssScanRoot=$(_VibeCssScanRootFullPath)|VibeCssOutput=$(_VibeCssOutputFullPath)|VibeCssPrefix=$(VibeCssPrefix)|VibeCssIncludeBase=$(VibeCssIncludeBase)|VibeCssScanPatterns=$(VibeCssScanPatterns)|VibeCssFailOnUnknown=$(VibeCssFailOnUnknown)|VibeCssIgnoredClasses=$(VibeCssIgnoredClasses)|VibeCssToolPath=$(VibeCssToolPath)|VibeCssUseDotnetToolFallback=$(VibeCssUseDotnetToolFallback)|VibeCssFailOnMissingTool=$(VibeCssFailOnMissingTool)"
+                      Lines="VibeCssScanRoot=$(_VibeCssScanRootFullPath)|VibeCssOutput=$(_VibeCssOutputFullPath)|VibeCssPrefix=$(VibeCssPrefix)|VibeCssIncludeBase=$(VibeCssIncludeBase)|VibeCssIncludePreflight=$(VibeCssIncludePreflight)|VibeCssScanPatterns=$(VibeCssScanPatterns)|VibeCssFailOnUnknown=$(VibeCssFailOnUnknown)|VibeCssIgnoredClasses=$(VibeCssIgnoredClasses)|VibeCssToolPath=$(VibeCssToolPath)|VibeCssUseDotnetToolFallback=$(VibeCssUseDotnetToolFallback)|VibeCssFailOnMissingTool=$(VibeCssFailOnMissingTool)"
                       Overwrite="true"
                       WriteOnlyWhenDifferent="true" />
   </Target>
@@ -73,6 +74,7 @@
     <PropertyGroup>
       <_VibeCssIncludeBaseArg Condition="'$(VibeCssIncludeBase)' == 'true'">--with-base true</_VibeCssIncludeBaseArg>
       <_VibeCssIncludeBaseArg Condition="'$(VibeCssIncludeBase)' != 'true'">--with-base false</_VibeCssIncludeBaseArg>
+      <_VibeCssIncludePreflightArg Condition="'$(VibeCssIncludePreflight)' == 'true'">--with-preflight true</_VibeCssIncludePreflightArg>
       <_VibeCssFailOnUnknownArg Condition="'$(VibeCssFailOnUnknown)' == 'true'">--fail-on-unknown</_VibeCssFailOnUnknownArg>
       <_VibeCssIgnoredClassesArg Condition="'$(VibeCssIgnoredClasses)' != ''">--ignore &quot;$(VibeCssIgnoredClasses)&quot;</_VibeCssIgnoredClassesArg>
     </PropertyGroup>
@@ -86,14 +88,14 @@
              Text="Vibe.UI.CSS: Tool assembly not found at $(VibeCssToolPath); skipping CSS generation. Set VibeCssToolPath or set VibeCssUseDotnetToolFallback=true to try a dotnet tool." />
 
     <!-- Call Vibe.UI.CSS via dotnet exec (preferred when referenced via PackageReference) -->
-    <Exec Command="dotnet &quot;$(VibeCssToolPath)&quot; generate &quot;$(_VibeCssScanRootFullPath)&quot; -o &quot;$(_VibeCssOutputFullPath)&quot; --prefix &quot;$(VibeCssPrefix)&quot; $(_VibeCssIncludeBaseArg) --patterns &quot;$(VibeCssScanPatterns)&quot; $(_VibeCssFailOnUnknownArg) $(_VibeCssIgnoredClassesArg)"
+    <Exec Command="dotnet &quot;$(VibeCssToolPath)&quot; generate &quot;$(_VibeCssScanRootFullPath)&quot; -o &quot;$(_VibeCssOutputFullPath)&quot; --prefix &quot;$(VibeCssPrefix)&quot; $(_VibeCssIncludeBaseArg) $(_VibeCssIncludePreflightArg) --patterns &quot;$(VibeCssScanPatterns)&quot; $(_VibeCssFailOnUnknownArg) $(_VibeCssIgnoredClassesArg)"
           Condition="Exists('$(VibeCssToolPath)')"
           ConsoleToMSBuild="true"
           StandardOutputImportance="Normal"
           StandardErrorImportance="High" />
 
     <!-- Optional fallback: Use dotnet tool if package assembly isn't available -->
-    <Exec Command="dotnet vibe-css generate &quot;$(_VibeCssScanRootFullPath)&quot; -o &quot;$(_VibeCssOutputFullPath)&quot; --prefix &quot;$(VibeCssPrefix)&quot; $(_VibeCssIncludeBaseArg) --patterns &quot;$(VibeCssScanPatterns)&quot; $(_VibeCssFailOnUnknownArg) $(_VibeCssIgnoredClassesArg)"
+    <Exec Command="dotnet vibe-css generate &quot;$(_VibeCssScanRootFullPath)&quot; -o &quot;$(_VibeCssOutputFullPath)&quot; --prefix &quot;$(VibeCssPrefix)&quot; $(_VibeCssIncludeBaseArg) $(_VibeCssIncludePreflightArg) --patterns &quot;$(VibeCssScanPatterns)&quot; $(_VibeCssFailOnUnknownArg) $(_VibeCssIgnoredClassesArg)"
           Condition="!Exists('$(VibeCssToolPath)') and '$(VibeCssUseDotnetToolFallback)' == 'true'"
           ConsoleToMSBuild="true"
           StandardOutputImportance="Normal"

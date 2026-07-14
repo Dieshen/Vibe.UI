@@ -12,6 +12,10 @@
     <VibeCssScanRoot Condition="'$(VibeCssScanRoot)' == ''">$(MSBuildProjectDirectory)</VibeCssScanRoot>
     <VibeCssOutput Condition="'$(VibeCssOutput)' == ''">$(MSBuildProjectDirectory)\wwwroot\css\Vibe.UI.CSS</VibeCssOutput>
     <VibeCssIncludeBase Condition="'$(VibeCssIncludeBase)' == ''">true</VibeCssIncludeBase>
+    <!-- The docs site opts into the Tailwind-compatible preflight reset (it is off by
+         default for consumers). Keeps the reviewed visual baselines byte-stable now that
+         the reset no longer ships inside vibe-base.css. -->
+    <VibeCssIncludePreflight Condition="'$(VibeCssIncludePreflight)' == ''">true</VibeCssIncludePreflight>
     <VibeCssScanPatterns Condition="'$(VibeCssScanPatterns)' == ''">*.razor,*.cshtml,*.html,*.cs</VibeCssScanPatterns>
 
     <_VibeCssProjectPath>$(MSBuildProjectDirectory)\..\..\src\Vibe.UI.CSS\Vibe.UI.CSS.csproj</_VibeCssProjectPath>
@@ -50,7 +54,7 @@
              Targets="Build"
              Properties="Configuration=$(Configuration);UseSharedCompilation=false"
              BuildInParallel="false" />
-    <Exec Command="$(DotNetExe) exec &quot;$(_VibeCssAssemblyPath)&quot; generate &quot;$(VibeCssScanRoot)&quot; -o &quot;$(VibeCssOutput)&quot; --prefix &quot;$(VibeCssPrefix)&quot; --allow-unprefixed &quot;$(VibeCssAllowUnprefixed)&quot; --with-base &quot;$(VibeCssIncludeBase)&quot; --patterns=&quot;$(VibeCssScanPatterns)&quot;" />
+    <Exec Command="$(DotNetExe) exec &quot;$(_VibeCssAssemblyPath)&quot; generate &quot;$(VibeCssScanRoot)&quot; -o &quot;$(VibeCssOutput)&quot; --prefix &quot;$(VibeCssPrefix)&quot; --allow-unprefixed &quot;$(VibeCssAllowUnprefixed)&quot; --with-base &quot;$(VibeCssIncludeBase)&quot; --with-preflight &quot;$(VibeCssIncludePreflight)&quot; --patterns=&quot;$(VibeCssScanPatterns)&quot;" />
   </Target>
 
 </Project>

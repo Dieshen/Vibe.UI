@@ -16,110 +16,133 @@
    ======================================== */
 
 :root {
-    /* ===== Core Colors - Neutral "Zinc" Palette ===== */
-    --vibe-background: hsl(0 0% 100%);
-    --vibe-foreground: hsl(240 10% 3.9%);
+  /* ===== Core Colors - Neutral "Zinc" Palette ===== */
+  --vibe-background: hsl(0 0% 100%);
+  --vibe-foreground: hsl(240 10% 3.9%);
 
-    --vibe-card: hsl(0 0% 100%);
-    --vibe-card-foreground: hsl(240 10% 3.9%);
+  --vibe-card: hsl(0 0% 100%);
+  --vibe-card-foreground: hsl(240 10% 3.9%);
 
-    --vibe-popover: hsl(0 0% 100%);
-    --vibe-popover-foreground: hsl(240 10% 3.9%);
+  --vibe-popover: hsl(0 0% 100%);
+  --vibe-popover-foreground: hsl(240 10% 3.9%);
 
-    /* Primary - Black in light mode, White in dark mode */
-    --vibe-primary: hsl(240 5.9% 10%);
-    --vibe-primary-foreground: hsl(0 0% 98%);
+  /* Primary - Black in light mode, White in dark mode */
+  --vibe-primary: hsl(240 5.9% 10%);
+  --vibe-primary-foreground: hsl(0 0% 98%);
 
-    /* Secondary - Subtle gray backgrounds */
-    --vibe-secondary: hsl(240 4.8% 92%);
-    --vibe-secondary-foreground: hsl(240 5.9% 10%);
+  /* Secondary - Subtle gray backgrounds */
+  --vibe-secondary: hsl(240 4.8% 92%);
+  --vibe-secondary-foreground: hsl(240 5.9% 10%);
 
-    /* Muted - For disabled states and subtle text */
-    --vibe-muted: hsl(240 4.8% 95.9%);
-    --vibe-muted-foreground: hsl(240 5.2% 33.9%);
+  /* Muted - For disabled states and subtle text */
+  --vibe-muted: hsl(240 4.8% 95.9%);
+  --vibe-muted-foreground: hsl(240 5.2% 33.9%);
 
-    /* Accent - For highlighting and hover states */
-    --vibe-accent: hsl(240 4.8% 95.9%);
-    --vibe-accent-foreground: hsl(240 5.9% 10%);
+  /* Accent - For highlighting and hover states */
+  --vibe-accent: hsl(240 4.8% 95.9%);
+  --vibe-accent-foreground: hsl(240 5.9% 10%);
 
-    /* Destructive - For errors and dangerous actions */
-    --vibe-destructive: hsl(0 72.2% 50.6%);
-    --vibe-destructive-foreground: hsl(0 0% 98%);
+  /* Destructive - For errors and dangerous actions */
+  --vibe-destructive: hsl(0 72.2% 50.6%);
+  --vibe-destructive-foreground: hsl(0 0% 98%);
 
-    /* ===== Semantic Status Colors ===== */
-    --vibe-success: hsl(142 76% 36%);
-    --vibe-success-foreground: hsl(0 0% 100%);
+  /* ===== Semantic Status Colors ===== */
+  --vibe-success: hsl(142 76% 36%);
+  --vibe-success-foreground: hsl(0 0% 100%);
 
-    --vibe-warning: hsl(38 92% 50%);
-    --vibe-warning-foreground: hsl(0 0% 100%);
+  --vibe-warning: hsl(38 92% 50%);
+  --vibe-warning-foreground: hsl(0 0% 100%);
 
-    --vibe-info: hsl(217 91% 60%);
-    --vibe-info-foreground: hsl(0 0% 100%);
+  --vibe-info: hsl(217 91% 60%);
+  --vibe-info-foreground: hsl(0 0% 100%);
 
-    /* ===== UI Elements ===== */
-    --vibe-border: hsl(240 5.9% 90%);
-    --vibe-input: hsl(240 5.9% 90%);
-    --vibe-ring: hsl(240 10% 3.9%);
+  /* ===== UI Elements ===== */
+  --vibe-border: hsl(240 5.9% 90%);
+  --vibe-input: hsl(240 5.9% 90%);
+  --vibe-ring: hsl(240 10% 3.9%);
 
-    /* ===== Sidebar ===== */
-    --vibe-sidebar-background: hsl(0 0% 98%);
-    --vibe-sidebar-foreground: hsl(240 5.3% 26.1%);
+  /* ===== Sidebar ===== */
+  --vibe-sidebar-background: hsl(0 0% 98%);
+  --vibe-sidebar-foreground: hsl(240 5.3% 26.1%);
 
-    /* ===== Chart Colors ===== */
-    --vibe-chart-1: hsl(12 76% 61%);
-    --vibe-chart-2: hsl(173 58% 39%);
-    --vibe-chart-3: hsl(197 37% 24%);
-    --vibe-chart-4: hsl(43 74% 66%);
-    --vibe-chart-5: hsl(27 87% 67%);
+  /* ===== Chart Colors ===== */
+  --vibe-chart-1: hsl(12 76% 61%);
+  --vibe-chart-2: hsl(173 58% 39%);
+  --vibe-chart-3: hsl(197 37% 24%);
+  --vibe-chart-4: hsl(43 74% 66%);
+  --vibe-chart-5: hsl(27 87% 67%);
 
-    /* ===== Border Radius ===== */
-    --vibe-radius: 0.5rem;          /* 8px - Default */
-    --vibe-radius-sm: 0.3rem;       /* 5px - Small elements */
-    --vibe-radius-md: 0.5rem;       /* 8px - Medium elements */
-    --vibe-radius-lg: 0.75rem;      /* 12px - Large elements */
-    --vibe-radius-xl: 1rem;         /* 16px - Extra large elements */
+  /* ===== Border Radius ===== */
+  --vibe-radius: 0.5rem; /* 8px - Default */
+  --vibe-radius-sm: 0.3rem; /* 5px - Small elements */
+  --vibe-radius-md: 0.5rem; /* 8px - Medium elements */
+  --vibe-radius-lg: 0.75rem; /* 12px - Large elements */
+  --vibe-radius-xl: 1rem; /* 16px - Extra large elements */
 
-    /* ===== Typography ===== */
-    --vibe-font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --vibe-font-mono: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
-    --vibe-font-size-xs: 0.75rem;
-    --vibe-font-size-sm: 0.875rem;
-    --vibe-font-size-md: 1rem;
-    --vibe-font-size-lg: 1.125rem;
-    --vibe-line-height-tight: 1.25;
-    --vibe-line-height-normal: 1.5;
+  /* ===== Typography ===== */
+  --vibe-font:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --vibe-font-mono:
+    "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", monospace;
+  --vibe-font-size-xs: 0.75rem;
+  --vibe-font-size-sm: 0.875rem;
+  --vibe-font-size-md: 1rem;
+  --vibe-font-size-lg: 1.125rem;
+  --vibe-line-height-tight: 1.25;
+  --vibe-line-height-normal: 1.5;
 
-    /* ===== Spacing Scale ===== */
-    /* Based on 4px base unit for consistent spacing */
-    --vibe-spacing-1: 0.25rem;      /* 4px */
-    --vibe-spacing-2: 0.5rem;       /* 8px */
-    --vibe-spacing-3: 0.75rem;      /* 12px */
-    --vibe-spacing-4: 1rem;         /* 16px */
-    --vibe-spacing-5: 1.25rem;      /* 20px */
-    --vibe-spacing-6: 1.5rem;       /* 24px */
-    --vibe-spacing-7: 1.75rem;      /* 28px */
-    --vibe-spacing-8: 2rem;         /* 32px */
-    --vibe-spacing-9: 2.25rem;      /* 36px */
-    --vibe-spacing-10: 2.5rem;      /* 40px */
-    --vibe-spacing-11: 2.75rem;     /* 44px */
-    --vibe-spacing-12: 3rem;        /* 48px */
+  /* ===== Spacing Scale ===== */
+  /* Based on 4px base unit for consistent spacing */
+  --vibe-spacing-1: 0.25rem; /* 4px */
+  --vibe-spacing-2: 0.5rem; /* 8px */
+  --vibe-spacing-3: 0.75rem; /* 12px */
+  --vibe-spacing-4: 1rem; /* 16px */
+  --vibe-spacing-5: 1.25rem; /* 20px */
+  --vibe-spacing-6: 1.5rem; /* 24px */
+  --vibe-spacing-7: 1.75rem; /* 28px */
+  --vibe-spacing-8: 2rem; /* 32px */
+  --vibe-spacing-9: 2.25rem; /* 36px */
+  --vibe-spacing-10: 2.5rem; /* 40px */
+  --vibe-spacing-11: 2.75rem; /* 44px */
+  --vibe-spacing-12: 3rem; /* 48px */
 
-    /* ===== Control Sizing ===== */
-    --vibe-control-height-sm: 2rem;
-    --vibe-control-height-md: 2.5rem;
-    --vibe-control-height-lg: 3rem;
+  /* ===== Control Sizing ===== */
+  --vibe-control-height-sm: 2rem;
+  --vibe-control-height-md: 2.5rem;
+  --vibe-control-height-lg: 3rem;
 
-    /* ===== Shadows ===== */
-    --vibe-shadow-xs: 0 1px 2px rgb(0 0 0 / 0.04);
-    --vibe-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --vibe-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --vibe-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  /* ===== Shadows ===== */
+  --vibe-shadow-xs: 0 1px 2px rgb(0 0 0 / 0.04);
+  --vibe-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --vibe-shadow-md:
+    0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --vibe-shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 
-    /* ===== Transitions ===== */
-    --vibe-ease-standard: cubic-bezier(0.2, 0, 0, 1);
-    --vibe-transition: color 150ms var(--vibe-ease-standard), background-color 150ms var(--vibe-ease-standard), border-color 150ms var(--vibe-ease-standard), box-shadow 150ms var(--vibe-ease-standard), opacity 150ms var(--vibe-ease-standard), transform 150ms var(--vibe-ease-standard);
-    --vibe-transition-fast: color 100ms var(--vibe-ease-standard), background-color 100ms var(--vibe-ease-standard), border-color 100ms var(--vibe-ease-standard), box-shadow 100ms var(--vibe-ease-standard), opacity 100ms var(--vibe-ease-standard), transform 100ms var(--vibe-ease-standard);
-    --vibe-transition-slow: color 250ms var(--vibe-ease-standard), background-color 250ms var(--vibe-ease-standard), border-color 250ms var(--vibe-ease-standard), box-shadow 250ms var(--vibe-ease-standard), opacity 250ms var(--vibe-ease-standard), transform 250ms var(--vibe-ease-standard);
+  /* ===== Transitions ===== */
+  --vibe-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --vibe-transition:
+    color 150ms var(--vibe-ease-standard),
+    background-color 150ms var(--vibe-ease-standard),
+    border-color 150ms var(--vibe-ease-standard),
+    box-shadow 150ms var(--vibe-ease-standard),
+    opacity 150ms var(--vibe-ease-standard),
+    transform 150ms var(--vibe-ease-standard);
+  --vibe-transition-fast:
+    color 100ms var(--vibe-ease-standard),
+    background-color 100ms var(--vibe-ease-standard),
+    border-color 100ms var(--vibe-ease-standard),
+    box-shadow 100ms var(--vibe-ease-standard),
+    opacity 100ms var(--vibe-ease-standard),
+    transform 100ms var(--vibe-ease-standard);
+  --vibe-transition-slow:
+    color 250ms var(--vibe-ease-standard),
+    background-color 250ms var(--vibe-ease-standard),
+    border-color 250ms var(--vibe-ease-standard),
+    box-shadow 250ms var(--vibe-ease-standard),
+    opacity 250ms var(--vibe-ease-standard),
+    transform 250ms var(--vibe-ease-standard);
 }
 
 /* ========================================
@@ -127,229 +150,100 @@
    ======================================== */
 
 .dark {
-    color-scheme: dark;
+  color-scheme: dark;
 
-    /* ===== Core Colors ===== */
-    --vibe-background: hsl(240 10% 3.9%);
-    --vibe-foreground: hsl(0 0% 98%);
+  /* ===== Core Colors ===== */
+  --vibe-background: hsl(240 10% 3.9%);
+  --vibe-foreground: hsl(0 0% 98%);
 
-    --vibe-card: hsl(240 10% 3.9%);
-    --vibe-card-foreground: hsl(0 0% 98%);
+  --vibe-card: hsl(240 10% 3.9%);
+  --vibe-card-foreground: hsl(0 0% 98%);
 
-    --vibe-popover: hsl(240 10% 3.9%);
-    --vibe-popover-foreground: hsl(0 0% 98%);
+  --vibe-popover: hsl(240 10% 3.9%);
+  --vibe-popover-foreground: hsl(0 0% 98%);
 
-    /* Primary - White in dark mode */
-    --vibe-primary: hsl(0 0% 98%);
-    --vibe-primary-foreground: hsl(240 5.9% 10%);
+  /* Primary - White in dark mode */
+  --vibe-primary: hsl(0 0% 98%);
+  --vibe-primary-foreground: hsl(240 5.9% 10%);
 
-    /* Secondary */
-    --vibe-secondary: hsl(240 3.7% 20%);
-    --vibe-secondary-foreground: hsl(0 0% 98%);
+  /* Secondary */
+  --vibe-secondary: hsl(240 3.7% 20%);
+  --vibe-secondary-foreground: hsl(0 0% 98%);
 
-    /* Muted */
-    --vibe-muted: hsl(240 3.7% 15.9%);
-    --vibe-muted-foreground: hsl(240 5% 64.9%);
+  /* Muted */
+  --vibe-muted: hsl(240 3.7% 15.9%);
+  --vibe-muted-foreground: hsl(240 5% 64.9%);
 
-    /* Accent */
-    --vibe-accent: hsl(240 3.7% 15.9%);
-    --vibe-accent-foreground: hsl(0 0% 98%);
+  /* Accent */
+  --vibe-accent: hsl(240 3.7% 15.9%);
+  --vibe-accent-foreground: hsl(0 0% 98%);
 
-    /* Destructive */
-    --vibe-destructive: hsl(0 62.8% 30.6%);
-    --vibe-destructive-foreground: hsl(0 0% 98%);
+  /* Destructive */
+  --vibe-destructive: hsl(0 62.8% 30.6%);
+  --vibe-destructive-foreground: hsl(0 0% 98%);
 
-    /* ===== Semantic Status Colors (Dark Mode Adjusted) ===== */
-    --vibe-success: hsl(142 76% 36%);
-    --vibe-success-foreground: hsl(0 0% 100%);
+  /* ===== Semantic Status Colors (Dark Mode Adjusted) ===== */
+  --vibe-success: hsl(142 76% 36%);
+  --vibe-success-foreground: hsl(0 0% 100%);
 
-    --vibe-warning: hsl(38 92% 50%);
-    --vibe-warning-foreground: hsl(0 0% 100%);
+  --vibe-warning: hsl(38 92% 50%);
+  --vibe-warning-foreground: hsl(0 0% 100%);
 
-    --vibe-info: hsl(217 91% 60%);
-    --vibe-info-foreground: hsl(0 0% 100%);
+  --vibe-info: hsl(217 91% 60%);
+  --vibe-info-foreground: hsl(0 0% 100%);
 
-    /* ===== UI Elements (Enhanced contrast for dark mode) ===== */
-    --vibe-border: hsl(240 3.7% 25%);       /* Zinc-800 - More visible */
-    --vibe-input: hsl(240 3.7% 20%);        /* Slightly lighter input background */
-    --vibe-ring: hsl(240 4.9% 83.9%);
+  /* ===== UI Elements (Enhanced contrast for dark mode) ===== */
+  --vibe-border: hsl(240 3.7% 25%); /* Zinc-800 - More visible */
+  --vibe-input: hsl(240 3.7% 20%); /* Slightly lighter input background */
+  --vibe-ring: hsl(240 4.9% 83.9%);
 
-    /* ===== Sidebar ===== */
-    --vibe-sidebar-background: hsl(240 5.9% 10%);
-    --vibe-sidebar-foreground: hsl(240 4.8% 95.9%);
+  /* ===== Sidebar ===== */
+  --vibe-sidebar-background: hsl(240 5.9% 10%);
+  --vibe-sidebar-foreground: hsl(240 4.8% 95.9%);
 
-    /* ===== Chart Colors (Same across themes) ===== */
-    --vibe-chart-1: hsl(220 70% 50%);
-    --vibe-chart-2: hsl(160 60% 45%);
-    --vibe-chart-3: hsl(30 80% 55%);
-    --vibe-chart-4: hsl(280 65% 60%);
-    --vibe-chart-5: hsl(340 75% 55%);
+  /* ===== Chart Colors (Same across themes) ===== */
+  --vibe-chart-1: hsl(220 70% 50%);
+  --vibe-chart-2: hsl(160 60% 45%);
+  --vibe-chart-3: hsl(30 80% 55%);
+  --vibe-chart-4: hsl(280 65% 60%);
+  --vibe-chart-5: hsl(340 75% 55%);
 }
 
 /* ========================================
-   CSS RESET
+   MINIMAL RESET
+
+   Intentionally non-invasive: box-sizing, margin/padding normalization, and
+   base document/font setup only. The full Tailwind-compatible element reset
+   (borders, headings, links, lists, form controls) is opt-in and lives in
+   vibe-preflight.css so Vibe.UI does not restyle a consumer's whole page.
    ======================================== */
 
-/* Tailwind-compatible foundation for Vibe.UI.CSS utilities. */
 *,
 *::before,
-*::after,
-*::backdrop,
-*::file-selector-button {
-    box-sizing: border-box;
-    border-width: 0;
-    border-style: solid;
-    border-color: currentColor;
+*::after {
+  box-sizing: border-box;
 }
 
-/* Remove default margins and paddings */
 * {
-    margin: 0;
-    padding: 0;
+  margin: 0;
+  padding: 0;
 }
 
-/* Font smoothing for better text rendering */
 html {
-    color-scheme: light;
-    line-height: var(--vibe-line-height-normal);
-    -webkit-text-size-adjust: 100%;
-    tab-size: 4;
-    font-family: var(--vibe-font);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  color-scheme: light;
+  line-height: var(--vibe-line-height-normal);
+  -webkit-text-size-adjust: 100%;
+  tab-size: 4;
+  font-family: var(--vibe-font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Set base font */
 body {
-    margin: 0;
-    font-family: var(--vibe-font);
-    line-height: inherit;
-    background-color: var(--vibe-background);
-    color: var(--vibe-foreground);
-}
-
-hr {
-    height: 0;
-    color: inherit;
-    border-top-width: 1px;
-}
-
-abbr:where([title]) {
-    text-decoration: underline dotted;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-    font-size: inherit;
-    font-weight: inherit;
-}
-
-a {
-    color: inherit;
-    text-decoration: inherit;
-}
-
-b,
-strong {
-    font-weight: bolder;
-}
-
-code,
-kbd,
-samp,
-pre {
-    font-family: var(--vibe-font-mono);
-    font-size: 1em;
-}
-
-small {
-    font-size: 80%;
-}
-
-sub,
-sup {
-    position: relative;
-    vertical-align: baseline;
-    font-size: 75%;
-    line-height: 0;
-}
-
-sub {
-    bottom: -0.25em;
-}
-
-sup {
-    top: -0.5em;
-}
-
-table {
-    border-color: inherit;
-    border-collapse: collapse;
-    text-indent: 0;
-}
-
-button,
-input,
-optgroup,
-select,
-textarea,
-::file-selector-button {
-    margin: 0;
-    border-radius: 0;
-    background-color: transparent;
-    color: inherit;
-    font: inherit;
-    font-feature-settings: inherit;
-    font-variation-settings: inherit;
-    letter-spacing: inherit;
-    opacity: 1;
-}
-
-button,
-select {
-    text-transform: none;
-}
-
-button,
-input:where([type="button"], [type="reset"], [type="submit"]),
-::file-selector-button {
-    appearance: button;
-}
-
-ol,
-ul,
-menu {
-    list-style: none;
-}
-
-img,
-svg,
-video,
-canvas,
-audio,
-iframe,
-embed,
-object {
-    display: block;
-    vertical-align: middle;
-}
-
-img,
-video {
-    max-width: 100%;
-    height: auto;
-}
-
-[hidden]:where(:not([hidden="until-found"])) {
-    display: none !important;
-}
-
-[tabindex="-1"]:focus {
-    outline: none;
+  font-family: var(--vibe-font);
+  line-height: inherit;
+  background-color: var(--vibe-background);
+  color: var(--vibe-foreground);
 }
 
 /* ========================================
@@ -358,115 +252,125 @@ video {
 
 /* Spinner/Loader rotation */
 @keyframes vibe-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Fade in animation */
 @keyframes vibe-fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Slide in from top */
 @keyframes vibe-slideIn {
-    from {
-        transform: translateY(-100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Slide out to top */
 @keyframes vibe-slideOut {
-    from {
-        transform: translateY(0);
-        opacity: 1;
-    }
-    to {
-        transform: translateY(-100%);
-        opacity: 0;
-    }
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
 }
 
 /* Scale in animation */
 @keyframes vibe-scaleIn {
-    from {
-        transform: scale(0.95);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Slide down animation (for dropdowns/accordions) */
 @keyframes vibe-slideDown {
-    from {
-        height: 0;
-        opacity: 0;
-    }
-    to {
-        height: var(--radix-collapsible-content-height);
-        opacity: 1;
-    }
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
 }
 
 /* Slide up animation (for dropdowns/accordions) */
 @keyframes vibe-slideUp {
-    from {
-        height: var(--radix-collapsible-content-height);
-        opacity: 1;
-    }
-    to {
-        height: 0;
-        opacity: 0;
-    }
+  from {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
+  }
 }
 
 /* Pulse animation (for loading states) */
 @keyframes vibe-pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.5;
-    }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 /* Bounce animation (for notifications) */
 @keyframes vibe-bounce {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-25%);
-    }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-25%);
+  }
 }
 
 /* Shake animation (for errors) */
 @keyframes vibe-shake {
-    0%, 100% {
-        transform: translateX(0);
-    }
-    10%, 30%, 50%, 70%, 90% {
-        transform: translateX(-10px);
-    }
-    20%, 40%, 60%, 80% {
-        transform: translateX(10px);
-    }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-10px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(10px);
+  }
 }
 
 /* ========================================
@@ -475,44 +379,44 @@ video {
 
 /* These can be applied directly to elements for quick animations */
 .vibe-animate-spin {
-    animation: vibe-spin 1s linear infinite;
+  animation: vibe-spin 1s linear infinite;
 }
 
 .vibe-animate-fadeIn {
-    animation: vibe-fadeIn 0.3s ease;
+  animation: vibe-fadeIn 0.3s ease;
 }
 
 .vibe-animate-slideIn {
-    animation: vibe-slideIn 0.3s ease;
+  animation: vibe-slideIn 0.3s ease;
 }
 
 .vibe-animate-slideOut {
-    animation: vibe-slideOut 0.3s ease;
+  animation: vibe-slideOut 0.3s ease;
 }
 
 .vibe-animate-scaleIn {
-    animation: vibe-scaleIn 0.2s ease;
+  animation: vibe-scaleIn 0.2s ease;
 }
 
 .vibe-animate-pulse {
-    animation: vibe-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: vibe-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .vibe-animate-bounce {
-    animation: vibe-bounce 1s infinite;
+  animation: vibe-bounce 1s infinite;
 }
 
 .vibe-animate-shake {
-    animation: vibe-shake 0.5s ease;
+  animation: vibe-shake 0.5s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        scroll-behavior: auto !important;
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

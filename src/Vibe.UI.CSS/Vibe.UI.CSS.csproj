@@ -32,11 +32,14 @@
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 
-  <!-- Embed the component library's canonical base stylesheet. -->
+  <!-- Embed the component library's canonical base stylesheet and opt-in preflight. -->
   <ItemGroup>
     <EmbeddedResource Include="..\Vibe.UI\wwwroot\css\vibe-base.css"
                       LogicalName="Vibe.UI.CSS.vibe-base.css"
                       Link="Data\vibe-base.css" />
+    <EmbeddedResource Include="..\Vibe.UI\wwwroot\css\vibe-preflight.css"
+                      LogicalName="Vibe.UI.CSS.vibe-preflight.css"
+                      Link="Data\vibe-preflight.css" />
   </ItemGroup>
 
   <!-- Include MSBuild targets -->

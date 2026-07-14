@@ -31,7 +31,11 @@ public class CssEmitter
     /// <param name="projectDirectory">Root directory of the project to scan</param>
     /// <param name="outputPath">Path to write the generated CSS file</param>
     /// <param name="includeBase">Whether to include vibe-base.css content</param>
-    public void GenerateForProject(string projectDirectory, string outputPath, bool includeBase = true)
+    public void GenerateForProject(
+        string projectDirectory,
+        string outputPath,
+        bool includeBase = true
+    )
     {
         // Scan for classes
         var usedClasses = _scanner.ScanDirectory(projectDirectory);
@@ -57,8 +61,16 @@ public class CssEmitter
     /// <param name="classNames">Set of class names to generate CSS for</param>
     /// <param name="includeBase">Whether to include vibe-base.css content</param>
     /// <param name="baseCssPath">Optional path to a project-specific vibe-base.css override</param>
+    /// <param name="includePreflight">Whether to prepend the opt-in vibe-preflight.css reset</param>
+    /// <param name="preflightCssPath">Optional path to a project-specific vibe-preflight.css override</param>
     /// <returns>Generated CSS string</returns>
-    public string GenerateCss(IEnumerable<string> classNames, bool includeBase = true, string? baseCssPath = null)
+    public string GenerateCss(
+        IEnumerable<string> classNames,
+        bool includeBase = true,
+        string? baseCssPath = null,
+        bool includePreflight = false,
+        string? preflightCssPath = null
+    )
     {
         var sb = new StringBuilder();
 
@@ -68,6 +80,17 @@ public class CssEmitter
         sb.AppendLine("   This file is deterministic. Do not edit by hand.");
         sb.AppendLine("   ======================================== */");
         sb.AppendLine();
+
+        // Preflight reset comes first so the utilities emitted below win the cascade.
+        if (includePreflight)
+        {
+            var preflightCss = GetPreflightCss(preflightCssPath);
+            if (!string.IsNullOrEmpty(preflightCss))
+            {
+                sb.AppendLine(preflightCss);
+                sb.AppendLine();
+            }
+        }
 
         // Include base CSS
         if (includeBase)
@@ -111,10 +134,11 @@ public class CssEmitter
 
         // Group by media query for cleaner output
         var noMediaRules = rules.Where(r => string.IsNullOrEmpty(r.MediaQuery)).ToList();
-        var mediaRules = rules.Where(r => !string.IsNullOrEmpty(r.MediaQuery))
-                              .GroupBy(r => r.MediaQuery)
-                              .OrderBy(g => GetBreakpointOrder(g.Key!))
-                              .ToList();
+        var mediaRules = rules
+            .Where(r => !string.IsNullOrEmpty(r.MediaQuery))
+            .GroupBy(r => r.MediaQuery)
+            .OrderBy(g => GetBreakpointOrder(g.Key!))
+            .ToList();
 
         // Output non-media rules
         sb.AppendLine("/* ======================================== */");
@@ -162,38 +186,53 @@ public class CssEmitter
     }
 
     /// <summary>
-    /// Get the embedded vibe-base.css content.
+    /// Get the embedded vibe-base.css content, or a project-specific override.
     /// </summary>
-    private static string GetBaseCss(string? baseCssPath)
+    private static string GetBaseCss(string? baseCssPath) =>
+        GetStylesheet(baseCssPath, "vibe-base.css");
+
+    /// <summary>
+    /// Get the embedded vibe-preflight.css content, or a project-specific override.
+    /// </summary>
+    private static string GetPreflightCss(string? preflightCssPath) =>
+        GetStylesheet(preflightCssPath, "vibe-preflight.css");
+
+    /// <summary>
+    /// Load a bundled stylesheet, preferring a project-local file over the embedded resource.
+    /// </summary>
+    private static string GetStylesheet(string? overridePath, string fileName)
     {
-        if (!string.IsNullOrWhiteSpace(baseCssPath) && File.Exists(baseCssPath))
+        if (!string.IsNullOrWhiteSpace(overridePath) && File.Exists(overridePath))
         {
-            return File.ReadAllText(baseCssPath);
+            return File.ReadAllText(overridePath);
         }
 
         var assembly = Assembly.GetExecutingAssembly();
-        var resourceName = "Vibe.UI.CSS.vibe-base.css";
+        var resourceName = $"Vibe.UI.CSS.{fileName}";
 
         using var stream = assembly.GetManifestResourceStream(resourceName);
-        if (stream == null)
+        if (stream != null)
         {
-            // Try alternative resource name
-            var names = assembly.GetManifestResourceNames();
-            resourceName = names.FirstOrDefault(n => n.EndsWith("vibe-base.css")) ?? string.Empty;
-
-            if (string.IsNullOrEmpty(resourceName))
-                return string.Empty;
-
-            using var altStream = assembly.GetManifestResourceStream(resourceName);
-            if (altStream == null)
-                return string.Empty;
-
-            using var altReader = new StreamReader(altStream);
-            return altReader.ReadToEnd();
+            using var reader = new StreamReader(stream);
+            return reader.ReadToEnd();
         }
 
-        using var reader = new StreamReader(stream);
-        return reader.ReadToEnd();
+        // Fall back to a suffix match in case the logical resource name differs.
+        resourceName =
+            assembly
+                .GetManifestResourceNames()
+                .FirstOrDefault(n => n.EndsWith(fileName, StringComparison.Ordinal))
+            ?? string.Empty;
+
+        if (string.IsNullOrEmpty(resourceName))
+            return string.Empty;
+
+        using var altStream = assembly.GetManifestResourceStream(resourceName);
+        if (altStream == null)
+            return string.Empty;
+
+        using var altReader = new StreamReader(altStream);
+        return altReader.ReadToEnd();
     }
 
     /// <summary>
@@ -201,11 +240,16 @@ public class CssEmitter
     /// </summary>
     private int GetBreakpointOrder(string mediaQuery)
     {
-        if (mediaQuery.Contains("640px")) return 1;  // sm
-        if (mediaQuery.Contains("768px")) return 2;  // md
-        if (mediaQuery.Contains("1024px")) return 3; // lg
-        if (mediaQuery.Contains("1280px")) return 4; // xl
-        if (mediaQuery.Contains("1536px")) return 5; // 2xl
+        if (mediaQuery.Contains("640px"))
+            return 1; // sm
+        if (mediaQuery.Contains("768px"))
+            return 2; // md
+        if (mediaQuery.Contains("1024px"))
+            return 3; // lg
+        if (mediaQuery.Contains("1280px"))
+            return 4; // xl
+        if (mediaQuery.Contains("1536px"))
+            return 5; // 2xl
         return 0;
     }
 
@@ -234,7 +278,7 @@ public class CssEmitter
         {
             TotalClasses = classNames.Count(),
             GeneratedClasses = generated,
-            UnknownClasses = unknown
+            UnknownClasses = unknown,
         };
     }
 }
@@ -264,4 +308,3 @@ public class CssStats
     /// </summary>
     public int UnknownCount => UnknownClasses.Count;
 }
-

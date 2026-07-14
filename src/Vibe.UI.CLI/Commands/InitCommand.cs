@@ -1,7 +1,7 @@
-using Spectre.Console;
-using Spectre.Console.Cli;
 using System.ComponentModel;
 using System.Xml.Linq;
+using Spectre.Console;
+using Spectre.Console.Cli;
 using Vibe.UI.CLI.Infrastructure;
 using Vibe.UI.CLI.Models;
 using Vibe.UI.CLI.Services;
@@ -46,7 +46,11 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
     public Task<int> ExecuteAsync(CommandContext context, Settings settings) =>
         ExecuteAsync(context, settings, CancellationToken.None);
 
-    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
+    protected override async Task<int> ExecuteAsync(
+        CommandContext context,
+        Settings settings,
+        CancellationToken cancellationToken
+    )
     {
         AnsiConsole.MarkupLine("[blue]Initializing Vibe.UI in your project...[/]\n");
 
@@ -68,7 +72,11 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         {
             if (!settings.SkipPrompts)
             {
-                if (!AnsiConsole.Confirm("Vibe.UI infrastructure already exists. Do you want to overwrite?"))
+                if (
+                    !AnsiConsole.Confirm(
+                        "Vibe.UI infrastructure already exists. Do you want to overwrite?"
+                    )
+                )
                 {
                     return 0;
                 }
@@ -79,7 +87,10 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         var componentDir = "Components/vibe";
         if (!settings.SkipPrompts)
         {
-            componentDir = AnsiConsole.Ask("Where should components be installed?", "Components/vibe");
+            componentDir = AnsiConsole.Ask(
+                "Where should components be installed?",
+                "Components/vibe"
+            );
         }
         ValidateProjectRelativePath(target.ProjectPath, componentDir, "components directory");
 
@@ -100,74 +111,101 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
             ProjectType = GetConfigProjectType(topology, target.ProjectPath),
             Theme = "both",
             ComponentsDirectory = componentDir,
-            CssVariables = true
+            CssVariables = true,
         };
 
         string? csprojPath = null;
         var vibeCssConfigured = false;
 
-        await AnsiConsole.Status()
-            .StartAsync("Setting up Vibe.UI infrastructure...", async ctx =>
-            {
-                // Save configuration
-                await configService.SaveConfigAsync(target.ProjectPath, config);
-
-                ctx.Status("Copying infrastructure files...");
-
-                // Copy infrastructure files (includes CSS foundation files)
-                await CopyInfrastructureAsync(target.ProjectPath, settings.Minimal, settings.NoTheme, settings.WithCharts);
-
-                ctx.Status("Updating root _Imports.razor...");
-                await RazorImportsService.EnsureVibeImportsAsync(
-                    target.ProjectPath,
-                    includeComponents: false);
-
-                ctx.Status("Creating component directory...");
-
-                // Create components directory
-                Directory.CreateDirectory(Path.Combine(target.ProjectPath, componentDir));
-
-                ctx.Status("Applying color scheme to CSS...");
-
-                // Update vibe-base.css with selected color scheme
-                await ApplyColorSchemeAsync(target.ProjectPath, baseColor);
-
-                // Add Vibe.UI.CSS package reference (only if --with-css is specified)
-                // This is opt-in because the Vibe.UI.CSS package may not be published to NuGet yet
-                if (settings.WithCss)
+        await AnsiConsole
+            .Status()
+            .StartAsync(
+                "Setting up Vibe.UI infrastructure...",
+                async ctx =>
                 {
-                    ctx.Status("Configuring Vibe.UI.CSS package reference...");
-                    csprojPath = topology.IsBlazorWebApp && !string.IsNullOrWhiteSpace(topology.ServerProjectFile)
-                        ? topology.ServerProjectFile
-                        : FindCsprojFile(target.ProjectPath);
+                    // Save configuration
+                    await configService.SaveConfigAsync(target.ProjectPath, config);
 
-                    if (csprojPath != null)
+                    ctx.Status("Copying infrastructure files...");
+
+                    // Copy infrastructure files (includes CSS foundation files)
+                    await CopyInfrastructureAsync(
+                        target.ProjectPath,
+                        settings.Minimal,
+                        settings.NoTheme,
+                        settings.WithCharts
+                    );
+
+                    ctx.Status("Updating root _Imports.razor...");
+                    await RazorImportsService.EnsureVibeImportsAsync(
+                        target.ProjectPath,
+                        includeComponents: false
+                    );
+
+                    ctx.Status("Creating component directory...");
+
+                    // Create components directory
+                    Directory.CreateDirectory(Path.Combine(target.ProjectPath, componentDir));
+
+                    ctx.Status("Applying color scheme to CSS...");
+
+                    // Update vibe-base.css with selected color scheme
+                    await ApplyColorSchemeAsync(target.ProjectPath, baseColor);
+
+                    // Add Vibe.UI.CSS package reference (only if --with-css is specified)
+                    // This is opt-in because the Vibe.UI.CSS package may not be published to NuGet yet
+                    if (settings.WithCss)
                     {
-                        var scanRoot = topology.IsBlazorWebApp
-                            ? "$(MSBuildProjectDirectory)/.."
-                            : null;
+                        ctx.Status("Configuring Vibe.UI.CSS package reference...");
+                        csprojPath =
+                            topology.IsBlazorWebApp
+                            && !string.IsNullOrWhiteSpace(topology.ServerProjectFile)
+                                ? topology.ServerProjectFile
+                                : FindCsprojFile(target.ProjectPath);
 
-                        vibeCssConfigured = await AddVibeCssToProjectAsync(csprojPath, scanRoot);
+                        if (csprojPath != null)
+                        {
+                            var scanRoot = topology.IsBlazorWebApp
+                                ? "$(MSBuildProjectDirectory)/.."
+                                : null;
+
+                            vibeCssConfigured = await AddVibeCssToProjectAsync(
+                                csprojPath,
+                                scanRoot
+                            );
+                        }
                     }
                 }
-            });
+            );
 
         AnsiConsole.MarkupLine("\n[green]✓[/] Vibe.UI initialized successfully!");
-        AnsiConsole.WriteLine($"Infrastructure copied to {Path.Combine(target.ProjectPath, "Vibe")}");
-        AnsiConsole.WriteLine($"CSS foundation files copied to {Path.Combine(target.ProjectPath, "wwwroot", "css")}");
+        AnsiConsole.WriteLine(
+            $"Infrastructure copied to {Path.Combine(target.ProjectPath, "Vibe")}"
+        );
+        AnsiConsole.WriteLine(
+            $"CSS foundation files copied to {Path.Combine(target.ProjectPath, "wwwroot", "css")}"
+        );
         AnsiConsole.WriteLine($"Color scheme: {baseColor}");
 
         if (vibeCssConfigured)
         {
-            AnsiConsole.MarkupLine($"[grey]Vibe.UI.CSS configured in {Path.GetFileName(csprojPath)}[/]");
+            AnsiConsole.MarkupLine(
+                $"[grey]Vibe.UI.CSS configured in {Path.GetFileName(csprojPath)}[/]"
+            );
         }
         else if (settings.WithCss && csprojPath == null)
         {
-            AnsiConsole.MarkupLine($"[yellow]Warning:[/] No .csproj file found. Run [yellow]dotnet add package Vibe.UI.CSS --version {CliVersion.Current}[/] manually.");
+            AnsiConsole.MarkupLine(
+                $"[yellow]Warning:[/] No .csproj file found. Run [yellow]dotnet add package Vibe.UI.CSS --version {CliVersion.Current}[/] manually."
+            );
         }
 
         AnsiConsole.MarkupLine($"\n[blue]Next steps:[/]");
-        var nextSteps = ProjectSetupGuidance.BuildNextSteps(topology, target.ProjectPath, settings.WithCss);
+        var nextSteps = ProjectSetupGuidance.BuildNextSteps(
+            topology,
+            target.ProjectPath,
+            settings.WithCss
+        );
         for (var index = 0; index < nextSteps.Count; index++)
         {
             AnsiConsole.WriteLine($"  {index + 1}. {nextSteps[index]}");
@@ -176,7 +214,12 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         return 0;
     }
 
-    private async Task CopyInfrastructureAsync(string projectPath, bool minimal, bool noTheme, bool withCharts)
+    private async Task CopyInfrastructureAsync(
+        string projectPath,
+        bool minimal,
+        bool noTheme,
+        bool withCharts
+    )
     {
         // Get the template path (either from package or development)
         var templatePath = GetTemplatePath();
@@ -184,7 +227,9 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
 
         if (!Directory.Exists(infrastructurePath))
         {
-            throw new DirectoryNotFoundException($"Infrastructure templates not found at: {infrastructurePath}");
+            throw new DirectoryNotFoundException(
+                $"Infrastructure templates not found at: {infrastructurePath}"
+            );
         }
 
         var targetVibeDir = Path.Combine(projectPath, "Vibe");
@@ -192,12 +237,14 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         // Copy Base/ folder (always required - includes ClassBuilder)
         await CopyDirectoryAsync(
             Path.Combine(infrastructurePath, "Base"),
-            Path.Combine(targetVibeDir, "Base"));
+            Path.Combine(targetVibeDir, "Base")
+        );
 
         // Copy Configuration/ folder (needed for theme options)
         await CopyDirectoryAsync(
             Path.Combine(infrastructurePath, "Configuration"),
-            Path.Combine(targetVibeDir, "Configuration"));
+            Path.Combine(targetVibeDir, "Configuration")
+        );
 
         // Copy Services/
         var servicesSourceDir = Path.Combine(infrastructurePath, "Services");
@@ -207,56 +254,71 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         // Sub-services used by the core library.
         await CopyDirectoryAsync(
             Path.Combine(servicesSourceDir, "Dialog"),
-            Path.Combine(servicesTargetDir, "Dialog"));
+            Path.Combine(servicesTargetDir, "Dialog")
+        );
 
         await CopyDirectoryAsync(
             Path.Combine(servicesSourceDir, "Theme"),
-            Path.Combine(servicesTargetDir, "Theme"));
+            Path.Combine(servicesTargetDir, "Theme")
+        );
 
         await CopyDirectoryAsync(
             Path.Combine(servicesSourceDir, "Toast"),
-            Path.Combine(servicesTargetDir, "Toast"));
+            Path.Combine(servicesTargetDir, "Toast")
+        );
 
         // Helpers (only copy the ones that don't introduce extra component dependencies by default).
         await CopyFileIfExistsAsync(
             Path.Combine(servicesSourceDir, "LucideIcons.cs"),
-            Path.Combine(servicesTargetDir, "LucideIcons.cs"));
+            Path.Combine(servicesTargetDir, "LucideIcons.cs")
+        );
 
         await CopyFileIfExistsAsync(
             Path.Combine(servicesSourceDir, "FormValidators.cs"),
-            Path.Combine(servicesTargetDir, "FormValidators.cs"));
+            Path.Combine(servicesTargetDir, "FormValidators.cs")
+        );
 
         await CopyFileIfExistsAsync(
             Path.Combine(servicesSourceDir, "DataTableExporter.cs"),
-            Path.Combine(servicesTargetDir, "DataTableExporter.cs"));
+            Path.Combine(servicesTargetDir, "DataTableExporter.cs")
+        );
 
         // Charts are optional; ChartDataBuilder depends on chart component types.
         if (withCharts)
         {
             await CopyFileIfExistsAsync(
                 Path.Combine(servicesSourceDir, "ChartDataBuilder.cs"),
-                Path.Combine(servicesTargetDir, "ChartDataBuilder.cs"));
+                Path.Combine(servicesTargetDir, "ChartDataBuilder.cs")
+            );
         }
 
         // Copy Enums/ folder (always required)
         await CopyDirectoryAsync(
             Path.Combine(infrastructurePath, "Enums"),
-            Path.Combine(targetVibeDir, "Enums"));
+            Path.Combine(targetVibeDir, "Enums")
+        );
 
         // Copy Themes/ folder (unless --no-theme)
         if (!noTheme)
         {
             await CopyDirectoryAsync(
                 Path.Combine(infrastructurePath, "Themes"),
-                Path.Combine(targetVibeDir, "Themes"));
+                Path.Combine(targetVibeDir, "Themes")
+            );
         }
 
         // Copy ServiceCollectionExtensions.cs
-        var serviceExtensionsSource = Path.Combine(infrastructurePath, "ServiceCollectionExtensions.cs");
+        var serviceExtensionsSource = Path.Combine(
+            infrastructurePath,
+            "ServiceCollectionExtensions.cs"
+        );
         var serviceExtensionsTarget = Path.Combine(targetVibeDir, "ServiceCollectionExtensions.cs");
         if (File.Exists(serviceExtensionsSource))
         {
-            await File.WriteAllTextAsync(serviceExtensionsTarget, await File.ReadAllTextAsync(serviceExtensionsSource));
+            await File.WriteAllTextAsync(
+                serviceExtensionsTarget,
+                await File.ReadAllTextAsync(serviceExtensionsSource)
+            );
         }
 
         // Copy CSS foundation files to wwwroot/css/
@@ -264,7 +326,9 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         var cssTargetPath = Path.Combine(projectPath, "wwwroot", "css");
         Directory.CreateDirectory(cssTargetPath);
 
-        var cssFiles = new[] { "vibe-base.css", "vibe-utilities.css" };
+        // vibe-preflight.css is copied so it is available to opt into, but it is not
+        // linked by default (see ProjectSetupGuidance) because it restyles native HTML.
+        var cssFiles = new[] { "vibe-base.css", "vibe-preflight.css", "vibe-utilities.css" };
         foreach (var cssFile in cssFiles)
         {
             var cssSource = Path.Combine(cssTemplatePath, cssFile);
@@ -282,14 +346,24 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
 
         if (Directory.Exists(jsTemplatePath))
         {
-            foreach (var jsSource in Directory
-                .EnumerateFiles(jsTemplatePath, "*.js", SearchOption.TopDirectoryOnly)
-                .OrderBy(Path.GetFileName, StringComparer.Ordinal))
+            foreach (
+                var jsSource in Directory
+                    .EnumerateFiles(jsTemplatePath, "*.js", SearchOption.TopDirectoryOnly)
+                    .OrderBy(Path.GetFileName, StringComparer.Ordinal)
+            )
             {
                 var fileName = Path.GetFileName(jsSource);
 
-                if ((!withCharts && fileName.Equals("vibe-chart.js", StringComparison.OrdinalIgnoreCase))
-                    || (noTheme && fileName.Equals("vibe-theme.js", StringComparison.OrdinalIgnoreCase)))
+                if (
+                    (
+                        !withCharts
+                        && fileName.Equals("vibe-chart.js", StringComparison.OrdinalIgnoreCase)
+                    )
+                    || (
+                        noTheme
+                        && fileName.Equals("vibe-theme.js", StringComparison.OrdinalIgnoreCase)
+                    )
+                )
                 {
                     continue;
                 }
@@ -332,23 +406,22 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
 
     private string GetTemplatePath()
     {
-        var assemblyLocation = Path.GetDirectoryName(typeof(InitCommand).Assembly.Location) ?? AppContext.BaseDirectory;
+        var assemblyLocation =
+            Path.GetDirectoryName(typeof(InitCommand).Assembly.Location)
+            ?? AppContext.BaseDirectory;
 
         // Try multiple possible paths for Templates directory
         var possiblePaths = new[]
         {
             // 1. Development mode: relative to CLI project
             Path.GetFullPath(Path.Combine(assemblyLocation, "..", "..", "..", "Templates")),
-
             // 2. Packaged with CLI in Templates folder (adjacent to executable)
             Path.Combine(assemblyLocation, "Templates"),
-
             // 3. Dotnet global tool: Templates folder in package root (../../.. from tools/net10.0/any)
             Path.GetFullPath(Path.Combine(assemblyLocation, "..", "..", "..", "Templates")),
-
             // 4. Using AppContext.BaseDirectory
             Path.Combine(AppContext.BaseDirectory, "Templates"),
-            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "Templates"))
+            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "Templates")),
         };
 
         foreach (var path in possiblePaths)
@@ -360,8 +433,9 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         }
 
         throw new DirectoryNotFoundException(
-            $"Could not find Templates directory. Please ensure Vibe.UI.CLI is installed correctly. " +
-            $"Searched locations: {string.Join(", ", possiblePaths)}");
+            $"Could not find Templates directory. Please ensure Vibe.UI.CLI is installed correctly. "
+                + $"Searched locations: {string.Join(", ", possiblePaths)}"
+        );
     }
 
     /// <summary>
@@ -407,29 +481,101 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         var (lightColors, darkColors) = baseColor switch
         {
             "Gray" => (
-                light: ("hsl(0 0% 100%)", "hsl(0 0% 3.9%)", "hsl(0 0% 14.9%)", "hsl(0 0% 96.1%)", "hsl(0 0% 89.8%)"),
-                dark: ("hsl(0 0% 3.9%)", "hsl(0 0% 98%)", "hsl(0 0% 14.9%)", "hsl(0 0% 14.9%)", "hsl(0 0% 63.9%)")
+                light: (
+                    "hsl(0 0% 100%)",
+                    "hsl(0 0% 3.9%)",
+                    "hsl(0 0% 14.9%)",
+                    "hsl(0 0% 96.1%)",
+                    "hsl(0 0% 89.8%)"
+                ),
+                dark: (
+                    "hsl(0 0% 3.9%)",
+                    "hsl(0 0% 98%)",
+                    "hsl(0 0% 14.9%)",
+                    "hsl(0 0% 14.9%)",
+                    "hsl(0 0% 63.9%)"
+                )
             ),
             "Zinc" => (
-                light: ("hsl(0 0% 100%)", "hsl(240 10% 3.9%)", "hsl(240 5.9% 10%)", "hsl(240 4.8% 95.9%)", "hsl(240 5.9% 90%)"),
-                dark: ("hsl(240 10% 3.9%)", "hsl(0 0% 98%)", "hsl(240 3.7% 15.9%)", "hsl(240 3.7% 15.9%)", "hsl(240 5% 64.9%)")
+                light: (
+                    "hsl(0 0% 100%)",
+                    "hsl(240 10% 3.9%)",
+                    "hsl(240 5.9% 10%)",
+                    "hsl(240 4.8% 95.9%)",
+                    "hsl(240 5.9% 90%)"
+                ),
+                dark: (
+                    "hsl(240 10% 3.9%)",
+                    "hsl(0 0% 98%)",
+                    "hsl(240 3.7% 15.9%)",
+                    "hsl(240 3.7% 15.9%)",
+                    "hsl(240 5% 64.9%)"
+                )
             ),
             "Neutral" => (
-                light: ("hsl(0 0% 100%)", "hsl(0 0% 3.9%)", "hsl(0 0% 14.9%)", "hsl(0 0% 96.1%)", "hsl(0 0% 89.8%)"),
-                dark: ("hsl(0 0% 3.9%)", "hsl(0 0% 98%)", "hsl(0 0% 14.9%)", "hsl(0 0% 14.9%)", "hsl(0 0% 63.9%)")
+                light: (
+                    "hsl(0 0% 100%)",
+                    "hsl(0 0% 3.9%)",
+                    "hsl(0 0% 14.9%)",
+                    "hsl(0 0% 96.1%)",
+                    "hsl(0 0% 89.8%)"
+                ),
+                dark: (
+                    "hsl(0 0% 3.9%)",
+                    "hsl(0 0% 98%)",
+                    "hsl(0 0% 14.9%)",
+                    "hsl(0 0% 14.9%)",
+                    "hsl(0 0% 63.9%)"
+                )
             ),
             "Stone" => (
-                light: ("hsl(0 0% 100%)", "hsl(20 14.3% 4.1%)", "hsl(24 9.8% 10%)", "hsl(60 9.1% 97.8%)", "hsl(24 5.7% 82.9%)"),
-                dark: ("hsl(20 14.3% 4.1%)", "hsl(60 9.1% 97.8%)", "hsl(24 9.8% 10%)", "hsl(24 9.8% 10%)", "hsl(24 5.4% 63.9%)")
+                light: (
+                    "hsl(0 0% 100%)",
+                    "hsl(20 14.3% 4.1%)",
+                    "hsl(24 9.8% 10%)",
+                    "hsl(60 9.1% 97.8%)",
+                    "hsl(24 5.7% 82.9%)"
+                ),
+                dark: (
+                    "hsl(20 14.3% 4.1%)",
+                    "hsl(60 9.1% 97.8%)",
+                    "hsl(24 9.8% 10%)",
+                    "hsl(24 9.8% 10%)",
+                    "hsl(24 5.4% 63.9%)"
+                )
             ),
             "Blue" => (
-                light: ("hsl(0 0% 100%)", "hsl(222.2 84% 4.9%)", "hsl(221.2 83.2% 53.3%)", "hsl(210 40% 96.1%)", "hsl(214.3 31.8% 91.4%)"),
-                dark: ("hsl(222.2 84% 4.9%)", "hsl(210 40% 98%)", "hsl(217.2 91.2% 59.8%)", "hsl(217.2 32.6% 17.5%)", "hsl(215 20.2% 65.1%)")
+                light: (
+                    "hsl(0 0% 100%)",
+                    "hsl(222.2 84% 4.9%)",
+                    "hsl(221.2 83.2% 53.3%)",
+                    "hsl(210 40% 96.1%)",
+                    "hsl(214.3 31.8% 91.4%)"
+                ),
+                dark: (
+                    "hsl(222.2 84% 4.9%)",
+                    "hsl(210 40% 98%)",
+                    "hsl(217.2 91.2% 59.8%)",
+                    "hsl(217.2 32.6% 17.5%)",
+                    "hsl(215 20.2% 65.1%)"
+                )
             ),
             _ => (
-                light: ("hsl(0 0% 100%)", "hsl(222.2 84% 4.9%)", "hsl(222.2 47.4% 11.2%)", "hsl(210 40% 96.1%)", "hsl(214.3 31.8% 91.4%)"),
-                dark: ("hsl(222.2 84% 4.9%)", "hsl(210 40% 98%)", "hsl(217.2 32.6% 17.5%)", "hsl(217.2 32.6% 17.5%)", "hsl(215 20.2% 65.1%)")
-            )
+                light: (
+                    "hsl(0 0% 100%)",
+                    "hsl(222.2 84% 4.9%)",
+                    "hsl(222.2 47.4% 11.2%)",
+                    "hsl(210 40% 96.1%)",
+                    "hsl(214.3 31.8% 91.4%)"
+                ),
+                dark: (
+                    "hsl(222.2 84% 4.9%)",
+                    "hsl(210 40% 98%)",
+                    "hsl(217.2 32.6% 17.5%)",
+                    "hsl(217.2 32.6% 17.5%)",
+                    "hsl(215 20.2% 65.1%)"
+                )
+            ),
         };
 
         return $@"/* ============================================
@@ -478,7 +624,11 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
 }}";
     }
 
-    private static void ValidateProjectRelativePath(string projectPath, string relativePath, string description)
+    private static void ValidateProjectRelativePath(
+        string projectPath,
+        string relativePath,
+        string description
+    )
     {
         if (string.IsNullOrWhiteSpace(projectPath))
         {
@@ -498,19 +648,23 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         var projectFullPath = Path.GetFullPath(projectPath);
         var candidateFullPath = Path.GetFullPath(Path.Combine(projectFullPath, relativePath));
 
-        var projectPrefix = projectFullPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+        var projectPrefix =
+            projectFullPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
             + Path.DirectorySeparatorChar;
 
         if (!candidateFullPath.StartsWith(projectPrefix, StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException($"{description} must be within the project directory.");
+            throw new InvalidOperationException(
+                $"{description} must be within the project directory."
+            );
         }
     }
 
     private static InitProjectTarget ResolveInitTarget(
         ProjectTopology topology,
         string requestedProjectPath,
-        bool skipPrompts)
+        bool skipPrompts
+    )
     {
         if (!topology.HasServerProject || !topology.HasClientProject)
         {
@@ -526,10 +680,14 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
             selectedChoice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Where should Vibe.UI source components be installed?")
-                    .AddChoices(new[] { clientChoice, serverChoice }));
+                    .AddChoices(new[] { clientChoice, serverChoice })
+            );
         }
 
-        if (selectedChoice == serverChoice && !string.IsNullOrWhiteSpace(topology.ServerProjectPath))
+        if (
+            selectedChoice == serverChoice
+            && !string.IsNullOrWhiteSpace(topology.ServerProjectPath)
+        )
         {
             return new InitProjectTarget(topology.ServerProjectPath, "server project");
         }
@@ -546,8 +704,10 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
     {
         if (topology.IsBlazorWebApp)
         {
-            if (!string.IsNullOrWhiteSpace(topology.ClientProjectPath)
-                && PathsEqual(targetProjectPath, topology.ClientProjectPath))
+            if (
+                !string.IsNullOrWhiteSpace(topology.ClientProjectPath)
+                && PathsEqual(targetProjectPath, topology.ClientProjectPath)
+            )
             {
                 return "Blazor Web App Client";
             }
@@ -559,7 +719,11 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
     }
 
     private static bool PathsEqual(string left, string right) =>
-        string.Equals(Path.GetFullPath(left), Path.GetFullPath(right), StringComparison.OrdinalIgnoreCase);
+        string.Equals(
+            Path.GetFullPath(left),
+            Path.GetFullPath(right),
+            StringComparison.OrdinalIgnoreCase
+        );
 
     private sealed record InitProjectTarget(string ProjectPath, string Description);
 
@@ -568,7 +732,11 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
     /// </summary>
     private static string? FindCsprojFile(string projectPath)
     {
-        var csprojFiles = Directory.GetFiles(projectPath, "*.csproj", SearchOption.TopDirectoryOnly);
+        var csprojFiles = Directory.GetFiles(
+            projectPath,
+            "*.csproj",
+            SearchOption.TopDirectoryOnly
+        );
 
         if (csprojFiles.Length == 0)
         {
@@ -576,7 +744,11 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
             var parentDir = Directory.GetParent(projectPath)?.FullName;
             if (parentDir != null)
             {
-                csprojFiles = Directory.GetFiles(parentDir, "*.csproj", SearchOption.TopDirectoryOnly);
+                csprojFiles = Directory.GetFiles(
+                    parentDir,
+                    "*.csproj",
+                    SearchOption.TopDirectoryOnly
+                );
             }
         }
 
@@ -585,14 +757,18 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
             0 => null,
             1 => csprojFiles[0],
             _ => csprojFiles.FirstOrDefault(f =>
-                !Path.GetFileName(f).Contains("Test", StringComparison.OrdinalIgnoreCase)) ?? csprojFiles[0]
+                !Path.GetFileName(f).Contains("Test", StringComparison.OrdinalIgnoreCase)
+            ) ?? csprojFiles[0],
         };
     }
 
     /// <summary>
     /// Adds the Vibe.UI.CSS package reference and build configuration to a project file.
     /// </summary>
-    private static async Task<bool> AddVibeCssToProjectAsync(string csprojPath, string? scanRoot = null)
+    private static async Task<bool> AddVibeCssToProjectAsync(
+        string csprojPath,
+        string? scanRoot = null
+    )
     {
         try
         {
@@ -622,23 +798,32 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
                 }
 
                 // Add Vibe.UI.CSS package reference
-                var vibeCssReference = new XElement(ns + "PackageReference",
+                var vibeCssReference = new XElement(
+                    ns + "PackageReference",
                     new XAttribute("Include", "Vibe.UI.CSS"),
                     new XAttribute("Version", CliVersion.Current),
-                    new XAttribute("PrivateAssets", "all"));
+                    new XAttribute("PrivateAssets", "all")
+                );
 
                 packageItemGroup.Add(vibeCssReference);
                 modified = true;
             }
 
             var vibeCssPropertyGroup = root.Elements(ns + "PropertyGroup")
-                .FirstOrDefault(group => group.Elements().Any(element =>
-                    element.Name.LocalName.StartsWith("VibeCss", StringComparison.Ordinal)));
+                .FirstOrDefault(group =>
+                    group
+                        .Elements()
+                        .Any(element =>
+                            element.Name.LocalName.StartsWith("VibeCss", StringComparison.Ordinal)
+                        )
+                );
 
             if (vibeCssPropertyGroup == null)
             {
-                vibeCssPropertyGroup = new XElement(ns + "PropertyGroup",
-                    new XComment(" Vibe.UI.CSS JIT Configuration "));
+                vibeCssPropertyGroup = new XElement(
+                    ns + "PropertyGroup",
+                    new XComment(" Vibe.UI.CSS JIT Configuration ")
+                );
 
                 var firstPropertyGroup = root.Element(ns + "PropertyGroup");
                 if (firstPropertyGroup != null)
@@ -688,4 +873,3 @@ public class InitCommand : AsyncCommand<InitCommand.Settings>
         }
     }
 }
-

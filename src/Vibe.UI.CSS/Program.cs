@@ -21,7 +21,7 @@ return command switch
     "test" => RunTest(),
     "--help" or "-h" or "help" => PrintUsage(),
     "--version" or "-v" => PrintVersion(),
-    _ => HandleUnknownCommand(command)
+    _ => HandleUnknownCommand(command),
 };
 
 static int PrintUsage()
@@ -42,12 +42,19 @@ static int PrintUsage()
     Console.WriteLine("Scan and Generate Options:");
     Console.WriteLine("  -o, --output <file>     Output CSS file path (default: Vibe.UI.CSS)");
     Console.WriteLine("  --prefix <prefix>       CSS class prefix (default: vibe)");
-    Console.WriteLine("  --allow-unprefixed [true|false] Generate unprefixed utilities too (default: false)");
+    Console.WriteLine(
+        "  --allow-unprefixed [true|false] Generate unprefixed utilities too (default: false)"
+    );
     Console.WriteLine("  --with-base [true|false] Include base CSS variables (default: true)");
+    Console.WriteLine(
+        "  --with-preflight [true|false] Include the opt-in Tailwind reset (default: false)"
+    );
     Console.WriteLine("  --patterns <patterns>   Comma-separated file patterns to scan");
     Console.WriteLine("                          (default: *.razor,*.cshtml,*.html)");
     Console.WriteLine("  --ignore <classes>      Comma-separated known non-utility class names");
-    Console.WriteLine("  --fail-on-unknown [true|false] Exit non-zero when unknown utilities are found");
+    Console.WriteLine(
+        "  --fail-on-unknown [true|false] Exit non-zero when unknown utilities are found"
+    );
     Console.WriteLine();
     Console.WriteLine("Examples:");
     Console.WriteLine("  vibe-css generate . -o wwwroot/css/Vibe.UI.CSS");
@@ -59,7 +66,8 @@ static int PrintUsage()
 
 static int PrintVersion()
 {
-    var informational = Assembly.GetExecutingAssembly()
+    var informational = Assembly
+        .GetExecutingAssembly()
         .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
         ?.InformationalVersion;
 
@@ -173,6 +181,7 @@ static int RunGenerate(string[] args)
     var includeBase = true;
     var patterns = new[] { "*.razor", "*.cshtml", "*.html" };
     var failOnUnknown = false;
+    var includePreflight = false;
     var ignoredClasses = Array.Empty<string>();
 
     // Parse arguments
@@ -205,6 +214,9 @@ static int RunGenerate(string[] args)
             case "--with-base":
                 includeBase = ReadBooleanOption(args, ref i, inlineValue);
                 break;
+            case "--with-preflight":
+                includePreflight = ReadBooleanOption(args, ref i, inlineValue);
+                break;
             case "--patterns":
                 if (ReadOptionValue(args, ref i, inlineValue) is { } patternValue)
                     patterns = SplitList(patternValue);
@@ -230,16 +242,18 @@ static int RunGenerate(string[] args)
     Console.WriteLine($"  Prefix: {prefix}");
     Console.WriteLine($"  Allow unprefixed: {allowUnprefixed}");
     Console.WriteLine($"  Include base: {includeBase}");
+    Console.WriteLine($"  Include preflight: {includePreflight}");
     Console.WriteLine($"  Patterns: {string.Join(", ", patterns)}");
 
     var options = new GenerationOptions
     {
         Prefix = prefix,
         IncludeBase = includeBase,
+        IncludePreflight = includePreflight,
         ScanPatterns = patterns,
         AllowUnprefixedUtilities = allowUnprefixed,
         FailOnUnknown = failOnUnknown,
-        IgnoredClasses = ignoredClasses
+        IgnoredClasses = ignoredClasses,
     };
 
     var result = VibeCss.Generate(directory, output, options);
@@ -335,62 +349,96 @@ static int RunTest()
     var testCases = new[]
     {
         // Display
-        "vibe-flex", "vibe-hidden", "vibe-block", "vibe-grid",
-
+        "vibe-flex",
+        "vibe-hidden",
+        "vibe-block",
+        "vibe-grid",
         // Flexbox
-        "vibe-flex-row", "vibe-flex-col", "vibe-items-center", "vibe-justify-between",
-        "vibe-gap-4", "vibe-gap-x-2",
-
+        "vibe-flex-row",
+        "vibe-flex-col",
+        "vibe-items-center",
+        "vibe-justify-between",
+        "vibe-gap-4",
+        "vibe-gap-x-2",
         // Spacing
-        "vibe-p-4", "vibe-px-6", "vibe-py-2", "vibe-pt-8",
-        "vibe-m-4", "vibe-mx-auto", "vibe-mt-2", "vibe--mt-4",
-
+        "vibe-p-4",
+        "vibe-px-6",
+        "vibe-py-2",
+        "vibe-pt-8",
+        "vibe-m-4",
+        "vibe-mx-auto",
+        "vibe-mt-2",
+        "vibe--mt-4",
         // Sizing
-        "vibe-w-full", "vibe-w-1/2", "vibe-w-64", "vibe-h-screen",
-        "vibe-min-w-0", "vibe-max-w-lg",
-
+        "vibe-w-full",
+        "vibe-w-1/2",
+        "vibe-w-64",
+        "vibe-h-screen",
+        "vibe-min-w-0",
+        "vibe-max-w-lg",
         // Typography
-        "vibe-text-sm", "vibe-text-xl", "vibe-text-center",
-        "vibe-font-bold", "vibe-font-medium",
-        "vibe-truncate", "vibe-leading-tight",
-
+        "vibe-text-sm",
+        "vibe-text-xl",
+        "vibe-text-center",
+        "vibe-font-bold",
+        "vibe-font-medium",
+        "vibe-truncate",
+        "vibe-leading-tight",
         // Colors (semantic)
-        "vibe-bg-primary", "vibe-bg-muted", "vibe-text-foreground",
+        "vibe-bg-primary",
+        "vibe-bg-muted",
+        "vibe-text-foreground",
         "vibe-border-destructive",
-
         // Colors (Tailwind palette)
-        "vibe-bg-red-500", "vibe-text-blue-600", "vibe-border-emerald-300",
-        "vibe-bg-slate-100", "vibe-text-gray-900",
-
+        "vibe-bg-red-500",
+        "vibe-text-blue-600",
+        "vibe-border-emerald-300",
+        "vibe-bg-slate-100",
+        "vibe-text-gray-900",
         // Colors with opacity
-        "vibe-bg-red-500/50", "vibe-text-blue-600/75",
-
+        "vibe-bg-red-500/50",
+        "vibe-text-blue-600/75",
         // Borders
-        "vibe-border", "vibe-border-2", "vibe-border-t",
-        "vibe-rounded", "vibe-rounded-lg", "vibe-rounded-full",
-
+        "vibe-border",
+        "vibe-border-2",
+        "vibe-border-t",
+        "vibe-rounded",
+        "vibe-rounded-lg",
+        "vibe-rounded-full",
         // Effects
-        "vibe-shadow", "vibe-shadow-lg", "vibe-opacity-50",
-        "vibe-transition", "vibe-duration-300",
-
+        "vibe-shadow",
+        "vibe-shadow-lg",
+        "vibe-opacity-50",
+        "vibe-transition",
+        "vibe-duration-300",
         // Layout
-        "vibe-relative", "vibe-absolute", "vibe-fixed",
-        "vibe-top-0", "vibe-inset-0", "vibe-z-50",
-        "vibe-overflow-hidden", "vibe-overflow-auto",
-
+        "vibe-relative",
+        "vibe-absolute",
+        "vibe-fixed",
+        "vibe-top-0",
+        "vibe-inset-0",
+        "vibe-z-50",
+        "vibe-overflow-hidden",
+        "vibe-overflow-auto",
         // Interactivity
-        "vibe-cursor-pointer", "vibe-select-none", "vibe-sr-only",
-
+        "vibe-cursor-pointer",
+        "vibe-select-none",
+        "vibe-sr-only",
         // Grid
-        "vibe-grid-cols-3", "vibe-grid-cols-12", "vibe-col-span-2",
-
+        "vibe-grid-cols-3",
+        "vibe-grid-cols-12",
+        "vibe-col-span-2",
         // Variants
-        "hover:vibe-bg-primary", "focus:vibe-ring",
-        "sm:vibe-flex", "md:vibe-hidden", "lg:vibe-grid-cols-4",
+        "hover:vibe-bg-primary",
+        "focus:vibe-ring",
+        "sm:vibe-flex",
+        "md:vibe-hidden",
+        "lg:vibe-grid-cols-4",
         "dark:vibe-bg-slate-900",
-
         // Arbitrary values
-        "vibe-w-[500px]", "vibe-p-[1.5rem]", "vibe-bg-[#ff0000]"
+        "vibe-w-[500px]",
+        "vibe-p-[1.5rem]",
+        "vibe-bg-[#ff0000]",
     };
 
     var passed = 0;
@@ -428,4 +476,3 @@ static int RunTest()
 
     return 0;
 }
-
