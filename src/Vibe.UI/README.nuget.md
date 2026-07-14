@@ -2,6 +2,9 @@
 
 Modern Blazor component library with 111 components. Inspired by shadcn/ui.
 
+Requires the .NET 10 SDK. This is a beta release; APIs may change before stable
+1.0.
+
 ## Installation
 
 ```bash
@@ -36,6 +39,8 @@ That's it! Component styles are scoped via `.razor.css` files and bundled into `
 
 ```csharp
 // Program.cs
+using Vibe.UI;
+
 builder.Services.AddVibeUI();
 ```
 
@@ -63,14 +68,14 @@ vibe add button
 ```
 
 ### CLI Benefits:
-- ✅ Own the source code
-- ✅ Customize any component
-- ✅ No package dependency
+- Own the source code
+- Customize any component
+- No Vibe.UI package dependency
 
 ### Package Benefits:
-- ✅ Quick setup
-- ✅ Automatic updates
-- ✅ Smaller project size
+- Quick setup
+- Automatic updates
+- Smaller project size
 
 Choose the approach that fits your needs!
 
@@ -87,13 +92,17 @@ If using the `Chart` component, add Chart.js:
 
 ## Features
 
-- 111 production-ready components
+- 111 beta components with direct unit coverage
 - Built-in theming system (light/dark mode)
 - Chart.js integration
 - Form validation helpers
 - ARIA and keyboard support across core interactive components
 - Responsive design
 - Minimal dependencies
+
+Automated accessibility gates do not constitute formal WCAG certification. See
+the full accessibility and beta-readiness documentation for the manual evidence
+still required.
 
 ## Documentation
 

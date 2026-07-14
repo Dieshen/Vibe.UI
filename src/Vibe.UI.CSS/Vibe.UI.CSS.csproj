@@ -20,9 +20,9 @@
     <PackageTags>css;tailwind;blazor;dotnet;utility-css;jit</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>
-    <RepositoryUrl>https://github.com/Dieshen/Vibe.UI</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Narcoleptic-Fox/Vibe.UI</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/Dieshen/Vibe.UI</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/Narcoleptic-Fox/Vibe.UI</PackageProjectUrl>
     <PackageReadmeFile>README.css.md</PackageReadmeFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 

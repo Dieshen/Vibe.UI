@@ -5,6 +5,8 @@ a Blazor project. The consuming project owns the copied Razor, CSS, C#, and
 JavaScript files; a `Vibe.UI` package reference is not required for the source
 installation workflow.
 
+The beta tool and generated package workflow require the .NET 10 SDK.
+
 ## Installation
 
 ```bash
@@ -21,7 +23,7 @@ The executable command is `vibe`.
 | `vibe add [component]`    | Install a component and its declared dependencies          | `--path`, `--yes`, `--overwrite`, `--name`, `--output`                                     |
 | `vibe list`               | List registered components by category                     | none                                                                                       |
 | `vibe update [component]` | Refresh one component or all installed components          | `--path`, `--yes`                                                                          |
-| `vibe css [path]`         | Scan or generate utility CSS                               | `--output`, `--with-base`, `--prefix`, `--watch`, `--verbose`, `--scan-only`, `--patterns` |
+| `vibe css [path]`         | Scan or generate utility CSS                               | `--output`, `--with-base`, `--prefix`, `--watch`, `--verbose`, `--scan-only`, `--patterns`, `--fail-on-unknown`, `--ignore` |
 
 Use `vibe <command> --help` for the executable's current option descriptions.
 
@@ -82,6 +84,18 @@ With `vibe init --with-css`, the CLI:
 
 This produces one server-owned `wwwroot/css/Vibe.UI.CSS` static asset and avoids
 duplicate static web assets during repeat builds.
+
+### Strict CSS validation
+
+Use strict scanning in application CI:
+
+```bash
+vibe css . --scan-only --fail-on-unknown
+```
+
+Intentional component or theme hooks that use the `vibe-` prefix can be listed
+explicitly with `--ignore "vibe-theme-hook,vibe-app-shell"`. Strict generation
+returns a non-zero exit code before modifying the existing output file.
 
 ## Component registry and templates
 

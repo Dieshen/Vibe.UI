@@ -1,81 +1,60 @@
-# Beta Component Hardening Tracker
+# Beta component hardening tracker
 
-This tracker defines the beta confidence bar for component hardening. It is intentionally stricter than "the solution builds" and separates source coverage, browser smoke coverage, and follow-up test quality.
+This tracker separates inventory coverage from behavioral, browser, visual,
+and accessibility depth. A passing unit test file is useful evidence, but it is
+not by itself a production-readiness claim.
 
-## Target
+## Inventory target
 
-- Source component set: 111 Razor components in `src/Vibe.UI/Components`.
-- Beta hardening target: at least 80% direct unit-test coverage across source components.
-- Numeric target: 89 of 111 components with direct component tests.
-- Current direct unit coverage: 111 of 111 components, or 100.0%.
-- Remaining direct unit tests needed for 80%: 0 components.
-- Current docs browser smoke coverage: 70 component routes.
-- Browser smoke target: every top-level documented component page must stay in `Category=Smoke`.
+- Source set: 111 Razor files under `src/Vibe.UI/Components`.
+- Beta target: direct unit-test files for at least 89 of 111 source components.
+- Current direct unit-test inventory: 111 of 111.
+- Remaining files needed for the 80% target: 0.
+- Browser target: every real component catalog route is covered by a smoke test
+  that rejects NotFound and error shells.
 
-Direct unit coverage means a component has an explicit `*Tests.cs` file under `tests/Vibe.UI.Tests/Components`. Browser smoke coverage means the docs route is included in `tests/Vibe.UI.Docs.E2E/Tests/Smoke/AllComponentsRenderTests.cs`.
+Direct coverage means an explicit component test file exists under
+`tests/Vibe.UI.Tests/Components`. It does not mean every component has equal
+interaction, accessibility, edge-case, JS-boundary, or visual coverage.
 
-## Current Category Snapshot
+## Beta depth contract
 
-| Category    | Total | Direct unit tests | Docs smoke routes |
-| ----------- | ----: | ----------------: | ----------------: |
-| Advanced    |     5 |                 5 |                 4 |
-| DataDisplay |     8 |                 8 |                 7 |
-| DateTime    |     3 |                 3 |                 3 |
-| Disclosure  |     5 |                 5 |                 3 |
-| Feedback    |     9 |                 9 |                 4 |
-| Form        |     7 |                 7 |                 3 |
-| Inputs      |    23 |                23 |                11 |
-| Layout      |    12 |                12 |                 7 |
-| Navigation  |    14 |                14 |                 6 |
-| Overlay     |    17 |                17 |                 4 |
-| Theme       |     2 |                 2 |                 1 |
-| Utility     |     6 |                 6 |                 1 |
+The release-gated behavioral scope is defined in
+[the component beta profile](Vibe.UI.ComponentBetaProfile.md). High-risk
+contracts receive focused assertions for callbacks, binding, disabled/read-only
+behavior, keyboard and focus management, ARIA, null inputs, and browser-only
+boundaries.
 
-## 80% Target Status
+The repository does not claim that all 111 source files are independently
+production-hardened. Stable 1.0 requires a published component matrix with
+reviewed evidence for every supported row.
 
-The 80% direct component unit-test target is complete at 111 of 111 components.
+## Test quality rules
 
-Post-target hardening can continue with deeper browser coverage for JS-heavy components, accessibility-focused interaction checks, and docs parity for top-level component routes.
+Focused tests should fail when:
 
-## Depth-Hardening Progress
+- required classes, semantics, or ARIA attributes disappear;
+- disabled, open, selected, or invalid state is inverted;
+- a callback stops firing, fires twice, or returns the wrong value;
+- a documented two-way binding callback is missing;
+- null or omitted optional content throws;
+- keyboard navigation or focus restoration regresses;
+- JS interop paths, cleanup, subscriptions, or timers leak; or
+- a docs route renders NotFound while the smoke test still passes.
 
-Direct test-file coverage is complete, but production hardening is tracked separately. A depth-hardened component has focused assertions for meaningful behavior, accessibility semantics, disabled/read-only states, callback contracts, null/edge inputs, and browser or JS boundaries where applicable.
+## Browser coverage rules
 
-Depth-hardened components completed for the beta release:
+- Every routed docs component page stays in `Category=Smoke`.
+- Browser-only behavior gets targeted `Category=Functional` coverage.
+- Hosting compatibility stays in `Category=Compatibility` across standalone
+  WebAssembly and Blazor Web App static/server/client/auto routes.
+- Visual baselines are reviewed evidence for named surfaces only; their coverage
+  must not be generalized to the full component inventory.
 
-- Advanced: DragDrop, KanbanBoard, TreeView, TreeViewNode, VirtualScroll.
-- DateTime: Calendar, DatePicker, DateRangePicker.
-- DataDisplay: Avatar, Badge, Chart, DataTable, Progress, Table, Tag, Timeline.
-- Disclosure: Accordion, AccordionItem, Carousel, CarouselItem, Collapsible.
-- Feedback: Alert, Confetti, EmptyState, NotificationCenter, Skeleton, Sonner, Spinner, Toast, ToastContainer.
-- Form: Combobox, Form, FormField, FormLabel, FormMessage, Label, ValidatedInput.
-- Inputs: Button, Checkbox, ColorPicker, FileUpload, ImageCropper, Input, InputOTP, Mentions, MultiSelect, Radio, RadioGroup, RadioGroupItem, Rating, RichTextEditor, Select, Slider, Switch, TagInput, TextArea, Toggle, ToggleGroup, ToggleGroupItem, TransferList.
-- Layout: AspectRatio, Card, Container, Divider, Grid, GridItem, MasonryGrid, Resizable, Separator, Sheet, Splitter, Stack.
-- Navigation: Breadcrumb, BreadcrumbItem, Link, Menu, Menubar, MenuItem, MenuSeparator, NavigationMenu, NavigationMenuItem, Pagination, Sidebar, Stepper, TabItem, Tabs.
-- Overlay: AlertDialog, ContextMenu, ContextMenuItem, Dialog, DialogClose, DialogContainer, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogRoot, DialogTitle, DialogTrigger, Drawer, HoverCard, Popover, Tooltip.
-- Theme: ThemeProvider, ThemeToggle.
-- Utility: Command, DropdownMenu, Icon, Kbd, QRCode, ScrollArea.
+## Stable 1.0 follow-up
 
-Final beta depth-hardened count: 111 components.
-
-Next priority depth candidates:
-
-None. All 111 source components have direct unit coverage and depth-hardening coverage for the beta release.
-
-## Mutation-Style Quality Checks
-
-For each new component test file, prefer assertions that would catch these breakages:
-
-- Required classes or ARIA attributes disappear.
-- Disabled/open/selected state is inverted.
-- Event callbacks stop firing or fire with the wrong value.
-- Null or omitted optional content throws.
-- Child content stops rendering.
-- Keyboard or focus state regressions for interactive components.
-- JS interop paths are not invoked or cleanup paths stop running.
-
-## Browser Coverage Rules
-
-- Top-level docs pages stay covered by `Category=Smoke`.
-- Hosting compatibility stays covered by `Category=Compatibility` across standalone WebAssembly and Blazor Web App static/server/client/auto paths.
-- Components with browser-only behavior, JS interop, timers, drag/drop, or focus management should get either a docs smoke route or targeted E2E coverage in addition to unit tests.
+- complete the versioned shadcn compatibility matrix;
+- compile-check every copyable public example;
+- expand reviewed light/dark desktop/mobile visual coverage;
+- complete manual screen-reader, zoom/reflow, and forced-colors passes; and
+- normalize legacy API naming and composition patterns.

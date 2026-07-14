@@ -12,6 +12,8 @@ implementation disagree.
 - [CLI](CLI.md) - command behavior, topology detection, templates, and overwrite safety
 - [CSS setup](CSS-SETUP.md) - consumer setup for package and source-install workflows
 - [Vibe.UI.CSS](VIBE-UI-CSS.md) - scanner, generator, MSBuild integration, and hosted ownership
+- [Component beta profile](Vibe.UI.ComponentBetaProfile.md) - behavior guaranteed by `1.0.0-beta`
+- [CSS beta core profile](Vibe.UI.CSS.CoreProfile.md) - utility and variant contract for `1.0.0-beta`
 
 ## Guides
 
@@ -33,6 +35,7 @@ implementation disagree.
 
 - [Beta readiness](Beta-Readiness-Checklist.md) - completed beta release gates and validation commands
 - [Beta component hardening](Beta-Component-Hardening.md) - direct unit and browser coverage policy
+- [1.0.0-beta release notes](Release-1.0.0-beta.md) - release scope, contracts, and limitations
 - [Alpha release history](Alpha-0.1.0-Checklist.md) - historical alpha checklist and release summary
 
 Release documents are evidence for a specific release line. They are not the
