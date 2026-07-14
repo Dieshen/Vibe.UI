@@ -137,6 +137,62 @@ public abstract class CompatibilityE2ETestBase : IAsyncLifetime
         await dialog.WaitForAsync(new() { State = WaitForSelectorState.Visible });
         await dialog.Locator("button:has-text('Close')").ClickAsync();
         await dialog.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
+
+        await VerifyBetaInteractionControlsAsync(prefix);
+    }
+
+    private async Task VerifyBetaInteractionControlsAsync(string prefix)
+    {
+        var datePicker = Page.Locator($"[data-testid='{prefix}-date-picker']");
+        var dateInput = datePicker.Locator("input").First;
+        await dateInput.FocusAsync();
+        await dateInput.PressAsync("ArrowDown");
+
+        var dateDialog = datePicker.GetByRole(AriaRole.Dialog);
+        await dateDialog.WaitForAsync(new() { State = WaitForSelectorState.Visible });
+        await Page.WaitForFunctionAsync(
+            "() => document.activeElement?.getAttribute('role') === 'gridcell'");
+        await Page.Keyboard.PressAsync("Escape");
+        await dateDialog.WaitForAsync(new() { State = WaitForSelectorState.Detached });
+        await Page.WaitForFunctionAsync(
+            $"() => document.activeElement === document.querySelector(\"[data-testid='{prefix}-date-picker'] input\")");
+
+        var dropdown = Page.Locator($"[data-testid='{prefix}-dropdown']");
+        var dropdownTrigger = dropdown.Locator(".dropdown-trigger");
+        await dropdownTrigger.FocusAsync();
+        await dropdownTrigger.PressAsync("ArrowDown");
+
+        var dropdownMenu = dropdown.GetByRole(AriaRole.Menu);
+        await dropdownMenu.WaitForAsync(new() { State = WaitForSelectorState.Visible });
+        await Page.WaitForFunctionAsync(
+            "() => document.activeElement?.textContent?.trim() === 'Profile'");
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Page.WaitForFunctionAsync(
+            "() => document.activeElement?.textContent?.trim() === 'Settings'");
+        await Page.Keyboard.PressAsync("Tab");
+        await dropdownMenu.WaitForAsync(new() { State = WaitForSelectorState.Detached });
+
+        var navigationMenu = Page.Locator($"[data-testid='{prefix}-navigation-menu']");
+        var navigationTrigger = navigationMenu.Locator(".navigation-menu-item-trigger");
+        await navigationTrigger.PressAsync("ArrowDown");
+
+        var navigationContent = navigationMenu.Locator(".navigation-menu-item-content");
+        await navigationContent.WaitForAsync(new() { State = WaitForSelectorState.Visible });
+
+        var filter = navigationContent.Locator($"[data-testid='{prefix}-nav-filter']");
+        await filter.FocusAsync();
+        await filter.PressAsync("q");
+        (await filter.InputValueAsync()).ShouldBe("q");
+
+        var sort = navigationContent.Locator($"[data-testid='{prefix}-nav-sort']");
+        await sort.FocusAsync();
+        await sort.PressAsync("ArrowDown");
+        await Page.WaitForFunctionAsync(
+            $"() => document.querySelector(\"[data-testid='{prefix}-nav-sort']\")?.value === 'recent'");
+
+        await filter.FocusAsync();
+        await filter.PressAsync("Escape");
+        await navigationContent.WaitForAsync(new() { State = WaitForSelectorState.Detached });
     }
 
     protected void AssertNoBrowserErrors()
