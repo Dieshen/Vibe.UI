@@ -30,8 +30,9 @@ public class MentionsTests : TestBase
     [Fact]
     public void Mentions_Accepts_CustomPlaceholder()
     {
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.Placeholder, "Custom placeholder"));
+        var cut = Render<Mentions>(parameters =>
+            parameters.Add(p => p.Placeholder, "Custom placeholder")
+        );
 
         cut.Find(".mentions-input").GetAttribute("placeholder").ShouldBe("Custom placeholder");
     }
@@ -39,8 +40,7 @@ public class MentionsTests : TestBase
     [Fact]
     public void Mentions_Accepts_CustomMentionPrefix()
     {
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.MentionPrefix, "+"));
+        var cut = Render<Mentions>(parameters => parameters.Add(p => p.MentionPrefix, "+"));
 
         cut.Instance.MentionPrefix.ShouldBe("+");
     }
@@ -64,8 +64,7 @@ public class MentionsTests : TestBase
     [Fact]
     public void Mentions_Accepts_CustomAriaLabel()
     {
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.AriaLabel, "Mention users"));
+        var cut = Render<Mentions>(parameters => parameters.Add(p => p.AriaLabel, "Mention users"));
 
         cut.Find(".mentions-input").GetAttribute("aria-label").ShouldBe("Mention users");
     }
@@ -73,9 +72,9 @@ public class MentionsTests : TestBase
     [Fact]
     public void Mentions_Applies_CustomCssClass()
     {
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.CssClass, "custom-mentions")
-            .Add(p => p.Class, "base-class"));
+        var cut = Render<Mentions>(parameters =>
+            parameters.Add(p => p.CssClass, "custom-mentions").Add(p => p.Class, "base-class")
+        );
 
         cut.Find(".vibe-mentions").ClassList.ShouldContain("custom-mentions");
         cut.Find(".vibe-mentions").ClassList.ShouldContain("base-class");
@@ -84,9 +83,9 @@ public class MentionsTests : TestBase
     [Fact]
     public void Mentions_ToleratesNullItemsAndSuggestions()
     {
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.Items, null!)
-            .Add(p => p.Suggestions, null!));
+        var cut = Render<Mentions>(parameters =>
+            parameters.Add(p => p.Items, null!).Add(p => p.Suggestions, null!)
+        );
 
         cut.FindAll(".mention-tag").ShouldBeEmpty();
         cut.Find(".mentions-input").Input("@");
@@ -96,12 +95,26 @@ public class MentionsTests : TestBase
     [Fact]
     public void Mentions_Renders_InitialItems()
     {
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.Items, new List<Mentions.MentionItem>
-            {
-                new() { Id = "user-1", Name = "Alice", Type = Mentions.MentionType.User },
-                new() { Id = "tag-1", Name = "dotnet", Type = Mentions.MentionType.Hashtag }
-            }));
+        var cut = Render<Mentions>(parameters =>
+            parameters.Add(
+                p => p.Items,
+                new List<Mentions.MentionItem>
+                {
+                    new()
+                    {
+                        Id = "user-1",
+                        Name = "Alice",
+                        Type = Mentions.MentionType.User,
+                    },
+                    new()
+                    {
+                        Id = "tag-1",
+                        Name = "dotnet",
+                        Type = Mentions.MentionType.Hashtag,
+                    },
+                }
+            )
+        );
 
         var tags = cut.FindAll(".mention-tag");
         tags.Count.ShouldBe(2);
@@ -112,11 +125,15 @@ public class MentionsTests : TestBase
     [Fact]
     public void Mentions_RendersSharedIconForRemoveAction()
     {
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.Items, new List<Mentions.MentionItem>
-            {
-                new() { Id = "alice", Name = "Alice" }
-            }));
+        var cut = Render<Mentions>(parameters =>
+            parameters.Add(
+                p => p.Items,
+                new List<Mentions.MentionItem>
+                {
+                    new() { Id = "alice", Name = "Alice" },
+                }
+            )
+        );
 
         var removeButton = cut.Find(".mention-remove");
         removeButton.GetAttribute("type").ShouldBe("button");
@@ -128,19 +145,27 @@ public class MentionsTests : TestBase
     [Fact]
     public void Mentions_UpdatesRenderedItems_WhenItemsParameterReferenceChanges()
     {
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.Items, new List<Mentions.MentionItem>
-            {
-                new() { Id = "alice", Name = "Alice" }
-            }));
+        var cut = Render<Mentions>(parameters =>
+            parameters.Add(
+                p => p.Items,
+                new List<Mentions.MentionItem>
+                {
+                    new() { Id = "alice", Name = "Alice" },
+                }
+            )
+        );
 
         cut.Find(".mention-tag").TextContent.ShouldContain("@Alice");
 
-        cut.Render(parameters => parameters
-            .Add(p => p.Items, new List<Mentions.MentionItem>
-            {
-                new() { Id = "bob", Name = "Bob" }
-            }));
+        cut.Render(parameters =>
+            parameters.Add(
+                p => p.Items,
+                new List<Mentions.MentionItem>
+                {
+                    new() { Id = "bob", Name = "Bob" },
+                }
+            )
+        );
 
         var tag = cut.Find(".mention-tag");
         tag.TextContent.ShouldContain("@Bob");
@@ -150,9 +175,9 @@ public class MentionsTests : TestBase
     [Fact]
     public void Mentions_FiltersSuggestionsAndRendersListboxSemantics()
     {
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.Suggestions, CreateSuggestions())
-            .Add(p => p.MaxSuggestions, 2));
+        var cut = Render<Mentions>(parameters =>
+            parameters.Add(p => p.Suggestions, CreateSuggestions()).Add(p => p.MaxSuggestions, 2)
+        );
 
         var input = cut.Find(".mentions-input");
         input.Input("@ali");
@@ -176,8 +201,9 @@ public class MentionsTests : TestBase
     [Fact]
     public void Mentions_HidesSuggestions_WhenInputDoesNotStartWithPrefix()
     {
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.Suggestions, CreateSuggestions()));
+        var cut = Render<Mentions>(parameters =>
+            parameters.Add(p => p.Suggestions, CreateSuggestions())
+        );
 
         var input = cut.Find(".mentions-input");
         input.Input("ali");
@@ -189,9 +215,9 @@ public class MentionsTests : TestBase
     [Fact]
     public void Mentions_DoesNotShowHashtagSuggestions_WhenHashtagsAreDisabled()
     {
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.AllowHashtags, false)
-            .Add(p => p.Suggestions, CreateSuggestions()));
+        var cut = Render<Mentions>(parameters =>
+            parameters.Add(p => p.AllowHashtags, false).Add(p => p.Suggestions, CreateSuggestions())
+        );
 
         cut.Find(".mentions-input").Input("#ali");
 
@@ -201,8 +227,9 @@ public class MentionsTests : TestBase
     [Fact]
     public void Mentions_EscapeClosesSuggestions()
     {
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.Suggestions, CreateSuggestions()));
+        var cut = Render<Mentions>(parameters =>
+            parameters.Add(p => p.Suggestions, CreateSuggestions())
+        );
 
         var input = cut.Find(".mentions-input");
         input.Input("@");
@@ -218,8 +245,9 @@ public class MentionsTests : TestBase
     [Fact]
     public void Mentions_BlurClosesSuggestions()
     {
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.Suggestions, CreateSuggestions()));
+        var cut = Render<Mentions>(parameters =>
+            parameters.Add(p => p.Suggestions, CreateSuggestions())
+        );
 
         var input = cut.Find(".mentions-input");
         input.Input("@");
@@ -234,20 +262,25 @@ public class MentionsTests : TestBase
     }
 
     [Fact]
-    public void Mentions_CancelsNavigationDefaultsOnlyWhilePopupIsOpen()
+    public void Mentions_UsesCspSafeKeyGuardDrivenByAriaExpanded()
     {
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.Suggestions, CreateSuggestions()));
+        var cut = Render<Mentions>(parameters =>
+            parameters.Add(p => p.Suggestions, CreateSuggestions())
+        );
 
         var input = cut.Find(".mentions-input");
-        var keyGuard = input.GetAttribute("onkeydown");
 
-        keyGuard.ShouldNotBeNull();
-        keyGuard.ShouldContain("aria-expanded");
-        keyGuard.ShouldContain("event.preventDefault()");
-        keyGuard.ShouldContain("'Enter'");
-        keyGuard.ShouldContain("'ArrowDown'");
-        keyGuard.ShouldContain("'ArrowUp'");
+        // The navigation-key guard moved from an inline onkeydown attribute to
+        // vibe-dom.js initializeExpandedKeyGuard, so it survives a strict CSP.
+        input.HasAttribute("onkeydown").ShouldBeFalse();
+        input.GetAttribute("role").ShouldBe("combobox");
+
+        // The guard cancels defaults only while the popup is open; it reads
+        // aria-expanded, which must track the closed/open state.
+        input.GetAttribute("aria-expanded").ShouldBe("false");
+
+        input.Input("@");
+        cut.Find(".mentions-input").GetAttribute("aria-expanded").ShouldBe("true");
     }
 
     [Fact]
@@ -255,10 +288,12 @@ public class MentionsTests : TestBase
     {
         List<Mentions.MentionItem>? changedItems = null;
         Mentions.MentionItem? addedMention = null;
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.Suggestions, CreateSuggestions())
-            .Add(p => p.ItemsChanged, items => changedItems = items)
-            .Add(p => p.OnMentionAdded, item => addedMention = item));
+        var cut = Render<Mentions>(parameters =>
+            parameters
+                .Add(p => p.Suggestions, CreateSuggestions())
+                .Add(p => p.ItemsChanged, items => changedItems = items)
+                .Add(p => p.OnMentionAdded, item => addedMention = item)
+        );
 
         var input = cut.Find(".mentions-input");
         input.Input("@");
@@ -287,9 +322,11 @@ public class MentionsTests : TestBase
     public void Mentions_SelectsHashtagSuggestion_WithHashtagType()
     {
         Mentions.MentionItem? addedMention = null;
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.Suggestions, CreateSuggestions())
-            .Add(p => p.OnMentionAdded, item => addedMention = item));
+        var cut = Render<Mentions>(parameters =>
+            parameters
+                .Add(p => p.Suggestions, CreateSuggestions())
+                .Add(p => p.OnMentionAdded, item => addedMention = item)
+        );
 
         cut.Find(".mentions-input").Input("#ali");
         cut.Find(".mention-suggestion").Click();
@@ -304,10 +341,12 @@ public class MentionsTests : TestBase
     {
         var callerItems = new List<Mentions.MentionItem>();
         List<Mentions.MentionItem>? changedItems = null;
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.Items, callerItems)
-            .Add(p => p.Suggestions, CreateSuggestions())
-            .Add(p => p.ItemsChanged, items => changedItems = items));
+        var cut = Render<Mentions>(parameters =>
+            parameters
+                .Add(p => p.Items, callerItems)
+                .Add(p => p.Suggestions, CreateSuggestions())
+                .Add(p => p.ItemsChanged, items => changedItems = items)
+        );
 
         cut.Find(".mentions-input").Input("@ali");
         cut.Find(".mention-suggestion").Click();
@@ -327,10 +366,12 @@ public class MentionsTests : TestBase
         var callerItems = new List<Mentions.MentionItem> { first, second };
         List<Mentions.MentionItem>? changedItems = null;
         Mentions.MentionItem? removedMention = null;
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.Items, callerItems)
-            .Add(p => p.ItemsChanged, items => changedItems = items)
-            .Add(p => p.OnMentionRemoved, item => removedMention = item));
+        var cut = Render<Mentions>(parameters =>
+            parameters
+                .Add(p => p.Items, callerItems)
+                .Add(p => p.ItemsChanged, items => changedItems = items)
+                .Add(p => p.OnMentionRemoved, item => removedMention = item)
+        );
 
         cut.FindAll(".mention-remove")[1].Click();
 
@@ -348,14 +389,19 @@ public class MentionsTests : TestBase
     {
         Mentions.MentionItem? removedMention = null;
         List<Mentions.MentionItem>? changedItems = null;
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.Items, new List<Mentions.MentionItem>
-            {
-                new() { Id = "first", Name = "Alice" },
-                new() { Id = "second", Name = "Bob" }
-            })
-            .Add(p => p.ItemsChanged, items => changedItems = items)
-            .Add(p => p.OnMentionRemoved, item => removedMention = item));
+        var cut = Render<Mentions>(parameters =>
+            parameters
+                .Add(
+                    p => p.Items,
+                    new List<Mentions.MentionItem>
+                    {
+                        new() { Id = "first", Name = "Alice" },
+                        new() { Id = "second", Name = "Bob" },
+                    }
+                )
+                .Add(p => p.ItemsChanged, items => changedItems = items)
+                .Add(p => p.OnMentionRemoved, item => removedMention = item)
+        );
 
         cut.Find(".mentions-input").KeyDown("Backspace");
 
@@ -370,15 +416,20 @@ public class MentionsTests : TestBase
     {
         var itemsChanged = false;
         Mentions.MentionItem? removedMention = null;
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.Disabled, true)
-            .Add(p => p.Items, new List<Mentions.MentionItem>
-            {
-                new() { Id = "alice", Name = "Alice" }
-            })
-            .Add(p => p.Suggestions, CreateSuggestions())
-            .Add(p => p.ItemsChanged, _ => itemsChanged = true)
-            .Add(p => p.OnMentionRemoved, item => removedMention = item));
+        var cut = Render<Mentions>(parameters =>
+            parameters
+                .Add(p => p.Disabled, true)
+                .Add(
+                    p => p.Items,
+                    new List<Mentions.MentionItem>
+                    {
+                        new() { Id = "alice", Name = "Alice" },
+                    }
+                )
+                .Add(p => p.Suggestions, CreateSuggestions())
+                .Add(p => p.ItemsChanged, _ => itemsChanged = true)
+                .Add(p => p.OnMentionRemoved, item => removedMention = item)
+        );
 
         var root = cut.Find(".vibe-mentions");
         var input = cut.Find(".mentions-input");
@@ -403,15 +454,20 @@ public class MentionsTests : TestBase
     {
         var itemsChanged = false;
         Mentions.MentionItem? removedMention = null;
-        var cut = Render<Mentions>(parameters => parameters
-            .Add(p => p.ReadOnly, true)
-            .Add(p => p.Items, new List<Mentions.MentionItem>
-            {
-                new() { Id = "alice", Name = "Alice" }
-            })
-            .Add(p => p.Suggestions, CreateSuggestions())
-            .Add(p => p.ItemsChanged, _ => itemsChanged = true)
-            .Add(p => p.OnMentionRemoved, item => removedMention = item));
+        var cut = Render<Mentions>(parameters =>
+            parameters
+                .Add(p => p.ReadOnly, true)
+                .Add(
+                    p => p.Items,
+                    new List<Mentions.MentionItem>
+                    {
+                        new() { Id = "alice", Name = "Alice" },
+                    }
+                )
+                .Add(p => p.Suggestions, CreateSuggestions())
+                .Add(p => p.ItemsChanged, _ => itemsChanged = true)
+                .Add(p => p.OnMentionRemoved, item => removedMention = item)
+        );
 
         var root = cut.Find(".vibe-mentions");
         var input = cut.Find(".mentions-input");
@@ -432,9 +488,24 @@ public class MentionsTests : TestBase
     }
 
     private static List<Mentions.MentionSuggestion> CreateSuggestions() =>
-    [
-        new() { Id = "alice", Name = "Alice", Description = "Product" },
-        new() { Id = "bob", Name = "Bob", Description = "Engineering" },
-        new() { Id = "alicia", Name = "Alicia", Description = "Design" }
-    ];
+        [
+            new()
+            {
+                Id = "alice",
+                Name = "Alice",
+                Description = "Product",
+            },
+            new()
+            {
+                Id = "bob",
+                Name = "Bob",
+                Description = "Engineering",
+            },
+            new()
+            {
+                Id = "alicia",
+                Name = "Alicia",
+                Description = "Design",
+            },
+        ];
 }
