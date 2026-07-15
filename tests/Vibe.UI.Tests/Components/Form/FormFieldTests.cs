@@ -379,6 +379,77 @@ public class FormFieldTests : TestBase
         input.HasAttribute("required").ShouldBeTrue();
     }
 
+    [Fact]
+    public void FormField_CascadesRelationshipsToDatePicker()
+    {
+        var cut = Render<FormField<string>>(parameters =>
+            parameters
+                .Add(p => p.Id, "birthdate")
+                .Add(p => p.Label, "Birth date")
+                .Add(p => p.Description, "Used to verify your age")
+                .Add(p => p.ErrorMessage, "Birth date is required")
+                .Add(p => p.Required, true)
+                .Add(
+                    p => p.ChildContent,
+                    builder =>
+                    {
+                        builder.OpenComponent<DatePicker>(0);
+                        builder.CloseComponent();
+                    }
+                )
+        );
+
+        var input = cut.Find("input");
+        input.GetAttribute("id").ShouldBe("birthdate");
+        input.GetAttribute("aria-describedby").ShouldBe("birthdate-description birthdate-error");
+        input.GetAttribute("aria-errormessage").ShouldBe("birthdate-error");
+        input.GetAttribute("aria-invalid").ShouldBe("true");
+        input.GetAttribute("aria-required").ShouldBe("true");
+    }
+
+    [Fact]
+    public void FormField_CascadesRelationshipsToDateRangePickerWithoutDuplicatingIds()
+    {
+        var cut = Render<FormField<string>>(parameters =>
+            parameters
+                .Add(p => p.Id, "stay")
+                .Add(p => p.Label, "Stay dates")
+                .Add(p => p.Description, "Choose check-in and check-out")
+                .Add(p => p.ErrorMessage, "Stay dates are required")
+                .Add(p => p.Required, true)
+                .Add(
+                    p => p.ChildContent,
+                    builder =>
+                    {
+                        builder.OpenComponent<DateRangePicker>(0);
+                        builder.CloseComponent();
+                    }
+                )
+        );
+
+        var inputs = cut.FindAll("input");
+        inputs.Count.ShouldBe(2);
+        var start = inputs[0];
+        var end = inputs[1];
+
+        // The field label targets the start input; the end input keeps a distinct id
+        // so the two controls never collide on the same id.
+        start.GetAttribute("id").ShouldBe("stay");
+        end.GetAttribute("id").ShouldNotBe("stay");
+
+        // Both inputs reflect the field's invalid/description state.
+        foreach (var input in new[] { start, end })
+        {
+            input.GetAttribute("aria-invalid").ShouldBe("true");
+            input.GetAttribute("aria-describedby").ShouldBe("stay-description stay-error");
+            input.GetAttribute("aria-errormessage").ShouldBe("stay-error");
+        }
+
+        // Required is announced once, on the primary (start) input.
+        start.GetAttribute("aria-required").ShouldBe("true");
+        end.HasAttribute("aria-required").ShouldBeFalse();
+    }
+
     private static RenderFragment RenderInput(
         IReadOnlyDictionary<string, object>? attributes = null
     )

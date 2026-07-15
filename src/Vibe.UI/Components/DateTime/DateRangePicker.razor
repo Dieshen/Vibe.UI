@@ -6,41 +6,54 @@
 
 <div class="@CombinedClass" @attributes="AdditionalAttributes">
     <div class="daterange-input-wrapper">
-        <div class="daterange-inputs">
-            <Input
-                Id="@_startInputId"
-                class="daterange-start-input"
-                type="text"
-                Value="@FormattedStartDate"
-                ReadOnly="true"
-                Placeholder="@StartDatePlaceholder"
-                Disabled="@Disabled"
-                aria-label="@StartDatePlaceholder"
-                aria-haspopup="dialog"
-                aria-expanded="@AriaBool(IsOpen)"
-                aria-controls="@_popupId"
-                @onclick="() => ToggleCalendar(true, _startInputId)"
-                @onkeydown="e => HandleInputKeyDown(e, true, _startInputId)" />
+        @* Suppress the FormField cascade for the inner inputs so both do not claim the
+           field's ControlId (which would duplicate the id). This component consumes the
+           context itself and applies the field ARIA explicitly: the start input carries
+           the ControlId the field label targets; both carry the invalid/description state. *@
+        <CascadingValue Value="(FormFieldContext?)null" IsFixed="true">
+            <div class="daterange-inputs">
+                <Input
+                    Id="@_startInputId"
+                    class="daterange-start-input"
+                    type="text"
+                    Value="@FormattedStartDate"
+                    ReadOnly="true"
+                    Placeholder="@StartDatePlaceholder"
+                    Disabled="@Disabled"
+                    aria-label="@StartDatePlaceholder"
+                    aria-haspopup="dialog"
+                    aria-expanded="@AriaBool(IsOpen)"
+                    aria-controls="@_popupId"
+                    aria-invalid="@FieldAriaInvalid"
+                    aria-describedby="@FieldDescribedBy"
+                    aria-errormessage="@FieldErrorId"
+                    aria-required="@FieldAriaRequired"
+                    @onclick="() => ToggleCalendar(true, _startInputId)"
+                    @onkeydown="e => HandleInputKeyDown(e, true, _startInputId)" />
 
-            <div class="daterange-separator" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg>
+                <div class="daterange-separator" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg>
+                </div>
+
+                <Input
+                    Id="@_endInputId"
+                    class="daterange-end-input"
+                    type="text"
+                    Value="@FormattedEndDate"
+                    ReadOnly="true"
+                    Placeholder="@EndDatePlaceholder"
+                    Disabled="@Disabled"
+                    aria-label="@EndDatePlaceholder"
+                    aria-haspopup="dialog"
+                    aria-expanded="@AriaBool(IsOpen)"
+                    aria-controls="@_popupId"
+                    aria-invalid="@FieldAriaInvalid"
+                    aria-describedby="@FieldDescribedBy"
+                    aria-errormessage="@FieldErrorId"
+                    @onclick="() => ToggleCalendar(false, _endInputId)"
+                    @onkeydown="e => HandleInputKeyDown(e, false, _endInputId)" />
             </div>
-
-            <Input
-                Id="@_endInputId"
-                class="daterange-end-input"
-                type="text"
-                Value="@FormattedEndDate"
-                ReadOnly="true"
-                Placeholder="@EndDatePlaceholder"
-                Disabled="@Disabled"
-                aria-label="@EndDatePlaceholder"
-                aria-haspopup="dialog"
-                aria-expanded="@AriaBool(IsOpen)"
-                aria-controls="@_popupId"
-                @onclick="() => ToggleCalendar(false, _endInputId)"
-                @onkeydown="e => HandleInputKeyDown(e, false, _endInputId)" />
-        </div>
+        </CascadingValue>
 
         <button id="@_triggerId"
                 type="button"
@@ -234,6 +247,13 @@
     private string _startInputId => FieldContext?.ControlId ?? $"{_componentId}-start-input";
     private string _endInputId => $"{_componentId}-end-input";
     private string _triggerId => $"{_componentId}-trigger";
+
+    // Field ARIA applied explicitly to the inner inputs (their own FormField cascade is
+    // suppressed so they do not both claim the field ControlId).
+    private string? FieldAriaInvalid => FieldContext?.IsInvalid == true ? "true" : null;
+    private string? FieldAriaRequired => FieldContext?.IsRequired == true ? "true" : null;
+    private string? FieldDescribedBy => FieldContext?.DescribedBy;
+    private string? FieldErrorId => FieldContext?.ErrorId;
 
     [Parameter]
     public DateTime? StartDate { get; set; }
