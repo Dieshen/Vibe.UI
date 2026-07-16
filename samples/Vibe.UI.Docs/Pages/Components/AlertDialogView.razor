@@ -25,9 +25,14 @@
             <output class="vibe-block vibe-mt-3 vibe-text-sm vibe-text-zinc-500">@status</output>
         </div>
 
+        @* Destructive confirms opt out of the dismiss affordances so the user must
+           choose an explicit footer action (backdrop click and the close icon are
+           enabled by default). *@
         <AlertDialog @bind-IsOpen="dialogOpen"
                      Title="Delete project?"
-                     Description="This permanently removes the project and its deployment history.">
+                     Description="This permanently removes the project and its deployment history."
+                     CloseOnBackdropClick="false"
+                     ShowCloseButton="false">
             <ChildContent>
                 Entering this action cannot be undone.
             </ChildContent>
@@ -99,8 +104,8 @@
         ("Description", "string", "empty", "Accessible consequence description"),
         ("ChildContent", "RenderFragment?", "null", "Additional decision context"),
         ("Footer", "RenderFragment?", "null", "Cancel and confirmation actions"),
-        ("CloseOnBackdropClick", "bool", "false", "Allow backdrop dismissal when explicitly enabled"),
-        ("ShowCloseButton", "bool", "false", "Render an optional close icon"),
+        ("CloseOnBackdropClick", "bool", "true", "Close when the backdrop is clicked; disable for destructive confirms"),
+        ("ShowCloseButton", "bool", "true", "Render the close icon; disable for destructive confirms"),
         ("CloseOnEscape", "bool", "true", "Allow Escape dismissal")
     ];
 
@@ -108,7 +113,7 @@
     [
         "Exposes alertdialog semantics with title and description relationships",
         "Traps focus, locks page scrolling, and restores the opener",
-        "Requires an explicit action by default instead of closing from the backdrop",
+        "Supports requiring an explicit action by disabling backdrop and close-icon dismissal",
         "Closes only the topmost modal when Escape is pressed"
     ];
 
@@ -132,7 +137,9 @@
 
     private string BasicCode => @"<AlertDialog @bind-IsOpen=""isOpen""
              Title=""Delete project?""
-             Description=""This action cannot be undone."">
+             Description=""This action cannot be undone.""
+             CloseOnBackdropClick=""false""
+             ShowCloseButton=""false"">
     <Footer>
         <Button OnClick=""Cancel"">Cancel</Button>
         <Button Variant=""ButtonVariant.Destructive"" OnClick=""Confirm"">Delete</Button>
