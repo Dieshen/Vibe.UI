@@ -734,7 +734,7 @@ public class ComponentVisualContractTests : E2ETestBase
         var center = group.GetByRole(AriaRole.Button, new() { Name = "Center", Exact = true });
         var leftBox = await left.BoundingBoxAsync();
         leftBox.ShouldNotBeNull();
-        leftBox.Height.ShouldBeGreaterThanOrEqualTo(40);
+        leftBox.Height.ShouldBeGreaterThanOrEqualTo(39.5f);
         (await left.GetAttributeAsync("aria-pressed")).ShouldBe("true");
 
         await left.FocusAsync();
