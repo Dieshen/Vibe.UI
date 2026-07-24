@@ -1,8 +1,11 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
 <div class="@CombinedClass" data-state="@CurrentState" @attributes="AdditionalAttributes">
-    <div class="context-trigger"
+    <div id="@_triggerId"
+         class="context-trigger"
          role="button"
          tabindex="@TriggerTabIndex"
          aria-haspopup="menu"
@@ -10,6 +13,7 @@
          aria-controls="@_contentId"
          aria-disabled="@AriaDisabled"
          data-state="@CurrentState"
+         @ref="_triggerReference"
          @oncontextmenu="HandleContextMenu"
          @oncontextmenu:preventDefault="@(!Disabled)"
          @onmousedown="HandleTriggerMouseDown"
@@ -26,23 +30,37 @@
              tabindex="-1"
              aria-label="@MenuAriaLabel"
              data-state="open"
+             @ref="_contentReference"
+             @onclick="HandleContentClick"
+             @onclick:stopPropagation="true"
              @onkeydown="HandleMenuKeyDown">
-            @Content
+            <CascadingValue Name="VibeContextMenuSelection" Value="ItemSelectedCallback">
+                @Content
+            </CascadingValue>
         </div>
 
         @if (CloseOnClickOutside)
         {
-            <div class="context-backdrop" aria-hidden="true" @onclick="CloseMenu"></div>
+            <div class="context-backdrop" aria-hidden="true" @onclick="HandleBackdropClick"></div>
         }
     }
 </div>
 
 @code {
-    private readonly string _contentId = $"vibe-context-menu-content-{Guid.NewGuid():N}";
+    private const string KeyboardModulePath = "./_content/Vibe.UI/js/vibe-menu-keyboard.js";
+    private const string DomModulePath = "./_content/Vibe.UI/js/vibe-dom.js";
 
+    private readonly string _triggerId = $"vibe-context-menu-trigger-{Guid.NewGuid():N}";
+    private readonly string _contentId = $"vibe-context-menu-content-{Guid.NewGuid():N}";
     private bool _isOpen;
     private string _positionX = "0px";
     private string _positionY = "0px";
+    private ElementReference _triggerReference;
+    private ElementReference _contentReference;
+    private PendingFocus _pendingFocus;
+    private bool _restoreTriggerFocus;
+    private IJSObjectReference? _keyboardModule;
+    private IJSObjectReference? _domModule;
 
     /// <summary>
     /// Gets or sets the trigger content.
@@ -69,6 +87,12 @@
     public bool CloseOnClickOutside { get; set; } = true;
 
     /// <summary>
+    /// Gets or sets whether selecting menu content closes the context menu.
+    /// </summary>
+    [Parameter]
+    public bool CloseOnSelect { get; set; } = true;
+
+    /// <summary>
     /// Gets or sets the accessible label for the menu content.
     /// </summary>
     [Parameter]
@@ -91,9 +115,6 @@
     /// </summary>
     protected override string ComponentClass => "vibe-context-menu";
 
-    /// <summary>
-    /// Gets the combined CSS class including state classes.
-    /// </summary>
     protected override string GetCombinedClass()
     {
         return CombineClasses(
@@ -103,35 +124,54 @@
             Class);
     }
 
-    /// <summary>
-    /// Gets the ARIA expanded value for the trigger.
-    /// </summary>
     private string AriaExpanded => _isOpen ? "true" : "false";
 
-    /// <summary>
-    /// Gets the ARIA disabled value for the trigger.
-    /// </summary>
     private string AriaDisabled => Disabled ? "true" : "false";
 
-    /// <summary>
-    /// Gets the current open state value for data attributes.
-    /// </summary>
     private string CurrentState => _isOpen ? "open" : "closed";
 
-    /// <summary>
-    /// Gets the trigger tab index.
-    /// </summary>
     private string TriggerTabIndex => Disabled ? "-1" : "0";
 
-    /// <summary>
-    /// Gets the inline positioning style for the menu.
-    /// </summary>
     private string ContentStyle => $"left: {_positionX}; top: {_positionY};";
 
-    /// <summary>
-    /// Handles the browser context menu event.
-    /// </summary>
-    /// <param name="e">The mouse event args.</param>
+    private Func<Task> ItemSelectedCallback => HandleContentClick;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        try
+        {
+            var module = await GetKeyboardModuleAsync();
+            await module.InvokeVoidAsync("initializeTrigger", _triggerReference, true, false);
+
+            if (_isOpen)
+            {
+                await module.InvokeVoidAsync("initializeContainer", _contentReference, "menu");
+
+                if (_pendingFocus == PendingFocus.First)
+                {
+                    await module.InvokeVoidAsync("focusFirstItem", _contentReference, "menu");
+                    _pendingFocus = PendingFocus.None;
+                }
+                else if (_pendingFocus == PendingFocus.Last)
+                {
+                    await module.InvokeVoidAsync("focusLastItem", _contentReference, "menu");
+                    _pendingFocus = PendingFocus.None;
+                }
+            }
+            else if (_restoreTriggerFocus)
+            {
+                await _triggerReference.FocusAsync();
+                _restoreTriggerFocus = false;
+            }
+        }
+        catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+        {
+            // JS interop is unavailable (prerendering, circuit teardown, or navigation).
+        }
+    }
+
     private async Task HandleContextMenu(MouseEventArgs e)
     {
         if (Disabled)
@@ -141,13 +181,9 @@
 
         _positionX = FormatPixelValue(e.ClientX);
         _positionY = FormatPixelValue(e.ClientY);
-        await OpenMenu(e);
+        await OpenMenu(e, PendingFocus.First);
     }
 
-    /// <summary>
-    /// Handles mouse down on the trigger.
-    /// </summary>
-    /// <param name="e">The mouse event args.</param>
     private async Task HandleTriggerMouseDown(MouseEventArgs e)
     {
         if (e.Button != 2)
@@ -156,10 +192,6 @@
         }
     }
 
-    /// <summary>
-    /// Handles keyboard interaction on the trigger.
-    /// </summary>
-    /// <param name="e">The keyboard event args.</param>
     private async Task HandleTriggerKeyDown(KeyboardEventArgs e)
     {
         if (Disabled)
@@ -167,38 +199,72 @@
             return;
         }
 
-        if (e.Key is "Enter" or " " or "Spacebar" or "ContextMenu" || e.Key == "F10" && e.ShiftKey)
+        if (e.Key is "Enter" or " " or "Spacebar" or "ContextMenu" or "ArrowDown" or "ArrowUp" ||
+            e.Key == "F10" && e.ShiftKey)
         {
-            _positionX = "0px";
-            _positionY = "0px";
-            await OpenMenu(new MouseEventArgs());
+            await PositionAtTriggerAsync();
+            await OpenMenu(new MouseEventArgs(), e.Key == "ArrowUp" ? PendingFocus.Last : PendingFocus.First);
         }
         else if (e.Key == "Escape")
         {
-            await CloseMenu();
+            await CloseMenu(restoreTriggerFocus: true);
         }
     }
 
-    /// <summary>
-    /// Handles keyboard interaction while focus is inside the menu.
-    /// </summary>
-    /// <param name="e">The keyboard event args.</param>
     private async Task HandleMenuKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key == "Escape")
+        if (e.Key == "Tab")
         {
             await CloseMenu();
+            return;
+        }
+
+        if (e.Key == "Escape")
+        {
+            await CloseMenu(restoreTriggerFocus: true);
+            return;
+        }
+
+        var module = await GetKeyboardModuleAsync();
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                await module.InvokeVoidAsync("moveFocus", _contentReference, "menu", 1);
+                break;
+            case "ArrowUp":
+                await module.InvokeVoidAsync("moveFocus", _contentReference, "menu", -1);
+                break;
+            case "Home":
+                await module.InvokeVoidAsync("focusFirstItem", _contentReference, "menu");
+                break;
+            case "End":
+                await module.InvokeVoidAsync("focusLastItem", _contentReference, "menu");
+                break;
+            default:
+                if (IsTypeaheadKey(e))
+                {
+                    await module.InvokeVoidAsync("focusByTypeahead", _contentReference, "menu", e.Key);
+                }
+                break;
         }
     }
 
-    /// <summary>
-    /// Opens the context menu and invokes callbacks only on a closed-to-open transition.
-    /// </summary>
-    /// <param name="e">The mouse event args associated with the open action.</param>
-    private async Task OpenMenu(MouseEventArgs e)
+    private Task HandleContentClick()
+    {
+        return CloseOnSelect ? CloseMenu(restoreTriggerFocus: true) : Task.CompletedTask;
+    }
+
+    private Task HandleBackdropClick()
+    {
+        return CloseMenu();
+    }
+
+    private async Task OpenMenu(MouseEventArgs e, PendingFocus pendingFocus)
     {
         var wasOpen = _isOpen;
         _isOpen = true;
+        _pendingFocus = pendingFocus;
+        _restoreTriggerFocus = false;
 
         if (!wasOpen)
         {
@@ -206,10 +272,7 @@
         }
     }
 
-    /// <summary>
-    /// Closes the context menu and invokes callbacks only on an open-to-closed transition.
-    /// </summary>
-    private async Task CloseMenu()
+    private async Task CloseMenu(bool restoreTriggerFocus = false)
     {
         if (!_isOpen)
         {
@@ -217,7 +280,43 @@
         }
 
         _isOpen = false;
+        _pendingFocus = PendingFocus.None;
+        _restoreTriggerFocus = restoreTriggerFocus;
         await OnClose.InvokeAsync();
+    }
+
+    private async ValueTask<IJSObjectReference> GetKeyboardModuleAsync()
+    {
+        _keyboardModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>("import", KeyboardModulePath);
+        return _keyboardModule;
+    }
+
+    private async Task PositionAtTriggerAsync()
+    {
+        try
+        {
+            _domModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>("import", DomModulePath);
+            var bounds = await _domModule.InvokeAsync<DOMRect?>("getBoundingRect", _triggerId);
+            if (bounds is not null)
+            {
+                _positionX = FormatPixelValue(bounds.X);
+                _positionY = FormatPixelValue(bounds.Y + bounds.Height);
+            }
+        }
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+        {
+            _positionX = "0px";
+            _positionY = "0px";
+        }
+    }
+
+    private static bool IsTypeaheadKey(KeyboardEventArgs e)
+    {
+        return e.Key.Length == 1 &&
+               !char.IsWhiteSpace(e.Key[0]) &&
+               !e.AltKey &&
+               !e.CtrlKey &&
+               !e.MetaKey;
     }
 
     private static string FormatPixelValue(double value)
@@ -228,5 +327,49 @@
         }
 
         return string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{value:0.##}px");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_keyboardModule != null)
+        {
+            try
+            {
+                await _keyboardModule.DisposeAsync();
+            }
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+            {
+            }
+        }
+
+        if (_domModule != null)
+        {
+            try
+            {
+                await _domModule.DisposeAsync();
+            }
+            catch (Exception ex) when (IsRecoverableJsInteropException(ex))
+            {
+            }
+        }
+
+        GC.SuppressFinalize(this);
+    }
+
+    private static bool IsRecoverableJsInteropException(Exception exception) =>
+        exception is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException;
+
+    private sealed class DOMRect
+    {
+        public double X { get; init; }
+        public double Y { get; init; }
+        public double Height { get; init; }
+    }
+
+    private enum PendingFocus
+    {
+        None,
+        First,
+        Last
     }
 }

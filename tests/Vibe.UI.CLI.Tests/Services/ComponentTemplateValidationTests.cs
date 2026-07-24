@@ -190,8 +190,22 @@ public class ComponentTemplateValidationTests
 
     #region CSS Template Validation Tests
 
-    // CSS template tests removed - Vibe.UI now uses a single global vibe-components.css file
-    // instead of individual component CSS files, following shadcn/ui patterns
+    [Fact]
+    public void AllGeneratedCssTemplates_ShouldUseSupportedBlazorIsolationSelectors()
+    {
+        var unsupportedTemplates = _componentService.GetAvailableComponents()
+            .Select(component => new
+            {
+                component.Name,
+                Css = GetComponentCssTemplateViaReflection(component.Name)
+            })
+            .Where(component => component.Css.Contains(":global(", StringComparison.Ordinal))
+            .Select(component => component.Name)
+            .ToArray();
+
+        unsupportedTemplates.Should().BeEmpty(
+            because: "Blazor CSS isolation supports scoped selectors and ::deep, but not :global(...)");
+    }
 
     #endregion
 

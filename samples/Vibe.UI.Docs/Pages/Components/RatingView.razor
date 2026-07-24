@@ -1,0 +1,112 @@
+@page "/components/rating"
+@using Vibe.UI.Components
+
+<PageTitle>Rating - Vibe.UI</PageTitle>
+
+<div class="vibe-max-w-4xl vibe-mx-auto">
+    <header class="vibe-mb-8">
+        <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
+            <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
+            <span>/</span>
+            <a href="components" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Components</a>
+            <span>/</span>
+            <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Rating</span>
+        </div>
+        <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Rating</h1>
+        <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            Collect a compact score with pointer and keyboard input.
+        </p>
+    </header>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+            <Rating @bind-Value="rating"
+                    AllowHalf="true"
+                    ShowValue="true"
+                    AriaLabel="Product quality" />
+            <output class="vibe-block vibe-mt-3 vibe-text-sm vibe-text-zinc-500">Selected rating: @rating.ToString("0.#")</output>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
+        <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Half-star score</h3>
+        <CodeBlock Code="@BasicCode" Language="razor" />
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
+        <div class="vibe-overflow-x-auto">
+            <table class="vibe-w-full vibe-text-sm">
+                <thead>
+                    <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Default</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th>
+                    </tr>
+                </thead>
+                <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+                    @foreach (var property in Properties)
+                    {
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">@property.Name</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@property.Type" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@property.Default</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@property.Description</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
+        <CodeBlock Code="vibe add rating" Language="bash" />
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
+        <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            @foreach (var item in AccessibilityItems)
+            {
+                <li class="vibe-flex vibe-items-start vibe-gap-2">
+                    <Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />
+                    @item
+                </li>
+            }
+        </ul>
+    </section>
+</div>
+
+@code {
+    private double rating = 3.5;
+
+    private static readonly (string Name, string Type, string Default, string Description)[] Properties =
+    [
+        ("Value", "double", "0", "Current score; supports @bind-Value"),
+        ("MaxRating", "int", "5", "Number of rating choices"),
+        ("AllowHalf", "bool", "false", "Allow a selected whole star to toggle to its half step"),
+        ("ReadOnly", "bool", "false", "Display the value without interaction"),
+        ("Disabled", "bool", "false", "Disable the rating controls"),
+        ("ShowValue", "bool", "false", "Render the current and maximum values"),
+        ("Size", "RatingSize", "Default", "Small, Default, or Large control size"),
+        ("CustomIcon", "RenderFragment?", "null", "Replace the shared star icon"),
+        ("AriaLabel", "string?", "Rating", "Accessible radiogroup name")
+    ];
+
+    private static readonly string[] AccessibilityItems =
+    [
+        "Exposes exactly one selected radio for the current score",
+        "Uses a roving tab stop with arrow, Home, and End navigation",
+        "Keeps every interactive target at least thirty-two pixels square",
+        "Announces half-star values through the selected radio label and optional output"
+    ];
+
+    private string BasicCode => @"<Rating @bind-Value=""rating""
+        AllowHalf=""true""
+        ShowValue=""true""
+        AriaLabel=""Product quality"" />";
+}

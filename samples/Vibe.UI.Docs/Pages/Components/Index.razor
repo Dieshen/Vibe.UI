@@ -1,4 +1,6 @@
 @page "/components"
+@using System.Reflection
+@using System.Text.RegularExpressions
 
 <PageTitle>Components - Vibe.UI</PageTitle>
 
@@ -36,7 +38,8 @@
             <div class="vibe-grid vibe-grid-cols-1 sm:vibe-grid-cols-2 lg:vibe-grid-cols-3 vibe-gap-4">
                 @foreach (var component in category.Components.Where(c => MatchesSearch(c)))
                 {
-                    <a href="components/@component.Slug"
+                    <a href="@ToBaseRelativeRoute(component.Route)"
+                       data-component-route="@component.Route"
                        class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-bg-zinc-50 hover:vibe-bg-white dark:vibe-bg-zinc-800/50 dark:hover:vibe-bg-zinc-800/70 vibe-transition-all hover:vibe-shadow-md">
                         <div class="vibe-flex vibe-items-start vibe-justify-between vibe-mb-2">
                             <h3 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal vibe-transition-colors">
@@ -67,151 +70,274 @@
 </div>
 
 @code {
-    private string searchQuery = "";
+    private static readonly IReadOnlyList<CategoryDefinition> CategoryDefinitions =
+    [
+        new("Layout", "Components for structuring and organizing page content."),
+        new("Forms", "Input components for collecting user data."),
+        new("Data Display", "Components for presenting information."),
+        new("Feedback", "Components for user notifications and feedback."),
+        new("Navigation", "Components for navigating between pages and sections."),
+        new("Overlay", "Components that appear above other content."),
+        new("Utility", "Helper components for common patterns."),
+        new("Advanced", "Complex components for specific use cases."),
+        new("Other", "Additional component examples and API references.")
+    ];
+
+    // Categories are presentation metadata only. Route discovery controls catalog coverage,
+    // and newly routed pages automatically fall back to Other until they are classified.
+    private static readonly IReadOnlyDictionary<string, string> CategoryByPage =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Accordion"] = "Navigation",
+            ["Alert"] = "Feedback",
+            ["AlertDialog"] = "Feedback",
+            ["AspectRatio"] = "Layout",
+            ["Avatar"] = "Data Display",
+            ["Badge"] = "Data Display",
+            ["Breadcrumb"] = "Navigation",
+            ["Button"] = "Forms",
+            ["Calendar"] = "Data Display",
+            ["Card"] = "Layout",
+            ["Carousel"] = "Data Display",
+            ["Chart"] = "Data Display",
+            ["Checkbox"] = "Forms",
+            ["Collapsible"] = "Layout",
+            ["ColorPicker"] = "Forms",
+            ["Confetti"] = "Feedback",
+            ["Container"] = "Layout",
+            ["DataGrid"] = "Data Display",
+            ["DatePicker"] = "Forms",
+            ["DateRangePicker"] = "Forms",
+            ["Dialog"] = "Overlay",
+            ["Divider"] = "Layout",
+            ["DragDrop"] = "Advanced",
+            ["Drawer"] = "Overlay",
+            ["Dropdown"] = "Navigation",
+            ["FileUpload"] = "Forms",
+            ["Form"] = "Forms",
+            ["FormField"] = "Forms",
+            ["Grid"] = "Layout",
+            ["ImageCropper"] = "Advanced",
+            ["Input"] = "Forms",
+            ["InputOTP"] = "Forms",
+            ["KanbanBoard"] = "Advanced",
+            ["Link"] = "Navigation",
+            ["Mentions"] = "Forms",
+            ["Menu"] = "Navigation",
+            ["Notification"] = "Feedback",
+            ["Pagination"] = "Navigation",
+            ["Popover"] = "Overlay",
+            ["Progress"] = "Feedback",
+            ["RadioGroup"] = "Forms",
+            ["Rating"] = "Forms",
+            ["Resizable"] = "Layout",
+            ["RichTextEditor"] = "Forms",
+            ["Select"] = "Forms",
+            ["Separator"] = "Layout",
+            ["Sheet"] = "Overlay",
+            ["Sidebar"] = "Navigation",
+            ["Skeleton"] = "Data Display",
+            ["Slider"] = "Forms",
+            ["Spinner"] = "Feedback",
+            ["Splitter"] = "Layout",
+            ["Stack"] = "Layout",
+            ["Stepper"] = "Navigation",
+            ["Switch"] = "Forms",
+            ["Table"] = "Data Display",
+            ["Tabs"] = "Navigation",
+            ["Tag"] = "Data Display",
+            ["Textarea"] = "Forms",
+            ["ThemeToggle"] = "Utility",
+            ["Timeline"] = "Data Display",
+            ["Toast"] = "Feedback",
+            ["ToggleGroup"] = "Forms",
+            ["Tooltip"] = "Overlay",
+            ["TransferList"] = "Forms",
+            ["TreeView"] = "Data Display",
+            ["ValidatedInput"] = "Forms",
+            ["VirtualScroll"] = "Data Display"
+        };
+
+    private static readonly IReadOnlyDictionary<string, string> DescriptionByPage =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Alert"] = "Important message display",
+            ["AspectRatio"] = "Maintain aspect ratio for media",
+            ["Avatar"] = "User profile image",
+            ["Badge"] = "Small status indicator",
+            ["Breadcrumb"] = "Navigation breadcrumb",
+            ["Button"] = "Clickable button element",
+            ["Calendar"] = "Date display grid",
+            ["Card"] = "Container for grouping related content",
+            ["Checkbox"] = "Boolean toggle input",
+            ["Collapsible"] = "Expandable content",
+            ["Container"] = "Responsive layout wrapper",
+            ["DataGrid"] = "Tabular data display",
+            ["DatePicker"] = "Date selection input",
+            ["DateRangePicker"] = "Date range selection",
+            ["Dialog"] = "Modal dialog window",
+            ["Divider"] = "Visual separator between content",
+            ["Drawer"] = "Side navigation drawer",
+            ["Dropdown"] = "Dropdown menu",
+            ["Form"] = "Form container with validation",
+            ["FormField"] = "Field wrapper with label and error",
+            ["Grid"] = "Responsive grid system",
+            ["Input"] = "Text input field",
+            ["KanbanBoard"] = "Drag-and-drop kanban board",
+            ["Link"] = "Navigation link",
+            ["Menu"] = "Navigation menu",
+            ["Pagination"] = "Page navigation",
+            ["Popover"] = "Rich content popup",
+            ["Progress"] = "Progress indicator",
+            ["RadioGroup"] = "Group of radio buttons",
+            ["Select"] = "Dropdown selection",
+            ["Separator"] = "Visual separator",
+            ["Skeleton"] = "Loading placeholder",
+            ["Slider"] = "Range value selector",
+            ["Spinner"] = "Loading spinner",
+            ["Stack"] = "Vertical and horizontal layouts",
+            ["Stepper"] = "Multi-step navigation",
+            ["Switch"] = "Toggle switch control",
+            ["Table"] = "Simple table layout",
+            ["Tag"] = "Removable label",
+            ["ThemeToggle"] = "Dark and light mode toggle",
+            ["Toast"] = "Temporary notifications",
+            ["Tooltip"] = "Contextual information popup"
+        };
+
+    private static readonly IReadOnlySet<string> NewPages =
+        new HashSet<string>(StringComparer.Ordinal) { "KanbanBoard" };
+
+    private static readonly IReadOnlyList<CategoryInfo> Categories = BuildCategories();
+
+    private string searchQuery = string.Empty;
 
     private bool MatchesSearch(ComponentInfo component)
     {
-        if (string.IsNullOrWhiteSpace(searchQuery)) return true;
-        var query = searchQuery.ToLower();
-        return component.Name.ToLower().Contains(query) ||
-               component.Description.ToLower().Contains(query);
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            return true;
+        }
+
+        return component.Name.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+               component.Description.Contains(searchQuery, StringComparison.OrdinalIgnoreCase);
     }
 
     private IEnumerable<CategoryInfo> FilteredCategories =>
         Categories.Where(c => c.Components.Any(comp => MatchesSearch(comp)));
 
-    private List<CategoryInfo> Categories = new()
+    private static IReadOnlyList<CategoryInfo> BuildCategories()
     {
-        new CategoryInfo
-        {
-            Name = "Layout",
-            Description = "Components for structuring and organizing page content.",
-            Components = new()
-            {
-                new("Card", "card", "Container for grouping related content"),
-                new("Container", "container", "Responsive layout wrapper"),
-                new("Stack", "stack", "Vertical and horizontal layouts"),
-                new("Grid", "grid", "Responsive grid system"),
-                new("Divider", "divider", "Visual separator between content"),
-                new("AspectRatio", "aspectratio", "Maintain aspect ratio for media"),
-            }
-        },
-        new CategoryInfo
-        {
-            Name = "Forms",
-            Description = "Input components for collecting user data.",
-            Components = new()
-            {
-                new("Button", "button", "Clickable button element"),
-                new("Input", "input", "Text input field"),
-                new("Checkbox", "checkbox", "Boolean toggle input"),
-                new("RadioGroup", "radiogroup", "Group of radio buttons"),
-                new("Select", "select", "Dropdown selection"),
-                new("Switch", "switch", "Toggle switch control"),
-                new("Slider", "slider", "Range value selector"),
-                new("DatePicker", "datepicker", "Date selection input"),
-                new("DateRangePicker", "daterangepicker", "Date range selection"),
-                new("Form", "form", "Form container with validation"),
-                new("FormField", "formfield", "Field wrapper with label and error"),
-            }
-        },
-        new CategoryInfo
-        {
-            Name = "Data Display",
-            Description = "Components for presenting information.",
-            Components = new()
-            {
-                new("Badge", "badge", "Small status indicator"),
-                new("Avatar", "avatar", "User profile image"),
-                new("Tag", "tag", "Removable label"),
-                new("DataGrid", "datagrid", "Tabular data display"),
-                new("Table", "table", "Simple table layout"),
-                new("Calendar", "calendar", "Date display vibe-grid"),
-                new("Skeleton", "skeleton", "Loading placeholder"),
-                new("Progress", "progress", "Progress indicator"),
-                new("Spinner", "spinner", "Loading spinner"),
-            }
-        },
-        new CategoryInfo
-        {
-            Name = "Feedback",
-            Description = "Components for user notifications and feedback.",
-            Components = new()
-            {
-                new("Alert", "alert", "Important message display"),
-                new("Toast", "toast", "Temporary notifications"),
-                new("Dialog", "dialog", "Modal dialog window"),
-                new("Tooltip", "tooltip", "Contextual information popup"),
-                new("Popover", "popover", "Rich content popup"),
-            }
-        },
-        new CategoryInfo
-        {
-            Name = "Navigation",
-            Description = "Components for navigating between pages and sections.",
-            Components = new()
-            {
-                new("Link", "link", "Navigation link"),
-                new("Menu", "menu", "Navigation menu"),
-                new("Breadcrumb", "breadcrumb", "Navigation breadcrumb"),
-                new("Pagination", "pagination", "Page navigation"),
-                new("Stepper", "stepper", "Multi-step navigation"),
-                new("Dropdown", "dropdown", "Dropdown menu"),
-            }
-        },
-        new CategoryInfo
-        {
-            Name = "Overlay",
-            Description = "Components that appear above other content.",
-            Components = new()
-            {
-                new("Drawer", "drawer", "Side navigation drawer"),
-            }
-        },
-        new CategoryInfo
-        {
-            Name = "Utility",
-            Description = "Helper components for common patterns.",
-            Components = new()
-            {
-                new("ThemeToggle", "themetoggle", "Dark/light mode toggle"),
-                new("Separator", "separator", "Visual separator"),
-                new("Collapsible", "collapsible", "Expandable content"),
-            }
-        },
-        new CategoryInfo
-        {
-            Name = "Advanced",
-            Description = "Complex components for specific use cases.",
-            Components = new()
-            {
-                new("KanbanBoard", "kanbanboard", "Drag-and-drop kanban board", true),
-            }
-        }
-    };
+        var components = DiscoverComponents();
 
-    private class CategoryInfo
-    {
-        public string Name { get; set; } = "";
-        public string Description { get; set; } = "";
-        public List<ComponentInfo> Components { get; set; } = new();
+        return CategoryDefinitions
+            .Select(definition => new CategoryInfo(
+                definition.Name,
+                definition.Description,
+                components
+                    .Where(component => component.Category == definition.Name)
+                    .OrderBy(component => component.Name, StringComparer.OrdinalIgnoreCase)
+                    .ToArray()))
+            .Where(category => category.Components.Count > 0)
+            .ToArray();
     }
 
-    private class ComponentInfo
+    private static IReadOnlyList<ComponentInfo> DiscoverComponents()
     {
-        public string Name { get; set; }
-        public string Slug { get; set; }
-        public string Description { get; set; }
-        public bool IsNew { get; set; }
+        return typeof(App).Assembly.ExportedTypes
+            .Where(type => !type.IsAbstract && typeof(IComponent).IsAssignableFrom(type))
+            .Select(type => new
+            {
+                PageType = type,
+                Routes = type
+                    .GetCustomAttributes<RouteAttribute>(inherit: false)
+                    .Select(attribute => NormalizeRoute(attribute.Template))
+                    .Where(route => route.StartsWith("/components/", StringComparison.OrdinalIgnoreCase))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToArray()
+            })
+            .Where(page => page.Routes.Length > 0)
+            .Select(page =>
+            {
+                var pageKey = GetPageKey(page.PageType.Name);
+                var displayName = SplitPascalCase(pageKey);
+                var route = SelectCanonicalRoute(page.Routes, pageKey);
+                var category = CategoryByPage.GetValueOrDefault(pageKey, "Other");
+                var description = DescriptionByPage.GetValueOrDefault(
+                    pageKey,
+                    $"{displayName} examples, usage, and API reference.");
 
-        public ComponentInfo(string name, string slug, string description, bool isNew = false)
-        {
-            Name = name;
-            Slug = slug;
-            Description = description;
-            IsNew = isNew;
-        }
+                return new ComponentInfo(
+                    displayName,
+                    route,
+                    description,
+                    category,
+                    NewPages.Contains(pageKey));
+            })
+            .OrderBy(component => component.Name, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
+
+    private static string GetPageKey(string typeName)
+    {
+        if (typeName.EndsWith("View", StringComparison.Ordinal))
+        {
+            return typeName[..^"View".Length];
+        }
+
+        return typeName switch
+        {
+            "TreeViewer" => "TreeView",
+            _ => typeName
+        };
+    }
+
+    private static string SelectCanonicalRoute(IEnumerable<string> routes, string pageKey)
+    {
+        var routeList = routes.ToArray();
+        var matchingRoute = routeList.FirstOrDefault(route =>
+            NormalizeIdentifier(route[(route.LastIndexOf('/') + 1)..]) == NormalizeIdentifier(pageKey));
+
+        return matchingRoute ?? routeList
+            .OrderBy(route => route.Length)
+            .ThenBy(route => route, StringComparer.OrdinalIgnoreCase)
+            .First();
+    }
+
+    private static string NormalizeRoute(string route)
+    {
+        return route.StartsWith('/') ? route : $"/{route}";
+    }
+
+    private static string ToBaseRelativeRoute(string route) => route.TrimStart('/');
+
+    private static string NormalizeIdentifier(string value)
+    {
+        return new string(value
+            .Where(char.IsLetterOrDigit)
+            .Select(char.ToLowerInvariant)
+            .ToArray());
+    }
+
+    private static string SplitPascalCase(string value)
+    {
+        var acronymBoundary = Regex.Replace(value, "([A-Z]+)([A-Z][a-z])", "$1 $2");
+        return Regex.Replace(acronymBoundary, "([a-z0-9])([A-Z])", "$1 $2");
+    }
+
+    private sealed record CategoryDefinition(string Name, string Description);
+
+    private sealed record CategoryInfo(
+        string Name,
+        string Description,
+        IReadOnlyList<ComponentInfo> Components);
+
+    private sealed record ComponentInfo(
+        string Name,
+        string Route,
+        string Description,
+        string Category,
+        bool IsNew);
 }
 
 

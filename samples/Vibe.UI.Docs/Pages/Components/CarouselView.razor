@@ -4,7 +4,6 @@
 <PageTitle>Carousel - Vibe.UI</PageTitle>
 
 <div class="vibe-max-w-4xl vibe-mx-auto">
-    <!-- Header -->
     <header class="vibe-mb-8">
         <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
             <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
@@ -15,398 +14,141 @@
         </div>
         <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Carousel</h1>
         <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
-            A slideshow component for cycling through images or content with navigation controls and indicators.
+            Cycle through a small set of visual panels with pointer, keyboard, and direct navigation.
         </p>
     </header>
 
-    <!-- Preview Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
-        <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
-            <div style="max-width: 600px; margin: 0 auto;">
-                <Carousel ShowNavigation="true" ShowIndicators="true">
-                    <CarouselItem>
-                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 4rem 2rem; text-align: center; border-radius: 0.5rem;">
-                            <h2 style="margin: 0 0 1rem 0;">First Slide</h2>
-                            <p style="margin: 0;">Beautiful carousel component</p>
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+            <Carousel @bind-ActiveIndex="activeIndex"
+                      AriaLabel="Vibe.UI release highlights"
+                      Loop="false"
+                      AutoPlay="true"
+                      AutoPlayInterval="10000"
+                      ShowNavigation="true"
+                      ShowIndicators="true">
+                <CarouselItem>
+                    <div style="height: 18rem; display: grid; grid-template-rows: minmax(0, 1fr) auto; background: var(--vibe-background);">
+                        <img src="logo.png" alt="Vibe.UI wave mark" style="width: 100%; height: 100%; min-height: 0; object-fit: cover;" />
+                        <div class="vibe-p-4 vibe-border-t vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                            <strong>Visual system</strong>
+                            <p class="vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400">Consistent controls, spacing, and focus states.</p>
                         </div>
-                    </CarouselItem>
-                    <CarouselItem>
-                        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 4rem 2rem; text-align: center; border-radius: 0.5rem;">
-                            <h2 style="margin: 0 0 1rem 0;">Second Slide</h2>
-                            <p style="margin: 0;">With smooth transitions</p>
+                    </div>
+                </CarouselItem>
+                <CarouselItem>
+                    <div style="height: 18rem; display: grid; grid-template-rows: minmax(0, 1fr) auto; background: var(--vibe-background);">
+                        <img src="icon-512.png" alt="Vibe.UI application icon" style="width: 100%; height: 100%; min-height: 0; object-fit: contain; padding: 1.5rem;" />
+                        <div class="vibe-p-4 vibe-border-t vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                            <strong>Hosting coverage</strong>
+                            <p class="vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400">Standalone WebAssembly and every Blazor Web App render mode.</p>
                         </div>
-                    </CarouselItem>
-                    <CarouselItem>
-                        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 4rem 2rem; text-align: center; border-radius: 0.5rem;">
-                            <h2 style="margin: 0 0 1rem 0;">Third Slide</h2>
-                            <p style="margin: 0;">Easy to customize</p>
+                    </div>
+                </CarouselItem>
+                <CarouselItem>
+                    <div style="height: 18rem; display: grid; grid-template-rows: minmax(0, 1fr) auto; background: var(--vibe-background);">
+                        <img src="icon-192.png" alt="Compact Vibe.UI application icon" style="width: 100%; height: 100%; min-height: 0; object-fit: contain; padding: 2rem;" />
+                        <div class="vibe-p-4 vibe-border-t vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                            <strong>Accessible interaction</strong>
+                            <p class="vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400">Named controls, direct slide selection, and arrow navigation.</p>
                         </div>
-                    </CarouselItem>
-                </Carousel>
-            </div>
+                    </div>
+                </CarouselItem>
+            </Carousel>
+            <output class="vibe-block vibe-mt-3 vibe-text-sm vibe-text-zinc-500">Slide @(activeIndex + 1) of 3</output>
         </div>
     </section>
 
-    <!-- Examples Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
-
-        <!-- Basic Carousel -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Basic Carousel</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Create a simple image carousel with navigation controls.
-            </p>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Controlled slide</h3>
             <CodeBlock Code="@BasicCode" Language="razor" />
         </div>
-
-        <!-- Auto-play -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Auto-play</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Enable automatic slide transitions with configurable intervals.
-            </p>
+        <div>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Automatic rotation</h3>
             <CodeBlock Code="@AutoPlayCode" Language="razor" />
         </div>
-
-        <!-- With Captions -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Captions</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Add descriptive captions overlaid on slides.
-            </p>
-            <CodeBlock Code="@CaptionsCode" Language="razor" />
-        </div>
-
-        <!-- Thumbnails -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Thumbnails</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Display thumbnail navigation for direct slide access.
-            </p>
-            <CodeBlock Code="@ThumbnailsCode" Language="razor" />
-        </div>
-
-        <!-- Custom Content -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Custom Content</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Use carousel with any content like testimonials or product features.
-            </p>
-            <CodeBlock Code="@CustomContentCode" Language="razor" />
-        </div>
     </section>
 
-    <!-- API Reference -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
-
-        <!-- Properties -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Properties</h3>
-            <div class="vibe-overflow-x-auto">
-                <table class="vibe-w-full vibe-text-sm">
-                    <thead>
-                        <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Default</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+        <div class="vibe-overflow-x-auto">
+            <table class="vibe-w-full vibe-text-sm">
+                <thead><tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th>
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th>
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Default</th>
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th>
+                </tr></thead>
+                <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+                    @foreach (var property in Properties)
+                    {
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Items</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="IEnumerable<TItem>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Collection of items to display</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">@property.Name</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@property.Type" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@property.Default</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@property.Description</td>
                         </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ItemTemplate</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment<TItem>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Template for rendering each item</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">AutoPlay</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Automatically cycle through items</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Interval</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="int" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">5000</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Auto-play interval in milliseconds</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ShowIndicators</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">true</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Show position indicator dots</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ShowControls</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">true</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Show previous/next navigation buttons</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Loop</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">true</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Loop back to first item after last</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Events -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Events</h3>
-            <div class="vibe-overflow-x-auto">
-                <table class="vibe-w-full vibe-text-sm">
-                    <thead>
-                        <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnSlideChanged</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<CarouselSlideEventArgs>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when active slide changes</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnPrevious</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when previous button is clicked</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnNext</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when next button is clicked</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                    }
+                </tbody>
+            </table>
         </div>
     </section>
 
-    <!-- Installation -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
-        <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-            Install the Carousel component using the Vibe.UI CLI:
-        </p>
         <CodeBlock Code="vibe add carousel" Language="bash" />
     </section>
 
-    <!-- Accessibility -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
-        <div class="vibe-prose dark:vibe-prose-invert vibe-max-w-none">
-            <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+        <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            @foreach (var item in AccessibilityItems)
+            {
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Uses <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">role="region"</code> and <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">aria-label</code>
+                    <Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />
+                    @item
                 </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Navigation buttons have descriptive labels
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Keyboard navigation (Arrow keys, Tab)
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Indicators are keyboard accessible
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Auto-play pauses on hover and focus
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Screen reader announces slide changes
-                </li>
-            </ul>
-        </div>
-    </section>
-
-    <!-- Related Components -->
-    <section>
-        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Related</h2>
-        <div class="vibe-grid vibe-grid-cols-1 sm:vibe-grid-cols-3 vibe-gap-4">
-            <a href="components/card" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Card</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Content container component</p>
-            </a>
-            <a href="components/dialog" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Dialog</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Dialog overlay component</p>
-            </a>
-        </div>
+            }
+        </ul>
     </section>
 </div>
 
 @code {
-    private string BasicCode => @"<Carousel Items=""@images"">
-    <ItemTemplate Context=""image"">
-        <img src=""@image.Url"" alt=""@image.Alt"" />
-    </ItemTemplate>
-</Carousel>
+    private int activeIndex;
 
-@code {
-    private List<ImageItem> images = new()
-    {
-        new ImageItem { Url = ""/images/slide1.jpg"", Alt = ""First slide"" },
-        new ImageItem { Url = ""/images/slide2.jpg"", Alt = ""Second slide"" },
-        new ImageItem { Url = ""/images/slide3.jpg"", Alt = ""Third slide"" }
-    };
-}";
+    private static readonly (string Name, string Type, string Default, string Description)[] Properties =
+    [
+        ("ChildContent", "RenderFragment?", "null", "CarouselItem children"),
+        ("ShowNavigation", "bool", "true", "Render previous and next controls"),
+        ("ShowIndicators", "bool", "true", "Render direct slide controls"),
+        ("Loop", "bool", "true", "Wrap at the first and last slide"),
+        ("AutoPlay", "bool", "false", "Automatically rotate slides and render a pause control"),
+        ("AutoPlayInterval", "int", "3000", "Rotation interval in milliseconds; minimum 250"),
+        ("EnableDrag", "bool", "true", "Enable mouse, pen, and touch swiping"),
+        ("Disabled", "bool", "false", "Disable every interaction"),
+        ("ActiveIndex", "int", "0", "Current slide; supports @bind-ActiveIndex"),
+        ("Orientation", "CarouselOrientation", "Horizontal", "Horizontal or vertical motion"),
+        ("AriaLabel", "string?", "Carousel", "Accessible region name")
+    ];
 
-    private string AutoPlayCode => @"<Carousel Items=""@slides""
-          AutoPlay=""true""
-          Interval=""3000""
-          Loop=""true"">
-    <ItemTemplate Context=""slide"">
-        <img src=""@slide.ImageUrl"" alt=""@slide.Title"" />
-    </ItemTemplate>
-</Carousel>
+    private static readonly string[] AccessibilityItems =
+    [
+        "Exposes carousel and slide semantics with current position text",
+        "Supports arrow keys plus Home and End",
+        "Provides thirty-two-pixel direct slide controls and named navigation buttons",
+        "Pauses automatic rotation on hover, focus, or the visible pause control"
+    ];
 
-@code {
-    private List<Slide> slides = GetSlides();
-}";
+    private string BasicCode => @"<Carousel @bind-ActiveIndex=""activeIndex"" Loop=""false"">
+    <CarouselItem><ReleaseOne /></CarouselItem>
+    <CarouselItem><ReleaseTwo /></CarouselItem>
+</Carousel>";
 
-    private string CaptionsCode => @"<Carousel Items=""@slides"" ShowIndicators=""true"">
-    <ItemTemplate Context=""slide"">
-        <div class=""carousel-slide"">
-            <img src=""@slide.ImageUrl"" alt=""@slide.Title"" />
-            <div class=""carousel-caption"">
-                <h3>@slide.Title</h3>
-                <p>@slide.Description</p>
-            </div>
-        </div>
-    </ItemTemplate>
-</Carousel>
-
-@code {
-    private List<Slide> slides = new()
-    {
-        new Slide
-        {
-            ImageUrl = ""/images/nature.jpg"",
-            Title = ""Beautiful Nature"",
-            Description = ""Explore the beauty of natural landscapes""
-        },
-        new Slide
-        {
-            ImageUrl = ""/images/city.jpg"",
-            Title = ""Urban Life"",
-            Description = ""Experience the energy of city living""
-        }
-    };
-}";
-
-    private string ThumbnailsCode => @"<Carousel Items=""@gallery""
-          ShowIndicators=""false""
-          OnSlideChanged=""@HandleSlideChanged"">
-    <ItemTemplate Context=""item"">
-        <img src=""@item.FullUrl"" alt=""@item.Title"" />
-    </ItemTemplate>
-</Carousel>
-
-<div class=""thumbnail-strip"">
-    @foreach (var (item, index) in gallery.Select((item, i) => (item, i)))
-    {
-        <div class=""thumbnail @(index == currentIndex ? ""active"" : """")""
-             @onclick=""@(() => GoToSlide(index))"">
-            <img src=""@item.ThumbnailUrl"" alt=""@item.Title"" />
-        </div>
-    }
-</div>
-
-@code {
-    private List<GalleryItem> gallery = GetGalleryItems();
-    private int currentIndex = 0;
-
-    private void HandleSlideChanged(CarouselSlideEventArgs args)
-    {
-        currentIndex = args.NewIndex;
-    }
-
-    private void GoToSlide(int index)
-    {
-        currentIndex = index;
-        StateHasChanged();
-    }
-}";
-
-    private string CustomContentCode => @"<Carousel Items=""@testimonials""
-          AutoPlay=""true""
-          Interval=""6000""
-          ShowIndicators=""true""
-          ShowControls=""false"">
-    <ItemTemplate Context=""testimonial"">
-        <div class=""testimonial-slide"">
-            <Avatar Src=""@testimonial.AvatarUrl""
-                    Size=""AvatarSize.Large"" />
-            <blockquote>
-                <p>""@testimonial.Quote""</p>
-            </blockquote>
-            <div class=""testimonial-author"">
-                <strong>@testimonial.Name</strong>
-                <span>@testimonial.Role</span>
-            </div>
-            <div class=""rating"">
-                @for (int i = 0; i < testimonial.Rating; i++)
-                {
-                    <span>⭐</span>
-                }
-            </div>
-        </div>
-    </ItemTemplate>
-</Carousel>
-
-@code {
-    private List<Testimonial> testimonials = new()
-    {
-        new Testimonial
-        {
-            Name = ""John Doe"",
-            Role = ""CEO at TechCorp"",
-            Quote = ""This product has transformed our workflow!"",
-            Rating = 5,
-            AvatarUrl = ""/avatars/john.jpg""
-        },
-        new Testimonial
-        {
-            Name = ""Jane Smith"",
-            Role = ""Designer at CreativeStudio"",
-            Quote = ""Intuitive and powerful. Highly recommended!"",
-            Rating = 5,
-            AvatarUrl = ""/avatars/jane.jpg""
-        }
-    };
-}";
+    private string AutoPlayCode => @"<Carousel AutoPlay=""true"" AutoPlayInterval=""5000"">
+    <CarouselItem><ReleaseOne /></CarouselItem>
+    <CarouselItem><ReleaseTwo /></CarouselItem>
+</Carousel>";
 }
-
-

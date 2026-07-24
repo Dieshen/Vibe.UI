@@ -57,10 +57,6 @@
                 <CodeBlock Code="@CheckableCode" Language="razor" />
             </div>
 
-            <div>
-                <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Lazy Loading</h3>
-                <CodeBlock Code="@LazyLoadCode" Language="razor" />
-            </div>
         </div>
     </section>
 
@@ -110,6 +106,53 @@
                             <td class="vibe-py-3 vibe-px-4"><code>string?</code></td>
                             <td class="vibe-py-3 vibe-px-4">null</td>
                             <td class="vibe-py-3 vibe-px-4">Additional CSS classes.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="vibe-mb-8">
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">TreeNode properties</h3>
+            <div class="vibe-overflow-x-auto">
+                <table class="vibe-w-full vibe-text-sm">
+                    <thead>
+                        <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="vibe-border-b vibe-border-zinc-100 dark:vibe-border-zinc-800">
+                            <td class="vibe-py-3 vibe-px-4"><code>Id</code></td>
+                            <td class="vibe-py-3 vibe-px-4"><code>string</code></td>
+                            <td class="vibe-py-3 vibe-px-4">Stable selection and expansion identifier.</td>
+                        </tr>
+                        <tr class="vibe-border-b vibe-border-zinc-100 dark:vibe-border-zinc-800">
+                            <td class="vibe-py-3 vibe-px-4"><code>Label</code></td>
+                            <td class="vibe-py-3 vibe-px-4"><code>string</code></td>
+                            <td class="vibe-py-3 vibe-px-4">Visible node label.</td>
+                        </tr>
+                        <tr class="vibe-border-b vibe-border-zinc-100 dark:vibe-border-zinc-800">
+                            <td class="vibe-py-3 vibe-px-4"><code>IconName</code></td>
+                            <td class="vibe-py-3 vibe-px-4"><code>string?</code></td>
+                            <td class="vibe-py-3 vibe-px-4">Lucide icon name rendered before the label.</td>
+                        </tr>
+                        <tr class="vibe-border-b vibe-border-zinc-100 dark:vibe-border-zinc-800">
+                            <td class="vibe-py-3 vibe-px-4"><code>Icon</code></td>
+                            <td class="vibe-py-3 vibe-px-4"><code>RenderFragment?</code></td>
+                            <td class="vibe-py-3 vibe-px-4">Custom icon content used when <code>IconName</code> is not set.</td>
+                        </tr>
+                        <tr class="vibe-border-b vibe-border-zinc-100 dark:vibe-border-zinc-800">
+                            <td class="vibe-py-3 vibe-px-4"><code>Children</code></td>
+                            <td class="vibe-py-3 vibe-px-4"><code>List&lt;TreeNode&gt;?</code></td>
+                            <td class="vibe-py-3 vibe-px-4">Nested nodes displayed under an expandable parent.</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4"><code>IsDisabled</code></td>
+                            <td class="vibe-py-3 vibe-px-4"><code>bool</code></td>
+                            <td class="vibe-py-3 vibe-px-4">Prevents selection and expansion interactions.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -174,10 +217,10 @@
 @code {
     private List<TreeNode> treeNodes = new()
     {
-        new() { Label = "Documents", Icon = @<span>📁</span>, Children = new() { new() { Label = "Work", Icon = @<span>📄</span> }, new() { Label = "Personal", Icon = @<span>📄</span> } } },
-        new() { Label = "Pictures", Icon = @<span>🖼️</span>, Children = new() { new() { Label = "Vacation 2024", Icon = @<span>🧳</span> }, new() { Label = "Family", Icon = @<span>👪</span> } } },
-        new() { Label = "Downloads", Icon = @<span>⬇️</span> },
-        new() { Label = "Music", Icon = @<span>🎵</span> }
+        new() { Label = "Documents", IconName = "folder", Children = new() { new() { Label = "Work", IconName = "file-text" }, new() { Label = "Personal", IconName = "file" } } },
+        new() { Label = "Pictures", IconName = "image", Children = new() { new() { Label = "Vacation 2024", IconName = "image" }, new() { Label = "Family", IconName = "users" } } },
+        new() { Label = "Downloads", IconName = "download" },
+        new() { Label = "Music", IconName = "music" }
     };
 
     private List<string> relatedComponents = new() { "Accordion", "Collapsible" };
@@ -202,9 +245,9 @@
 @code {
     private List<TreeNode> items = new()
     {
-        new() { Label = ""Documents"", Icon = @<span>📁</span> },
-        new() { Label = ""Pictures"", Icon = @<span>🖼️</span> },
-        new() { Label = ""Downloads"", Icon = @<span>⬇️</span> }
+        new() { Label = ""Documents"", IconName = ""folder"" },
+        new() { Label = ""Pictures"", IconName = ""image"" },
+        new() { Label = ""Downloads"", IconName = ""download"" }
     };
 }";
 
@@ -241,28 +284,6 @@
     };
 }";
 
-    private string LazyLoadCode => @"<TreeView Items=""@items"" OnNodeExpand=""LoadChildrenAsync"" />
-
-@code {
-    private List<TreeNode> items = new()
-    {
-        new() { Label = ""Documents"" },
-        new() { Label = ""Pictures"" }
-    };
-
-    private async Task LoadChildrenAsync(TreeNode node)
-    {
-        if (node.Children is { Count: > 0 })
-            return;
-
-        await Task.Delay(250); // simulate async work
-
-        node.Children = new()
-        {
-            new() { Label = $""Loaded child for {node.Label}"" }
-        };
-    }
-}";
 }
 
 

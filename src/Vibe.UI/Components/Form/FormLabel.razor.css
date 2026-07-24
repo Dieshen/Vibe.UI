@@ -1,17 +1,17 @@
 /* FormLabel baseline styles */
 
-:global(.vibe-form-label) {
+.vibe-form-label {
   font-size: 0.85rem;
   font-weight: 500;
   color: var(--vibe-foreground);
 }
 
-:global(.vibe-form-label.disabled) {
+.vibe-form-label.disabled {
   color: var(--vibe-muted-foreground);
   cursor: not-allowed;
 }
 
-:global(.vibe-form-label .required-indicator) {
+.vibe-form-label .required-indicator {
   margin-left: 0.25rem;
   color: var(--vibe-destructive);
 }

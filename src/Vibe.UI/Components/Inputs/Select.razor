@@ -18,7 +18,7 @@
             <label class="@GetLabelClass()" for="@ElementId">@Label</label>
         }
 
-        <div class="vibe-select-icon"></div>
+        <Icon Name="chevron-down" Size="16" CssClass="vibe-select-icon" />
     </div>
 
     @if (!string.IsNullOrEmpty(HelperText))
@@ -31,6 +31,9 @@
     private readonly string _id = Guid.NewGuid().ToString();
     private bool isFocused = false;
     private string currentValue = string.Empty;
+
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
 
     /// <summary>
     /// Gets or sets the select ID
@@ -92,7 +95,8 @@
     /// <summary>
     /// Gets the ID of the select element
     /// </summary>
-    private string ElementId => string.IsNullOrWhiteSpace(Id) ? _id : Id;
+    private string ElementId => FieldContext?.ControlId
+        ?? (string.IsNullOrWhiteSpace(Id) ? _id : Id);
 
     private string HelperId => $"{ElementId}-helper";
 
@@ -110,6 +114,7 @@
         => new ClassBuilder()
             .Add("vibe-select")
             .AddIf("vibe-select-disabled", Disabled)
+            .AddIf("vibe-select-error", FieldContext?.IsInvalid == true)
             .Build();
 
     private string GetLabelClass()
@@ -177,6 +182,29 @@
         {
             attributes ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             MergeSpaceSeparatedAttribute(attributes, "aria-describedby", HelperId);
+        }
+
+        if (!string.IsNullOrWhiteSpace(FieldContext?.DescribedBy))
+        {
+            attributes ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            MergeSpaceSeparatedAttribute(attributes, "aria-describedby", FieldContext.DescribedBy);
+        }
+
+        if (FieldContext?.IsInvalid == true)
+        {
+            attributes ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            attributes["aria-invalid"] = "true";
+            if (!string.IsNullOrWhiteSpace(FieldContext.ErrorId))
+            {
+                attributes["aria-errormessage"] = FieldContext.ErrorId;
+            }
+        }
+
+        if (FieldContext?.IsRequired == true)
+        {
+            attributes ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            attributes["required"] = "required";
+            attributes["aria-required"] = "true";
         }
 
         return attributes is { Count: > 0 } ? attributes : null;

@@ -1,503 +1,115 @@
 @page "/components/textarea"
-@using Vibe.UI.Docs.Models
+@using Vibe.UI.Components
 
-<PageTitle>Textarea - Vibe.UI</PageTitle>
+<PageTitle>TextArea - Vibe.UI</PageTitle>
 
 <div class="vibe-max-w-4xl vibe-mx-auto">
-    <!-- Header -->
     <header class="vibe-mb-8">
         <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
-            <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
-            <span>/</span>
-            <a href="components" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Components</a>
-            <span>/</span>
-            <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Textarea</span>
+            <a href="./">Docs</a><span>/</span><a href="components">Components</a><span>/</span>
+            <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">TextArea</span>
         </div>
-        <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Textarea</h1>
+        <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">TextArea</h1>
         <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
-            A multi-line text input field for longer text content.
+            A multiline text control with controlled value, resize behavior, and form-field accessibility.
         </p>
     </header>
 
-    <!-- Interactive Preview -->
     <section class="vibe-mb-12">
-        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Interactive Preview</h2>
-        <LivePreview Code="@GeneratedCode" Props="@textareaProps" OnPropChanged="HandlePropChanged" OnPropsReset="HandlePropsReset">
-            <PreviewContent>
-                <div class="vibe-w-full vibe-max-w-md">
-                    <TextArea Value="@currentValue"
-                              ValueChanged="@((string val) => currentValue = val)"
-                              Placeholder="@currentPlaceholder"
-                              Rows="@currentRows"
-                              Disabled="@currentDisabled"
-                              ReadOnly="@currentReadOnly"
-                              MaxLength="@currentMaxLength"
-                              ShowCharCount="@currentShowCharCount" />
-                </div>
-            </PreviewContent>
-        </LivePreview>
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+            <div class="vibe-max-w-xl">
+                <FormField TValue="string" Id="release-notes" Label="Release notes" Description="Summarize user-visible changes" Required="true">
+                    <TextArea @bind-Value="notes" Rows="5" Placeholder="Added keyboard navigation..." />
+                </FormField>
+                <output class="vibe-block vibe-mt-3 vibe-text-sm vibe-text-zinc-500">@notes.Length characters</output>
+            </div>
+        </div>
     </section>
 
-    <!-- Examples Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
-
-        <!-- Default -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Default</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                A basic textarea with placeholder text.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-md">
-                    <TextArea Placeholder="Enter your text here..." Rows="3" />
-                </div>
-            </div>
-            <CodeBlock Code="@DefaultCode" Language="razor" />
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Controlled value</h3>
+            <CodeBlock Code="@BasicCode" Language="razor" />
         </div>
-
-        <!-- With Label -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Label</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Add a label to provide context for the textarea.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-md">
-                    <TextArea Label="Description" Placeholder="Enter a description..." Rows="4" />
-                </div>
-            </div>
-            <CodeBlock Code="@LabelCode" Language="razor" />
-        </div>
-
-        <!-- Custom Rows -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Custom Rows</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Control the height with the Rows property.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-md vibe-space-y-4">
-                    <TextArea Placeholder="3 rows" Rows="3" />
-                    <TextArea Placeholder="6 rows" Rows="6" />
-                    <TextArea Placeholder="10 rows" Rows="10" />
-                </div>
-            </div>
-            <CodeBlock Code="@RowsCode" Language="razor" />
-        </div>
-
-        <!-- With Character Count -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Character Count</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Display character count and limit with MaxLength and ShowCharCount.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-md">
-                    <TextArea Value="@feedback"
-                              ValueChanged="@((string val) => feedback = val)"
-                              Placeholder="Share your feedback..."
-                              Rows="4"
-                              MaxLength="200"
-                              ShowCharCount="true" />
-                    @if (!string.IsNullOrEmpty(feedback))
-                    {
-                        <p class="vibe-mt-2 vibe-text-sm vibe-text-brand-teal">Character count: @feedback.Length / 200</p>
-                    }
-                </div>
-            </div>
-            <CodeBlock Code="@CharCountCode" Language="razor" />
-        </div>
-
-        <!-- Auto-resize -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Auto-resize</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Enable auto-resize to grow the textarea as content is added.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-md">
-                    <TextArea AutoResize="true" Placeholder="Type to see auto-resize in action..." Rows="3" />
-                </div>
-            </div>
-            <CodeBlock Code="@AutoResizeCode" Language="razor" />
-        </div>
-
-        <!-- Read-only -->
-        <div class="vibe-mb-8">
+        <div>
             <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Read-only</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Display content that cannot be edited.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-md">
-                    <TextArea Value="This is read-only content that cannot be edited."
-                              ReadOnly="true"
-                              Rows="2" />
-                </div>
-            </div>
             <CodeBlock Code="@ReadOnlyCode" Language="razor" />
         </div>
-
-        <!-- Disabled -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Disabled</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Prevent user interaction with the disabled state.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-md">
-                    <TextArea Placeholder="Disabled textarea"
-                              Disabled="true"
-                              Rows="3" />
-                </div>
-            </div>
-            <CodeBlock Code="@DisabledCode" Language="razor" />
-        </div>
-
-        <!-- With Form Integration -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Form Integration</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Use with FormField for complete form integration.
-            </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-max-w-md">
-                    <FormField TValue="string" Label="Comments" Description="Add any additional comments">
-                        <TextArea Value="@comments"
-                                  ValueChanged="@((string val) => comments = val)"
-                                  Placeholder="Your comments..."
-                                  Rows="5" />
-                    </FormField>
-                </div>
-            </div>
-            <CodeBlock Code="@FormIntegrationCode" Language="razor" />
-        </div>
     </section>
 
-    <!-- API Reference -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
-
-        <!-- Properties -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Properties</h3>
-            <div class="vibe-overflow-x-auto">
-                <table class="vibe-w-full vibe-text-sm">
-                    <thead>
-                        <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Default</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+        <div class="vibe-overflow-x-auto">
+            <table class="vibe-w-full vibe-text-sm">
+                <thead><tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th>
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th>
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Default</th>
+                    <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th>
+                </tr></thead>
+                <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+                    @foreach (var property in Properties)
+                    {
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Value</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">The textarea value</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono">@property.Name</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@property.Type" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@property.Default</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@property.Description</td>
                         </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Placeholder</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Placeholder text</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Label</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Label text</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Rows</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="int" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">3</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Number of visible text rows</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">AutoResize</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Whether to auto-resize based on content</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">MaxLength</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="int?" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Maximum character length</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ShowCharCount</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Whether to show character count</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Disabled</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Whether the textarea is disabled</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ReadOnly</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Whether the textarea is read-only</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Events -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Events</h3>
-            <div class="vibe-overflow-x-auto">
-                <table class="vibe-w-full vibe-text-sm">
-                    <thead>
-                        <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ValueChanged</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<string>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when value changes</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnInput</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<ChangeEventArgs>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Native input event callback</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnFocus</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<FocusEventArgs>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when textarea receives focus</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnBlur</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<FocusEventArgs>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when textarea loses focus</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                    }
+                </tbody>
+            </table>
         </div>
     </section>
 
-    <!-- Installation -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
-        <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-            Install the Textarea component using the Vibe.UI CLI:
-        </p>
         <CodeBlock Code="vibe add textarea" Language="bash" />
     </section>
 
-    <!-- Accessibility -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
-        <div class="vibe-prose dark:vibe-prose-invert vibe-max-w-none">
-            <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+        <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            @foreach (var item in AccessibilityItems)
+            {
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Uses semantic <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">&lt;textarea&gt;</code> element
+                    <Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />
+                    @item
                 </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Label properly associated with textarea via for/id attributes
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    ARIA attributes for character count and limits
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Keyboard accessible with standard textarea navigation
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Focus visible styles for keyboard users
-                </li>
-            </ul>
-        </div>
-    </section>
-
-    <!-- Related Components -->
-    <section>
-        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Related</h2>
-        <div class="vibe-grid vibe-grid-cols-1 sm:vibe-grid-cols-3 vibe-gap-4">
-            <a href="components/input" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Input</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Single-line text input</p>
-            </a>
-            <a href="components/richtexteditor" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">RichTextEditor</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Rich text editor component</p>
-            </a>
-            <a href="components/form" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Form</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Form container component</p>
-            </a>
-        </div>
+            }
+        </ul>
     </section>
 </div>
 
 @code {
-    // Interactive preview state
-    private string currentValue = "";
-    private string currentPlaceholder = "Enter your text here...";
-    private int currentRows = 4;
-    private bool currentDisabled = false;
-    private bool currentReadOnly = false;
-    private int? currentMaxLength = null;
-    private bool currentShowCharCount = false;
+    private string notes = string.Empty;
 
-    // Example values
-    private string feedback = "";
-    private string comments = "";
+    private static readonly (string Name, string Type, string Default, string Description)[] Properties =
+    [
+        ("Id", "string?", "generated", "ID for labels and descriptions"),
+        ("Value", "string?", "null", "Current text; supports @bind-Value"),
+        ("Placeholder", "string?", "null", "Hint shown while empty"),
+        ("Disabled", "bool", "false", "Disable focus and editing"),
+        ("ReadOnly", "bool", "false", "Keep text focusable and selectable without editing"),
+        ("Rows", "int", "4", "Visible row count"),
+        ("ValueChanged", "EventCallback<string?>", "none", "Called as text changes"),
+        ("OnInput", "EventCallback<ChangeEventArgs>", "none", "Called for native input events"),
+        ("OnChange", "EventCallback<ChangeEventArgs>", "none", "Called for native change events")
+    ];
 
-    // PropTweaker props
-    private List<PropDefinition> textareaProps = new();
+    private static readonly string[] AccessibilityItems =
+    [
+        "Uses the native textarea element",
+        "Receives FormField label, description, required, and error relationships",
+        "Keeps read-only text focusable and selectable",
+        "Shows distinct focus, disabled, read-only, and invalid states"
+    ];
 
-    protected override void OnInitialized()
-    {
-        InitializeProps();
-    }
+    private string BasicCode => @"<FormField TValue=""string"" Id=""notes"" Label=""Notes"" Description=""Add delivery instructions"">
+    <TextArea @bind-Value=""model.Notes"" Rows=""5"" Placeholder=""Leave at reception..."" />
+</FormField>";
 
-    private void InitializeProps()
-    {
-        textareaProps = new List<PropDefinition>
-        {
-            PropDefinition.String("Value", "", "Textarea content"),
-            PropDefinition.String("Placeholder", "Enter your text here...", "Placeholder text"),
-            PropDefinition.Number("Rows", 4, description: "Number of visible rows"),
-            PropDefinition.Boolean("Disabled", false, "Disable the textarea"),
-            PropDefinition.Boolean("ReadOnly", false, "Make textarea read-only"),
-            PropDefinition.Number("MaxLength", 0, description: "Maximum character length (0 = unlimited)"),
-            PropDefinition.Boolean("ShowCharCount", false, "Show character count")
-        };
-    }
-
-    private void HandlePropChanged(PropDefinition prop)
-    {
-        switch (prop.Name)
-        {
-            case "Value":
-                currentValue = prop.Value?.ToString() ?? "";
-                break;
-            case "Placeholder":
-                currentPlaceholder = prop.Value?.ToString() ?? "Enter your text here...";
-                break;
-            case "Rows":
-                if (int.TryParse(prop.Value?.ToString(), out var rows))
-                    currentRows = rows > 0 ? rows : 4;
-                break;
-            case "Disabled":
-                currentDisabled = prop.Value is true || prop.Value?.ToString()?.ToLower() == "true";
-                break;
-            case "ReadOnly":
-                currentReadOnly = prop.Value is true || prop.Value?.ToString()?.ToLower() == "true";
-                break;
-            case "MaxLength":
-                if (int.TryParse(prop.Value?.ToString(), out var maxLength))
-                    currentMaxLength = maxLength > 0 ? maxLength : null;
-                break;
-            case "ShowCharCount":
-                currentShowCharCount = prop.Value is true || prop.Value?.ToString()?.ToLower() == "true";
-                break;
-        }
-        StateHasChanged();
-    }
-
-    private void HandlePropsReset()
-    {
-        currentValue = "";
-        currentPlaceholder = "Enter your text here...";
-        currentRows = 4;
-        currentDisabled = false;
-        currentReadOnly = false;
-        currentMaxLength = null;
-        currentShowCharCount = false;
-        InitializeProps();
-        StateHasChanged();
-    }
-
-    private string GeneratedCode
-    {
-        get
-        {
-            var props = new List<string>();
-
-            if (!string.IsNullOrEmpty(currentValue))
-                props.Add($"Value=\"{currentValue}\"");
-            if (currentPlaceholder != "Enter your text here...")
-                props.Add($"Placeholder=\"{currentPlaceholder}\"");
-            if (currentRows != 3)
-                props.Add($"Rows=\"{currentRows}\"");
-            if (currentDisabled)
-                props.Add("Disabled=\"true\"");
-            if (currentReadOnly)
-                props.Add("ReadOnly=\"true\"");
-            if (currentMaxLength.HasValue)
-                props.Add($"MaxLength=\"{currentMaxLength}\"");
-            if (currentShowCharCount)
-                props.Add("ShowCharCount=\"true\"");
-
-            var propsStr = props.Any() ? " " + string.Join(" ", props) : "";
-            return $"<TextArea{propsStr} />";
-        }
-    }
-
-    private string DefaultCode => @"<TextArea Placeholder=""Enter your text here..."" />";
-
-    private string LabelCode => @"<TextArea Label=""Description"" Placeholder=""Enter a description..."" />
-<TextArea Label=""Comments"" Placeholder=""Add your comments here..."" />";
-
-    private string RowsCode => @"<TextArea Rows=""3"" Placeholder=""3 rows"" />
-<TextArea Rows=""6"" Placeholder=""6 rows"" />
-<TextArea Rows=""10"" Placeholder=""10 rows"" />";
-
-    private string CharCountCode => @"<TextArea @bind-Value=""@feedback""
-          MaxLength=""200""
-          ShowCharCount=""true""
-          Placeholder=""Share your feedback..."" />
-
-@code {
-    private string feedback = """";
-}";
-
-    private string AutoResizeCode => @"<TextArea AutoResize=""true"" Placeholder=""Type to see auto-resize..."" />";
-
-    private string ReadOnlyCode => @"<TextArea Value=""This is read-only content."" ReadOnly=""true"" />";
-
-    private string DisabledCode => @"<TextArea Placeholder=""Disabled textarea"" Disabled=""true"" />";
-
-    private string FormIntegrationCode => @"<FormField TValue=""string"" Label=""Comments"" Description=""Add any additional comments"">
-    <TextArea @bind-Value=""@comments""
-              Placeholder=""Your comments...""
-              Rows=""5"" />
-</FormField>
-
-@code {
-    private string comments = """";
-}";
+    private string ReadOnlyCode => @"<TextArea Value=""Approved for the beta release."" ReadOnly=""true"" />";
 }
-
-

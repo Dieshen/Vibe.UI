@@ -36,8 +36,9 @@ public class MultiSelectTests : TestBase
             .Add(p => p.Items, new List<string> { "Option 1" }));
 
         // Assert
-        var placeholder = cut.Find(".multiselect-placeholder");
-        placeholder.TextContent.ShouldBe("Choose options...");
+        var input = cut.Find(".multiselect-input");
+        input.GetAttribute("placeholder").ShouldBe("Choose options...");
+        cut.FindAll(".multiselect-placeholder").ShouldBeEmpty();
     }
 
     [Fact]
@@ -143,8 +144,9 @@ public class MultiSelectTests : TestBase
             .Add(p => p.Placeholder, "Select items..."));
 
         // Assert
-        var placeholder = cut.Find(".multiselect-placeholder");
-        placeholder.TextContent.ShouldBe("Select items...");
+        var input = cut.Find(".multiselect-input");
+        input.GetAttribute("placeholder").ShouldBe("Select items...");
+        cut.FindAll(".multiselect-placeholder").ShouldBeEmpty();
     }
 
     [Fact]

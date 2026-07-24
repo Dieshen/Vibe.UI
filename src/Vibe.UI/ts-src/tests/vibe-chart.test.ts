@@ -16,6 +16,8 @@ describe('vibe-chart', () => {
   beforeEach(async () => {
     setupChartMock();
     document.body.innerHTML = '';
+    document.documentElement.className = '';
+    document.documentElement.removeAttribute('style');
 
     // Reset vibeChart's internal state to avoid pollution between tests
     const { default: vibeChart } = await import('../src/vibe-chart');
@@ -149,7 +151,8 @@ describe('vibe-chart', () => {
       });
 
       expect(result).toBe(true);
-      expect(instance?.options).toEqual(newOptions);
+      expect(instance?.options.responsive).toBe(false);
+      expect(instance?.options.plugins).toBeDefined();
     });
 
     it('should create chart if it does not exist', async () => {
@@ -273,6 +276,76 @@ describe('vibe-chart', () => {
 
       expect(result).toBe(false);
       expect(console.error).toHaveBeenCalledWith('Error resizing chart:', expect.any(Error));
+    });
+  });
+
+  describe('theme synchronization', () => {
+    it('applies computed Vibe tokens to axes, tooltip, and legend options', async () => {
+      document.documentElement.style.setProperty('--vibe-foreground', 'rgb(250, 250, 250)');
+      document.documentElement.style.setProperty('--vibe-muted-foreground', 'rgb(161, 161, 170)');
+      document.documentElement.style.setProperty('--vibe-border', 'rgb(63, 63, 70)');
+      document.documentElement.style.setProperty('--vibe-popover', 'rgb(24, 24, 27)');
+      document.documentElement.style.setProperty('--vibe-popover-foreground', 'rgb(250, 250, 250)');
+
+      const canvas = createMockCanvas('test-chart');
+      document.body.appendChild(canvas);
+
+      const { default: vibeChart } = await import('../src/vibe-chart');
+      vibeChart.createChart('test-chart', createMockChartConfig({
+        options: {
+          scales: {
+            x: {},
+            y: {},
+            r: {}
+          }
+        }
+      }));
+
+      const instance = getLastChartInstance();
+      const options = instance?.options as {
+        plugins: {
+          legend: { labels: { color: string } };
+          tooltip: { backgroundColor: string; titleColor: string; borderColor: string };
+        };
+        scales: {
+          x: { ticks: { color: string }; grid: { color: string }; border: { color: string } };
+          r: { angleLines: { color: string }; pointLabels: { color: string } };
+        };
+      };
+
+      expect(options.plugins.legend.labels.color).toBe('rgb(161, 161, 170)');
+      expect(options.plugins.tooltip.backgroundColor).toBe('rgb(24, 24, 27)');
+      expect(options.plugins.tooltip.titleColor).toBe('rgb(250, 250, 250)');
+      expect(options.plugins.tooltip.borderColor).toBe('rgb(63, 63, 70)');
+      expect(options.scales.x.ticks.color).toBe('rgb(161, 161, 170)');
+      expect(options.scales.x.grid.color).toBe('rgb(63, 63, 70)');
+      expect(options.scales.x.border.color).toBe('rgb(63, 63, 70)');
+      expect(options.scales.r.angleLines.color).toBe('rgb(63, 63, 70)');
+      expect(options.scales.r.pointLabels.color).toBe('rgb(161, 161, 170)');
+    });
+
+    it('refreshes existing chart options when the document theme class changes', async () => {
+      document.documentElement.style.setProperty('--vibe-muted-foreground', 'rgb(82, 82, 91)');
+
+      const canvas = createMockCanvas('test-chart');
+      document.body.appendChild(canvas);
+
+      const { default: vibeChart } = await import('../src/vibe-chart');
+      vibeChart.createChart('test-chart', createMockChartConfig());
+      const instance = getLastChartInstance();
+      instance!.updated = false;
+
+      document.documentElement.style.setProperty('--vibe-muted-foreground', 'rgb(161, 161, 170)');
+      document.documentElement.classList.add('dark');
+      await Promise.resolve();
+      await Promise.resolve();
+
+      const options = instance?.options as {
+        plugins: { legend: { labels: { color: string } } };
+      };
+
+      expect(instance?.updated).toBe(true);
+      expect(options.plugins.legend.labels.color).toBe('rgb(161, 161, 170)');
     });
   });
 

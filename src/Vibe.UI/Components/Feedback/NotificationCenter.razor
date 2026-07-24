@@ -10,11 +10,9 @@
             aria-haspopup="dialog"
             aria-expanded="@AriaBool(_isOpen)"
             aria-controls="@_panelId"
-            aria-disabled="@AriaBool(Disabled)">
-        <svg class="bell-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-        </svg>
+            aria-disabled="@AriaBool(Disabled)"
+            @onkeydown="HandleTriggerKeyDown">
+        <Icon Name="bell" Size="18" CssClass="bell-icon" />
         @if (UnreadCount > 0)
         {
             <span class="notification-badge" aria-hidden="true">@UnreadBadgeText</span>
@@ -25,6 +23,8 @@
 
     @if (_isOpen)
     {
+        <div class="notification-backdrop" aria-hidden="true" @onclick="ClosePanel"></div>
+
         <section id="@_panelId"
                  class="notification-panel"
                  role="dialog"
@@ -115,10 +115,10 @@
                                         @onclick:stopPropagation
                                         @onclick="() => RemoveNotification(notification)"
                                         title="Remove"
-                                        aria-label="@GetRemoveAriaLabel(notification)"
-                                        disabled="@ReadOnly"
-                                        aria-disabled="@AriaBool(ReadOnly)">
-                                    <span aria-hidden="true">&times;</span>
+                                    aria-label="@GetRemoveAriaLabel(notification)"
+                                    disabled="@ReadOnly"
+                                    aria-disabled="@AriaBool(ReadOnly)">
+                                    <Icon Name="x" Size="14" />
                                 </button>
                             </div>
                         </div>
@@ -287,6 +287,19 @@
         }
 
         _isOpen = !_isOpen;
+    }
+
+    private void ClosePanel()
+    {
+        _isOpen = false;
+    }
+
+    private void HandleTriggerKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            ClosePanel();
+        }
     }
 
     private void HandlePanelKeyDown(KeyboardEventArgs e)
@@ -529,18 +542,17 @@
 
     private static RenderFragment GetDefaultIcon(NotificationType type) => builder =>
     {
-        builder.OpenElement(0, "span");
-        builder.AddAttribute(1, "class", "notification-default-icon");
-        builder.AddAttribute(2, "aria-hidden", "true");
-        builder.AddContent(3, type switch
+        builder.OpenComponent<Icon>(0);
+        builder.AddAttribute(1, nameof(Icon.Name), type switch
         {
-            NotificationType.Info => "i",
-            NotificationType.Success => "\u2713",
-            NotificationType.Warning => "!",
+            NotificationType.Info => "info",
+            NotificationType.Success => "check",
+            NotificationType.Warning => "alert-triangle",
             NotificationType.Error => "x",
-            _ => "\u2022"
+            _ => "bell"
         });
-        builder.CloseElement();
+        builder.AddAttribute(2, nameof(Icon.Size), 16);
+        builder.CloseComponent();
     };
 
     private static List<NotificationItem> NormalizeNotifications(IEnumerable<NotificationItem>? notifications)

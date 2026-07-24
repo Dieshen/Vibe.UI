@@ -1,0 +1,123 @@
+.vibe-dragdrop {
+    display: grid;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.dragdrop-horizontal {
+    display: flex;
+    align-items: stretch;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+}
+
+.dragdrop-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.625rem;
+    min-width: 0;
+    min-height: 3.25rem;
+    padding: 0.5rem 0.75rem 0.5rem 0.5rem;
+    border: 1px solid var(--vibe-border);
+    border-radius: var(--vibe-radius);
+    background: var(--vibe-card);
+    color: var(--vibe-card-foreground);
+    transition: border-color 140ms ease, box-shadow 140ms ease, opacity 140ms ease, transform 140ms ease;
+}
+
+.dragdrop-horizontal .dragdrop-item {
+    flex: 0 0 min(18rem, calc(100vw - 4rem));
+}
+
+.dragdrop-item:hover:not(.dragdrop-item-disabled) {
+    border-color: color-mix(in srgb, var(--vibe-foreground) 24%, var(--vibe-border));
+}
+
+.dragdrop-item.dragging {
+    opacity: 0.55;
+    transform: scale(0.99);
+}
+
+.dragdrop-item.drop-target {
+    border-color: var(--vibe-ring);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--vibe-ring) 30%, transparent);
+}
+
+.dragdrop-item-disabled {
+    background: var(--vibe-muted);
+    color: var(--vibe-muted-foreground);
+    opacity: 0.65;
+}
+
+.dragdrop-handle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    border-radius: calc(var(--vibe-radius) - 2px);
+    background: transparent;
+    color: var(--vibe-muted-foreground);
+    cursor: grab;
+    touch-action: none;
+}
+
+.dragdrop-handle:hover:not(:disabled) {
+    background: var(--vibe-accent);
+    color: var(--vibe-accent-foreground);
+}
+
+.dragdrop-handle:active:not(:disabled) {
+    cursor: grabbing;
+}
+
+.dragdrop-handle:focus-visible {
+    outline: 2px solid var(--vibe-ring);
+    outline-offset: 2px;
+}
+
+.dragdrop-handle:disabled {
+    cursor: not-allowed;
+}
+
+.dragdrop-item-content {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.dragdrop-empty {
+    display: grid;
+    place-items: center;
+    min-height: 6rem;
+    padding: 1rem;
+    border: 1px dashed var(--vibe-border);
+    border-radius: var(--vibe-radius);
+    color: var(--vibe-muted-foreground);
+    text-align: center;
+}
+
+.dragdrop-live-region {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.dragdrop-disabled {
+    opacity: 0.65;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dragdrop-item {
+        transition: none;
+    }
+}

@@ -1,6 +1,6 @@
 /* Resizable baseline styles */
 
-:global(.vibe-resizable) {
+.vibe-resizable {
   position: relative;
   display: flex;
   background: var(--vibe-card);
@@ -9,32 +9,53 @@
   overflow: hidden;
 }
 
-:global(.vibe-resizable .resizable-panel) {
+.vibe-resizable.resizable-vertical {
+  flex-direction: column;
+}
+
+.vibe-resizable .resizable-panel {
   flex: 1;
   min-width: 0;
 }
 
-:global(.vibe-resizable .resizable-handle) {
+.vibe-resizable .resizable-handle {
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--vibe-muted);
+  color: var(--vibe-muted-foreground);
+  touch-action: none;
+  user-select: none;
 }
 
-:global(.vibe-resizable .resizable-handle-horizontal) {
+.vibe-resizable .resizable-handle-horizontal {
   width: 0.75rem;
+  flex: 0 0 0.75rem;
   cursor: col-resize;
 }
 
-:global(.vibe-resizable .resizable-handle-vertical) {
+.vibe-resizable .resizable-handle-vertical {
   height: 0.75rem;
+  flex: 0 0 0.75rem;
   cursor: row-resize;
 }
 
-:global(.vibe-resizable .resizable-handle-bar) {
-  width: 2px;
-  height: 60%;
-  border-radius: 9999px;
-  background: var(--vibe-border);
+.vibe-resizable .resizable-handle:hover,
+.vibe-resizable.resizing .resizable-handle {
+  background: var(--vibe-accent);
+  color: var(--vibe-accent-foreground);
 }
 
+.vibe-resizable .resizable-handle:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid var(--vibe-ring);
+  outline-offset: -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vibe-resizable,
+  .vibe-resizable .resizable-handle {
+    transition: none;
+  }
+}

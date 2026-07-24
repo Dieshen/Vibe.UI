@@ -101,6 +101,81 @@ public class DateRangePickerTests : TestBase
     }
 
     [Fact]
+    public void DateRangePicker_EachGridContainsItsWeekdayHeaderRow()
+    {
+        var cut = Render<DateRangePicker>(parameters => parameters
+            .Add(p => p.StartDate, new System.DateTime(2024, 6, 10))
+            .Add(p => p.EndDate, new System.DateTime(2024, 7, 10)));
+
+        cut.Find(".daterange-icon").Click();
+
+        var grids = cut.FindAll(".daterange-grid[role='grid']");
+        var headerRows = cut.FindAll(".daterange-day-names[role='row']");
+        grids.Count.ShouldBe(2);
+        headerRows.Count.ShouldBe(2);
+
+        for (var index = 0; index < grids.Count; index++)
+        {
+            headerRows[index].ParentElement.ShouldBe(grids[index]);
+            headerRows[index].Children.Length.ShouldBe(7);
+            headerRows[index].Children.ShouldAllBe(header => header.GetAttribute("role") == "columnheader");
+        }
+    }
+
+    [Fact]
+    public void DateRangePicker_PairedMonthNavigationRespectsEitherCalendarYearBoundary()
+    {
+        var cut = Render<DateRangePicker>(parameters => parameters
+            .Add(p => p.StartDate, new System.DateTime(2024, 6, 10))
+            .Add(p => p.EndDate, new System.DateTime(2024, 7, 10))
+            .Add(p => p.MinYear, 2024)
+            .Add(p => p.MaxYear, 2025));
+
+        cut.Find(".daterange-icon").Click();
+
+        cut.FindAll(".daterange-month-select")[1].Change("0");
+        var previousButton = cut.Find(".daterange-nav-btn[aria-label='Previous month']");
+        previousButton.HasAttribute("disabled").ShouldBeTrue();
+        var startLabelBeforePrevious = cut.FindAll(".daterange-grid")[0].GetAttribute("aria-label");
+        var endLabelBeforePrevious = cut.FindAll(".daterange-grid")[1].GetAttribute("aria-label");
+
+        previousButton.Click();
+
+        cut.FindAll(".daterange-grid")[0].GetAttribute("aria-label").ShouldBe(startLabelBeforePrevious);
+        cut.FindAll(".daterange-grid")[1].GetAttribute("aria-label").ShouldBe(endLabelBeforePrevious);
+
+        cut.FindAll(".daterange-year-select")[0].Change("2025");
+        cut.FindAll(".daterange-month-select")[0].Change("11");
+        var nextButton = cut.Find(".daterange-nav-btn[aria-label='Next month']");
+        nextButton.HasAttribute("disabled").ShouldBeTrue();
+        var startLabelBeforeNext = cut.FindAll(".daterange-grid")[0].GetAttribute("aria-label");
+        var endLabelBeforeNext = cut.FindAll(".daterange-grid")[1].GetAttribute("aria-label");
+
+        nextButton.Click();
+
+        cut.FindAll(".daterange-grid")[0].GetAttribute("aria-label").ShouldBe(startLabelBeforeNext);
+        cut.FindAll(".daterange-grid")[1].GetAttribute("aria-label").ShouldBe(endLabelBeforeNext);
+    }
+
+    [Fact]
+    public void DateRangePicker_MarksOnlySelectedDatesAsInRange()
+    {
+        // Arrange
+        var cut = Render<DateRangePicker>(parameters => parameters
+            .Add(p => p.StartDate, new System.DateTime(2024, 6, 10))
+            .Add(p => p.EndDate, new System.DateTime(2024, 6, 15)));
+
+        // Act
+        cut.Find(".daterange-icon").Click();
+
+        // Assert
+        FindStartDateButton(cut, new System.DateTime(2024, 6, 9)).ClassList.Contains("in-range").ShouldBeFalse();
+        FindStartDateButton(cut, new System.DateTime(2024, 6, 10)).ClassList.Contains("range-start").ShouldBeTrue();
+        FindStartDateButton(cut, new System.DateTime(2024, 6, 12)).ClassList.Contains("in-range").ShouldBeTrue();
+        FindStartDateButton(cut, new System.DateTime(2024, 6, 16)).ClassList.Contains("in-range").ShouldBeFalse();
+    }
+
+    [Fact]
     public void DateRangePicker_InvokesOnChange_WhenApplyClicked()
     {
         // Arrange
@@ -288,6 +363,140 @@ public class DateRangePickerTests : TestBase
         // Assert
         selectedStart.ShouldBe(new System.DateTime(2024, 6, 20));
         selectedEnd.ShouldBeNull();
+    }
+
+    [Fact]
+    public void DateRangePicker_ApplyInvokesBindingAndCompatibilityCallbacksOnce()
+    {
+        var expectedStart = new System.DateTime(2024, 6, 10);
+        var expectedEnd = new System.DateTime(2024, 6, 15);
+        System.DateTime? boundStart = null;
+        System.DateTime? boundEnd = null;
+        (System.DateTime? StartDate, System.DateTime? EndDate) compatibilityRange = default;
+        var startCallbackCount = 0;
+        var endCallbackCount = 0;
+        var compatibilityCallbackCount = 0;
+        var cut = Render<DateRangePicker>(parameters => parameters
+            .Add(p => p.StartDate, new System.DateTime(2024, 6, 1))
+            .Add(p => p.EndDate, new System.DateTime(2024, 6, 20))
+            .Add(p => p.StartDateChanged, date =>
+            {
+                startCallbackCount++;
+                boundStart = date;
+            })
+            .Add(p => p.EndDateChanged, date =>
+            {
+                endCallbackCount++;
+                boundEnd = date;
+            })
+            .Add(p => p.OnChange, range =>
+            {
+                compatibilityCallbackCount++;
+                compatibilityRange = range;
+            }));
+
+        cut.Find(".daterange-icon").Click();
+        FindStartDateButton(cut, expectedStart).Click();
+        FindEndDateButton(cut, expectedEnd).Click();
+
+        startCallbackCount.ShouldBe(0);
+        endCallbackCount.ShouldBe(0);
+        compatibilityCallbackCount.ShouldBe(0);
+
+        cut.Find(".daterange-apply-btn").Click();
+
+        startCallbackCount.ShouldBe(1);
+        endCallbackCount.ShouldBe(1);
+        compatibilityCallbackCount.ShouldBe(1);
+        boundStart.ShouldBe(expectedStart);
+        boundEnd.ShouldBe(expectedEnd);
+        compatibilityRange.StartDate.ShouldBe(expectedStart);
+        compatibilityRange.EndDate.ShouldBe(expectedEnd);
+        cut.FindAll(".daterange-popup").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void DateRangePicker_ForwardsAdditionalAttributesToRoot()
+    {
+        var cut = Render<DateRangePicker>(parameters => parameters
+            .AddUnmatched("data-testid", "trip-range")
+            .AddUnmatched("aria-label", "Trip dates"));
+
+        var root = cut.Find(".vibe-daterange-picker");
+        root.GetAttribute("data-testid")!.ShouldBe("trip-range");
+        root.GetAttribute("aria-label")!.ShouldBe("Trip dates");
+    }
+
+    [Fact]
+    public void DateRangePicker_InputKeyboardOpen_FocusesBoundStartDate()
+    {
+        JSInterop.SetupModule("./_content/Vibe.UI/js/vibe-dom.js");
+        var startDate = new System.DateTime(2024, 6, 15);
+        var cut = Render<DateRangePicker>(parameters => parameters
+            .Add(p => p.StartDate, startDate)
+            .Add(p => p.EndDate, startDate.AddDays(5)));
+
+        cut.FindAll(".daterange-inputs input")[0].KeyDown("Enter");
+
+        var focusedDay = FindStartDateButton(cut, startDate);
+        focusedDay.GetAttribute("tabindex")!.ShouldBe("0");
+        cut.FindAll(".daterange-day").Count(day => day.GetAttribute("tabindex") == "0").ShouldBe(1);
+        JSInterop.Invocations.Last().Identifier.ShouldBe("focusElement");
+        JSInterop.Invocations.Last().Arguments[0].ShouldBe(focusedDay.Id);
+    }
+
+    [Fact]
+    public void DateRangePicker_SelectingStart_MovesRovingFocusToSameDayInEndCalendar()
+    {
+        JSInterop.SetupModule("./_content/Vibe.UI/js/vibe-dom.js");
+        var newStartDate = new System.DateTime(2024, 6, 10);
+        var cut = Render<DateRangePicker>(parameters => parameters
+            .Add(p => p.StartDate, new System.DateTime(2024, 6, 1)));
+
+        cut.Find(".daterange-icon").Click();
+        FindStartDateButton(cut, newStartDate).Click();
+
+        var focusedEndDay = FindEndDateButton(cut, newStartDate);
+        focusedEndDay.GetAttribute("tabindex")!.ShouldBe("0");
+        focusedEndDay.HasAttribute("disabled").ShouldBeFalse();
+        JSInterop.Invocations.Last().Identifier.ShouldBe("focusElement");
+        JSInterop.Invocations.Last().Arguments[0].ShouldBe(focusedEndDay.Id);
+    }
+
+    [Fact]
+    public void DateRangePicker_RightArrow_MovesFocusAcrossMonthBoundary()
+    {
+        JSInterop.SetupModule("./_content/Vibe.UI/js/vibe-dom.js");
+        var startDate = new System.DateTime(2024, 6, 30);
+        var nextDate = startDate.AddDays(1);
+        var cut = Render<DateRangePicker>(parameters => parameters
+            .Add(p => p.StartDate, startDate)
+            .Add(p => p.EndDate, new System.DateTime(2024, 7, 5)));
+
+        cut.Find(".daterange-icon").Click();
+        FindStartDateButton(cut, startDate).KeyDown("ArrowRight");
+
+        var focusedDay = FindStartDateButton(cut, nextDate);
+        focusedDay.GetAttribute("tabindex")!.ShouldBe("0");
+        JSInterop.Invocations.Last().Identifier.ShouldBe("focusElement");
+        JSInterop.Invocations.Last().Arguments[0].ShouldBe(focusedDay.Id);
+    }
+
+    [Fact]
+    public void DateRangePicker_EscapeClosesPopup_AndRestoresOriginatingEndInputFocus()
+    {
+        JSInterop.SetupModule("./_content/Vibe.UI/js/vibe-dom.js");
+        var cut = Render<DateRangePicker>(parameters => parameters
+            .Add(p => p.StartDate, new System.DateTime(2024, 6, 10))
+            .Add(p => p.EndDate, new System.DateTime(2024, 6, 15)));
+        var endInput = cut.FindAll(".daterange-inputs input")[1];
+
+        endInput.Click();
+        cut.Find(".daterange-popup").KeyDown("Escape");
+
+        cut.FindAll(".daterange-popup").ShouldBeEmpty();
+        JSInterop.Invocations.Last().Identifier.ShouldBe("focusElement");
+        JSInterop.Invocations.Last().Arguments[0].ShouldBe(endInput.Id);
     }
 
     private static AngleSharp.Dom.IElement FindStartDateButton(IRenderedComponent<DateRangePicker> cut, System.DateTime date)

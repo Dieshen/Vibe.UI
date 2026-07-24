@@ -1,0 +1,26 @@
+# Keep source and generated text deterministic across operating systems.
+* text=auto eol=lf
+
+# Preserve native Windows line endings where tooling conventionally expects them.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.psm1 text eol=crlf
+*.sln text eol=crlf
+
+# Never apply text normalization to binary assets or build artifacts.
+*.dll binary
+*.exe binary
+*.gif binary
+*.ico binary
+*.jpeg binary
+*.jpg binary
+*.nupkg binary
+*.pdb binary
+*.png binary
+*.snk binary
+*.ttf binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.zip binary

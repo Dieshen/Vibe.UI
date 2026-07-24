@@ -1,16 +1,24 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
 
-<label class="@CombinedClass @(Disabled ? "disabled" : string.Empty)">
-    <input type="checkbox" id="@Id" name="@Name" value="@Value" class="switch-input" role="switch"
-        checked="@currentChecked" aria-checked="@currentChecked.ToString().ToLowerInvariant()" @onchange="OnToggleChanged" disabled="@Disabled"
-        required="@Required"
+<label class="@CombinedClass" aria-disabled="@(Disabled ? "true" : null)">
+    <input type="checkbox" id="@EffectiveId" name="@Name" value="@Value" class="switch-input" role="switch"
+        checked="@currentChecked" aria-checked="@currentChecked.ToString().ToLowerInvariant()" aria-label="@EffectiveAriaLabel"
+        aria-describedby="@EffectiveDescribedBy" aria-invalid="@AriaInvalidValue" aria-errormessage="@EffectiveErrorMessageId"
+        @onchange="OnToggleChanged" disabled="@Disabled"
+        required="@EffectiveRequired" aria-required="@(EffectiveRequired ? "true" : null)"
         @attributes="AdditionalAttributes" />
     <span class="switch-thumb"></span>
 </label>
 
 @code {
     private bool currentChecked;
+
+    /// <summary>
+    /// Gets the relationships cascaded by an ancestor <see cref="FormField{TValue}"/>, if any.
+    /// </summary>
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
 
     /// <summary>
     /// Gets or sets whether the switch is checked.
@@ -23,6 +31,24 @@
     /// </summary>
     [Parameter]
     public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets an accessible label for the switch.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Gets or sets an accessible label that takes precedence over <see cref="Label"/>.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the visual size: sm, default, or lg.
+    /// </summary>
+    [Parameter]
+    public string Size { get; set; } = "default";
 
     /// <summary>
     /// Gets or sets the switch input ID.
@@ -57,7 +83,12 @@
     /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
-    protected override string ComponentClass => "vibe-switch";
+    protected override string ComponentClass => new ClassBuilder()
+        .Add("vibe-switch")
+        .AddIf($"vibe-switch-{NormalizedSize}", !string.Equals(NormalizedSize, "default", StringComparison.Ordinal))
+        .AddIf("disabled", Disabled)
+        .AddIf("vibe-switch-error", FieldContext?.IsInvalid == true)
+        .Build();
 
     protected override void OnParametersSet()
     {
@@ -78,4 +109,42 @@
         currentChecked = value;
         return CheckedChanged.InvokeAsync(value);
     }
+
+    private string? EffectiveId => FieldContext?.ControlId ?? Id;
+
+    private string? EffectiveDescribedBy => FieldContext?.DescribedBy;
+
+    private bool EffectiveRequired => Required || FieldContext?.IsRequired == true;
+
+    private string? AriaInvalidValue => FieldContext?.IsInvalid == true ? "true" : null;
+
+    private string? EffectiveErrorMessageId => FieldContext?.IsInvalid == true && !string.IsNullOrWhiteSpace(FieldContext.ErrorId)
+        ? FieldContext.ErrorId
+        : null;
+
+    private string NormalizedSize => NormalizeSize(Size);
+
+    private string? EffectiveAriaLabel
+    {
+        get
+        {
+            if (HasAdditionalAttribute("aria-label") || HasAdditionalAttribute("aria-labelledby"))
+            {
+                return null;
+            }
+
+            var value = string.IsNullOrWhiteSpace(AriaLabel) ? Label : AriaLabel;
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
+    }
+
+    private static string NormalizeSize(string? value) => value?.Trim().ToLowerInvariant() switch
+    {
+        "sm" or "small" => "sm",
+        "lg" or "large" => "lg",
+        _ => "default"
+    };
+
+    private bool HasAdditionalAttribute(string attributeName) =>
+        AdditionalAttributes?.Keys.Any(key => string.Equals(key, attributeName, StringComparison.OrdinalIgnoreCase)) == true;
 }

@@ -156,8 +156,6 @@ public class CommandPalettePage
     public async Task PressEnterAsync()
     {
         await _page.Keyboard.PressAsync("Enter");
-        // Wait for navigation to complete
-        await _page.WaitForLoadStateAsync(LoadState.NetworkIdle);
     }
 
     /// <summary>

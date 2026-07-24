@@ -1,0 +1,21 @@
+name: Validate CSS beta core profile
+description: >-
+  Scans the shipping projects and docs sample for utility classes outside the
+  Vibe.UI.CSS beta core profile, failing on any unknown class. Defined once and
+  reused by every workflow so the scanned surface and ignore list cannot drift.
+
+runs:
+  using: composite
+  steps:
+    - name: Validate CSS beta core profile
+      shell: bash
+      # The docs sample legitimately authors a few theme hook classes that are
+      # component tokens, not generated utilities; they are ignored here only.
+      run: |
+        run_scan() {
+          dotnet run --project src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build -- \
+            scan "$1" --patterns "*.razor,*.cshtml,*.html,*.cs" --fail-on-unknown "${@:2}"
+        }
+        run_scan src/Vibe.UI
+        run_scan src/Vibe.UI.CLI
+        run_scan samples/Vibe.UI.Docs --ignore "vibe-theme,vibe-my-app-theme,vibe-theme-toggle"

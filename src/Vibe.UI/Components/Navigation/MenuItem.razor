@@ -9,7 +9,13 @@
         aria-disabled="@AriaDisabled"
         @onclick="HandleClick"
         @attributes="AdditionalAttributes">
-    @if (!string.IsNullOrEmpty(Icon))
+    @if (!string.IsNullOrWhiteSpace(IconName))
+    {
+        <span class="menu-item-icon" aria-hidden="true">
+            <Icon Name="@IconName" Size="16" />
+        </span>
+    }
+    else if (!string.IsNullOrEmpty(Icon))
     {
         <span class="menu-item-icon" aria-hidden="true">@Icon</span>
     }
@@ -28,6 +34,12 @@
     /// </summary>
     [Parameter]
     public string? Icon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Lucide icon name rendered before the item content.
+    /// </summary>
+    [Parameter]
+    public string? IconName { get; set; }
 
     /// <summary>
     /// Gets or sets whether this is a danger action

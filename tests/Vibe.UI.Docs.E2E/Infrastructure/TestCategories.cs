@@ -26,6 +26,11 @@ public static class TestCategories
     public const string Mobile = "Mobile";
 
     /// <summary>
+    /// Visual tests - Deterministic screenshot comparison against reviewed baselines
+    /// </summary>
+    public const string Visual = "Visual";
+
+    /// <summary>
     /// Compatibility tests - Browser smoke tests for supported hosting models
     /// </summary>
     public const string Compatibility = "Compatibility";

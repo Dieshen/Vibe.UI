@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: 💬 Discussions
-    url: https://github.com/Dieshen/Vibe.UI/discussions
+    url: https://github.com/Narcoleptic-Fox/Vibe.UI/discussions
     about: Ask questions and discuss ideas with the community
   - name: 📚 Documentation
-    url: https://github.com/Dieshen/Vibe.UI#readme
+    url: https://github.com/Narcoleptic-Fox/Vibe.UI#readme
     about: Read the documentation and guides
   - name: 🐛 Security Issue
-    url: https://github.com/Dieshen/Vibe.UI/security/advisories/new
+    url: https://github.com/Narcoleptic-Fox/Vibe.UI/security/advisories/new
     about: Report a security vulnerability privately

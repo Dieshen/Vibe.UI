@@ -98,6 +98,50 @@ public class SwitchTests : TestBase
     }
 
     [Fact]
+    public void Switch_UsesLabelAsAccessibleName()
+    {
+        var cut = Render<Switch>(parameters => parameters
+            .Add(p => p.Label, "Enable notifications"));
+
+        cut.Find("input[role='switch']").GetAttribute("aria-label")!.ShouldBe("Enable notifications");
+    }
+
+    [Fact]
+    public void Switch_AriaLabelTakesPrecedenceOverLabel()
+    {
+        var cut = Render<Switch>(parameters => parameters
+            .Add(p => p.Label, "Visible context")
+            .Add(p => p.AriaLabel, "Share across devices"));
+
+        cut.Find("input[role='switch']").GetAttribute("aria-label")!.ShouldBe("Share across devices");
+    }
+
+    [Theory]
+    [InlineData("sm", "vibe-switch-sm")]
+    [InlineData("Small", "vibe-switch-sm")]
+    [InlineData("lg", "vibe-switch-lg")]
+    [InlineData("Large", "vibe-switch-lg")]
+    public void Switch_AppliesNormalizedSizeClass(string size, string expectedClass)
+    {
+        var cut = Render<Switch>(parameters => parameters
+            .Add(p => p.Size, size));
+
+        cut.Find("label").ClassList.ShouldContain(expectedClass);
+    }
+
+    [Fact]
+    public void Switch_InvalidSizeFallsBackToDefault()
+    {
+        var cut = Render<Switch>(parameters => parameters
+            .Add(p => p.Size, "oversized injected"));
+
+        var classes = cut.Find("label").ClassList;
+        classes.ShouldNotContain("vibe-switch-sm");
+        classes.ShouldNotContain("vibe-switch-lg");
+        classes.ShouldNotContain("injected");
+    }
+
+    [Fact]
     public void Switch_ForwardsFormSemantics_ToNativeInput()
     {
         // Act

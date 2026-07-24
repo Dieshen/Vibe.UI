@@ -25,6 +25,8 @@
 </nav>
 
 @code {
+    private readonly List<NavigationMenuItem> _keyboardItems = [];
+
     /// <summary>
     /// Gets or sets the content of the navigation menu.
     /// </summary>
@@ -145,6 +147,48 @@
 
         ActiveItemId = null;
         StateHasChanged();
+    }
+
+    internal void RegisterKeyboardItem(NavigationMenuItem item)
+    {
+        if (!_keyboardItems.Contains(item))
+        {
+            _keyboardItems.Add(item);
+        }
+    }
+
+    internal void UnregisterKeyboardItem(NavigationMenuItem item)
+    {
+        _keyboardItems.Remove(item);
+    }
+
+    internal Task FocusRelativeItemAsync(NavigationMenuItem currentItem, int offset)
+    {
+        var enabledItems = _keyboardItems.Where(item => !item.Disabled).ToList();
+        if (enabledItems.Count == 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        var currentIndex = enabledItems.IndexOf(currentItem);
+        if (currentIndex < 0)
+        {
+            currentIndex = offset > 0 ? -1 : 0;
+        }
+
+        var nextIndex = (currentIndex + offset + enabledItems.Count) % enabledItems.Count;
+        return enabledItems[nextIndex].FocusTriggerAsync();
+    }
+
+    internal Task FocusBoundaryItemAsync(bool last)
+    {
+        var enabledItems = _keyboardItems.Where(item => !item.Disabled).ToList();
+        if (enabledItems.Count == 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        return enabledItems[last ? enabledItems.Count - 1 : 0].FocusTriggerAsync();
     }
 
     private static string? NormalizeItemId(string? id)

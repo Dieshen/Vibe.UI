@@ -116,6 +116,9 @@ public class TimelineTests : TestBase
         var marker = cut.Find(".timeline-marker");
         marker.ShouldNotBeNull();
         marker.ClassList.ShouldContain("marker-success");
+        var status = cut.Find(".timeline-status");
+        status.TextContent.ShouldBe("Success");
+        status.ClassList.ShouldContain("status-success");
     }
 
     [Fact]
@@ -246,6 +249,7 @@ public class TimelineTests : TestBase
         var marker = cut.Find(".timeline-marker");
         marker.ClassList.ShouldContain("marker-default");
         marker.ClassList.ShouldNotContain("marker-999");
+        cut.FindAll(".timeline-status").ShouldBeEmpty();
     }
 
     [Fact]
@@ -262,5 +266,22 @@ public class TimelineTests : TestBase
         // Assert
         cut.FindAll(".timeline-item").Count.ShouldBe(2);
         cut.FindAll(".timeline-connector").Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void Timeline_AlternatePositionUsesSharedLayoutClass()
+    {
+        var cut = Render<Timeline>(parameters => parameters
+            .Add(p => p.Position, Timeline.TimelinePosition.Alternate)
+            .Add(p => p.Items,
+            [
+                new() { Title = "Planned", Status = Timeline.TimelineStatus.Info },
+                new() { Title = "Released", Status = Timeline.TimelineStatus.Success }
+            ]));
+
+        cut.Find(".vibe-timeline").ClassList.ShouldContain("timeline-alternate");
+        cut.FindAll(".timeline-item").Count.ShouldBe(2);
+        cut.FindAll(".timeline-status").Select(element => element.TextContent)
+            .ShouldBe(new[] { "Info", "Success" });
     }
 }

@@ -18,9 +18,58 @@ on:
 env:
   DOTNET_VERSION: '10.0.x'
 
+permissions:
+  contents: read
+
 jobs:
+  visual-regression:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v7.0.0
+
+    - name: Setup pinned .NET SDK
+      uses: actions/setup-dotnet@v5.4.0
+      with:
+        global-json-file: global.json
+
+    - name: Restore visual test dependencies
+      run: |
+        dotnet restore samples/Vibe.UI.Docs/Vibe.UI.Docs.csproj
+        dotnet restore tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj
+
+    - name: Build docs and visual tests
+      run: |
+        dotnet build samples/Vibe.UI.Docs/Vibe.UI.Docs.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+        dotnet build tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
+
+    - name: Install Chromium
+      run: pwsh tests/Vibe.UI.Docs.E2E/bin/Release/net10.0/playwright.ps1 install chromium
+
+    - name: Compare reviewed visual baselines
+      run: |
+        $env:BROWSER = 'chromium'
+        dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Visual -- RunConfiguration.TestSessionTimeout=900000
+
+    - name: Upload visual regression artifacts
+      if: failure()
+      uses: actions/upload-artifact@v7.0.1
+      with:
+        name: release-visual-regression-windows-chromium
+        path: |
+          output/playwright/visual-regression/**
+          Artifacts/**
+        if-no-files-found: ignore
+        retention-days: 14
+
   publish:
+    needs: visual-regression
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      dry_run: ${{ steps.release.outputs.dry_run }}
+      production_ref_allowed: ${{ steps.release.outputs.production_ref_allowed }}
 
     steps:
     - name: Checkout code
@@ -28,10 +77,10 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Setup .NET
+    - name: Setup pinned .NET SDK
       uses: actions/setup-dotnet@v5.4.0
       with:
-        dotnet-version: ${{ env.DOTNET_VERSION }}
+        global-json-file: global.json
 
     - name: Setup Node.js
       uses: actions/setup-node@v6.4.0
@@ -42,43 +91,64 @@ jobs:
           src/Vibe.UI/ts-src/package-lock.json
           samples/Vibe.UI.Docs/ts-src/package-lock.json
 
-    - name: Determine version
-      id: version
-      run: |
-        if [ "${{ github.event_name }}" == "release" ]; then
-          VERSION="${{ github.event.release.tag_name }}"
-          # Remove 'v' prefix if present
-          VERSION="${VERSION#v}"
-        else
-          VERSION="${{ inputs.version }}"
-        fi
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "Publishing version: $VERSION"
-
-    - name: Determine publish mode
-      id: publish_mode
-      run: |
-        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-          DRY_RUN="${{ inputs.dry_run }}"
-        else
-          DRY_RUN="false"
-        fi
-
-        echo "dry_run=$DRY_RUN" >> $GITHUB_OUTPUT
-        echo "Dry run: $DRY_RUN"
-
-    - name: Validate beta version
+    - name: Validate release parameters
+      id: release
+      env:
+        EVENT_NAME: ${{ github.event_name }}
+        INPUT_DRY_RUN: ${{ inputs.dry_run }}
+        INPUT_VERSION: ${{ inputs.version }}
+        RELEASE_TAG: ${{ github.event.release.tag_name }}
+        SOURCE_REF: ${{ github.ref }}
       run: |
         set -euo pipefail
-        VERSION="${{ steps.version.outputs.version }}"
 
-        case "$VERSION" in
-          1.0.0-beta|1.0.0-beta.[0-9]*) ;;
-          *)
-            echo "::error::Beta publish version must be 1.0.0-beta or 1.0.0-beta.N, got '${VERSION}'"
-            exit 1
-            ;;
-        esac
+        if [[ "$EVENT_NAME" == "release" ]]; then
+          RAW_VERSION="$RELEASE_TAG"
+          DRY_RUN="true"
+        elif [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+          RAW_VERSION="$INPUT_VERSION"
+          DRY_RUN="$INPUT_DRY_RUN"
+        else
+          echo "::error::Unsupported publish event '${EVENT_NAME}'"
+          exit 1
+        fi
+
+        VERSION="${RAW_VERSION#v}"
+        if [[ ! "$VERSION" =~ ^1\.0\.0-beta(\.[0-9]+)?$ ]]; then
+          echo "::error::Beta publish version must match ^1\\.0\\.0-beta(\\.[0-9]+)?$"
+          exit 1
+        fi
+
+        if [[ "$DRY_RUN" != "true" && "$DRY_RUN" != "false" ]]; then
+          echo "::error::Dry-run input must be true or false, got '${DRY_RUN}'"
+          exit 1
+        fi
+
+        if [[ "$DRY_RUN" == "false" && "$EVENT_NAME" != "workflow_dispatch" ]]; then
+          echo "::error::Production publishing requires a manual workflow dispatch"
+          exit 1
+        fi
+
+        PRODUCTION_REF_ALLOWED="false"
+        if [[ "$SOURCE_REF" == "refs/heads/main" ]]; then
+          PRODUCTION_REF_ALLOWED="true"
+        elif [[ "$SOURCE_REF" =~ ^refs/tags/v?1\.0\.0-beta(\.[0-9]+)?$ ]]; then
+          TAG_VERSION="${SOURCE_REF#refs/tags/}"
+          TAG_VERSION="${TAG_VERSION#v}"
+          if [[ "$TAG_VERSION" == "$VERSION" ]]; then
+            PRODUCTION_REF_ALLOWED="true"
+          fi
+        fi
+
+        if [[ "$EVENT_NAME" == "release" && "$SOURCE_REF" != "refs/tags/${RELEASE_TAG}" ]]; then
+          echo "::error::Release ref '${SOURCE_REF}' does not match release tag '${RELEASE_TAG}'"
+          exit 1
+        fi
+
+        if [[ "$DRY_RUN" == "false" && "$PRODUCTION_REF_ALLOWED" != "true" ]]; then
+          echo "::error::Production publishing is allowed only from main or a matching beta tag; got '${SOURCE_REF}'"
+          exit 1
+        fi
 
         for project in \
           src/Vibe.UI.CSS/Vibe.UI.CSS.csproj \
@@ -91,6 +161,11 @@ jobs:
             exit 1
           fi
         done
+
+        printf 'version=%s\n' "$VERSION" >> "$GITHUB_OUTPUT"
+        printf 'dry_run=%s\n' "$DRY_RUN" >> "$GITHUB_OUTPUT"
+        printf 'production_ref_allowed=%s\n' "$PRODUCTION_REF_ALLOWED" >> "$GITHUB_OUTPUT"
+        echo "Validated package version ${VERSION}; dry run: ${DRY_RUN}."
 
     - name: Validate Vibe.UI TypeScript
       working-directory: src/Vibe.UI/ts-src
@@ -145,6 +220,9 @@ jobs:
         dotnet build samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
         dotnet build tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true
 
+    - name: Validate CSS beta core profile
+      uses: ./.github/actions/validate-css-core-profile
+
     - name: Restore unit tests
       run: |
         dotnet restore tests/Vibe.UI.CSS.Tests/Vibe.UI.CSS.Tests.csproj
@@ -166,6 +244,9 @@ jobs:
     - name: Run docs smoke browser tests
       run: BROWSER=chromium dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Smoke -- RunConfiguration.TestSessionTimeout=600000
 
+    - name: Run docs functional browser tests
+      run: BROWSER=chromium dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Functional -- RunConfiguration.TestSessionTimeout=1200000
+
     - name: Run compatibility browser tests
       run: |
         for browser in chromium firefox webkit; do
@@ -174,30 +255,70 @@ jobs:
         done
 
     - name: Pack Vibe.UI.CSS
+      env:
+        PACKAGE_VERSION: ${{ steps.release.outputs.version }}
       run: |
-        dotnet pack src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build --output ./packages /p:Version=${{ steps.version.outputs.version }} /p:PackageVersion=${{ steps.version.outputs.version }}
+        dotnet pack src/Vibe.UI.CSS/Vibe.UI.CSS.csproj --configuration Release --no-build --output ./packages /p:Version="$PACKAGE_VERSION" /p:PackageVersion="$PACKAGE_VERSION"
 
     - name: Pack Vibe.UI
+      env:
+        PACKAGE_VERSION: ${{ steps.release.outputs.version }}
       run: |
-        dotnet pack src/Vibe.UI/Vibe.UI.csproj --configuration Release --no-build --output ./packages /p:Version=${{ steps.version.outputs.version }} /p:PackageVersion=${{ steps.version.outputs.version }}
+        dotnet pack src/Vibe.UI/Vibe.UI.csproj --configuration Release --no-build --output ./packages /p:Version="$PACKAGE_VERSION" /p:PackageVersion="$PACKAGE_VERSION"
 
     - name: Pack Vibe.UI.CLI
+      env:
+        PACKAGE_VERSION: ${{ steps.release.outputs.version }}
       run: |
-        dotnet pack src/Vibe.UI.CLI/Vibe.UI.CLI.csproj --configuration Release --no-build --output ./packages /p:Version=${{ steps.version.outputs.version }} /p:PackageVersion=${{ steps.version.outputs.version }}
+        dotnet pack src/Vibe.UI.CLI/Vibe.UI.CLI.csproj --configuration Release --no-build --output ./packages /p:Version="$PACKAGE_VERSION" /p:PackageVersion="$PACKAGE_VERSION"
 
     - name: List packages
       run: ls -lh ./packages/
 
+    - name: Configure candidate package source mapping
+      shell: pwsh
+      run: |
+        $localSource = [System.Security.SecurityElement]::Escape((Resolve-Path ./packages).Path)
+        $globalPackages = [System.Security.SecurityElement]::Escape(
+          (Join-Path $env:RUNNER_TEMP "vibe-candidate-packages"))
+        $configPath = Join-Path $env:RUNNER_TEMP "vibe-candidate-nuget.config"
+        Set-Content -LiteralPath $configPath -Encoding utf8NoBOM -Value @"
+        <?xml version="1.0" encoding="utf-8"?>
+        <configuration>
+          <config>
+            <add key="globalPackagesFolder" value="$globalPackages" />
+          </config>
+          <packageSources>
+            <clear />
+            <add key="candidate" value="$localSource" />
+            <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+          </packageSources>
+          <packageSourceMapping>
+            <clear />
+            <packageSource key="candidate">
+              <package pattern="Vibe.UI" />
+              <package pattern="Vibe.UI.*" />
+            </packageSource>
+            <packageSource key="nuget.org">
+              <package pattern="*" />
+            </packageSource>
+          </packageSourceMapping>
+        </configuration>
+        "@
+
     - name: Validate local packages
-      run: pwsh scripts/Validate-LocalPackages.ps1 -PackagesPath ./packages -Version "${{ steps.version.outputs.version }}"
+      env:
+        PACKAGE_VERSION: ${{ steps.release.outputs.version }}
+      run: pwsh scripts/Validate-LocalPackages.ps1 -PackagesPath ./packages -Version "$PACKAGE_VERSION"
 
     - name: Rebuild compatibility fixtures from local packages
+      env:
+        PACKAGE_VERSION: ${{ steps.release.outputs.version }}
       run: |
-        dotnet restore samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --source ./packages --source https://api.nuget.org/v3/index.json -p:VibeUsePackageReferences=true -p:VibePackageVersion="${{ steps.version.outputs.version }}"
-        dotnet restore samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --source ./packages --source https://api.nuget.org/v3/index.json -p:VibeUsePackageReferences=true -p:VibePackageVersion="${{ steps.version.outputs.version }}"
-        dotnet build samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion="${{ steps.version.outputs.version }}"
-        dotnet build samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion="${{ steps.version.outputs.version }}"
-        dotnet build samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion="${{ steps.version.outputs.version }}"
+        dotnet restore samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --configfile "$RUNNER_TEMP/vibe-candidate-nuget.config" -p:VibeUsePackageReferences=true -p:VibePackageVersion="$PACKAGE_VERSION"
+        dotnet restore samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configfile "$RUNNER_TEMP/vibe-candidate-nuget.config" -p:VibeUsePackageReferences=true -p:VibePackageVersion="$PACKAGE_VERSION"
+        dotnet build samples/Vibe.UI.Compatibility.StandaloneClient/Vibe.UI.Compatibility.StandaloneClient.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion="$PACKAGE_VERSION"
+        dotnet build samples/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp/Vibe.UI.Compatibility.WebApp.csproj --configuration Release --no-restore -p:TreatWarningsAsErrors=true -p:VibeUsePackageReferences=true -p:VibePackageVersion="$PACKAGE_VERSION"
 
     - name: Run package compatibility browser tests
       run: |
@@ -206,26 +327,9 @@ jobs:
           BROWSER="${browser}" dotnet test tests/Vibe.UI.Docs.E2E/Vibe.UI.Docs.E2E.csproj --configuration Release --no-build --verbosity normal --filter Category=Compatibility -- RunConfiguration.TestSessionTimeout=600000
         done
 
-    - name: Validate NuGet API key
-      if: steps.publish_mode.outputs.dry_run != 'true'
-      env:
-        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-      run: |
-        if [ -z "${NUGET_API_KEY}" ]; then
-          echo "::error::NUGET_API_KEY secret is required for non-dry-run publishing"
-          exit 1
-        fi
-
     - name: Dry run complete
-      if: steps.publish_mode.outputs.dry_run == 'true'
+      if: steps.release.outputs.dry_run == 'true'
       run: echo "Dry run completed. Packages were validated and will be uploaded as artifacts, but not pushed to NuGet.org."
-
-    - name: Push to NuGet.org
-      if: steps.publish_mode.outputs.dry_run != 'true'
-      run: |
-        dotnet nuget push ./packages/Vibe.UI.CSS.${{ steps.version.outputs.version }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
-        dotnet nuget push ./packages/Vibe.UI.${{ steps.version.outputs.version }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
-        dotnet nuget push ./packages/Vibe.UI.CLI.${{ steps.version.outputs.version }}.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
 
     - name: Upload packages as artifacts
       uses: actions/upload-artifact@v7.0.1
@@ -233,3 +337,53 @@ jobs:
         name: nuget-packages
         path: ./packages/*.nupkg
         retention-days: 90
+
+  promote:
+    name: Promote packages to NuGet.org
+    needs: publish
+    if: ${{ github.event_name == 'workflow_dispatch' && needs.publish.outputs.dry_run == 'false' && needs.publish.outputs.production_ref_allowed == 'true' }}
+    runs-on: ubuntu-latest
+    concurrency: nuget-production
+    environment:
+      name: nuget-production
+
+    steps:
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v5.4.0
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Download validated packages
+      uses: actions/download-artifact@v7.0.0
+      with:
+        name: nuget-packages
+        path: ./packages
+
+    - name: Push validated packages to NuGet.org
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        PACKAGE_VERSION: ${{ needs.publish.outputs.version }}
+      run: |
+        set -euo pipefail
+
+        if [[ ! "$PACKAGE_VERSION" =~ ^1\.0\.0-beta(\.[0-9]+)?$ ]]; then
+          echo "::error::Refusing to publish an invalid beta version"
+          exit 1
+        fi
+
+        if [[ -z "$NUGET_API_KEY" ]]; then
+          echo "::error::NUGET_API_KEY is required in the nuget-production environment"
+          exit 1
+        fi
+
+        for package in \
+          "./packages/Vibe.UI.CSS.${PACKAGE_VERSION}.nupkg" \
+          "./packages/Vibe.UI.${PACKAGE_VERSION}.nupkg" \
+          "./packages/Vibe.UI.CLI.${PACKAGE_VERSION}.nupkg"
+        do
+          if [[ ! -f "$package" ]]; then
+            echo "::error::Validated package artifact is missing: '${package}'"
+            exit 1
+          fi
+          dotnet nuget push "$package" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+        done

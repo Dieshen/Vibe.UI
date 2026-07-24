@@ -13,11 +13,16 @@ public class DropdownMenuTests : TestBase
 
         var trigger = cut.Find(".dropdown-trigger");
         trigger.TextContent.ShouldBe("Actions");
-        trigger.GetAttribute("role").ShouldBe("button");
-        trigger.GetAttribute("tabindex").ShouldBe("0");
+        trigger.TagName.ShouldBe("BUTTON");
+        trigger.GetAttribute("type").ShouldBe("button");
+        trigger.QuerySelector("button").ShouldBeNull();
         trigger.GetAttribute("aria-haspopup").ShouldBe("menu");
         trigger.GetAttribute("aria-expanded").ShouldBe("false");
         trigger.GetAttribute("aria-controls").ShouldNotBeNullOrWhiteSpace();
+        JSInterop.Invocations.ShouldContain(invocation =>
+            invocation.Identifier == "import" &&
+            invocation.Arguments[0] != null &&
+            invocation.Arguments[0]!.ToString() == "./_content/Vibe.UI/js/vibe-menu-keyboard.js");
     }
 
     [Fact]
@@ -42,7 +47,9 @@ public class DropdownMenuTests : TestBase
         cut.Find(".dropdown-content").TextContent.ShouldContain("Delete");
         cut.Find(".dropdown-trigger").GetAttribute("aria-expanded").ShouldBe("true");
         cut.Find(".dropdown-content").GetAttribute("role").ShouldBe("menu");
+        cut.Find(".dropdown-content").GetAttribute("tabindex").ShouldBe("-1");
         cut.Find(".dropdown-content").GetAttribute("id").ShouldBe(cut.Find(".dropdown-trigger").GetAttribute("aria-controls"));
+        cut.Find(".dropdown-content").GetAttribute("aria-labelledby").ShouldBe(cut.Find(".dropdown-trigger").Id);
         cut.Find(".dropdown-backdrop").ShouldNotBeNull();
 
         cut.Find(".dropdown-trigger").Click();
@@ -72,7 +79,7 @@ public class DropdownMenuTests : TestBase
             .Add(p => p.Content, builder => builder.AddContent(0, "Menu item")));
 
         var trigger = cut.Find(".dropdown-trigger");
-        trigger.KeyDown("Enter");
+        trigger.Click();
 
         cut.Find(".dropdown-content").TextContent.ShouldContain("Menu item");
         cut.Find(".dropdown-trigger").GetAttribute("aria-expanded").ShouldBe("true");
@@ -80,9 +87,113 @@ public class DropdownMenuTests : TestBase
         cut.Find(".dropdown-trigger").KeyDown("Escape");
         cut.FindAll(".dropdown-content").ShouldBeEmpty();
         cut.Find(".dropdown-trigger").GetAttribute("aria-expanded").ShouldBe("false");
+    }
 
-        cut.Find(".dropdown-trigger").KeyDown(" ");
-        cut.Find(".dropdown-content").TextContent.ShouldContain("Menu item");
+    [Fact]
+    public void DropdownMenu_ArrowKeysOpenAndRequestBoundaryFocus()
+    {
+        var cut = Render<DropdownMenu>(parameters => parameters
+            .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Actions"))
+            .Add(p => p.Content, builder => builder.AddMarkupContent(0,
+                "<button class=\"dropdown-item\" role=\"menuitem\">Alpha</button>" +
+                "<button class=\"dropdown-item\" role=\"menuitem\">Beta</button>")));
+
+        var trigger = cut.Find(".dropdown-trigger");
+        trigger.KeyDown("ArrowDown");
+
+        cut.Find(".dropdown-content").ShouldNotBeNull();
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "focusFirstItem");
+
+        cut.Find(".dropdown-content").KeyDown("Escape");
+        cut.FindAll(".dropdown-content").ShouldBeEmpty();
+
+        trigger = cut.Find(".dropdown-trigger");
+        trigger.KeyDown("ArrowUp");
+
+        cut.Find(".dropdown-content").ShouldNotBeNull();
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "focusLastItem");
+    }
+
+    [Fact]
+    public void DropdownMenu_DelegatesRovingNavigationAndTypeahead()
+    {
+        var cut = Render<DropdownMenu>(parameters => parameters
+            .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Actions"))
+            .Add(p => p.Content, builder => builder.AddMarkupContent(0,
+                "<button class=\"dropdown-item\" role=\"menuitem\">Alpha</button>" +
+                "<button class=\"dropdown-item\" role=\"menuitem\">Beta</button>")));
+
+        cut.Find(".dropdown-trigger").Click();
+        var menu = cut.Find(".dropdown-content");
+
+        menu.KeyDown("ArrowDown");
+        menu.KeyDown("ArrowUp");
+        menu.KeyDown("Home");
+        menu.KeyDown("End");
+        menu.KeyDown("b");
+
+        JSInterop.Invocations.Count(invocation => invocation.Identifier == "moveFocus").ShouldBe(2);
+        JSInterop.Invocations.Count(invocation => invocation.Identifier == "focusFirstItem").ShouldBeGreaterThanOrEqualTo(2);
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "focusLastItem");
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "focusByTypeahead");
+    }
+
+    [Fact]
+    public void DropdownMenu_TabClosesWithoutRequestingTriggerFocus()
+    {
+        var cut = Render<DropdownMenu>(parameters => parameters
+            .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Actions"))
+            .Add(p => p.Content, builder => builder.AddMarkupContent(0, "<button role=\"menuitem\">Alpha</button>")));
+
+        cut.Find(".dropdown-trigger").KeyDown("ArrowDown");
+        cut.Find(".dropdown-content").KeyDown("Tab");
+
+        cut.FindAll(".dropdown-content").ShouldBeEmpty();
+        cut.Find(".dropdown-trigger").GetAttribute("aria-expanded").ShouldBe("false");
+    }
+
+    [Fact]
+    public void DropdownMenu_ClosesWhenMenuContentIsSelected()
+    {
+        var cut = Render<DropdownMenu>(parameters => parameters
+            .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Actions"))
+            .Add(p => p.Content, builder => builder.AddMarkupContent(0, "<button role=\"menuitem\">Delete</button>")));
+
+        cut.Find(".dropdown-trigger").Click();
+        cut.Find("[role='menuitem']").Click();
+
+        cut.FindAll(".dropdown-content").ShouldBeEmpty();
+        cut.Find(".dropdown-trigger").GetAttribute("aria-expanded").ShouldBe("false");
+    }
+
+    [Fact]
+    public void DropdownMenu_CanKeepContentOpenAfterSelection()
+    {
+        var cut = Render<DropdownMenu>(parameters => parameters
+            .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Actions"))
+            .Add(p => p.Content, builder => builder.AddMarkupContent(0, "<button role=\"menuitem\">Delete</button>"))
+            .Add(p => p.CloseOnSelect, false));
+
+        cut.Find(".dropdown-trigger").Click();
+        cut.Find("[role='menuitem']").Click();
+
+        cut.Find(".dropdown-content").ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void DropdownMenu_DisabledTriggerDoesNotOpen()
+    {
+        var cut = Render<DropdownMenu>(parameters => parameters
+            .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Actions"))
+            .Add(p => p.Content, builder => builder.AddContent(0, "Menu item"))
+            .Add(p => p.Disabled, true));
+
+        var trigger = cut.Find(".dropdown-trigger");
+        trigger.HasAttribute("disabled").ShouldBeTrue();
+        trigger.Click();
+        trigger.KeyDown("ArrowDown");
+
+        cut.FindAll(".dropdown-content").ShouldBeEmpty();
     }
 
     [Fact]

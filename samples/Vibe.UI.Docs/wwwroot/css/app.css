@@ -70,3 +70,40 @@
     color: var(--vibe-foreground);
 }
 
+/* Zinc-500 is too dim for normal text on the docs dark surfaces. */
+.dark .vibe-text-zinc-500 {
+    color: rgb(161 161 170);
+}
+
+main :not(pre) > code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+main li {
+    min-width: 0;
+}
+
+.vibe-overflow-x-auto {
+    scrollbar-width: thin;
+    scrollbar-color: var(--vibe-border) transparent;
+}
+
+.vibe-overflow-x-auto::-webkit-scrollbar {
+    height: 0.5rem;
+}
+
+.vibe-overflow-x-auto::-webkit-scrollbar-thumb {
+    border: 0.125rem solid transparent;
+    border-radius: 999px;
+    background: var(--vibe-border);
+    background-clip: padding-box;
+}
+
+@media (max-width: 40rem) {
+    main .vibe-overflow-x-auto > table.vibe-w-full {
+        min-width: 42rem;
+    }
+}
+

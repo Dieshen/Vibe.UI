@@ -24,13 +24,14 @@
         <div class="vibe-p-6 vibe-rounded-xl vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-800 vibe-bg-white dark:vibe-bg-zinc-900 vibe-flex vibe-justify-center">
             <Menu @bind-IsOpen="previewMenuOpen">
                 <Trigger>
-                    <Button>Open Menu</Button>
+                    <span>Open menu</span>
+                    <Icon Name="chevron-down" Size="16" />
                 </Trigger>
                 <ChildContent>
-                    <MenuItem Icon="🏠" OnClick="@(() => {})">Home</MenuItem>
-                    <MenuItem Icon="⚙️" OnClick="@(() => {})">Settings</MenuItem>
+                    <MenuItem IconName="home" OnClick="@(() => {})">Home</MenuItem>
+                    <MenuItem IconName="settings" OnClick="@(() => {})">Settings</MenuItem>
                     <MenuSeparator />
-                    <MenuItem Icon="🚪" Danger="true" OnClick="@(() => {})">Logout</MenuItem>
+                    <MenuItem IconName="log-out" Danger="true" OnClick="@(() => {})">Log out</MenuItem>
                 </ChildContent>
             </Menu>
         </div>
@@ -50,7 +51,8 @@
             <div class="vibe-mt-4 vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
                 <Menu @bind-IsOpen="basicMenuOpen">
                     <Trigger>
-                        <Button>Actions</Button>
+                        <span>Actions</span>
+                        <Icon Name="chevron-down" Size="16" />
                     </Trigger>
                     <ChildContent>
                         <MenuItem OnClick="@HandleAction">New File</MenuItem>
@@ -76,15 +78,16 @@
             <div class="vibe-mt-4 vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
                 <Menu @bind-IsOpen="iconsMenuOpen">
                     <Trigger>
-                        <Button Variant="ButtonVariant.Outline">User Menu</Button>
+                        <span>User menu</span>
+                        <Icon Name="chevron-down" Size="16" />
                     </Trigger>
                     <ChildContent>
-                        <MenuItem Icon="👤" OnClick="@HandleAction">Profile</MenuItem>
-                        <MenuItem Icon="⚙️" OnClick="@HandleAction">Settings</MenuItem>
-                        <MenuItem Icon="💳" OnClick="@HandleAction">Billing</MenuItem>
+                        <MenuItem IconName="user" OnClick="@HandleAction">Profile</MenuItem>
+                        <MenuItem IconName="settings" OnClick="@HandleAction">Settings</MenuItem>
+                        <MenuItem IconName="file-text" OnClick="@HandleAction">Billing</MenuItem>
                         <MenuSeparator />
-                        <MenuItem Icon="📧" OnClick="@HandleAction">Support</MenuItem>
-                        <MenuItem Icon="🚪" Danger="true" OnClick="@HandleAction">Logout</MenuItem>
+                        <MenuItem IconName="mail" OnClick="@HandleAction">Support</MenuItem>
+                        <MenuItem IconName="log-out" Danger="true" OnClick="@HandleAction">Log out</MenuItem>
                     </ChildContent>
                 </Menu>
             </div>
@@ -100,18 +103,19 @@
             <div class="vibe-mt-4 vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
                 <Menu @bind-IsOpen="separatorsMenuOpen">
                     <Trigger>
-                        <Button>Edit</Button>
+                        <span>Edit</span>
+                        <Icon Name="chevron-down" Size="16" />
                     </Trigger>
                     <ChildContent>
-                        <MenuItem Icon="✂️" OnClick="@HandleAction">Cut</MenuItem>
-                        <MenuItem Icon="📋" OnClick="@HandleAction">Copy</MenuItem>
-                        <MenuItem Icon="📄" OnClick="@HandleAction">Paste</MenuItem>
+                        <MenuItem IconName="scissors" OnClick="@HandleAction">Cut</MenuItem>
+                        <MenuItem IconName="copy" OnClick="@HandleAction">Copy</MenuItem>
+                        <MenuItem IconName="file" OnClick="@HandleAction">Paste</MenuItem>
                         <MenuSeparator />
-                        <MenuItem Icon="↩️" OnClick="@HandleAction">Undo</MenuItem>
-                        <MenuItem Icon="↪️" OnClick="@HandleAction">Redo</MenuItem>
+                        <MenuItem IconName="arrow-left" OnClick="@HandleAction">Undo</MenuItem>
+                        <MenuItem IconName="arrow-right" OnClick="@HandleAction">Redo</MenuItem>
                         <MenuSeparator />
-                        <MenuItem Icon="🔍" OnClick="@HandleAction">Find</MenuItem>
-                        <MenuItem Icon="🔄" OnClick="@HandleAction">Replace</MenuItem>
+                        <MenuItem IconName="search" OnClick="@HandleAction">Find</MenuItem>
+                        <MenuItem IconName="refresh-cw" OnClick="@HandleAction">Replace</MenuItem>
                     </ChildContent>
                 </Menu>
             </div>
@@ -127,7 +131,8 @@
             <div class="vibe-mt-4 vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
                 <Menu @bind-IsOpen="disabledMenuOpen">
                     <Trigger>
-                        <Button>Options</Button>
+                        <span>Options</span>
+                        <Icon Name="chevron-down" Size="16" />
                     </Trigger>
                     <ChildContent>
                         <MenuItem OnClick="@HandleAction">Available Action</MenuItem>
@@ -148,14 +153,15 @@
             <div class="vibe-mt-4 vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
                 <Menu @bind-IsOpen="dangerMenuOpen">
                     <Trigger>
-                        <Button Variant="ButtonVariant.Outline">Project Actions</Button>
+                        <span>Project actions</span>
+                        <Icon Name="chevron-down" Size="16" />
                     </Trigger>
                     <ChildContent>
-                        <MenuItem Icon="✏️" OnClick="@HandleAction">Edit</MenuItem>
-                        <MenuItem Icon="📤" OnClick="@HandleAction">Export</MenuItem>
-                        <MenuItem Icon="📥" OnClick="@HandleAction">Download</MenuItem>
+                        <MenuItem IconName="edit" OnClick="@HandleAction">Edit</MenuItem>
+                        <MenuItem IconName="upload" OnClick="@HandleAction">Export</MenuItem>
+                        <MenuItem IconName="download" OnClick="@HandleAction">Download</MenuItem>
                         <MenuSeparator />
-                        <MenuItem Icon="🗑️" Danger="true" OnClick="@HandleDangerAction">Delete Project</MenuItem>
+                        <MenuItem IconName="trash" Danger="true" OnClick="@HandleDangerAction">Delete project</MenuItem>
                     </ChildContent>
                 </Menu>
             </div>
@@ -171,7 +177,7 @@
             <div class="vibe-mt-4 vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-flex vibe-gap-3 vibe-flex-wrap">
                 <Menu @bind-IsOpen="bottomStartOpen" Placement="Menu.MenuPlacement.BottomStart">
                     <Trigger>
-                        <Button Variant="ButtonVariant.Outline" Size="ComponentSize.Small">Bottom Start</Button>
+                        <span>Bottom start</span>
                     </Trigger>
                     <ChildContent>
                         <MenuItem>Item 1</MenuItem>
@@ -182,7 +188,7 @@
 
                 <Menu @bind-IsOpen="bottomEndOpen" Placement="Menu.MenuPlacement.BottomEnd">
                     <Trigger>
-                        <Button Variant="ButtonVariant.Outline" Size="ComponentSize.Small">Bottom End</Button>
+                        <span>Bottom end</span>
                     </Trigger>
                     <ChildContent>
                         <MenuItem>Item 1</MenuItem>
@@ -193,7 +199,7 @@
 
                 <Menu @bind-IsOpen="topStartOpen" Placement="Menu.MenuPlacement.TopStart">
                     <Trigger>
-                        <Button Variant="ButtonVariant.Outline" Size="ComponentSize.Small">Top Start</Button>
+                        <span>Top start</span>
                     </Trigger>
                     <ChildContent>
                         <MenuItem>Item 1</MenuItem>
@@ -204,7 +210,7 @@
 
                 <Menu @bind-IsOpen="topEndOpen" Placement="Menu.MenuPlacement.TopEnd">
                     <Trigger>
-                        <Button Variant="ButtonVariant.Outline" Size="ComponentSize.Small">Top End</Button>
+                        <span>Top end</span>
                     </Trigger>
                     <ChildContent>
                         <MenuItem>Item 1</MenuItem>
@@ -215,20 +221,19 @@
             </div>
         </div>
 
-        <!-- Custom Trigger -->
+        <!-- Custom Trigger Content -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Custom Trigger</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Custom Trigger Content</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Use any element as a menu trigger.
+                Compose text and icons inside the semantic trigger button.
             </p>
             <CodeBlock Code="@CustomTriggerCode" Language="razor" />
             <div class="vibe-mt-4 vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
                 <Menu @bind-IsOpen="customTriggerOpen">
                     <Trigger>
-                        <div class="inline-block vibe-px-4 vibe-py-3 vibe-bg-zinc-100 dark:vibe-bg-zinc-700 vibe-rounded-lg vibe-cursor-pointer hover:vibe-bg-zinc-200 dark:hover:vibe-bg-zinc-600 vibe-transition-colors">
-                            <span class="vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100">Custom Trigger</span>
-                            <span class="vibe-ml-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">▼</span>
-                        </div>
+                        <Icon Name="settings" Size="16" />
+                        <span>Workspace settings</span>
+                        <Icon Name="chevron-down" Size="16" />
                     </Trigger>
                     <ChildContent>
                         <MenuItem OnClick="@HandleAction">Option 1</MenuItem>
@@ -268,7 +273,7 @@
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Trigger</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Custom trigger element (defaults to button)</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Content rendered inside the semantic trigger button</td>
                         </tr>
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Placement</td>
@@ -314,10 +319,10 @@
                     </thead>
                     <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Icon</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">IconName</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Icon to display before content</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Lucide icon name displayed before content</td>
                         </tr>
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Danger</td>
@@ -395,7 +400,7 @@
                 <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                 </svg>
-                Focus management when opening/closing menu
+                Native trigger activation with Enter and Space
             </li>
             <li class="vibe-flex vibe-items-start vibe-gap-2">
                 <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -407,7 +412,7 @@
                 <svg class="vibe-w-5 vibe-h-5 vibe-text-amber-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
                 </svg>
-                Keyboard navigation support (planned)
+                Arrow keys open the menu and Escape closes it
             </li>
         </ul>
     </section>
@@ -461,7 +466,8 @@
 
     private string BasicCode => @"<Menu @bind-IsOpen=""menuOpen"">
     <Trigger>
-        <Button>Actions</Button>
+        Actions
+        <Icon Name=""chevron-down"" Size=""16"" />
     </Trigger>
     <ChildContent>
         <MenuItem OnClick=""@HandleAction"">New File</MenuItem>
@@ -481,34 +487,37 @@
 
     private string IconsCode => @"<Menu @bind-IsOpen=""menuOpen"">
     <Trigger>
-        <Button>User Menu</Button>
+        User menu
+        <Icon Name=""chevron-down"" Size=""16"" />
     </Trigger>
     <ChildContent>
-        <MenuItem Icon=""👤"" OnClick=""@HandleAction"">Profile</MenuItem>
-        <MenuItem Icon=""⚙️"" OnClick=""@HandleAction"">Settings</MenuItem>
-        <MenuItem Icon=""💳"" OnClick=""@HandleAction"">Billing</MenuItem>
+        <MenuItem IconName=""user"" OnClick=""@HandleAction"">Profile</MenuItem>
+        <MenuItem IconName=""settings"" OnClick=""@HandleAction"">Settings</MenuItem>
+        <MenuItem IconName=""file-text"" OnClick=""@HandleAction"">Billing</MenuItem>
         <MenuSeparator />
-        <MenuItem Icon=""🚪"" Danger=""true"" OnClick=""@HandleAction"">Logout</MenuItem>
+        <MenuItem IconName=""log-out"" Danger=""true"" OnClick=""@HandleAction"">Log out</MenuItem>
     </ChildContent>
 </Menu>";
 
     private string SeparatorsCode => @"<Menu @bind-IsOpen=""menuOpen"">
     <Trigger>
-        <Button>Edit</Button>
+        Edit
+        <Icon Name=""chevron-down"" Size=""16"" />
     </Trigger>
     <ChildContent>
-        <MenuItem Icon=""✂️"">Cut</MenuItem>
-        <MenuItem Icon=""📋"">Copy</MenuItem>
-        <MenuItem Icon=""📄"">Paste</MenuItem>
+        <MenuItem IconName=""scissors"">Cut</MenuItem>
+        <MenuItem IconName=""copy"">Copy</MenuItem>
+        <MenuItem IconName=""file"">Paste</MenuItem>
         <MenuSeparator />
-        <MenuItem Icon=""↩️"">Undo</MenuItem>
-        <MenuItem Icon=""↪️"">Redo</MenuItem>
+        <MenuItem IconName=""arrow-left"">Undo</MenuItem>
+        <MenuItem IconName=""arrow-right"">Redo</MenuItem>
     </ChildContent>
 </Menu>";
 
     private string DisabledCode => @"<Menu @bind-IsOpen=""menuOpen"">
     <Trigger>
-        <Button>Options</Button>
+        Options
+        <Icon Name=""chevron-down"" Size=""16"" />
     </Trigger>
     <ChildContent>
         <MenuItem OnClick=""@HandleAction"">Available Action</MenuItem>
@@ -519,19 +528,20 @@
 
     private string DangerCode => @"<Menu @bind-IsOpen=""menuOpen"">
     <Trigger>
-        <Button>Project Actions</Button>
+        Project actions
+        <Icon Name=""chevron-down"" Size=""16"" />
     </Trigger>
     <ChildContent>
-        <MenuItem Icon=""✏️"" OnClick=""@HandleAction"">Edit</MenuItem>
-        <MenuItem Icon=""📤"" OnClick=""@HandleAction"">Export</MenuItem>
+        <MenuItem IconName=""edit"" OnClick=""@HandleAction"">Edit</MenuItem>
+        <MenuItem IconName=""upload"" OnClick=""@HandleAction"">Export</MenuItem>
         <MenuSeparator />
-        <MenuItem Icon=""🗑️"" Danger=""true"" OnClick=""@HandleDangerAction"">Delete Project</MenuItem>
+        <MenuItem IconName=""trash"" Danger=""true"" OnClick=""@HandleDangerAction"">Delete project</MenuItem>
     </ChildContent>
 </Menu>";
 
     private string PlacementCode => @"<Menu @bind-IsOpen=""menuOpen"" Placement=""Menu.MenuPlacement.BottomStart"">
     <Trigger>
-        <Button>Bottom Start</Button>
+        Bottom start
     </Trigger>
     <ChildContent>
         <MenuItem>Item 1</MenuItem>
@@ -541,7 +551,7 @@
 
 <Menu @bind-IsOpen=""menuOpen"" Placement=""Menu.MenuPlacement.TopEnd"">
     <Trigger>
-        <Button>Top End</Button>
+        Top end
     </Trigger>
     <ChildContent>
         <MenuItem>Item 1</MenuItem>
@@ -551,10 +561,9 @@
 
     private string CustomTriggerCode => @"<Menu @bind-IsOpen=""menuOpen"">
     <Trigger>
-        <div class=""inline-block vibe-px-4 vibe-py-3 vibe-bg-zinc-100 dark:vibe-bg-zinc-700 vibe-rounded-lg vibe-cursor-pointer"">
-            <span>Custom Trigger</span>
-            <span>▼</span>
-        </div>
+        <Icon Name=""settings"" Size=""16"" />
+        <span>Workspace settings</span>
+        <Icon Name=""chevron-down"" Size=""16"" />
     </Trigger>
     <ChildContent>
         <MenuItem OnClick=""@HandleAction"">Option 1</MenuItem>

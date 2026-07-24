@@ -1,49 +1,64 @@
 /* Table baseline styles */
 
-:global(.vibe-table) {
+.vibe-table {
   width: 100%;
   overflow-x: auto;
 }
 
-:global(.vibe-table .table-root) {
+.vibe-table .table-root {
   width: 100%;
+  min-width: max-content;
   border-collapse: collapse;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
 }
 
-:global(.vibe-table th),
-:global(.vibe-table td) {
-  padding: 0.6rem 0.75rem;
+.vibe-table .table-root ::deep th,
+.vibe-table .table-root ::deep td {
+  padding: 0.5rem 0.75rem;
   border-bottom: 1px solid var(--vibe-border);
   text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
-:global(.vibe-table th) {
+.vibe-table .table-root ::deep th {
   font-size: 0.8rem;
   color: var(--vibe-muted-foreground);
-  font-weight: 600;
+  font-weight: 500;
 }
 
-:global(.vibe-table .table-caption) {
+.vibe-table .table-root ::deep tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.vibe-table .table-caption {
   padding: 0.5rem 0.75rem;
   color: var(--vibe-muted-foreground);
   font-size: 0.875rem;
   text-align: left;
 }
 
-:global(.vibe-table.bordered th),
-:global(.vibe-table.bordered td) {
+.vibe-table.bordered .table-root ::deep th,
+.vibe-table.bordered .table-root ::deep td {
   border: 1px solid var(--vibe-border);
 }
 
-:global(.vibe-table.striped tbody tr:nth-child(odd)) {
+.vibe-table.striped .table-root ::deep tbody tr:nth-child(odd) {
   background: var(--vibe-muted);
 }
 
-:global(.vibe-table.compact th),
-:global(.vibe-table.compact td) {
+.vibe-table.compact .table-root ::deep th,
+.vibe-table.compact .table-root ::deep td {
   padding: 0.35rem 0.5rem;
 }
 
-:global(.vibe-table.hover tbody tr:hover) {
+.vibe-table.hover .table-root ::deep tbody tr:hover {
   background: var(--vibe-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vibe-table .table-root ::deep tbody tr {
+    transition: none;
+  }
 }

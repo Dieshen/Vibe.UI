@@ -24,11 +24,14 @@
         <div class="vibe-p-6 vibe-rounded-xl vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-800 vibe-bg-white dark:vibe-bg-zinc-900 vibe-space-y-4">
             <Checkbox>Default checkbox</Checkbox>
             <Checkbox Checked="true">Checked checkbox</Checkbox>
+            <Checkbox Indeterminate="true">Partially selected</Checkbox>
             <Checkbox>Accept terms and conditions</Checkbox>
             <Checkbox Checked="@isSubscribed" CheckedChanged="@OnSubscribeChanged">Subscribe to newsletter</Checkbox>
             @if (isSubscribed)
             {
-                <p class="vibe-ml-6 vibe-text-brand-teal">✓ Subscribed!</p>
+                <div class="vibe-ml-6">
+                    <Badge Variant="success"><Vibe.UI.Components.Icon Name="check" />Subscribed</Badge>
+                </div>
             }
             <Checkbox Disabled="true">Disabled unchecked</Checkbox>
             <Checkbox Checked="true" Disabled="true">Disabled checked</Checkbox>
@@ -46,8 +49,8 @@
                 Simple checkbox with checked and unchecked states.
             </p>
             <div class="vibe-space-y-3 vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <Checkbox />
-                <Checkbox Checked="true" />
+                <Checkbox Label="Receive product updates" />
+                <Checkbox Label="Include release notes" Checked="true" />
             </div>
             <CodeBlock Code="@BasicCode" Language="razor" />
         </div>
@@ -156,6 +159,18 @@
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">The name attribute of the checkbox</td>
                         </tr>
                         <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">AriaLabel</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Accessible name when no visible label is rendered</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">AriaInvalid</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Applies invalid semantics and destructive styling</td>
+                        </tr>
+                        <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ChildContent</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
@@ -209,33 +224,23 @@
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
         <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
             <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                 Uses semantic <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">&lt;input type="checkbox"&gt;</code> element
             </li>
             <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                 Proper ARIA attributes for indeterminate state
             </li>
             <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                 Label associated with input for clickable area
             </li>
             <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                 Keyboard accessible (Space to toggle)
             </li>
             <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                 Focus visible styles for keyboard navigation
             </li>
         </ul>
@@ -269,8 +274,8 @@
         isSubscribed = value;
     }
 
-    private string BasicCode => @"<Checkbox />
-<Checkbox Checked=""true"" />";
+    private string BasicCode => @"<Checkbox Label=""Receive product updates"" />
+<Checkbox Label=""Include release notes"" Checked=""true"" />";
 
     private string LabelCode => @"<Checkbox Label=""Accept terms and conditions"" />
 <Checkbox Label=""Subscribe to newsletter"" Checked=""true"" />";

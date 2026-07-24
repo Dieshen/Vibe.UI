@@ -220,14 +220,14 @@ public class ComponentService
             ["togglegroupitem"] = new ComponentInfo { Name = "ToggleGroupItem", Category = "Inputs", Description = "An item within a toggle group", HasCss = false },
             ["colorpicker"] = new ComponentInfo { Name = "ColorPicker", Category = "Inputs", Description = "A color picker component for selecting colors", HasCss = false },
             ["multiselect"] = new ComponentInfo { Name = "MultiSelect", Category = "Inputs", Description = "Select multiple items from a dropdown", HasCss = false },
-            ["inputotp"] = new ComponentInfo { Name = "InputOTP", Category = "Inputs", Description = "One-time password input with auto-focus and keyboard navigation", HasCss = false },
+            ["inputotp"] = new ComponentInfo { Name = "InputOTP", Category = "Inputs", Description = "One-time password input with auto-focus and keyboard navigation" },
             ["fileupload"] = new ComponentInfo { Name = "FileUpload", Category = "Inputs", Description = "Drag-and-drop file upload with multiple file support" },
             ["rating"] = new ComponentInfo { Name = "Rating", Category = "Inputs", Description = "Star rating component with half-star support" },
             ["taginput"] = new ComponentInfo { Name = "TagInput", Category = "Inputs", Description = "Multi-tag input field with suggestions" },
             ["richtexteditor"] = new ComponentInfo { Name = "RichTextEditor", Category = "Inputs", Description = "WYSIWYG rich text editor with formatting toolbar", HasCss = false },
-            ["mentions"] = new ComponentInfo { Name = "Mentions", Category = "Inputs", Description = "@mention and #hashtag input with autocomplete", HasCss = false },
-            ["transferlist"] = new ComponentInfo { Name = "TransferList", Category = "Inputs", Description = "Dual-list selector for moving items between lists", HasCss = false },
-            ["imagecropper"] = new ComponentInfo { Name = "ImageCropper", Category = "Inputs", Description = "Image cropping tool with zoom and rotation", HasCss = false },
+            ["mentions"] = new ComponentInfo { Name = "Mentions", Category = "Inputs", Description = "@mention and #hashtag input with autocomplete" },
+            ["transferlist"] = new ComponentInfo { Name = "TransferList", Category = "Inputs", Description = "Dual-list selector for moving items between lists" },
+            ["imagecropper"] = new ComponentInfo { Name = "ImageCropper", Category = "Inputs", Description = "Pointer and keyboard image cropping with zoom and rotation", HasCss = true, HasJavaScript = true },
 
             // Form Components (7 components)
             ["form"] = new ComponentInfo { Name = "Form", Category = "Form", Description = "Building forms with validation", HasCss = false },
@@ -256,7 +256,7 @@ public class ComponentService
             ["grid"] = new ComponentInfo { Name = "Grid", Category = "Layout", Description = "CSS grid layout container", Dependencies = new List<string> { "GridItem" } },
             ["griditem"] = new ComponentInfo { Name = "GridItem", Category = "Layout", Description = "An item within a grid layout", HasCss = false },
             ["separator"] = new ComponentInfo { Name = "Separator", Category = "Layout", Description = "Visually or semantically separates content" },
-            ["resizable"] = new ComponentInfo { Name = "Resizable", Category = "Layout", Description = "Accessible resizable panel groups and layouts", HasCss = false },
+            ["resizable"] = new ComponentInfo { Name = "Resizable", Category = "Layout", Description = "Accessible pointer and keyboard resizable panels", HasCss = true, HasJavaScript = true },
             ["sheet"] = new ComponentInfo { Name = "Sheet", Category = "Layout", Description = "Extends the Dialog component to display content that complements the main content" },
             ["masonrygrid"] = new ComponentInfo { Name = "MasonryGrid", Category = "Layout", Description = "Pinterest-style masonry grid layout for variable-height items", HasCss = false },
             ["splitter"] = new ComponentInfo { Name = "Splitter", Category = "Layout", Description = "Resizable split pane divider with drag support", HasCss = false },
@@ -306,6 +306,7 @@ public class ComponentService
             ["emptystate"] = new ComponentInfo { Name = "EmptyState", Category = "Feedback", Description = "Placeholder for empty content areas", HasCss = false },
             ["spinner"] = new ComponentInfo { Name = "Spinner", Category = "Feedback", Description = "Loading indicator with customizable sizes", HasCss = false },
             ["notificationcenter"] = new ComponentInfo { Name = "NotificationCenter", Category = "Feedback", Description = "Centralized notification hub with badge and dropdown panel", HasCss = false },
+            ["dragdrop"] = new ComponentInfo { Name = "DragDrop", Category = "Advanced", Description = "Accessible reorderable list with drag handles and keyboard controls" },
             ["confetti"] = new ComponentInfo { Name = "Confetti", Category = "Feedback", Description = "Celebratory confetti animation with customizable particles", HasCss = false },
 
             // Date & Time (3 components)

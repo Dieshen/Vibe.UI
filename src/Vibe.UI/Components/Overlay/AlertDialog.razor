@@ -31,10 +31,10 @@
                 </div>
             }
 
-            @if (CloseOnBackdropClick || ShowCloseButton)
+            @if (ShowCloseButton)
             {
                 <button class="vibe-alert-dialog-close" @onclick="OnCloseClicked" type="button" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+                    <Icon Name="x" Size="16" />
                 </button>
             }
         </div>
@@ -100,6 +100,7 @@
     protected override string ComponentClass => "vibe-alert-dialog";
 
     private IJSObjectReference? _dialogModule;
+    private DotNetObjectReference<AlertDialog>? _dotNetReference;
     private bool _focusTrapActive;
     private ElementReference _contentRef;
     private readonly string _dialogKey = $"vibe-alert-dialog-{Guid.NewGuid():N}";
@@ -138,17 +139,34 @@
     {
         if (IsOpen && !_focusTrapActive)
         {
-            _dialogModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
-                "import", "./_content/Vibe.UI/js/vibe-dialog.js");
-
-            await _dialogModule.InvokeVoidAsync("activate", _dialogKey, _contentRef);
-            _focusTrapActive = true;
+            try
+            {
+                _dialogModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
+                    "import", "./_content/Vibe.UI/js/vibe-dialog.js");
+                _dotNetReference ??= DotNetObjectReference.Create(this);
+                await _dialogModule.InvokeVoidAsync(
+                    "activate",
+                    _dialogKey,
+                    _contentRef,
+                    _dotNetReference,
+                    CloseOnEscape);
+                _focusTrapActive = true;
+            }
+            catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+            {
+            }
         }
         else if (!IsOpen && _focusTrapActive)
         {
             if (_dialogModule != null)
             {
-                await _dialogModule.InvokeVoidAsync("deactivate", _dialogKey);
+                try
+                {
+                    await _dialogModule.InvokeVoidAsync("deactivate", _dialogKey);
+                }
+                catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+                {
+                }
             }
 
             _focusTrapActive = false;
@@ -184,17 +202,37 @@
         }
     }
 
+    [JSInvokable]
+    public Task HandleDialogEscape() => CloseOnEscape ? CloseDialog() : Task.CompletedTask;
+
     public async ValueTask DisposeAsync()
     {
         if (_focusTrapActive && _dialogModule != null)
         {
-            await _dialogModule.InvokeVoidAsync("deactivate", _dialogKey);
+            try
+            {
+                await _dialogModule.InvokeVoidAsync("deactivate", _dialogKey);
+            }
+            catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+            {
+            }
             _focusTrapActive = false;
         }
 
         if (_dialogModule != null)
         {
-            await _dialogModule.DisposeAsync();
+            try
+            {
+                await _dialogModule.DisposeAsync();
+            }
+            catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+            {
+            }
         }
+
+        _dotNetReference?.Dispose();
     }
+
+    private static bool IsRecoverableJsInteropException(Exception exception) =>
+        exception is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException;
 }

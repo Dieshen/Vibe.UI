@@ -12,6 +12,10 @@
     <VibeCssScanRoot Condition="'$(VibeCssScanRoot)' == ''">$(MSBuildProjectDirectory)</VibeCssScanRoot>
     <VibeCssOutput Condition="'$(VibeCssOutput)' == ''">$(MSBuildProjectDirectory)\wwwroot\css\Vibe.UI.CSS</VibeCssOutput>
     <VibeCssIncludeBase Condition="'$(VibeCssIncludeBase)' == ''">true</VibeCssIncludeBase>
+    <!-- The docs site opts into the Tailwind-compatible preflight reset (it is off by
+         default for consumers). Keeps the reviewed visual baselines byte-stable now that
+         the reset no longer ships inside vibe-base.css. -->
+    <VibeCssIncludePreflight Condition="'$(VibeCssIncludePreflight)' == ''">true</VibeCssIncludePreflight>
     <VibeCssScanPatterns Condition="'$(VibeCssScanPatterns)' == ''">*.razor,*.cshtml,*.html,*.cs</VibeCssScanPatterns>
 
     <_VibeCssProjectPath>$(MSBuildProjectDirectory)\..\..\src\Vibe.UI.CSS\Vibe.UI.CSS.csproj</_VibeCssProjectPath>
@@ -40,13 +44,17 @@
           AfterTargets="Build"
           Condition="'$(VibeCssEnabled)' == 'true'">
     <Message Importance="high" Text="Vibe.UI.CSS: Generating docs CSS -> $(VibeCssOutput)" />
-    <!-- Restore/build Vibe.UI.CSS if needed, then run the built assembly to avoid `dotnet run` locking issues during parallel builds. -->
+    <!-- Keep the local generator current, then run its assembly to avoid `dotnet run` locking issues. -->
     <MSBuild Projects="$(_VibeCssProjectPath)"
-             Targets="Restore;Build"
+             Targets="Restore"
              Properties="Configuration=$(Configuration);UseSharedCompilation=false"
              BuildInParallel="false"
-             Condition="!Exists('$(_VibeCssAssemblyPath)') Or !Exists('$(_VibeCssAssetsPath)')" />
-    <Exec Command="$(DotNetExe) exec &quot;$(_VibeCssAssemblyPath)&quot; generate &quot;$(VibeCssScanRoot)&quot; -o &quot;$(VibeCssOutput)&quot; --prefix &quot;$(VibeCssPrefix)&quot; --allow-unprefixed &quot;$(VibeCssAllowUnprefixed)&quot; --with-base &quot;$(VibeCssIncludeBase)&quot; --patterns=&quot;$(VibeCssScanPatterns)&quot;" />
+             Condition="!Exists('$(_VibeCssAssetsPath)')" />
+    <MSBuild Projects="$(_VibeCssProjectPath)"
+             Targets="Build"
+             Properties="Configuration=$(Configuration);UseSharedCompilation=false"
+             BuildInParallel="false" />
+    <Exec Command="$(DotNetExe) exec &quot;$(_VibeCssAssemblyPath)&quot; generate &quot;$(VibeCssScanRoot)&quot; -o &quot;$(VibeCssOutput)&quot; --prefix &quot;$(VibeCssPrefix)&quot; --allow-unprefixed &quot;$(VibeCssAllowUnprefixed)&quot; --with-base &quot;$(VibeCssIncludeBase)&quot; --with-preflight &quot;$(VibeCssIncludePreflight)&quot; --patterns=&quot;$(VibeCssScanPatterns)&quot;" />
   </Target>
 
 </Project>

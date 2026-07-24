@@ -17,7 +17,7 @@
     <div class="vibe-alert-content">
         @if (!string.IsNullOrWhiteSpace(Title))
         {
-            <h5 class="vibe-alert-title">@Title</h5>
+            <div class="vibe-alert-title">@Title</div>
         }
         <div class="vibe-alert-description">
             @ChildContent
@@ -31,7 +31,7 @@
                 aria-disabled="@AriaDisabledValue"
                 disabled="@Disabled"
                 @onclick="OnDismissClick">
-            <span class="vibe-alert-close-icon"></span>
+            <Icon Name="x" Size="16" />
         </button>
     }
 </div>

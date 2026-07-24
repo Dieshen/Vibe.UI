@@ -148,4 +148,30 @@ public class ToggleGroupItemTests : TestBase
         // Assert
         cut.Find("button").GetAttribute("aria-pressed")!.ShouldBe("false");
     }
+
+    [Fact]
+    public void ToggleGroupItem_StandaloneItemIsKeyboardReachable()
+    {
+        var cut = Render<ToggleGroupItem>(parameters => parameters
+            .Add(p => p.Value, "item1")
+            .AddChildContent("Item"));
+
+        var button = cut.Find("button");
+        button.GetAttribute("tabindex")!.ShouldBe("0");
+        button.Id.ShouldStartWith("vibe-toggle-item-");
+    }
+
+    [Fact]
+    public void ToggleGroupItem_UsesProvidedIdForFocusCoordination()
+    {
+        var cut = Render<ToggleGroupItem>(parameters => parameters
+            .Add(p => p.Value, "item1")
+            .Add(p => p.AdditionalAttributes, new Dictionary<string, object>
+            {
+                ["id"] = "alignment-left"
+            })
+            .AddChildContent("Item"));
+
+        cut.Find("button").Id.ShouldBe("alignment-left");
+    }
 }

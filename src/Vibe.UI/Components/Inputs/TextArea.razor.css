@@ -10,16 +10,16 @@
     display: block;
     width: 100%;
     min-height: 80px;
-    padding: 0.75rem 1rem;
-    border-radius: var(--vibe-radius);
+    padding: 0.625rem 0.75rem;
+    border-radius: var(--vibe-radius-sm);
     border: 1px solid var(--vibe-border);
-    background-color: var(--vibe-input);
+    background-color: var(--vibe-background);
     color: var(--vibe-foreground);
     font-family: var(--vibe-font);
     font-size: 0.875rem;
     line-height: 1.5;
     resize: vertical;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
     outline: none;
 }
 
@@ -37,19 +37,27 @@
 
 .vibe-textarea:focus-visible:not(:disabled):not(:read-only) {
     border-color: var(--vibe-ring);
-    outline: 2px solid var(--vibe-ring);
-    outline-offset: 2px;
-    box-shadow: 0 0 0 2px var(--vibe-background), 0 0 0 4px var(--vibe-ring);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--vibe-ring) 20%, transparent);
 }
 
 /* ----------------------------------------
    DISABLED AND READ-ONLY STATES
    ---------------------------------------- */
 
-.vibe-textarea:disabled,
-.vibe-textarea:read-only {
+.vibe-textarea:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.vibe-textarea:read-only:not(:disabled) {
+    background: var(--vibe-muted);
+    color: var(--vibe-foreground);
+    cursor: text;
+}
+
+.vibe-textarea:read-only:not(:disabled):focus-visible {
+    border-color: var(--vibe-ring);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--vibe-ring) 20%, transparent);
 }
 
 /* ----------------------------------------
@@ -73,5 +81,5 @@
 .vibe-textarea.vibe-textarea-error:focus-visible {
     border-color: var(--vibe-destructive);
     outline-color: var(--vibe-destructive);
-    box-shadow: 0 0 0 2px var(--vibe-background), 0 0 0 4px var(--vibe-destructive);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--vibe-destructive) 20%, transparent);
 }

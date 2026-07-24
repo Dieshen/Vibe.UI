@@ -1,6 +1,6 @@
 /* EmptyState baseline styles */
 
-:global(.vibe-empty-state) {
+.vibe-empty-state {
   border: 1px dashed var(--vibe-border);
   border-radius: var(--vibe-radius);
   padding: 1.25rem;

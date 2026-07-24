@@ -2,6 +2,8 @@
 
 CLI tool for adding Vibe.UI components to your Blazor projects.
 
+Requires the .NET 10 SDK.
+
 ## Installation
 
 ```bash
@@ -55,7 +57,7 @@ app.MapRazorComponents<App>()
 builder.Services.AddVibeUI();
 ```
 
-For .NET 9 and later Blazor Web Apps, add generated styles in the server root component with `@Assets[...]`:
+For .NET 10 Blazor Web Apps, add generated styles in the server root component with `@Assets[...]`:
 
 ```razor
 <link rel="stylesheet" href="@Assets["css/vibe-base.css"]" />
@@ -107,7 +109,7 @@ This design provides:
 - **Easier discovery**: All components visible in one directory
 - **Less cognitive load**: No need to remember which category a component belongs to
 - **Cleaner autocomplete**: Better IDE experience
-- **Scalable**: Works well even with 110 components
+- **Scalable**: Works well even with 111 components
 
 **Why not category subdirectories?**
 
@@ -160,7 +162,13 @@ Options:
 Shows all available components.
 
 ### `vibe update <component>`
-Updates an existing component (shows diff, asks for confirmation).
+Updates an existing tracked component after confirmation. Locally modified
+tracked files are backed up before replacement.
+
+### `vibe css [path]`
+Scans source files or generates the application utility stylesheet. Use
+`--fail-on-unknown` in CI and `--ignore` for explicit non-utility hooks that
+share the configured prefix.
 
 ## Available Components
 

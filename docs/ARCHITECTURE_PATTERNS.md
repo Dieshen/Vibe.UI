@@ -922,6 +922,10 @@ document.documentElement.classList.toggle('dark');
 
 ### Accessibility Considerations
 
+The canonical cross-component requirements and validation guidance live in
+[Accessibility](ACCESSIBILITY.md). The examples below summarize the component
+authoring pattern.
+
 1. **Use Semantic HTML**
    ```razor
    <button type="button">...</button>

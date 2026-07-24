@@ -1,18 +1,18 @@
 /* NotificationCenter */
 
-:global(.vibe-notification-center) {
+.vibe-notification-center {
   position: relative;
   display: inline-block;
   color: var(--vibe-foreground);
 }
 
-:global(.vibe-notification-center-disabled) {
+.vibe-notification-center-disabled {
   opacity: 0.6;
 }
 
-:global(.vibe-notification-center-readonly) .notification-remove-btn,
-:global(.vibe-notification-center-readonly) .panel-action,
-:global(.vibe-notification-center-readonly) .clear-all-btn {
+.vibe-notification-center-readonly .notification-remove-btn,
+.vibe-notification-center-readonly .panel-action,
+.vibe-notification-center-readonly .clear-all-btn {
   cursor: not-allowed;
 }
 
@@ -102,6 +102,13 @@
   background: var(--vibe-popover);
   color: var(--vibe-popover-foreground);
   box-shadow: var(--vibe-shadow-lg, 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1));
+}
+
+.notification-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  background: transparent;
 }
 
 .panel-header,
@@ -236,6 +243,10 @@
 .notification-item.type-error .notification-icon {
   background: color-mix(in srgb, var(--vibe-destructive) 14%, transparent);
   color: var(--vibe-destructive);
+}
+
+.dark .notification-item.type-error .notification-icon {
+  color: color-mix(in srgb, var(--vibe-destructive) 45%, white);
 }
 
 .notification-content {

@@ -57,9 +57,10 @@
    ---------------------------------------- */
 
 .timeline-connector {
-    flex: 1;
+    position: absolute;
+    top: 2.5rem;
+    bottom: -2rem;
     width: 2px;
-    margin-top: 0.5rem;
     background-color: var(--vibe-border);
 }
 
@@ -99,6 +100,25 @@
     color: var(--vibe-muted-foreground);
     font-weight: 500;
 }
+
+.timeline-status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.5rem;
+    margin-bottom: 0.375rem;
+    padding: 0 0.5rem;
+    border: 1px solid currentColor;
+    border-radius: var(--vibe-radius-sm);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.timeline-status.status-success { color: var(--vibe-success); }
+.timeline-status.status-error { color: var(--vibe-destructive); }
+.timeline-status.status-warning { color: var(--vibe-warning); }
+.timeline-status.status-info { color: var(--vibe-info); }
 
 /* ----------------------------------------
    STATUS VARIANTS (DOT COLORS)
@@ -142,12 +162,24 @@
    POSITION: ALTERNATE (LEFT/RIGHT SIDES)
    ---------------------------------------- */
 
-/* Alternate Layout - Even items on the right */
-.vibe-timeline.timeline-alternate .timeline-item:nth-child(even) {
-    flex-direction: row-reverse;
+.vibe-timeline.timeline-alternate .timeline-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 2rem minmax(0, 1fr);
+    column-gap: 1.5rem;
+}
+
+.vibe-timeline.timeline-alternate .timeline-marker-container {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.vibe-timeline.timeline-alternate .timeline-content {
+    grid-column: 3;
+    grid-row: 1;
 }
 
 .vibe-timeline.timeline-alternate .timeline-item:nth-child(even) .timeline-content {
+    grid-column: 1;
     text-align: right;
 }
 
@@ -295,6 +327,24 @@
 
 /* Mobile: Stack horizontally oriented timelines vertically */
 @media (max-width: 640px) {
+    .vibe-timeline.timeline-alternate .timeline-item,
+    .vibe-timeline.timeline-right .timeline-item {
+        display: flex;
+        flex-direction: row;
+        direction: ltr;
+    }
+
+    .vibe-timeline.timeline-alternate .timeline-content,
+    .vibe-timeline.timeline-alternate .timeline-item:nth-child(even) .timeline-content,
+    .vibe-timeline.timeline-right .timeline-content {
+        text-align: left;
+    }
+
+    .vibe-timeline.timeline-right,
+    .vibe-timeline.timeline-right .timeline-marker-container {
+        direction: ltr;
+    }
+
     .vibe-timeline.timeline-horizontal {
         flex-direction: column;
     }
@@ -343,6 +393,11 @@
     .timeline-marker {
         width: 1.5rem;
         height: 1.5rem;
+    }
+
+    .timeline-connector {
+        top: 2rem;
+        bottom: -1.5rem;
     }
 
     .timeline-title {

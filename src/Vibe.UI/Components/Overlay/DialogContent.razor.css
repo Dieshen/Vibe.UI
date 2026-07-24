@@ -1,6 +1,6 @@
 /* DialogContent baseline styles */
 
-:global(.vibe-dialog-content) {
+.vibe-dialog-content {
   display: block;
 }
 

@@ -17,7 +17,7 @@
     overflow: hidden;
 }
 
-.vibe-aspect-ratio .aspect-ratio-content > * {
+.vibe-aspect-ratio .aspect-ratio-content ::deep > * {
     width: 100%;
     height: 100%;
     object-fit: cover;

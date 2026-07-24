@@ -29,6 +29,19 @@ public class MenuItemTests : TestBase
     }
 
     [Fact]
+    public void MenuItem_RendersLucideIconByName()
+    {
+        var cut = Render<MenuItem>(parameters => parameters
+            .Add(p => p.IconName, "settings")
+            .AddChildContent("Settings"));
+
+        var icon = cut.Find(".menu-item-icon");
+        icon.GetAttribute("aria-hidden").ShouldBe("true");
+        icon.QuerySelector("svg").ShouldNotBeNull();
+        icon.TextContent.Trim().ShouldBeEmpty();
+    }
+
+    [Fact]
     public void MenuItem_OmitsIcon_WhenIconIsEmpty()
     {
         var cut = Render<MenuItem>(parameters => parameters

@@ -27,6 +27,8 @@
                 <Badge Variant="secondary">Secondary</Badge>
                 <Badge Variant="destructive">Destructive</Badge>
                 <Badge Variant="outline">Outline</Badge>
+                <Badge Variant="success"><Vibe.UI.Components.Icon Name="check-circle" />Ready</Badge>
+                <Badge Variant="info"><Vibe.UI.Components.Icon Name="info" />Beta</Badge>
             </div>
         </div>
     </section>
@@ -46,6 +48,9 @@
                 <Badge Variant="secondary">Secondary</Badge>
                 <Badge Variant="destructive">Destructive</Badge>
                 <Badge Variant="outline">Outline</Badge>
+                <Badge Variant="success">Success</Badge>
+                <Badge Variant="warning">Warning</Badge>
+                <Badge Variant="info">Info</Badge>
             </div>
             <CodeBlock Code="@VariantsCode" Language="razor" />
         </div>
@@ -59,7 +64,7 @@
             <div class="vibe-flex vibe-flex-wrap vibe-gap-3 vibe-items-center vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
                 <Button Variant="ButtonVariant.Outline">
                     Inbox
-                    <Badge class="vibe-ml-2">99+</Badge>
+                    <Badge Class="vibe-ml-2" AriaLabel="99 or more unread messages">99+</Badge>
                 </Button>
             </div>
             <CodeBlock Code="@WithButtonCode" Language="razor" />
@@ -74,11 +79,11 @@
             <div class="vibe-space-y-2 vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
                 <div class="vibe-flex vibe-items-center vibe-justify-between">
                     <span class="vibe-text-zinc-700 dark:vibe-text-zinc-300">Feature Request</span>
-                    <Badge Variant="default">In Progress</Badge>
+                    <Badge Variant="info">In Progress</Badge>
                 </div>
                 <div class="vibe-flex vibe-items-center vibe-justify-between">
                     <span class="vibe-text-zinc-700 dark:vibe-text-zinc-300">Bug Fix</span>
-                    <Badge Variant="secondary">Review</Badge>
+                    <Badge Variant="warning">Review</Badge>
                 </div>
                 <div class="vibe-flex vibe-items-center vibe-justify-between">
                     <span class="vibe-text-zinc-700 dark:vibe-text-zinc-300">Critical Issue</span>
@@ -111,13 +116,25 @@
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Variant</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"default"</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Visual style (default, secondary, destructive, outline)</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Visual style: default, secondary, destructive, outline, success, warning, error, or info</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Size</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"default"</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Badge size: default, sm, md, or lg</td>
                         </tr>
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ChildContent</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">—</td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Badge label content</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">AriaLabel</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Accessible label when visible content is not descriptive</td>
                         </tr>
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Class</td>
@@ -145,22 +162,16 @@
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
         <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
             <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
-                Uses semantic HTML with proper ARIA attributes
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
+                Visible badge text is exposed directly to assistive technology
             </li>
             <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
-                Badge content is screen reader accessible
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
+                Use AriaLabel when a count or abbreviation needs additional context
             </li>
             <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
-                Proper contrast ratios for all variants
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
+                Variant colors use contrast-aware foreground and background pairs in both themes
             </li>
         </ul>
     </section>
@@ -185,20 +196,23 @@
     private string VariantsCode => @"<Badge Variant=""default"">Default</Badge>
 <Badge Variant=""secondary"">Secondary</Badge>
 <Badge Variant=""destructive"">Destructive</Badge>
-<Badge Variant=""outline"">Outline</Badge>";
+<Badge Variant=""outline"">Outline</Badge>
+<Badge Variant=""success"">Success</Badge>
+<Badge Variant=""warning"">Warning</Badge>
+<Badge Variant=""info"">Info</Badge>";
 
     private string WithButtonCode => @"<Button Variant=""ButtonVariant.Outline"">
     Inbox
-    <Badge class=""ml-2"">99+</Badge>
+    <Badge Class=""vibe-ml-2"" AriaLabel=""99 or more unread messages"">99+</Badge>
 </Button>";
 
     private string StatusCode => @"<div class=""vibe-flex vibe-items-center vibe-justify-between"">
     <span>Feature Request</span>
-    <Badge Variant=""default"">In Progress</Badge>
+    <Badge Variant=""info"">In Progress</Badge>
 </div>
 <div class=""vibe-flex vibe-items-center vibe-justify-between"">
     <span>Bug Fix</span>
-    <Badge Variant=""secondary"">Review</Badge>
+    <Badge Variant=""warning"">Review</Badge>
 </div>
 <div class=""vibe-flex vibe-items-center vibe-justify-between"">
     <span>Critical Issue</span>

@@ -18,8 +18,35 @@
 .dropdown-trigger {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    gap: var(--vibe-spacing-2);
+    min-height: 2.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--vibe-border);
+    border-radius: var(--vibe-radius);
+    background-color: var(--vibe-background);
+    color: var(--vibe-foreground);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
     cursor: pointer;
     user-select: none;
+    transition: var(--vibe-transition-fast);
+}
+
+.dropdown-trigger:hover:not(:disabled) {
+    background-color: var(--vibe-accent);
+    color: var(--vibe-accent-foreground);
+}
+
+.dropdown-trigger:focus-visible {
+    outline: 2px solid var(--vibe-ring);
+    outline-offset: 2px;
+}
+
+.dropdown-trigger:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
 }
 
 /* ----------------------------------------
@@ -119,9 +146,15 @@
     display: flex;
     align-items: center;
     gap: var(--vibe-spacing-2);
+    width: 100%;
     padding: var(--vibe-spacing-2) var(--vibe-spacing-3);
+    border: 0;
     border-radius: var(--vibe-radius-sm);
+    background: transparent;
+    color: inherit;
+    font: inherit;
     font-size: 0.875rem;
+    text-align: left;
     cursor: pointer;
     outline: none;
     transition: var(--vibe-transition-fast);
@@ -148,6 +181,26 @@
     opacity: 0.5;
     cursor: not-allowed;
     pointer-events: none;
+}
+
+::deep .dropdown-item.destructive {
+    color: var(--vibe-destructive);
+}
+
+::deep .dropdown-item.destructive:hover,
+::deep .dropdown-item.destructive:focus-visible {
+    background-color: color-mix(in srgb, var(--vibe-destructive) 10%, transparent);
+    color: var(--vibe-destructive);
+}
+
+.dark ::deep .dropdown-item.destructive {
+    color: color-mix(in srgb, var(--vibe-destructive) 45%, white);
+}
+
+.dark ::deep .dropdown-item.destructive:hover,
+.dark ::deep .dropdown-item.destructive:focus-visible {
+    background-color: color-mix(in srgb, var(--vibe-destructive) 18%, transparent);
+    color: color-mix(in srgb, var(--vibe-destructive) 45%, white);
 }
 
 /* ----------------------------------------

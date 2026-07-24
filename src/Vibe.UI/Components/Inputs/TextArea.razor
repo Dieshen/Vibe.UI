@@ -1,11 +1,21 @@
 @namespace Vibe.UI.Components
 @inherits Vibe.UI.Base.VibeComponent
 
-<textarea @attributes="AdditionalAttributes" class="@CombinedClass" placeholder="@Placeholder" disabled="@Disabled" readonly="@ReadOnly" rows="@Rows"
+<textarea @attributes="GetTextAreaAttributes()" id="@EffectiveId" class="@CombinedClass" placeholder="@Placeholder" disabled="@Disabled" readonly="@ReadOnly" rows="@Rows"
     aria-disabled="@(Disabled ? "true" : null)" @oninput="OnInputHandler" @onchange="OnChangeHandler">@currentValue</textarea>
 
 @code {
+    private readonly string _generatedId = Guid.NewGuid().ToString("N");
     private string currentValue = string.Empty;
+
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
+
+    /// <summary>
+    /// Gets or sets the textarea ID.
+    /// </summary>
+    [Parameter]
+    public string? Id { get; set; }
 
     /// <summary>
     /// Gets or sets the textarea value
@@ -56,7 +66,12 @@
     public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
     /// <inheritdoc/>
-    protected override string ComponentClass => "vibe-textarea";
+    protected override string ComponentClass => CombineClasses(
+        "vibe-textarea",
+        FieldContext?.IsInvalid == true ? "vibe-textarea-error" : null);
+
+    private string EffectiveId => FieldContext?.ControlId
+        ?? (string.IsNullOrWhiteSpace(Id) ? _generatedId : Id);
 
     protected override void OnParametersSet()
     {
@@ -97,5 +112,62 @@
         {
             await OnChange.InvokeAsync(args);
         }
+    }
+
+    private Dictionary<string, object>? GetTextAreaAttributes()
+    {
+        var attributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+        if (AdditionalAttributes is not null)
+        {
+            foreach (var attribute in AdditionalAttributes)
+            {
+                if (!IsReservedAttribute(attribute.Key))
+                {
+                    attributes[attribute.Key] = attribute.Value;
+                }
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(FieldContext?.DescribedBy))
+        {
+            MergeSpaceSeparatedAttribute(attributes, "aria-describedby", FieldContext.DescribedBy);
+        }
+
+        if (FieldContext?.IsInvalid == true)
+        {
+            attributes["aria-invalid"] = "true";
+            if (!string.IsNullOrWhiteSpace(FieldContext.ErrorId))
+            {
+                attributes["aria-errormessage"] = FieldContext.ErrorId;
+            }
+        }
+
+        if (FieldContext?.IsRequired == true)
+        {
+            attributes["required"] = "required";
+            attributes["aria-required"] = "true";
+        }
+
+        return attributes.Count == 0 ? null : attributes;
+    }
+
+    private static bool IsReservedAttribute(string name)
+        => name.Equals("class", StringComparison.OrdinalIgnoreCase)
+            || name.Equals("id", StringComparison.OrdinalIgnoreCase)
+            || name.Equals("placeholder", StringComparison.OrdinalIgnoreCase)
+            || name.Equals("disabled", StringComparison.OrdinalIgnoreCase)
+            || name.Equals("readonly", StringComparison.OrdinalIgnoreCase)
+            || name.Equals("rows", StringComparison.OrdinalIgnoreCase);
+
+    private static void MergeSpaceSeparatedAttribute(Dictionary<string, object> target, string key, string value)
+    {
+        var values = target.TryGetValue(key, out var existing) && existing is not null
+            ? existing.ToString()!.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            : Array.Empty<string>();
+
+        target[key] = string.Join(" ", values
+            .Concat(value.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            .Distinct(StringComparer.Ordinal));
     }
 }

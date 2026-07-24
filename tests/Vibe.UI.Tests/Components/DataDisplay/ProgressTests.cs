@@ -62,7 +62,7 @@ public class ProgressTests : TestBase
         // Assert
         cut.Find(".vibe-progress").ClassList.ShouldContain("animate");
         var indicator = cut.Find(".progress-indicator");
-        indicator.GetAttribute("style")!.ShouldContain("width: 100%");
+        indicator.GetAttribute("style")!.ShouldContain("width: 40%");
     }
 
     [Fact]
@@ -247,7 +247,7 @@ public class ProgressTests : TestBase
     // === Indeterminate Mode Tests ===
 
     [Fact]
-    public void Progress_IndeterminateMode_FullWidth()
+    public void Progress_IndeterminateMode_UsesMovingSegment()
     {
         // Act
         var cut = Render<Progress>(parameters => parameters
@@ -255,7 +255,7 @@ public class ProgressTests : TestBase
 
         // Assert
         var indicator = cut.Find(".progress-indicator");
-        indicator.GetAttribute("style")!.ShouldContain("width: 100%");
+        indicator.GetAttribute("style")!.ShouldContain("width: 40%");
     }
 
     [Fact]
@@ -268,7 +268,7 @@ public class ProgressTests : TestBase
 
         // Assert
         var indicator = cut.Find(".progress-indicator");
-        indicator.GetAttribute("style")!.ShouldContain("width: 100%");
+        indicator.GetAttribute("style")!.ShouldContain("width: 40%");
     }
 
     [Fact]

@@ -23,12 +23,7 @@
                         @onclick="HandleToggle"
                         @onclick:stopPropagation="true"
                         @onkeydown:stopPropagation="true">
-                    @* Chevron icon rotates 90deg when expanded via CSS. *@
-                    <svg class="tree-node-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                         aria-hidden="true" focusable="false">
-                        <path d="m9 18 6-6-6-6"/>
-                    </svg>
+                    <Icon Name="chevron-right" Size="16" CssClass="tree-node-chevron" />
                 </button>
             }
             else
@@ -48,9 +43,15 @@
                        class="tree-node-checkbox" />
             }
 
-            @if (Item.Icon != null)
+            @if (!string.IsNullOrWhiteSpace(Item.IconName))
             {
-                <span class="tree-node-icon">@Item.Icon</span>
+                <span class="tree-node-icon" aria-hidden="true">
+                    <Icon Name="@Item.IconName" Size="16" />
+                </span>
+            }
+            else if (Item.Icon != null)
+            {
+                <span class="tree-node-icon" aria-hidden="true">@Item.Icon</span>
             }
 
             <span class="@LabelCssClass">

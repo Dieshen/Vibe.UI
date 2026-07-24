@@ -101,6 +101,8 @@ public class RatingTests : TestBase
         foreach (var star in stars)
         {
             star.HasAttribute("disabled").ShouldBeTrue();
+            star.GetAttribute("aria-disabled").ShouldBe("true");
+            star.GetAttribute("tabindex").ShouldBe("-1");
         }
     }
 
@@ -116,7 +118,9 @@ public class RatingTests : TestBase
         var stars = cut.FindAll(".rating-star");
         foreach (var star in stars)
         {
-            star.HasAttribute("disabled").ShouldBeTrue();
+            star.HasAttribute("disabled").ShouldBeFalse();
+            star.GetAttribute("aria-disabled").ShouldBe("true");
+            star.GetAttribute("tabindex").ShouldBe("-1");
         }
     }
 
@@ -385,9 +389,9 @@ public class RatingTests : TestBase
 
         // Assert
         var stars = cut.FindAll(".rating-star");
-        stars[0].GetAttribute("aria-label")!.ShouldBe("1 star");
-        stars[1].GetAttribute("aria-label")!.ShouldBe("2 stars");
-        stars[2].GetAttribute("aria-label")!.ShouldBe("3 stars");
+        stars[0].GetAttribute("aria-label")!.ShouldBe("Set rating to 1 star");
+        stars[1].GetAttribute("aria-label")!.ShouldBe("Set rating to 2 stars");
+        stars[2].GetAttribute("aria-label")!.ShouldBe("Set rating to 3 stars");
     }
 
     [Fact]
@@ -495,9 +499,42 @@ public class RatingTests : TestBase
         // Assert
         var stars = cut.FindAll(".rating-star");
         stars[0].GetAttribute("role")!.ShouldBe("radio");
-        stars[0].GetAttribute("aria-checked")!.ShouldBe("true");
+        stars[0].GetAttribute("aria-checked")!.ShouldBe("false");
         stars[1].GetAttribute("aria-checked")!.ShouldBe("true");
         stars[2].GetAttribute("aria-checked")!.ShouldBe("false");
+        stars[0].GetAttribute("tabindex").ShouldBe("-1");
+        stars[1].GetAttribute("tabindex").ShouldBe("0");
+        stars[2].GetAttribute("tabindex").ShouldBe("-1");
+        stars[1].GetAttribute("aria-label").ShouldBe("2 stars, selected");
+    }
+
+    [Fact]
+    public void Rating_ArrowKeysMoveTheSingleSelectedRadio()
+    {
+        double changedTo = 0;
+        var cut = Render<Rating>(parameters => parameters
+            .Add(p => p.Value, 2)
+            .Add(p => p.ValueChanged, value => changedTo = value));
+
+        cut.FindAll(".rating-star")[1].KeyDown("ArrowRight");
+
+        changedTo.ShouldBe(3);
+        var stars = cut.FindAll(".rating-star");
+        stars.Count(star => star.GetAttribute("aria-checked") == "true").ShouldBe(1);
+        stars[2].GetAttribute("aria-checked").ShouldBe("true");
+        stars[2].GetAttribute("tabindex").ShouldBe("0");
+    }
+
+    [Fact]
+    public void Rating_DefaultIconsUseSharedLucideAssetsWithoutStarGlyphs()
+    {
+        var cut = Render<Rating>(parameters => parameters
+            .Add(p => p.Value, 2.5)
+            .Add(p => p.AllowHalf, true));
+
+        cut.FindAll("svg.vibe-icon").Count.ShouldBe(6);
+        cut.Markup.ShouldNotContain("★");
+        cut.Markup.ShouldNotContain("☆");
     }
 
     [Fact]

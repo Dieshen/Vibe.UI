@@ -91,16 +91,16 @@
             </p>
             <div class="vibe-flex vibe-flex-wrap vibe-items-center vibe-gap-3 vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
                 <Button Variant="ButtonVariant.Primary">
-                    <svg class="vibe-w-4 vibe-h-4 vibe-mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                    Add Item
+                    <Icon>
+                        <Vibe.UI.Components.Icon Name="plus" Size="16" />
+                    </Icon>
+                    <ChildContent>Add Item</ChildContent>
                 </Button>
                 <Button Variant="ButtonVariant.Outline">
-                    Download
-                    <svg class="vibe-w-4 vibe-h-4 vibe-ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                    </svg>
+                    <ChildContent>
+                        Download
+                        <Vibe.UI.Components.Icon Name="download" Size="16" CssClass="vibe-ml-2" />
+                    </ChildContent>
                 </Button>
             </div>
             <CodeBlock Code="@IconsCode" Language="razor" />
@@ -205,33 +205,23 @@
         <div class="vibe-prose dark:vibe-prose-invert vibe-max-w-none">
             <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
+                    <Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />
                     Uses semantic <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">&lt;button&gt;</code> element
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
+                    <Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />
                     Supports keyboard navigation (Enter/Space to activate)
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
+                    <Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />
                     Proper ARIA attributes when disabled or loading
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
+                    <Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />
                     Focus visible styles for keyboard users
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
+                    <Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />
                     Loading state announced to screen readers
                 </li>
             </ul>
@@ -350,17 +340,17 @@
 <Button Variant=""ButtonVariant.Primary"" Loading=""true"">Saving...</Button>";
 
     private string IconsCode => @"<Button Variant=""ButtonVariant.Primary"">
-    <svg class=""vibe-w-4 vibe-h-4 vibe-mr-2"" fill=""none"" stroke=""currentColor"" viewBox=""0 0 24 24"">
-        <path stroke-linecap=""round"" stroke-linejoin=""round"" stroke-width=""2"" d=""M12 4v16m8-8H4""></path>
-    </svg>
-    Add Item
+    <Icon>
+        <Vibe.UI.Components.Icon Name=""plus"" Size=""16"" />
+    </Icon>
+    <ChildContent>Add Item</ChildContent>
 </Button>
 
 <Button Variant=""ButtonVariant.Outline"">
-    Download
-    <svg class=""vibe-w-4 vibe-h-4 vibe-ml-2"" fill=""none"" stroke=""currentColor"" viewBox=""0 0 24 24"">
-        <path stroke-linecap=""round"" stroke-linejoin=""round"" stroke-width=""2"" d=""M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4""></path>
-    </svg>
+    <ChildContent>
+        Download
+        <Vibe.UI.Components.Icon Name=""download"" Size=""16"" CssClass=""vibe-ml-2"" />
+    </ChildContent>
 </Button>";
 }
 

@@ -1,12 +1,14 @@
 /* InputOTP baseline styles */
 
-:global(.input-otp) {
+.input-otp {
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
+  max-width: 100%;
 }
 
-:global(.input-otp-slot) {
+.input-otp-slot {
   width: 2.5rem;
   height: 2.75rem;
   box-sizing: border-box;
@@ -21,34 +23,45 @@
   transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 }
 
-:global(.input-otp-slot:focus-visible) {
+.input-otp-slot:focus-visible {
   outline: 2px solid var(--vibe-ring);
   outline-offset: 2px;
   border-color: var(--vibe-ring);
 }
 
-:global(.input-otp-slot-filled) {
+.input-otp-slot-filled {
   border-color: color-mix(in srgb, var(--vibe-border) 55%, var(--vibe-foreground));
 }
 
-:global(.input-otp-separator) {
+.input-otp-separator {
   color: var(--vibe-muted-foreground);
   font-size: 1rem;
   line-height: 1;
   user-select: none;
 }
 
-:global(.input-otp-disabled),
-:global(.input-otp-readonly) {
+.input-otp-disabled,
+.input-otp-readonly {
   opacity: 0.7;
 }
 
-:global(.input-otp-disabled .input-otp-slot) {
+.input-otp-disabled .input-otp-slot {
   cursor: not-allowed;
   background: var(--vibe-muted);
 }
 
-:global(.input-otp-readonly .input-otp-slot) {
+.input-otp-readonly .input-otp-slot {
   background: var(--vibe-muted);
+  cursor: text;
 }
 
+@media (max-width: 640px) {
+  .input-otp {
+    gap: 0.375rem;
+  }
+
+  .input-otp-slot {
+    width: 2.375rem;
+    height: 2.5rem;
+  }
+}

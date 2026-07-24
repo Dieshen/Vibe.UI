@@ -38,6 +38,8 @@ public class CssCommandTests : IDisposable
         settings.Verbose.Should().BeFalse();
         settings.ScanOnly.Should().BeFalse();
         settings.Patterns.Should().Be("*.razor,*.cshtml,*.html");
+        settings.FailOnUnknown.Should().BeFalse();
+        settings.IgnoredClasses.Should().BeEmpty();
     }
 
     #endregion
@@ -90,6 +92,24 @@ public class CssCommandTests : IDisposable
 
         // Assert
         result.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ScanOnlyStrict_ReturnsErrorForUnknownUtility()
+    {
+        await CreateTestRazorFileAsync(
+            "Test.razor",
+            @"<div class=""vibe-flex vibe-not-a-utility"">Test</div>");
+        var settings = new CssCommand.Settings
+        {
+            ProjectPath = _testProjectPath,
+            ScanOnly = true,
+            FailOnUnknown = true
+        };
+
+        var result = await _command.ExecuteAsync(CreateContext(), settings);
+
+        result.Should().Be(1);
     }
 
     #endregion
@@ -364,6 +384,49 @@ public class CssCommandTests : IDisposable
         var result = await _command.ExecuteAsync(context, settings);
 
         // Assert
+        result.Should().Be(0);
+        File.Exists(outputPath).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_StrictGeneration_DoesNotWriteUnknownUtilities()
+    {
+        await CreateTestRazorFileAsync(
+            "Test.razor",
+            @"<div class=""vibe-flex vibe-not-a-utility"">Test</div>");
+        var outputPath = Path.Combine(_testProjectPath, "output", "Vibe.UI.CSS");
+        var settings = new CssCommand.Settings
+        {
+            ProjectPath = _testProjectPath,
+            OutputPath = outputPath,
+            IncludeBase = false,
+            FailOnUnknown = true
+        };
+
+        var result = await _command.ExecuteAsync(CreateContext(), settings);
+
+        result.Should().Be(1);
+        File.Exists(outputPath).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_StrictGeneration_AllowsExplicitIgnoreList()
+    {
+        await CreateTestRazorFileAsync(
+            "Test.razor",
+            @"<div class=""vibe-flex vibe-theme-hook"">Test</div>");
+        var outputPath = Path.Combine(_testProjectPath, "output", "Vibe.UI.CSS");
+        var settings = new CssCommand.Settings
+        {
+            ProjectPath = _testProjectPath,
+            OutputPath = outputPath,
+            IncludeBase = false,
+            FailOnUnknown = true,
+            IgnoredClasses = "vibe-theme-hook"
+        };
+
+        var result = await _command.ExecuteAsync(CreateContext(), settings);
+
         result.Should().Be(0);
         File.Exists(outputPath).Should().BeTrue();
     }

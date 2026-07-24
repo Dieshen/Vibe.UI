@@ -1,6 +1,6 @@
 /* TreeView baseline styles */
 
-:global(.vibe-tree-view) {
+.vibe-tree-view {
   display: block;
 }
 

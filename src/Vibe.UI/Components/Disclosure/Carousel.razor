@@ -7,15 +7,24 @@
      aria-roledescription="carousel"
      aria-label="@EffectiveAriaLabel"
      aria-disabled="@DisabledAriaValue"
+     data-orientation="@OrientationValue"
      tabindex="@RootTabIndex"
      @onkeydown="HandleKeyDown"
+     @onmouseenter="PauseForInteraction"
+     @onmouseleave="ResumeAfterInteraction"
+     @onfocusin="PauseForInteraction"
+     @onfocusout="ResumeAfterInteraction"
      @attributes="AdditionalAttributes">
     <div class="carousel-viewport"
         role="group"
         aria-label="@ViewportAriaLabel"
         aria-live="@ViewportLiveValue"
-        @ref="ViewportRef" @onmousedown="OnMouseDown" @onmousemove="OnMouseMove"
-        @onmouseup="OnMouseUp" @onmouseleave="OnMouseLeave">
+        @ref="ViewportRef"
+        @onpointerdown="OnPointerDown"
+        @onpointermove="OnPointerMove"
+        @onpointerup="OnPointerUp"
+        @onpointercancel="OnPointerCancel"
+        @ondragstart:preventDefault="EnableDrag">
         <div class="carousel-container" style="@ContainerStyle">
             <CascadingValue Value="this" IsFixed="true">
                 @ChildContent
@@ -27,39 +36,49 @@
             <div class="carousel-navigation" aria-label="Carousel controls">
                 <button type="button" class="carousel-button carousel-prev-button" @onclick="PrevSlide"
                     disabled="@IsPreviousDisabled" aria-label="@PreviousButtonLabel" aria-disabled="@PreviousDisabledAriaValue">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="carousel-button-icon"
-                        aria-hidden="true" focusable="false">
-                        <polyline points="15 18 9 12 15 6"></polyline>
-                    </svg>
+                    <Icon Name="chevron-left" Size="20" CssClass="carousel-button-icon" />
                 </button>
                 <button type="button" class="carousel-button carousel-next-button" @onclick="NextSlide"
                     disabled="@IsNextDisabled" aria-label="@NextButtonLabel" aria-disabled="@NextDisabledAriaValue">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="carousel-button-icon"
-                        aria-hidden="true" focusable="false">
-                        <polyline points="9 18 15 12 9 6"></polyline>
-                    </svg>
+                    <Icon Name="chevron-right" Size="20" CssClass="carousel-button-icon" />
                 </button>
             </div>
         }
 
-        @if (ShowIndicators)
-        {
-            <div class="carousel-indicators" role="group" aria-label="Choose slide">
-                @for (int i = 0; i < Items.Count; i++)
-                {
-                    var index = i;
-                    <button type="button"
-                        class="carousel-indicator @(i == _activeIndex ? "active" : "")"
-                        aria-label="@GetIndicatorLabel(i)"
-                        aria-current="@(i == _activeIndex ? "true" : null)"
-                        disabled="@Disabled"
-                        @onclick="() => GoToSlide(index)"></button>
-                }
-            </div>
-        }
     </div>
+
+    @if (ShowIndicators || AutoPlay)
+    {
+        <div class="carousel-controls">
+            @if (ShowIndicators)
+            {
+                <div class="carousel-indicators" role="group" aria-label="Choose slide">
+                    @for (int i = 0; i < Items.Count; i++)
+                    {
+                        var index = i;
+                        <button type="button"
+                            class="carousel-indicator @(i == _activeIndex ? "active" : "")"
+                            aria-label="@GetIndicatorLabel(i)"
+                            aria-current="@(i == _activeIndex ? "true" : null)"
+                            disabled="@Disabled"
+                            @onclick="() => GoToSlide(index)"></button>
+                    }
+                </div>
+            }
+
+            @if (AutoPlay)
+            {
+                <button type="button"
+                        class="carousel-autoplay-button"
+                        aria-label="@(_isUserPaused ? "Resume automatic slide rotation" : "Pause automatic slide rotation")"
+                        aria-pressed="@(_isUserPaused ? "true" : "false")"
+                        disabled="@Disabled"
+                        @onclick="ToggleAutoPlayPause">
+                    <Icon Name="@(_isUserPaused ? "play" : "pause")" Size="16" />
+                </button>
+            }
+        </div>
+    }
 </div>
 
 @code {
@@ -168,12 +187,16 @@
     private double _dragStartY;
     private double _dragCurrentOffset;
     private bool _isSwiping;
+    private long? _activePointerId;
+    private bool _isInteractionPaused;
+    private bool _isUserPaused;
     private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel) ? "Carousel" : AriaLabel!;
     private string ViewportAriaLabel => Items.Count == 0
         ? "Carousel slides"
         : $"Slide {_activeIndex + 1} of {Items.Count}";
-    private string ViewportLiveValue => AutoPlay && !Disabled ? "off" : "polite";
+    private string ViewportLiveValue => AutoPlay && !Disabled && !_isUserPaused && !_isInteractionPaused ? "off" : "polite";
     private string? DisabledAriaValue => Disabled ? "true" : null;
+    private string OrientationValue => Orientation == CarouselOrientation.Vertical ? "vertical" : "horizontal";
     private int RootTabIndex => Disabled ? -1 : 0;
     private int EffectiveAutoPlayInterval => Math.Max(MinimumAutoPlayInterval, AutoPlayInterval);
     private bool CanNavigate => !Disabled && Items.Count > 1;
@@ -256,7 +279,7 @@
                 await Task.Delay(interval, cancellationToken);
                 await InvokeAsync(async () =>
                 {
-                    if (AutoPlay && !Disabled && !_isDragging && Items.Count > 1)
+                    if (AutoPlay && !Disabled && !_isUserPaused && !_isInteractionPaused && !_isDragging && Items.Count > 1)
                     {
                         await NextSlide();
                     }
@@ -283,6 +306,19 @@
         _activeIndex = NormalizeActiveIndex(_requestedActiveIndex);
         StateHasChanged();
         RefreshAutoPlay();
+    }
+
+    internal void RemoveItem(CarouselItem item)
+    {
+        if (!Items.Remove(item))
+        {
+            return;
+        }
+
+        _activeIndex = NormalizeActiveIndex(_activeIndex);
+        _requestedActiveIndex = _activeIndex;
+        RefreshAutoPlay();
+        _ = InvokeAsync(StateHasChanged);
     }
 
     /// <summary>
@@ -348,13 +384,14 @@
     /// <summary>
     /// Handles mouse down event for dragging.
     /// </summary>
-    private void OnMouseDown(MouseEventArgs args)
+    private void OnPointerDown(PointerEventArgs args)
     {
-        if (!EnableDrag || !CanNavigate)
+        if (!EnableDrag || !CanNavigate || args.Button != 0)
         {
             return;
         }
 
+        _activePointerId = args.PointerId;
         _isDragging = true;
         _dragStartX = args.ClientX;
         _dragStartY = args.ClientY;
@@ -364,9 +401,9 @@
     /// <summary>
     /// Handles mouse move event for dragging.
     /// </summary>
-    private void OnMouseMove(MouseEventArgs args)
+    private void OnPointerMove(PointerEventArgs args)
     {
-        if (!_isDragging)
+        if (!_isDragging || _activePointerId != args.PointerId)
         {
             return;
         }
@@ -392,14 +429,15 @@
     /// <summary>
     /// Handles mouse up event for dragging.
     /// </summary>
-    private async Task OnMouseUp(MouseEventArgs args)
+    private async Task OnPointerUp(PointerEventArgs args)
     {
-        if (!_isDragging)
+        if (!_isDragging || _activePointerId != args.PointerId)
         {
             return;
         }
 
         _isDragging = false;
+        _activePointerId = null;
 
         if (_isSwiping)
         {
@@ -436,12 +474,27 @@
     /// <summary>
     /// Handles mouse leave event for dragging.
     /// </summary>
-    private async Task OnMouseLeave(MouseEventArgs args)
+    private Task OnPointerCancel(PointerEventArgs args)
     {
-        if (_isDragging)
+        if (_activePointerId == args.PointerId)
         {
-            await OnMouseUp(args);
+            _isDragging = false;
+            _activePointerId = null;
+            _dragCurrentOffset = 0;
+            StateHasChanged();
         }
+
+        return Task.CompletedTask;
+    }
+
+    private void PauseForInteraction() => _isInteractionPaused = true;
+
+    private void ResumeAfterInteraction() => _isInteractionPaused = false;
+
+    private void ToggleAutoPlayPause()
+    {
+        _isUserPaused = !_isUserPaused;
+        StateHasChanged();
     }
 
     private async Task HandleKeyDown(KeyboardEventArgs args)

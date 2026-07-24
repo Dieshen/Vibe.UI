@@ -4,17 +4,14 @@
 <div @attributes="AdditionalAttributes" class="@CombinedClass">
     <div class="combobox-trigger" @onclick="ToggleDropdown">
         <input id="@InputId" type="text" class="combobox-input" placeholder="@Placeholder" value="@InputValue"
-            @oninput="OnInputChanged" @onfocus="OnInputFocus" @onkeydown="OnKeyDown" disabled="@Disabled"
+            @oninput="OnInputChanged" @onfocus="OnInputFocus" @onclick:stopPropagation="true" @onkeydown="OnKeyDown" disabled="@Disabled"
             readonly="@ReadOnly" autocomplete="off" role="combobox" aria-label="@AriaLabel"
             aria-labelledby="@AriaLabelledBy" aria-autocomplete="list" aria-haspopup="listbox"
             aria-expanded="@AriaBool(IsOpen)" aria-controls="@ListboxId" aria-activedescendant="@ActiveDescendantId"
-            aria-describedby="@InputDescribedBy" aria-invalid="@AriaInvalid" aria-readonly="@AriaReadonly"
-            required="@Required" />
+            aria-describedby="@InputDescribedBy" aria-invalid="@AriaInvalid" aria-errormessage="@AriaErrorMessageId"
+            aria-readonly="@AriaReadonly" required="@EffectiveRequired" aria-required="@(EffectiveRequired ? "true" : null)" />
         <div class="combobox-chevron" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m6 9 6 6 6-6" />
-            </svg>
+            <Icon Name="chevron-down" Size="16" />
         </div>
     </div>
 
@@ -27,10 +24,14 @@
                 {
                     var option = FilteredOptions[i];
                     <div id="@GetOptionId(i)" @key="option" role="option"
-                        class="combobox-option @(IsSelectedOption(option) ? "selected" : "")"
+                        class="combobox-option @(IsSelectedOption(option) ? "selected" : "") @(IsHighlightedOption(option) ? "highlighted" : "")"
                         aria-selected="@AriaBool(IsSelectedOption(option))" @onclick="() => SelectOption(option)"
                         @onmouseenter="() => HighlightOption(option)">
-                        @GetOptionLabel(option)
+                        <span>@GetOptionLabel(option)</span>
+                        @if (IsSelectedOption(option))
+                        {
+                            <Icon Name="check" Size="16" CssClass="combobox-check" />
+                        }
                     </div>
                 }
             }
@@ -59,6 +60,13 @@
     private string? _lastValue;
     private List<ComboboxOption>? _lastOptions;
     private bool _hasSyncedParameters;
+    private string? _currentValue;
+
+    /// <summary>
+    /// Gets the relationships cascaded by an ancestor <see cref="FormField{TValue}"/>, if any.
+    /// </summary>
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
 
     /// <summary>
     /// Represents an option in the combobox.
@@ -183,7 +191,7 @@
             ComponentClass,
             Disabled ? "disabled" : null,
             ReadOnly ? "readonly" : null,
-            HasError ? "has-error" : null,
+            EffectiveHasError ? "has-error" : null,
             Class);
     }
 
@@ -216,7 +224,8 @@
     /// </summary>
     private ComboboxOption? HighlightedOption;
 
-    private string InputId => string.IsNullOrWhiteSpace(Id) ? $"vibe-combobox-input-{_instanceId}" : Id!;
+    private string InputId => FieldContext?.ControlId
+        ?? (string.IsNullOrWhiteSpace(Id) ? $"vibe-combobox-input-{_instanceId}" : Id!);
 
     private string ListboxId => $"{InputId}-listbox";
 
@@ -230,12 +239,21 @@
 
     private bool HasHelperText => !HasError && !string.IsNullOrWhiteSpace(HelperText);
 
-    private string? AriaInvalid => HasError ? "true" : null;
+    private bool EffectiveHasError => HasError || FieldContext?.IsInvalid == true;
+
+    private bool EffectiveRequired => Required || FieldContext?.IsRequired == true;
+
+    private string? AriaInvalid => EffectiveHasError ? "true" : null;
+
+    private string? AriaErrorMessageId => EffectiveHasError
+        ? (HasError ? ErrorTextId : FieldContext?.ErrorId)
+        : null;
 
     private string? AriaReadonly => ReadOnly ? "true" : null;
 
     private string? InputDescribedBy => CombineIds(
         AriaDescribedBy,
+        FieldContext?.DescribedBy,
         HasError ? ErrorTextId : null,
         HasHelperText ? HelperTextId : null);
 
@@ -260,6 +278,7 @@
 
         if (valueChanged || optionsChanged)
         {
+            _currentValue = Value;
             UpdateInputFromValue();
         }
 
@@ -445,8 +464,10 @@
     /// <param name="option">The option to check.</param>
     private bool IsSelectedOption(ComboboxOption option)
     {
-        return HighlightedOption == option;
+        return string.Equals(option.Value, _currentValue, StringComparison.Ordinal);
     }
+
+    private bool IsHighlightedOption(ComboboxOption option) => ReferenceEquals(HighlightedOption, option);
 
     /// <summary>
     /// Selects an option.
@@ -460,6 +481,7 @@
         }
 
         InputValue = GetOptionLabel(option);
+        _currentValue = option.Value;
         await ValueChanged.InvokeAsync(option.Value ?? string.Empty);
         CloseDropdown();
     }

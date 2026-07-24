@@ -22,34 +22,74 @@
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
         <div class="vibe-p-6 vibe-rounded-xl vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-800 vibe-bg-white dark:vibe-bg-zinc-900 vibe-flex vibe-justify-center vibe-gap-6 vibe-flex-wrap">
-            <DropdownMenu Position="bottom" Align="start">
+            <DropdownMenu Position="bottom" Align="start" ContentStyle="min-width: 200px;">
                 <TriggerContent>
-                    <Button>Dropdown Menu</Button>
+                    <span>Dropdown menu</span>
+                    <Icon Name="chevron-down" Size="16" />
                 </TriggerContent>
                 <Content>
-                    <div class="vibe-bg-white dark:vibe-bg-zinc-800 vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-rounded-lg vibe-p-2 vibe-shadow-lg vibe-min-w-[200px]">
-                        <div class="vibe-px-3 vibe-py-2 hover:vibe-bg-zinc-100 dark:hover:vibe-bg-zinc-700 vibe-rounded vibe-cursor-pointer vibe-text-zinc-900 dark:vibe-text-zinc-100">Profile</div>
-                        <div class="vibe-px-3 vibe-py-2 hover:vibe-bg-zinc-100 dark:hover:vibe-bg-zinc-700 vibe-rounded vibe-cursor-pointer vibe-text-zinc-900 dark:vibe-text-zinc-100">Settings</div>
-                        <div class="vibe-h-px vibe-bg-zinc-200 dark:vibe-bg-zinc-700 vibe-my-2"></div>
-                        <div class="vibe-px-3 vibe-py-2 hover:vibe-bg-red-50 dark:hover:vibe-bg-red-900/20 vibe-rounded vibe-cursor-pointer vibe-text-red-600 dark:vibe-text-red-400">Logout</div>
-                    </div>
+                    <button type="button" class="dropdown-item" role="menuitem">
+                        <Icon Name="user" Size="16" />
+                        <span>Profile</span>
+                    </button>
+                    <button type="button" class="dropdown-item" role="menuitem">
+                        <Icon Name="settings" Size="16" />
+                        <span>Settings</span>
+                    </button>
+                    <div class="dropdown-separator" role="separator"></div>
+                    <button type="button" class="dropdown-item destructive" role="menuitem">
+                        <Icon Name="log-out" Size="16" />
+                        <span>Log out</span>
+                    </button>
                 </Content>
             </DropdownMenu>
 
-            <DropdownMenu Position="bottom" Align="end">
+            <DropdownMenu Position="bottom" Align="end" ContentStyle="min-width: 180px;">
                 <TriggerContent>
-                    <Button Variant="ButtonVariant.Secondary">Actions ▼</Button>
+                    <span>Actions</span>
+                    <Icon Name="chevron-down" Size="16" />
                 </TriggerContent>
                 <Content>
-                    <div class="vibe-bg-white dark:vibe-bg-zinc-800 vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-rounded-lg vibe-p-2 vibe-shadow-lg vibe-min-w-[180px]">
-                        <div class="vibe-px-3 vibe-py-2 hover:vibe-bg-zinc-100 dark:hover:vibe-bg-zinc-700 vibe-rounded vibe-cursor-pointer vibe-text-zinc-900 dark:vibe-text-zinc-100">✏️ Edit</div>
-                        <div class="vibe-px-3 vibe-py-2 hover:vibe-bg-zinc-100 dark:hover:vibe-bg-zinc-700 vibe-rounded vibe-cursor-pointer vibe-text-zinc-900 dark:vibe-text-zinc-100">📋 Copy</div>
-                        <div class="vibe-px-3 vibe-py-2 hover:vibe-bg-zinc-100 dark:hover:vibe-bg-zinc-700 vibe-rounded vibe-cursor-pointer vibe-text-zinc-900 dark:vibe-text-zinc-100">📥 Download</div>
-                        <div class="vibe-h-px vibe-bg-zinc-200 dark:vibe-bg-zinc-700 vibe-my-2"></div>
-                        <div class="vibe-px-3 vibe-py-2 hover:vibe-bg-red-50 dark:hover:vibe-bg-red-900/20 vibe-rounded vibe-cursor-pointer vibe-text-red-600 dark:vibe-text-red-400">🗑️ Delete</div>
-                    </div>
+                    <button type="button" class="dropdown-item" role="menuitem">
+                        <Icon Name="edit" Size="16" />
+                        <span>Edit</span>
+                    </button>
+                    <button type="button" class="dropdown-item" role="menuitem">
+                        <Icon Name="copy" Size="16" />
+                        <span>Copy</span>
+                    </button>
+                    <button type="button" class="dropdown-item" role="menuitem">
+                        <Icon Name="download" Size="16" />
+                        <span>Download</span>
+                    </button>
+                    <div class="dropdown-separator" role="separator"></div>
+                    <button type="button" class="dropdown-item destructive" role="menuitem">
+                        <Icon Name="trash" Size="16" />
+                        <span>Delete</span>
+                    </button>
                 </Content>
             </DropdownMenu>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Context Menu</h2>
+        <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
+            Right-click the target, or focus it and press Shift+F10, to open document actions.
+        </p>
+        <div class="vibe-p-6 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-800 vibe-bg-white dark:vibe-bg-zinc-900">
+            <ContextMenu MenuAriaLabel="Document actions">
+                <TriggerContent>
+                    <div class="vibe-w-full vibe-min-h-32 vibe-p-6 vibe-rounded-md vibe-border vibe-border-dashed vibe-border-zinc-300 dark:vibe-border-zinc-700 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-flex vibe-items-center vibe-justify-center vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-300">
+                        Document workspace
+                    </div>
+                </TriggerContent>
+                <Content>
+                    <ContextMenuItem>Open</ContextMenuItem>
+                    <ContextMenuItem>Rename</ContextMenuItem>
+                    <ContextMenuItem>Download</ContextMenuItem>
+                </Content>
+            </ContextMenu>
         </div>
     </section>
 
@@ -113,45 +153,58 @@
                     </thead>
                     <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Placement</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="DropdownPlacement" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">BottomStart</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Dropdown placement</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">TriggerContent</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment?" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Content rendered inside the trigger button</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Trigger</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="DropdownTrigger" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Click</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Trigger type (Click, Hover)</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Content</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment?" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Menu content rendered while open</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Position</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"bottom"</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Menu side: bottom, top, left, or right</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Align</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"start"</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Menu alignment: start, center, or end</td>
                         </tr>
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">CloseOnSelect</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">true</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Close after item selection</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Close after menu content is selected</td>
                         </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Events -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Events</h3>
-            <div class="vibe-overflow-x-auto">
-                <table class="vibe-w-full vibe-text-sm">
-                    <thead>
-                        <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnItemClick</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback&lt;string&gt;" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when item is clicked</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Disabled</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Disable the trigger button</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">TriggerClass</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string?" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Additional classes for the trigger</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ContentClass</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string?" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Additional classes for the menu surface</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ContentStyle</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string?" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Additional inline styles for the menu surface</td>
                         </tr>
                     </tbody>
                 </table>
@@ -163,9 +216,9 @@
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
         <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-            Install the Dropdown component using the Vibe.UI CLI:
+            Install the DropdownMenu component using the Vibe.UI CLI:
         </p>
-        <CodeBlock Code="vibe add dropdown" Language="bash" />
+        <CodeBlock Code="vibe add dropdownmenu" Language="bash" />
     </section>
 
     <!-- Accessibility -->
@@ -176,19 +229,19 @@
                 <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                 </svg>
-                Keyboard navigation support
+                Native button activation with Enter and Space
             </li>
             <li class="vibe-flex vibe-items-start vibe-gap-2">
                 <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                 </svg>
-                ARIA roles and attributes
+                Menu and menuitem roles for assistive technology
             </li>
             <li class="vibe-flex vibe-items-start vibe-gap-2">
                 <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                 </svg>
-                Focus management
+                Trigger exposes expanded and controls state
             </li>
             <li class="vibe-flex vibe-items-start vibe-gap-2">
                 <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -220,54 +273,54 @@
 </div>
 
 @code {
-    private string BasicCode => @"<Dropdown>
-    <DropdownTrigger>
-        <Button>Actions</Button>
-    </DropdownTrigger>
-    <DropdownContent>
-        <DropdownItem>Edit</DropdownItem>
-        <DropdownItem>Duplicate</DropdownItem>
-        <DropdownItem>Delete</DropdownItem>
-    </DropdownContent>
-</Dropdown>";
+    private string BasicCode => @"<DropdownMenu ContentStyle=""min-width: 12rem;"">
+    <TriggerContent>
+        Actions
+        <Icon Name=""chevron-down"" Size=""16"" />
+    </TriggerContent>
+    <Content>
+        <button type=""button"" class=""dropdown-item"" role=""menuitem"">Edit</button>
+        <button type=""button"" class=""dropdown-item"" role=""menuitem"">Duplicate</button>
+        <button type=""button"" class=""dropdown-item destructive"" role=""menuitem"">Delete</button>
+    </Content>
+</DropdownMenu>";
 
-    private string IconsCode => @"<Dropdown>
-    <DropdownTrigger>
-        <Button>Options</Button>
-    </DropdownTrigger>
-    <DropdownContent>
-        <DropdownItem Icon=""✏️"">Edit</DropdownItem>
-        <DropdownItem Icon=""📋"">Copy</DropdownItem>
-        <DropdownItem Icon=""🗑️"" Danger=""true"">Delete</DropdownItem>
-    </DropdownContent>
-</Dropdown>";
+    private string IconsCode => @"<DropdownMenu ContentStyle=""min-width: 12rem;"">
+    <TriggerContent>Options <Icon Name=""chevron-down"" Size=""16"" /></TriggerContent>
+    <Content>
+        <button type=""button"" class=""dropdown-item"" role=""menuitem"">
+            <Icon Name=""edit"" Size=""16"" /> Edit
+        </button>
+        <button type=""button"" class=""dropdown-item"" role=""menuitem"">
+            <Icon Name=""copy"" Size=""16"" /> Copy
+        </button>
+        <button type=""button"" class=""dropdown-item destructive"" role=""menuitem"">
+            <Icon Name=""trash"" Size=""16"" /> Delete
+        </button>
+    </Content>
+</DropdownMenu>";
 
-    private string PlacementCode => @"<Dropdown Placement=""DropdownPlacement.BottomEnd"">
-    <DropdownTrigger>
-        <Button>Bottom End</Button>
-    </DropdownTrigger>
-    <DropdownContent>
-        <DropdownItem>Item 1</DropdownItem>
-        <DropdownItem>Item 2</DropdownItem>
-    </DropdownContent>
-</Dropdown>";
+    private string PlacementCode => @"<DropdownMenu Position=""bottom"" Align=""end"">
+    <TriggerContent>Bottom end</TriggerContent>
+    <Content>
+        <button type=""button"" class=""dropdown-item"" role=""menuitem"">Item 1</button>
+        <button type=""button"" class=""dropdown-item"" role=""menuitem"">Item 2</button>
+    </Content>
+</DropdownMenu>";
 
-    private string SectionsCode => @"<Dropdown>
-    <DropdownTrigger>
-        <Button>Menu</Button>
-    </DropdownTrigger>
-    <DropdownContent>
-        <DropdownSection Title=""Actions"">
-            <DropdownItem>New File</DropdownItem>
-            <DropdownItem>Open File</DropdownItem>
-        </DropdownSection>
-        <DropdownSection Title=""Edit"">
-            <DropdownItem>Cut</DropdownItem>
-            <DropdownItem>Copy</DropdownItem>
-            <DropdownItem>Paste</DropdownItem>
-        </DropdownSection>
-    </DropdownContent>
-</Dropdown>";
+    private string SectionsCode => @"<DropdownMenu ContentStyle=""min-width: 12rem;"">
+    <TriggerContent>Menu <Icon Name=""chevron-down"" Size=""16"" /></TriggerContent>
+    <Content>
+        <div class=""dropdown-label"">Actions</div>
+        <button type=""button"" class=""dropdown-item"" role=""menuitem"">New file</button>
+        <button type=""button"" class=""dropdown-item"" role=""menuitem"">Open file</button>
+        <div class=""dropdown-separator"" role=""separator""></div>
+        <div class=""dropdown-label"">Edit</div>
+        <button type=""button"" class=""dropdown-item"" role=""menuitem"">Cut</button>
+        <button type=""button"" class=""dropdown-item"" role=""menuitem"">Copy</button>
+        <button type=""button"" class=""dropdown-item"" role=""menuitem"">Paste</button>
+    </Content>
+</DropdownMenu>";
 }
 
 

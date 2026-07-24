@@ -6,6 +6,7 @@
      tabindex="@(Disabled ? "-1" : "0")"
      aria-disabled="@Disabled.ToString().ToLowerInvariant()"
      @onclick="OnClick"
+     @onclick:stopPropagation="true"
      @onkeydown="OnKeyDown"
      @attributes="AdditionalAttributes">
     @if (!string.IsNullOrEmpty(Icon))
@@ -50,6 +51,9 @@
     [Parameter]
     public EventCallback<MouseEventArgs> OnItemClick { get; set; }
 
+    [CascadingParameter(Name = "VibeContextMenuSelection")]
+    private Func<Task>? SelectionCallback { get; set; }
+
     /// <summary>
     /// Gets the component CSS class name.
     /// </summary>
@@ -64,6 +68,7 @@
         if (!Disabled)
         {
             await OnItemClick.InvokeAsync(e);
+            await NotifySelectedAsync();
         }
     }
 
@@ -73,5 +78,8 @@
             return;
 
         await OnItemClick.InvokeAsync(new MouseEventArgs());
+        await NotifySelectedAsync();
     }
+
+    private Task NotifySelectedAsync() => SelectionCallback?.Invoke() ?? Task.CompletedTask;
 }

@@ -1,0 +1,63 @@
+@page "/components/inputotp"
+@using Vibe.UI.Components
+
+<PageTitle>Input OTP - Vibe.UI</PageTitle>
+
+<div class="vibe-max-w-4xl vibe-mx-auto">
+    <header class="vibe-mb-8">
+        <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
+            <a href="./">Docs</a><span>/</span><a href="components">Components</a><span>/</span>
+            <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Input OTP</span>
+        </div>
+        <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Input OTP</h1>
+        <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            A one-time-password control with keyboard navigation, paste distribution, SMS autofill, and responsive slots.
+        </p>
+    </header>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+            <InputOTP Length="6" @bind-Value="verificationCode" OnComplete="@HandleComplete" AriaLabel="Verification code" />
+            <output class="vibe-block vibe-mt-3 vibe-text-sm vibe-text-zinc-500 dark:vibe-text-zinc-400">
+                @(string.IsNullOrEmpty(completedCode) ? "Enter or paste your verification code" : $"Code accepted: {completedCode}")
+            </output>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
+        <div class="vibe-mb-8"><h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Numeric code</h3><CodeBlock Code="@NumericCode" Language="razor" /></div>
+        <div><h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Alphanumeric recovery code</h3><CodeBlock Code="@RecoveryCode" Language="razor" /></div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
+        <div class="vibe-overflow-x-auto"><table class="vibe-w-full vibe-text-sm"><thead><tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700"><th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th><th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th><th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Default</th><th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th></tr></thead><tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">@foreach (var property in Properties) { <tr><td class="vibe-py-3 vibe-px-4 vibe-font-mono">@property.Name</td><td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@property.Type" /></td><td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@property.Default</td><td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@property.Description</td></tr> }</tbody></table></div>
+    </section>
+
+    <section class="vibe-mb-12"><h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2><CodeBlock Code="vibe add inputotp" Language="bash" /></section>
+    <section class="vibe-mb-12"><h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2><ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400"><li class="vibe-flex vibe-items-start vibe-gap-2"><Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />Names every slot by position and type</li><li class="vibe-flex vibe-items-start vibe-gap-2"><Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />Supports Arrow keys, Home, End, Backspace, and Delete</li><li class="vibe-flex vibe-items-start vibe-gap-2"><Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />Lets browsers deliver a pasted code to the remaining slots</li><li class="vibe-flex vibe-items-start vibe-gap-2"><Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />Keeps long codes within narrow viewports by wrapping slots</li></ul></section>
+</div>
+
+@code {
+    private string verificationCode = string.Empty;
+    private string completedCode = string.Empty;
+
+    private void HandleComplete(string value) => completedCode = value;
+
+    private static readonly (string Name, string Type, string Default, string Description)[] Properties =
+    [
+        ("Value", "string?", "null", "Current code; supports @bind-Value"),
+        ("Length", "int", "6", "Number of visible slots"),
+        ("Pattern", "OTPPattern", "Numeric", "Numeric, Alphanumeric, Alpha, or Any"),
+        ("Disabled", "bool", "false", "Disable every slot"),
+        ("ReadOnly", "bool", "false", "Keep the displayed code immutable"),
+        ("Separator", "string", "-", "Separator rendered between configured groups"),
+        ("SeparatorIndices", "List<int>?", "empty", "Indices after which to render a separator"),
+        ("OnComplete", "EventCallback<string>", "none", "Called when all slots are filled")
+    ];
+
+    private const string NumericCode = @"<InputOTP Length=""6"" @bind-Value=""verificationCode"" OnComplete=""Verify"" />";
+    private const string RecoveryCode = @"<InputOTP Length=""8"" Pattern=""InputOTP.OTPPattern.Alphanumeric"" Separator=""-"" SeparatorIndices=""[3]"" />";
+}

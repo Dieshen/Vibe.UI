@@ -1,0 +1,154 @@
+@page "/components/sidebar"
+@using Vibe.UI.Components
+
+<PageTitle>Sidebar - Vibe.UI</PageTitle>
+
+<div class="vibe-max-w-4xl vibe-mx-auto">
+    <header class="vibe-mb-8">
+        <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
+            <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
+            <span>/</span>
+            <a href="components" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Components</a>
+            <span>/</span>
+            <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Sidebar</span>
+        </div>
+        <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">Sidebar</h1>
+        <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            A collapsible and optionally resizable navigation region.
+        </p>
+    </header>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+            <div class="vibe-overflow-x-auto vibe-rounded-md vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                <div class="vibe-flex" style="min-width: 36rem; height: 20rem;">
+                    <Sidebar @bind-IsOpen="sidebarOpen"
+                             @bind-Width="sidebarWidth"
+                             Title="Workspace"
+                             Resizable="true"
+                             PersistState="false"
+                             MinWidth="180"
+                             MaxWidth="320"
+                             CollapsedWidth="52">
+                        <ChildContent>
+                            <nav aria-label="Workspace navigation" class="vibe-grid vibe-gap-1">
+                                <a href="#overview" class="vibe-rounded-md vibe-px-3 vibe-py-2 vibe-text-sm vibe-bg-zinc-200/70 dark:vibe-bg-zinc-800">Overview</a>
+                                <a href="#components" class="vibe-rounded-md vibe-px-3 vibe-py-2 vibe-text-sm">Components</a>
+                                <a href="#releases" class="vibe-rounded-md vibe-px-3 vibe-py-2 vibe-text-sm">Releases</a>
+                            </nav>
+                        </ChildContent>
+                        <Footer>
+                            <span class="vibe-text-sm vibe-text-zinc-500">Product platform</span>
+                        </Footer>
+                    </Sidebar>
+                    <main class="vibe-min-w-0 vibe-flex-1 vibe-p-4 vibe-bg-white dark:vibe-bg-zinc-950">
+                        <h3 class="vibe-font-semibold vibe-mb-2">Overview</h3>
+                        <p class="vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400">
+                            The workspace remains stable while the navigation width changes.
+                        </p>
+                    </main>
+                </div>
+            </div>
+            <output class="vibe-block vibe-mt-3 vibe-text-sm vibe-text-zinc-500">
+                Sidebar: @(sidebarOpen ? $"{sidebarWidth}px" : "collapsed")
+            </output>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
+        <div class="vibe-mb-8">
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Bindable state and width</h3>
+            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
+                Bind the open state and width when the containing layout needs both values.
+            </p>
+            <CodeBlock Code="@BasicCode" Language="razor" />
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
+        <div class="vibe-overflow-x-auto">
+            <table class="vibe-w-full vibe-text-sm">
+                <thead>
+                    <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Default</th>
+                        <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
+                    </tr>
+                </thead>
+                <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
+                    @foreach (var property in Properties)
+                    {
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">@property.Name</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@property.Type" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@property.Default</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@property.Description</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
+        <CodeBlock Code="vibe add sidebar" Language="bash" />
+    </section>
+
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
+        <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            @foreach (var item in AccessibilityItems)
+            {
+                <li class="vibe-flex vibe-items-start vibe-gap-2">
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" CssClass="vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" />
+                    @item
+                </li>
+            }
+        </ul>
+    </section>
+</div>
+
+@code {
+    private bool sidebarOpen = true;
+    private int sidebarWidth = 220;
+
+    private static readonly (string Name, string Type, string Default, string Description)[] Properties =
+    [
+        ("IsOpen", "bool", "true", "Expanded or collapsed state; supports @bind-IsOpen"),
+        ("Width", "int", "280", "Expanded width in pixels; supports @bind-Width"),
+        ("CollapsedWidth", "int", "60", "Collapsed rail width in pixels"),
+        ("MinWidth", "int", "200", "Minimum resizable width"),
+        ("MaxWidth", "int", "600", "Maximum resizable width"),
+        ("Position", "SidebarPosition", "Left", "Left or Right edge behavior"),
+        ("Collapsible", "bool", "true", "Render the collapse control"),
+        ("Resizable", "bool", "false", "Render pointer and keyboard resize controls"),
+        ("Disabled", "bool", "false", "Block collapse and resize interactions"),
+        ("PersistState", "bool", "true", "Persist width in local storage"),
+        ("PersistenceKey", "string?", "null", "Optional stable local-storage key suffix"),
+        ("Title", "string?", "null", "Default header title and accessible name"),
+        ("Header", "RenderFragment?", "null", "Custom header content"),
+        ("ChildContent", "RenderFragment?", "null", "Sidebar navigation or tools"),
+        ("Footer", "RenderFragment?", "null", "Footer content")
+    ];
+
+    private static readonly string[] AccessibilityItems =
+    [
+        "Exposes a named complementary region and a named content region",
+        "Makes collapsed content inert so hidden links leave the tab order",
+        "Exposes current, minimum, and maximum width on the resize separator",
+        "Mirrors ArrowLeft and ArrowRight resizing for right-positioned sidebars"
+    ];
+
+    private string BasicCode => @"<Sidebar @bind-IsOpen=""isOpen""
+         @bind-Width=""width""
+         Title=""Workspace""
+         Resizable=""true""
+         PersistenceKey=""primary-workspace"">
+    <WorkspaceNavigation />
+</Sidebar>";
+}

@@ -1,11 +1,13 @@
 @namespace Vibe.UI.Components
 @inherits Base.VibeComponent
+@implements IAsyncDisposable
 @inject IJSRuntime JSRuntime
 @using System.Globalization
 
 <div class="@CombinedClass" @attributes="AdditionalAttributes">
     <div class="date-input-wrapper">
         <Input
+            Id="@_inputId"
             class="date-input"
             type="text"
             Value="@FormattedDate"
@@ -14,28 +16,39 @@
             Disabled="@Disabled"
             aria-label="@Placeholder"
             aria-haspopup="dialog"
-            aria-expanded="@IsOpen.ToString().ToLowerInvariant()"
+            aria-expanded="@AriaBool(IsOpen)"
             aria-controls="@_popupId"
-            @onclick="ToggleCalendar" />
-            
-        <button type="button"
+            @onclick="() => ToggleCalendar(_inputId)"
+            @onkeydown="HandleInputKeyDown" />
+
+        <button id="@_triggerId"
+                type="button"
                 class="date-icon"
                 disabled="@Disabled"
                 aria-label="Open calendar"
                 aria-haspopup="dialog"
-                aria-expanded="@IsOpen.ToString().ToLowerInvariant()"
+                aria-expanded="@AriaBool(IsOpen)"
                 aria-controls="@_popupId"
-                @onclick="ToggleCalendar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
+                @onclick="() => ToggleCalendar(_triggerId)"
+                @onkeydown="HandleTriggerKeyDown">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
         </button>
     </div>
-    
+
     @if (IsOpen)
     {
-        <div id="@_popupId" class="date-popup" role="dialog" aria-label="Choose date">
+        <div id="@_popupId"
+             class="date-popup"
+             role="dialog"
+             aria-label="Choose date"
+             @onkeydown="HandlePopupKeyDown">
             <div class="date-header">
-                <button type="button" class="date-nav-btn" aria-label="Previous month" @onclick="PreviousMonth">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+                <button type="button"
+                        class="date-nav-btn"
+                        aria-label="Previous month"
+                        disabled="@IsPreviousMonthDisabled"
+                        @onclick="PreviousMonth">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m15 18-6-6 6-6"></path></svg>
                 </button>
                 <div class="date-header-label">
                     <select class="date-month-select" value="@CurrentMonth" aria-label="Month" @onchange="HandleMonthChange">
@@ -45,38 +58,51 @@
                         }
                     </select>
                     <select class="date-year-select" value="@CurrentYear" aria-label="Year" @onchange="HandleYearChange">
-                        @for (int i = MinYear; i <= MaxYear; i++)
+                        @for (int i = EffectiveMinDateYear; i <= EffectiveMaxDateYear; i++)
                         {
                             <option value="@i">@i</option>
                         }
                     </select>
                 </div>
-                <button type="button" class="date-nav-btn" aria-label="Next month" @onclick="NextMonth">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+                <button type="button"
+                        class="date-nav-btn"
+                        aria-label="Next month"
+                        disabled="@IsNextMonthDisabled"
+                        @onclick="NextMonth">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 18 6-6-6-6"></path></svg>
                 </button>
             </div>
-            
+
             <div class="date-calendar">
-                <div class="date-day-names">
-                    @foreach (var day in DayNames)
-                    {
-                        <div class="date-day-name">@day</div>
-                    }
-                </div>
-                
-                <div class="date-grid">
+                <div class="date-grid"
+                     role="grid"
+                     aria-label="@CurrentMonthLabel"
+                     @ref="_gridReference">
+                    <div class="date-day-names" role="row">
+                        @foreach (var day in DayNames)
+                        {
+                            <div class="date-day-name" role="columnheader">@day</div>
+                        }
+                    </div>
+
                     @foreach (var week in CalendarDays)
                     {
-                        <div class="date-week">
+                        <div class="date-week" role="row">
                             @foreach (var day in week)
                             {
-                                <button 
+                                <button
+                                    @key="day.Date"
+                                    id="@GetDayId(day.Date)"
                                     type="button"
                                     class="@GetDayClass(day)"
-                                    disabled="@(!day.IsCurrentMonth || !IsInRange(day.Date) || Disabled)"
+                                    role="gridcell"
+                                    tabindex="@GetDayTabIndex(day)"
+                                    disabled="@(!IsSelectableDay(day))"
                                     aria-label="@GetDayAriaLabel(day)"
                                     aria-current="@(day.IsToday ? "date" : null)"
-                                    aria-pressed="@IsSelected(day).ToString().ToLowerInvariant()"
+                                    aria-selected="@AriaBool(IsSelected(day))"
+                                    @onfocus="() => HandleDayFocus(day.Date)"
+                                    @onkeydown="e => HandleDayKeyDown(e, day.Date)"
                                     @onclick="() => SelectDate(day.Date)">
                                     @day.DayNumber
                                 </button>
@@ -85,29 +111,44 @@
                     }
                 </div>
             </div>
-            
+
             <div class="date-footer">
-                <button type="button" class="date-today-btn" disabled="@(!IsInRange(DateTime.Today) || Disabled)" @onclick="SelectToday">Today</button>
+                <button type="button"
+                        class="date-today-btn"
+                        disabled="@(!IsDateNavigable(DateTime.Today) || Disabled)"
+                        @onclick="SelectToday">
+                    Today
+                </button>
             </div>
         </div>
-        
-        <div class="date-backdrop" @onclick="CloseCalendar"></div>
+
+        <div class="date-backdrop" aria-hidden="true" @onclick="CloseCalendar"></div>
     }
 </div>
 
 @code {
-    /// <summary>
-    /// Represents a calendar day.
-    /// </summary>
-    private class CalendarDay
+    private sealed class CalendarDay
     {
-        public DateTime Date { get; set; }
-        public int DayNumber { get; set; }
-        public bool IsCurrentMonth { get; set; }
-        public bool IsToday { get; set; }
+        public DateTime Date { get; init; }
+        public int DayNumber { get; init; }
+        public bool IsCurrentMonth { get; init; }
+        public bool IsToday { get; init; }
     }
 
-    private readonly string _popupId = $"datepicker-{Guid.NewGuid():N}-popup";
+    private readonly string _componentId = $"datepicker-{Guid.NewGuid():N}";
+    private IJSObjectReference? _domModule;
+    private ElementReference _gridReference;
+    private DateTime? _focusedDate;
+    private DateTime? _previousDate;
+    private string? _pendingFocusElementId;
+    private string? _restoreFocusElementId;
+
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
+
+    private string _popupId => $"{_componentId}-popup";
+    private string _inputId => FieldContext?.ControlId ?? $"{_componentId}-input";
+    private string _triggerId => $"{_componentId}-trigger";
 
     /// <summary>
     /// Gets or sets the selected date.
@@ -116,344 +157,455 @@
     public DateTime? Date { get; set; }
 
     /// <summary>
-    /// Gets or sets the callback when the date changes.
+    /// Gets or sets the callback used by <c>@bind-Date</c>.
+    /// </summary>
+    [Parameter]
+    public EventCallback<DateTime?> DateChanged { get; set; }
+
+    /// <summary>
+    /// Gets or sets the compatibility callback invoked when the date changes.
     /// </summary>
     [Parameter]
     public EventCallback<DateTime?> OnChange { get; set; }
 
-    /// <summary>
-    /// Gets or sets the date format.
-    /// </summary>
     [Parameter]
     public string Format { get; set; } = "MM/dd/yyyy";
 
-    /// <summary>
-    /// Gets or sets the placeholder text.
-    /// </summary>
     [Parameter]
     public string Placeholder { get; set; } = "Select date";
 
-    /// <summary>
-    /// Gets or sets whether the date picker is disabled.
-    /// </summary>
     [Parameter]
     public bool Disabled { get; set; }
 
-    /// <summary>
-    /// Gets or sets the minimum selectable date.
-    /// </summary>
     [Parameter]
     public DateTime? MinDate { get; set; }
 
-    /// <summary>
-    /// Gets or sets the maximum selectable date.
-    /// </summary>
     [Parameter]
     public DateTime? MaxDate { get; set; }
 
-    /// <summary>
-    /// Gets or sets the first day of the week (0 = Sunday, 1 = Monday, etc.).
-    /// </summary>
     [Parameter]
-    public int FirstDayOfWeek { get; set; } = 0;
+    public int FirstDayOfWeek { get; set; }
 
-    /// <summary>
-    /// Gets or sets the minimum year that can be selected.
-    /// </summary>
     [Parameter]
     public int MinYear { get; set; } = DateTime.Today.Year - 100;
 
-    /// <summary>
-    /// Gets or sets the maximum year that can be selected.
-    /// </summary>
     [Parameter]
     public int MaxYear { get; set; } = DateTime.Today.Year + 100;
 
-    /// <summary>
-    /// Gets the component CSS class name.
-    /// </summary>
     protected override string ComponentClass => "vibe-datepicker";
 
-    /// <summary>
-    /// Flag to track if the calendar is open.
-    /// </summary>
     private bool IsOpen { get; set; }
-
-    /// <summary>
-    /// Current month (0-11) displayed in the calendar.
-    /// </summary>
     private int CurrentMonth { get; set; }
-
-    /// <summary>
-    /// Current year displayed in the calendar.
-    /// </summary>
     private int CurrentYear { get; set; }
+    private int EffectiveMinYear => Math.Clamp(Math.Min(MinYear, MaxYear), 1, 9999);
+    private int EffectiveMaxYear => Math.Clamp(Math.Max(MinYear, MaxYear), 1, 9999);
 
-    /// <summary>
-    /// The formatted date for display.
-    /// </summary>
-    private string FormattedDate => Date.HasValue ? Date.Value.ToString(Format) : string.Empty;
+    // These fold MinDate/MaxDate in on top of the MinYear/MaxYear window (see
+    // GetEffectiveMinDate/GetEffectiveMaxDate), so navigation bounds and the year
+    // <select> stay consistent with which days are actually selectable.
+    private int EffectiveMinDateYear => GetEffectiveMinDate().Year;
+    private int EffectiveMaxDateYear => GetEffectiveMaxDate().Year;
 
-    /// <summary>
-    /// The day names to display in the calendar header.
-    /// </summary>
+    private bool IsPreviousMonthDisabled
+    {
+        get
+        {
+            var minDate = GetEffectiveMinDate();
+            return CurrentYear == minDate.Year && CurrentMonth == minDate.Month - 1;
+        }
+    }
+
+    private bool IsNextMonthDisabled
+    {
+        get
+        {
+            var maxDate = GetEffectiveMaxDate();
+            return CurrentYear == maxDate.Year && CurrentMonth == maxDate.Month - 1;
+        }
+    }
+    private string FormattedDate => Date.HasValue ? Date.Value.ToString(Format, CultureInfo.CurrentCulture) : string.Empty;
     private string[] DayNames => GetDayNames();
-
-    /// <summary>
-    /// The calendar days for the current month view.
-    /// </summary>
     private List<List<CalendarDay>> CalendarDays => GenerateCalendar(CurrentYear, CurrentMonth);
+    private string CurrentMonthLabel => new DateTime(CurrentYear, CurrentMonth + 1, 1).ToString("Y", CultureInfo.CurrentCulture);
 
-    /// <summary>
-    /// Initialize the component.
-    /// </summary>
     protected override void OnInitialized()
     {
         base.OnInitialized();
-        InitializeCalendar();
+        SetCalendarMonth(GetInitialFocusDate());
+        _previousDate = Date;
     }
 
-    /// <summary>
-    /// Initialize the calendar view.
-    /// </summary>
-    private void InitializeCalendar()
+    protected override void OnParametersSet()
     {
-        var dateToUse = Date ?? DateTime.Today;
-        CurrentMonth = dateToUse.Month - 1;
-        CurrentYear = dateToUse.Year;
-    }
+        base.OnParametersSet();
 
-    /// <summary>
-    /// Toggles the calendar visibility.
-    /// </summary>
-    private void ToggleCalendar()
-    {
-        if (!Disabled)
+        if (!IsOpen && Date != _previousDate)
         {
-            IsOpen = !IsOpen;
+            SetCalendarMonth(GetInitialFocusDate());
         }
+
+        _previousDate = Date;
     }
 
-    /// <summary>
-    /// Closes the calendar.
-    /// </summary>
+    private void ToggleCalendar(string restoreFocusElementId)
+    {
+        if (Disabled)
+        {
+            return;
+        }
+
+        if (IsOpen)
+        {
+            CloseCalendar();
+            return;
+        }
+
+        OpenCalendar(restoreFocusElementId);
+    }
+
+    private void OpenCalendar(string restoreFocusElementId)
+    {
+        _restoreFocusElementId = restoreFocusElementId;
+        _focusedDate = GetInitialFocusDate();
+        SetCalendarMonth(_focusedDate.Value);
+        IsOpen = true;
+        QueueFocus(GetDayId(_focusedDate.Value));
+    }
+
     private void CloseCalendar()
     {
+        if (!IsOpen)
+        {
+            return;
+        }
+
         IsOpen = false;
+        QueueFocus(_restoreFocusElementId ?? _triggerId);
     }
 
-    /// <summary>
-    /// Navigates to the previous month.
-    /// </summary>
-    private void PreviousMonth()
+    private void HandleInputKeyDown(KeyboardEventArgs args)
     {
-        CurrentMonth--;
-        if (CurrentMonth < 0)
+        if (args.Key is "Enter" or " " or "ArrowDown")
         {
-            CurrentMonth = 11;
-            CurrentYear--;
+            if (!IsOpen)
+            {
+                OpenCalendar(_inputId);
+            }
         }
-    }
-
-    /// <summary>
-    /// Navigates to the next month.
-    /// </summary>
-    private void NextMonth()
-    {
-        CurrentMonth++;
-        if (CurrentMonth > 11)
+        else if (args.Key == "Escape")
         {
-            CurrentMonth = 0;
-            CurrentYear++;
-        }
-    }
-
-    /// <summary>
-    /// Handles month changes from the dropdown.
-    /// </summary>
-    private void HandleMonthChange(ChangeEventArgs e)
-    {
-        if (int.TryParse(e.Value!.ToString(), out int month))
-        {
-            CurrentMonth = month;
-        }
-    }
-
-    /// <summary>
-    /// Handles year changes from the dropdown.
-    /// </summary>
-    private void HandleYearChange(ChangeEventArgs e)
-    {
-        if (int.TryParse(e.Value!.ToString(), out int year))
-        {
-            CurrentYear = year;
-        }
-    }
-
-    /// <summary>
-    /// Selects a date.
-    /// </summary>
-    /// <param name="date">The date to select.</param>
-    private async Task SelectDate(DateTime date)
-    {
-        Date = date;
-        await OnChange.InvokeAsync(Date);
-        CloseCalendar();
-    }
-
-    /// <summary>
-    /// Selects today's date.
-    /// </summary>
-    private async Task SelectToday()
-    {
-        var today = DateTime.Today;
-        if (IsInRange(today))
-        {
-            Date = today;
-            await OnChange.InvokeAsync(Date);
             CloseCalendar();
         }
     }
 
-    /// <summary>
-    /// Gets the CSS class for a day in the calendar.
-    /// </summary>
-    /// <param name="day">The calendar day.</param>
-    /// <returns>The CSS class.</returns>
+    private void HandleTriggerKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "ArrowDown" && !IsOpen)
+        {
+            OpenCalendar(_triggerId);
+        }
+        else if (args.Key == "Escape")
+        {
+            CloseCalendar();
+        }
+    }
+
+    private void HandlePopupKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Escape")
+        {
+            CloseCalendar();
+        }
+    }
+
+    private void PreviousMonth()
+    {
+        if (IsPreviousMonthDisabled)
+        {
+            return;
+        }
+
+        var month = new DateTime(CurrentYear, CurrentMonth + 1, 1).AddMonths(-1);
+        SetCalendarMonth(month);
+        FocusFirstSelectableDayInCurrentMonth();
+    }
+
+    private void NextMonth()
+    {
+        if (IsNextMonthDisabled)
+        {
+            return;
+        }
+
+        var month = new DateTime(CurrentYear, CurrentMonth + 1, 1).AddMonths(1);
+        SetCalendarMonth(month);
+        FocusFirstSelectableDayInCurrentMonth();
+    }
+
+    private void HandleMonthChange(ChangeEventArgs args)
+    {
+        if (int.TryParse(args.Value?.ToString(), out var month) && month is >= 0 and <= 11)
+        {
+            CurrentMonth = month;
+            FocusFirstSelectableDayInCurrentMonth();
+        }
+    }
+
+    private void HandleYearChange(ChangeEventArgs args)
+    {
+        if (int.TryParse(args.Value?.ToString(), out var year) && year >= EffectiveMinDateYear && year <= EffectiveMaxDateYear)
+        {
+            CurrentYear = year;
+            FocusFirstSelectableDayInCurrentMonth();
+        }
+    }
+
+    private void HandleDayFocus(DateTime date)
+    {
+        _focusedDate = date.Date;
+    }
+
+    private void HandleDayKeyDown(KeyboardEventArgs args, DateTime date)
+    {
+        var dayOffset = args.Key switch
+        {
+            "ArrowLeft" => -1,
+            "ArrowRight" => 1,
+            "ArrowUp" => -7,
+            "ArrowDown" => 7,
+            _ => 0
+        };
+
+        if (dayOffset != 0)
+        {
+            MoveDayFocus(date, dayOffset);
+        }
+    }
+
+    private void MoveDayFocus(DateTime currentDate, int dayOffset)
+    {
+        var targetDate = currentDate.Date.AddDays(dayOffset);
+        if (!IsDateNavigable(targetDate))
+        {
+            return;
+        }
+
+        _focusedDate = targetDate;
+        SetCalendarMonth(targetDate);
+        QueueFocus(GetDayId(targetDate));
+    }
+
+    private async Task SelectDate(DateTime date)
+    {
+        if (!IsDateNavigable(date))
+        {
+            return;
+        }
+
+        var selectedDate = date.Date;
+        Date = selectedDate;
+        await DateChanged.InvokeAsync(selectedDate);
+        await OnChange.InvokeAsync(selectedDate);
+        CloseCalendar();
+    }
+
+    private Task SelectToday() => SelectDate(DateTime.Today);
+
     private string GetDayClass(CalendarDay day)
     {
         var classes = new List<string> { "date-day" };
 
-        if (!day.IsCurrentMonth)
-        {
-            classes.Add("outside-month");
-        }
-
-        if (day.IsToday)
-        {
-            classes.Add("today");
-        }
-
-        if (Date.HasValue && day.Date.Date == Date.Value.Date)
-        {
-            classes.Add("selected");
-        }
+        if (!day.IsCurrentMonth) classes.Add("outside-month");
+        if (day.IsToday) classes.Add("today");
+        if (IsSelected(day)) classes.Add("selected");
 
         return string.Join(" ", classes);
     }
 
-    private bool IsSelected(CalendarDay day)
-    {
-        return Date.HasValue && day.Date.Date == Date.Value.Date;
-    }
+    private bool IsSelected(CalendarDay day) => Date.HasValue && day.Date.Date == Date.Value.Date;
 
-    private static string GetDayAriaLabel(CalendarDay day)
-    {
-        return day.Date.ToString("D", CultureInfo.CurrentCulture);
-    }
+    private bool IsSelectableDay(CalendarDay day) => day.IsCurrentMonth && IsDateNavigable(day.Date) && !Disabled;
 
-    /// <summary>
-    /// Gets the day names for the calendar header.
-    /// </summary>
-    /// <returns>An array of day names.</returns>
+    private int GetDayTabIndex(CalendarDay day) =>
+        IsSelectableDay(day) && _focusedDate.HasValue && day.Date.Date == _focusedDate.Value.Date ? 0 : -1;
+
+    private string GetDayId(DateTime date) => $"{_componentId}-day-{date:yyyyMMdd}";
+
+    private static string GetDayAriaLabel(CalendarDay day) => day.Date.ToString("D", CultureInfo.CurrentCulture);
+
     private string[] GetDayNames()
     {
         var dayNames = new string[7];
         var culture = CultureInfo.CurrentCulture;
         var daysOfWeek = culture.DateTimeFormat.AbbreviatedDayNames;
-        
-        for (int i = 0; i < 7; i++)
+
+        for (var i = 0; i < 7; i++)
         {
-            var dayIndex = (i + FirstDayOfWeek) % 7;
+            var dayIndex = (i + NormalizeFirstDayOfWeek()) % 7;
             dayNames[i] = daysOfWeek[dayIndex];
         }
-        
+
         return dayNames;
     }
 
-    /// <summary>
-    /// Generates the calendar days for a specific month.
-    /// </summary>
-    /// <param name="year">The year.</param>
-    /// <param name="month">The month (0-11).</param>
-    /// <returns>A list of calendar weeks.</returns>
     private List<List<CalendarDay>> GenerateCalendar(int year, int month)
     {
         var today = DateTime.Today;
         var firstDay = new DateTime(year, month + 1, 1);
-        var lastDay = firstDay.AddMonths(1).AddDays(-1);
-        
         var calendar = new List<List<CalendarDay>>();
         var currentWeek = new List<CalendarDay>();
-        
-        // Calculate the first day to display
-        int dayOfWeek = (int)firstDay.DayOfWeek;
-        int diff = (dayOfWeek - FirstDayOfWeek + 7) % 7;
+        var diff = ((int)firstDay.DayOfWeek - NormalizeFirstDayOfWeek() + 7) % 7;
         var start = firstDay.AddDays(-diff);
-        
-        // Generate 6 weeks (42 days) to ensure we have enough rows
-        for (int i = 0; i < 42; i++)
+
+        for (var i = 0; i < 42; i++)
         {
             var currentDate = start.AddDays(i);
             var isCurrentMonth = currentDate.Month == month + 1 && currentDate.Year == year;
-            
-            var day = new CalendarDay
+            currentWeek.Add(new CalendarDay
             {
                 Date = currentDate,
                 DayNumber = currentDate.Day,
                 IsCurrentMonth = isCurrentMonth,
                 IsToday = currentDate.Date == today.Date
-            };
-            
-            currentWeek.Add(day);
-            
-            // Start a new week after 7 days
+            });
+
             if (currentWeek.Count == 7)
             {
                 calendar.Add(currentWeek);
                 currentWeek = new List<CalendarDay>();
-                
-                // If we've added enough days from the next month, we can stop
+
                 if (calendar.Count >= 4 && !isCurrentMonth)
                 {
                     break;
                 }
             }
         }
-        
+
         return calendar;
     }
 
-    /// <summary>
-    /// Checks if a date is within the allowed range.
-    /// </summary>
-    /// <param name="date">The date to check.</param>
-    /// <returns>True if the date is within range.</returns>
-    private bool IsInRange(DateTime date)
+    private int NormalizeFirstDayOfWeek() => ((FirstDayOfWeek % 7) + 7) % 7;
+
+    private DateTime GetInitialFocusDate()
     {
-        if (MinDate.HasValue && date < MinDate.Value)
-        {
-            return false;
-        }
-        
-        if (MaxDate.HasValue && date > MaxDate.Value)
-        {
-            return false;
-        }
-        
-        return true;
+        var minDate = GetEffectiveMinDate();
+        var maxDate = GetEffectiveMaxDate();
+        var candidate = (Date ?? DateTime.Today).Date;
+
+        if (candidate < minDate) return minDate;
+        if (candidate > maxDate) return maxDate;
+        return candidate;
     }
 
-    /// <summary>
-    /// Add a click event listener to close the calendar when clicking outside.
-    /// </summary>
+    private void FocusFirstSelectableDayInCurrentMonth()
+    {
+        var firstOfMonth = new DateTime(CurrentYear, CurrentMonth + 1, 1);
+        var lastOfMonth = firstOfMonth.AddMonths(1).AddDays(-1);
+        var minDate = GetEffectiveMinDate();
+        var maxDate = GetEffectiveMaxDate();
+        var targetDate = _focusedDate?.Date ?? firstOfMonth;
+
+        if (targetDate < firstOfMonth || targetDate > lastOfMonth)
+        {
+            targetDate = firstOfMonth;
+        }
+
+        targetDate = targetDate < minDate ? minDate : targetDate;
+        targetDate = targetDate > maxDate ? maxDate : targetDate;
+
+        if (targetDate.Month != CurrentMonth + 1 || targetDate.Year != CurrentYear)
+        {
+            // The displayed month has no selectable day at all (e.g. it falls
+            // entirely outside MinDate/MaxDate). Fall back to the nearest
+            // selectable boundary date and bring its month into view so the
+            // roving-tabindex grid never ends up with zero tabbable cells.
+            targetDate = firstOfMonth < minDate ? minDate : maxDate;
+            SetCalendarMonth(targetDate);
+        }
+
+        _focusedDate = targetDate;
+        QueueFocus(GetDayId(targetDate));
+    }
+
+    private void SetCalendarMonth(DateTime date)
+    {
+        CurrentMonth = date.Month - 1;
+        CurrentYear = date.Year;
+    }
+
+    private bool IsDateNavigable(DateTime date)
+    {
+        var normalizedDate = date.Date;
+        return normalizedDate >= GetEffectiveMinDate() && normalizedDate <= GetEffectiveMaxDate();
+    }
+
+    private DateTime GetEffectiveMinDate()
+    {
+        var yearBoundary = new DateTime(EffectiveMinYear, 1, 1);
+        return MinDate.HasValue && MinDate.Value.Date > yearBoundary ? MinDate.Value.Date : yearBoundary;
+    }
+
+    private DateTime GetEffectiveMaxDate()
+    {
+        var yearBoundary = new DateTime(EffectiveMaxYear, 12, 31);
+        return MaxDate.HasValue && MaxDate.Value.Date < yearBoundary ? MaxDate.Value.Date : yearBoundary;
+    }
+
+    private static string AriaBool(bool value) => value ? "true" : "false";
+
+    private void QueueFocus(string elementId)
+    {
+        _pendingFocusElementId = elementId;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
-        
-        if (firstRender)
+
+        var elementId = _pendingFocusElementId;
+        _pendingFocusElementId = null;
+
+        if (!IsOpen && elementId is null)
         {
-            // In a real implementation, we would add JS interop to handle clicking outside
+            return;
+        }
+
+        try
+        {
+            _domModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
+                "import", "./_content/Vibe.UI/js/vibe-dom.js");
+
+            if (IsOpen)
+            {
+                await _domModule.InvokeVoidAsync("initializeGridNavigationGuard", _gridReference);
+            }
+
+            if (elementId is not null)
+            {
+                await _domModule.InvokeVoidAsync("focusElement", elementId);
+            }
+        }
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+        {
         }
     }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_domModule is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _domModule.DisposeAsync();
+        }
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+        {
+        }
+    }
+
+    private static bool IsRecoverableJsInteropException(Exception exception) =>
+        exception is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException;
 }

@@ -150,6 +150,7 @@ public class InitCommandTests : IDisposable
             "vibe-click-outside.js",
             "vibe-dialog.js",
             "vibe-dom.js",
+            "vibe-menu-keyboard.js",
             "vibe-resizable.js",
             "vibe-richtext.js",
             "vibe-theme.js"

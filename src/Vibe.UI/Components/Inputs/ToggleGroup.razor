@@ -1,9 +1,12 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
-<div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="group" aria-label="@AriaLabel"
-    aria-orientation="@EffectiveOrientation.ToString().ToLowerInvariant()" aria-disabled="@AriaBool(Disabled)">
-    <CascadingValue Value="this">
+<div id="@EffectiveId" @attributes="AdditionalAttributes" class="@CombinedCssClass" role="group" aria-label="@AriaLabel"
+    aria-orientation="@EffectiveOrientation.ToString().ToLowerInvariant()" aria-disabled="@AriaBool(Disabled)"
+    aria-describedby="@EffectiveDescribedBy" aria-invalid="@AriaInvalidValue" aria-errormessage="@EffectiveErrorMessageId">
+    <CascadingValue Value="this" IsFixed="true">
         @ChildContent
     </CascadingValue>
 </div>
@@ -11,6 +14,16 @@
 @code {
     private string? _value;
     private List<string> _values = new();
+    private readonly List<ToggleGroupItem> _items = new();
+    private IJSObjectReference? _domModule;
+    private string? _rovingItemId;
+    private string? _pendingFocusId;
+
+    /// <summary>
+    /// Gets the relationships cascaded by an ancestor <see cref="FormField{TValue}"/>, if any.
+    /// </summary>
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
 
     /// <summary>
     /// The content of the toggle group (ToggleGroupItem components).
@@ -96,10 +109,40 @@
 
     private ToggleGroupSize EffectiveSize => Enum.IsDefined(typeof(ToggleGroupSize), Size) ? Size : ToggleGroupSize.Default;
 
+    private string? EffectiveId => FieldContext?.ControlId;
+
+    private string? EffectiveDescribedBy => FieldContext?.DescribedBy;
+
+    private string? AriaInvalidValue => FieldContext?.IsInvalid == true ? "true" : null;
+
+    private string? EffectiveErrorMessageId => FieldContext?.IsInvalid == true && !string.IsNullOrWhiteSpace(FieldContext.ErrorId)
+        ? FieldContext.ErrorId
+        : null;
+
     protected override void OnParametersSet()
     {
         _value = Value;
         _values = Values?.Where(value => value is not null).Select(value => value!).ToList() ?? new List<string>();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_pendingFocusId is not string focusId)
+        {
+            return;
+        }
+
+        _pendingFocusId = null;
+
+        try
+        {
+            _domModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
+                "import", "./_content/Vibe.UI/js/vibe-dom.js");
+            await _domModule.InvokeVoidAsync("focusElement", focusId);
+        }
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+        {
+        }
     }
 
     private static string AriaBool(bool value) => value ? "true" : "false";
@@ -133,12 +176,145 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    internal void RegisterItem(ToggleGroupItem item)
+    {
+        if (_items.Contains(item))
+        {
+            return;
+        }
+
+        _items.Add(item);
+        StateHasChanged();
+    }
+
+    internal void RemoveItem(ToggleGroupItem item)
+    {
+        if (!_items.Remove(item))
+        {
+            return;
+        }
+
+        if (_rovingItemId == item.ElementId)
+        {
+            _rovingItemId = null;
+        }
+    }
+
+    internal void NotifyItemChanged(ToggleGroupItem item)
+    {
+        if (!_items.Contains(item))
+        {
+            RegisterItem(item);
+            return;
+        }
+
+        if (_rovingItemId == item.ElementId && item.IsEffectivelyDisabled)
+        {
+            _rovingItemId = null;
+        }
+
+        StateHasChanged();
+    }
+
+    internal int GetItemTabIndex(ToggleGroupItem item)
+    {
+        if (Disabled || item.IsEffectivelyDisabled)
+        {
+            return -1;
+        }
+
+        var tabStop = GetTabStopItem();
+        return ReferenceEquals(tabStop, item) ? 0 : -1;
+    }
+
+    internal void HandleItemFocus(ToggleGroupItem item)
+    {
+        if (!Disabled && !item.IsEffectivelyDisabled && _rovingItemId != item.ElementId)
+        {
+            _rovingItemId = item.ElementId;
+            StateHasChanged();
+        }
+    }
+
+    internal Task HandleItemKeyDown(ToggleGroupItem item, KeyboardEventArgs args)
+    {
+        if (Disabled || item.IsEffectivelyDisabled)
+        {
+            return Task.CompletedTask;
+        }
+
+        var enabledItems = _items.Where(candidate => !candidate.IsEffectivelyDisabled).ToList();
+        var currentIndex = enabledItems.IndexOf(item);
+        if (currentIndex < 0 || enabledItems.Count == 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        ToggleGroupItem? target = args.Key switch
+        {
+            "Home" => enabledItems[0],
+            "End" => enabledItems[^1],
+            "ArrowRight" when EffectiveOrientation == ToggleGroupOrientation.Horizontal
+                => enabledItems[(currentIndex + 1) % enabledItems.Count],
+            "ArrowLeft" when EffectiveOrientation == ToggleGroupOrientation.Horizontal
+                => enabledItems[(currentIndex - 1 + enabledItems.Count) % enabledItems.Count],
+            "ArrowDown" when EffectiveOrientation == ToggleGroupOrientation.Vertical
+                => enabledItems[(currentIndex + 1) % enabledItems.Count],
+            "ArrowUp" when EffectiveOrientation == ToggleGroupOrientation.Vertical
+                => enabledItems[(currentIndex - 1 + enabledItems.Count) % enabledItems.Count],
+            _ => null
+        };
+
+        if (target is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        _rovingItemId = target.ElementId;
+        _pendingFocusId = target.ElementId;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private ToggleGroupItem? GetTabStopItem()
+    {
+        var enabledItems = _items.Where(item => !item.IsEffectivelyDisabled).ToList();
+
+        var rovingItem = enabledItems.FirstOrDefault(item => item.ElementId == _rovingItemId);
+        if (rovingItem is not null)
+        {
+            return rovingItem;
+        }
+
+        return enabledItems.FirstOrDefault(item => IsSelected(item.EffectiveValue))
+            ?? enabledItems.FirstOrDefault();
+    }
+
     internal bool IsSelected(string itemValue)
     {
         return EffectiveType == ToggleGroupType.Single
         ? _value == itemValue
         : _values.Contains(itemValue);
     }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_domModule is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _domModule.DisposeAsync();
+        }
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+        {
+        }
+    }
+
+    private static bool IsRecoverableJsInteropException(Exception exception) =>
+        exception is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException;
 
     public enum ToggleGroupType
     {

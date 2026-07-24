@@ -6,7 +6,7 @@
     Combines preview, code, and property controls in a tabbed interface
 *@
 
-<div class="live-preview vibe-rounded-xl vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-800 vibe-overflow-hidden vibe-bg-white dark:vibe-bg-zinc-900">
+<div class="live-preview vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-800 vibe-overflow-hidden vibe-bg-white dark:vibe-bg-zinc-900">
     <!-- Header Tabs -->
     <div class="vibe-flex vibe-items-center vibe-justify-between vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-800 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50">
         <!-- Tab Buttons -->
@@ -45,19 +45,17 @@
         <div class="vibe-flex vibe-items-center vibe-gap-1 vibe-px-2">
             <!-- Theme Toggle -->
             <button class="vibe-p-2 vibe-rounded-md hover:vibe-bg-zinc-200 dark:hover:vibe-bg-zinc-700 vibe-transition-colors"
+                    type="button"
                     @onclick="TogglePreviewTheme"
+                    aria-label="Toggle preview theme"
                     title="Toggle preview theme">
                 @if (previewDark)
                 {
-                    <svg class="vibe-w-4 vibe-h-4 vibe-text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                    </svg>
+                    <Icon Name="sun" Size="16" CssClass="vibe-text-zinc-500" />
                 }
                 else
                 {
-                    <svg class="vibe-w-4 vibe-h-4 vibe-text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                    </svg>
+                    <Icon Name="moon" Size="16" CssClass="vibe-text-zinc-500" />
                 }
             </button>
 
@@ -65,11 +63,12 @@
             @if (Props.Any())
             {
                 <button class="vibe-p-2 vibe-rounded-md vibe-transition-colors @(showProps ? "vibe-bg-brand-teal/10 vibe-text-brand-teal" : "hover:vibe-bg-zinc-200 dark:hover:vibe-bg-zinc-700 vibe-text-zinc-500")"
+                        type="button"
                         @onclick="() => showProps = !showProps"
+                        aria-label="Toggle properties panel"
+                        aria-pressed="@(showProps ? "true" : "false")"
                         title="Toggle properties panel">
-                    <svg class="vibe-w-4 vibe-h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
-                    </svg>
+                    <Icon Name="sliders" Size="16" />
                 </button>
             }
 
@@ -118,23 +117,7 @@
 </div>
 
 <style>
-    .preview-panel {
-        background-image: linear-gradient(45deg, #f5f5f5 25%, transparent 25%),
-                          linear-gradient(-45deg, #f5f5f5 25%, transparent 25%),
-                          linear-gradient(45deg, transparent 75%, #f5f5f5 75%),
-                          linear-gradient(-45deg, transparent 75%, #f5f5f5 75%);
-        background-size: 20px 20px;
-        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-    }
-
-    .preview-panel.dark {
-        background-image: linear-gradient(45deg, #27272a 25%, transparent 25%),
-                          linear-gradient(-45deg, #27272a 25%, transparent 25%),
-                          linear-gradient(45deg, transparent 75%, #27272a 75%),
-                          linear-gradient(-45deg, transparent 75%, #27272a 75%);
-    }
-
-    .code-panel :deep(pre) {
+    .code-panel pre {
         margin: 0;
         padding: 1rem;
         overflow-x: auto;
@@ -142,7 +125,7 @@
         line-height: 1.5;
     }
 
-    .code-panel :deep(pre code) {
+    .code-panel pre code {
         font-family: 'JetBrains Mono', monospace;
     }
 

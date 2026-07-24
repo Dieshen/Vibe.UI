@@ -42,6 +42,31 @@
                 <Button Variant="ButtonVariant.Outline" OnClick="OpenDialog" data-testid="auto-dialog">Open dialog</Button>
                 <Button Href="/" Variant="ButtonVariant.Ghost">Back to static page</Button>
             </div>
+
+            <div class="compat-grid">
+                <DatePicker @bind-Date="_selectedDate" Placeholder="Compatibility date" data-testid="auto-date-picker" />
+                <DropdownMenu data-testid="auto-dropdown">
+                    <TriggerContent>Compatibility actions</TriggerContent>
+                    <Content>
+                        <button type="button" class="dropdown-item" role="menuitem">Profile</button>
+                        <button type="button" class="dropdown-item" role="menuitem">Settings</button>
+                    </Content>
+                </DropdownMenu>
+                <NavigationMenu data-testid="auto-navigation-menu">
+                    <NavigationMenuItem TriggerAriaLabel="Open compatibility navigation" ContentAriaLabel="Compatibility form controls">
+                        <TriggerContent>Navigation controls</TriggerContent>
+                        <Content>
+                            <label for="auto-nav-filter">Filter</label>
+                            <input id="auto-nav-filter" data-testid="auto-nav-filter" @bind="_navigationFilter" />
+                            <label for="auto-nav-sort">Sort</label>
+                            <select id="auto-nav-sort" data-testid="auto-nav-sort" @bind="_navigationSort">
+                                <option value="alpha">Alphabetical</option>
+                                <option value="recent">Most recent</option>
+                            </select>
+                        </Content>
+                    </NavigationMenuItem>
+                </NavigationMenu>
+            </div>
         </ChildContent>
     </Card>
 
@@ -63,6 +88,9 @@
     private string _name = "Auto";
     private bool _confirmed = true;
     private bool _dialogOpen;
+    private DateTime? _selectedDate = DateTime.Today;
+    private string _navigationFilter = string.Empty;
+    private string _navigationSort = "alpha";
 
     private void Increment(MouseEventArgs _)
     {

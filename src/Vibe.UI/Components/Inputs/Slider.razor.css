@@ -4,127 +4,167 @@
 
 /* Container - main slider wrapper with relative positioning */
 .vibe-slider {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;
-    touch-action: none;
-    user-select: none;
-    height: 1.5rem;
+  position: relative;
+  display: block;
+  width: 100%;
+  touch-action: none;
+  user-select: none;
+}
+
+.vibe-slider-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--vibe-foreground);
+  font-family: var(--vibe-font);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+}
+
+.vibe-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.vibe-slider-control {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  min-width: 0;
+  height: 1.5rem;
 }
 
 /* Track - background rail for the slider */
 .vibe-slider-track {
-    position: relative;
-    flex-grow: 1;
-    height: 0.5rem;
-    background-color: var(--vibe-secondary);
-    border-radius: 9999px;
-    overflow: hidden;
+  position: relative;
+  width: 100%;
+  height: 0.25rem;
+  background-color: var(--vibe-secondary);
+  border-radius: 9999px;
+  overflow: hidden;
 }
 
 /* Range - filled portion of track representing current value */
 .vibe-slider-range {
-    position: absolute;
-    height: 100%;
-    background-color: var(--vibe-primary);
-    border-radius: 9999px;
-    pointer-events: none;
-    transition: width 0.1s ease-in-out;
+  position: absolute;
+  height: 100%;
+  background-color: var(--vibe-primary);
+  border-radius: 9999px;
+  pointer-events: none;
+  transition: width 0.1s ease-in-out;
+}
+
+/* Error state - applied when the field is invalid (aria-invalid). */
+.vibe-slider-error .vibe-slider-track {
+  box-shadow: 0 0 0 1px var(--vibe-destructive);
+}
+
+.vibe-slider-error .vibe-slider-range {
+  background-color: var(--vibe-destructive);
 }
 
 /* Thumb - native range input styled as draggable handle */
 .vibe-slider-thumb {
-    position: absolute;
-    left: 0;
-    width: 100%;
-    height: 1.5rem;
-    appearance: none;
-    background: transparent;
-    cursor: pointer;
-    z-index: 10;
-    margin: 0;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 1.5rem;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  z-index: 10;
+  margin: 0;
 }
 
 /* Webkit/Chrome/Safari thumb styling */
 .vibe-slider-thumb::-webkit-slider-thumb {
-    appearance: none;
-    width: 1rem;
-    height: 1rem;
-    background-color: var(--vibe-background);
-    border: 2px solid var(--vibe-primary);
-    border-radius: 50%;
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
-    transition: box-shadow 0.2s ease, transform 0.15s ease;
-    cursor: pointer;
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  background-color: var(--vibe-background);
+  border: 2px solid var(--vibe-primary);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+  cursor: pointer;
 }
 
 /* Firefox thumb styling */
 .vibe-slider-thumb::-moz-range-thumb {
-    appearance: none;
-    width: 1rem;
-    height: 1rem;
-    background-color: var(--vibe-background);
-    border: 2px solid var(--vibe-primary);
-    border-radius: 50%;
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
-    transition: box-shadow 0.2s ease, transform 0.15s ease;
-    cursor: pointer;
+  appearance: none;
+  width: 1rem;
+  height: 1rem;
+  background-color: var(--vibe-background);
+  border: 2px solid var(--vibe-primary);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+  cursor: pointer;
 }
 
 /* Webkit/Chrome/Safari track styling (hide default) */
 .vibe-slider-thumb::-webkit-slider-runnable-track {
-    appearance: none;
-    background: transparent;
-    border: none;
+  appearance: none;
+  background: transparent;
+  border: none;
 }
 
 /* Firefox track styling (hide default) */
 .vibe-slider-thumb::-moz-range-track {
-    appearance: none;
-    background: transparent;
-    border: none;
+  appearance: none;
+  background: transparent;
+  border: none;
 }
 
 /* Hover state - slight scale on thumb */
 .vibe-slider-thumb:hover::-webkit-slider-thumb {
-    transform: scale(1.1);
+  transform: scale(1.1);
 }
 
 .vibe-slider-thumb:hover::-moz-range-thumb {
-    transform: scale(1.1);
+  transform: scale(1.1);
 }
 
 /* Focus state - accessible outline ring */
 .vibe-slider-thumb:focus-visible {
-    outline: none;
+  outline: none;
 }
 
 .vibe-slider-thumb:focus-visible::-webkit-slider-thumb {
-    box-shadow: 0 0 0 2px var(--vibe-background), 0 0 0 4px var(--vibe-ring);
+  box-shadow:
+    0 0 0 2px var(--vibe-background),
+    0 0 0 4px var(--vibe-ring);
 }
 
 .vibe-slider-thumb:focus-visible::-moz-range-thumb {
-    box-shadow: 0 0 0 2px var(--vibe-background), 0 0 0 4px var(--vibe-ring);
+  box-shadow:
+    0 0 0 2px var(--vibe-background),
+    0 0 0 4px var(--vibe-ring);
 }
 
 /* Active state - pressed down appearance */
 .vibe-slider-thumb:active::-webkit-slider-thumb {
-    transform: scale(0.95);
+  transform: scale(0.95);
 }
 
 .vibe-slider-thumb:active::-moz-range-thumb {
-    transform: scale(0.95);
+  transform: scale(0.95);
 }
 
 /* Value display - shows current slider value */
 .vibe-slider-value {
-    margin-left: 0.75rem;
-    font-size: 0.875rem;
-    color: var(--vibe-foreground);
-    font-family: var(--vibe-font-mono, monospace);
-    min-width: 2.5rem;
-    text-align: right;
+  font-size: 0.875rem;
+  color: var(--vibe-foreground);
+  font-family: var(--vibe-font-mono, monospace);
+  min-width: 2.5rem;
+  text-align: right;
 }
 
 /* ========================================
@@ -133,75 +173,37 @@
 
 /* Disabled container - reduced opacity and no-pointer cursor */
 .vibe-slider-disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Disabled track */
 .vibe-slider-disabled .vibe-slider-track {
-    opacity: 0.5;
+  opacity: 0.5;
 }
 
 /* Disabled range fill */
 .vibe-slider-disabled .vibe-slider-range {
-    opacity: 0.5;
+  opacity: 0.5;
 }
 
 /* Disabled thumb - no pointer cursor */
 .vibe-slider-disabled .vibe-slider-thumb {
-    cursor: not-allowed;
-    pointer-events: none;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .vibe-slider-disabled .vibe-slider-thumb::-webkit-slider-thumb {
-    cursor: not-allowed;
+  cursor: not-allowed;
 }
 
 .vibe-slider-disabled .vibe-slider-thumb::-moz-range-thumb {
-    cursor: not-allowed;
+  cursor: not-allowed;
 }
 
 /* Disabled value display */
 .vibe-slider-disabled .vibe-slider-value {
-    opacity: 0.5;
-}
-
-/* ========================================
-   VERTICAL ORIENTATION
-   ======================================== */
-
-/* Note: Vertical orientation requires HTML structure changes
-   and additional JavaScript. This is a placeholder for future
-   implementation. Current component only supports horizontal. */
-
-.vibe-slider-vertical {
-    flex-direction: column;
-    height: 12rem;
-    width: 1.5rem;
-}
-
-.vibe-slider-vertical .vibe-slider-track {
-    width: 0.5rem;
-    height: 100%;
-}
-
-.vibe-slider-vertical .vibe-slider-range {
-    width: 100%;
-    height: auto;
-    bottom: 0;
-    top: auto;
-}
-
-.vibe-slider-vertical .vibe-slider-thumb {
-    width: 1.5rem;
-    height: 100%;
-    left: auto;
-    top: 0;
-}
-
-.vibe-slider-vertical .vibe-slider-value {
-    margin-left: 0;
-    margin-top: 0.75rem;
+  opacity: 0.5;
 }
 
 /* ========================================
@@ -221,3 +223,17 @@
    in vibe-components.css and do not require component-
    specific overrides when using CSS variables consistently.
 */
+
+@media (prefers-reduced-motion: reduce) {
+  .vibe-slider-range {
+    transition: none;
+  }
+
+  .vibe-slider-thumb::-webkit-slider-thumb {
+    transition: none;
+  }
+
+  .vibe-slider-thumb::-moz-range-thumb {
+    transition: none;
+  }
+}

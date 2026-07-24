@@ -38,6 +38,7 @@
 
 @code {
     private IJSObjectReference? _dialogModule;
+    private DotNetObjectReference<Dialog>? _dotNetReference;
     private bool _focusTrapActive;
     private ElementReference _dialogRef;
     private readonly string _dialogKey = $"vibe-dialog-{Guid.NewGuid():N}";
@@ -120,8 +121,14 @@
             {
                 _dialogModule ??= await JSRuntime.InvokeAsync<IJSObjectReference>(
                     "import", "./_content/Vibe.UI/js/vibe-dialog.js");
+                _dotNetReference ??= DotNetObjectReference.Create(this);
 
-                await _dialogModule.InvokeVoidAsync("activate", _dialogKey, _dialogRef);
+                await _dialogModule.InvokeVoidAsync(
+                    "activate",
+                    _dialogKey,
+                    _dialogRef,
+                    _dotNetReference,
+                    CloseOnEscape);
             }
             catch (Exception ex) when (IsRecoverableJsInteropException(ex))
             {
@@ -147,6 +154,9 @@
             await CloseDialog();
         }
     }
+
+    [JSInvokable]
+    public Task HandleDialogEscape() => CloseOnEscape ? CloseDialog() : Task.CompletedTask;
 
     /// <summary>
     /// Handles click events outside the dialog to close it when configured
@@ -209,6 +219,10 @@
             {
             }
         }
+
+
+        _dotNetReference?.Dispose();
+        _dotNetReference = null;
     }
 
     private async Task DeactivateFocusTrapAsync()

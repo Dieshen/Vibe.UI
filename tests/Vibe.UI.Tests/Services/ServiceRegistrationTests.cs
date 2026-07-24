@@ -246,6 +246,47 @@ public class ServiceRegistrationTests
         css.ShouldContain("--vibe-primary");
     }
 
+    [Theory]
+    [InlineData("Slate", "hsl(217.2 32.6% 17.5%)", "hsl(215 20.2% 65.1%)")]
+    [InlineData("Blue", "hsl(217.2 32.6% 17.5%)", "hsl(215 20.2% 65.1%)")]
+    [InlineData("Gray", "hsl(215 27.9% 16.9%)", "hsl(217.9 10.6% 64.9%)")]
+    [InlineData("Zinc", "hsl(240 3.7% 15.9%)", "hsl(240 5% 64.9%)")]
+    [InlineData("Neutral", "hsl(0 0% 14.9%)", "hsl(0 0% 63.9%)")]
+    [InlineData("Stone", "hsl(12 6.5% 15.1%)", "hsl(24 5.4% 63.9%)")]
+    public void ThemeService_GenerateThemeCss_SeparatesDarkMutedSurfaceAndText(
+        string baseColor,
+        string expectedMuted,
+        string expectedMutedForeground)
+    {
+        var services = new ServiceCollection();
+        services.AddVibeUI(options => options.BaseColor = baseColor);
+        var provider = services.BuildServiceProvider();
+        var themeService = provider.GetRequiredService<IThemeService>();
+
+        var css = themeService.GenerateThemeCss();
+        var darkThemeCss = css[css.IndexOf(".dark", StringComparison.Ordinal)..];
+
+        darkThemeCss.ShouldContain($"--vibe-muted: {expectedMuted};");
+        darkThemeCss.ShouldContain($"--vibe-muted-foreground: {expectedMutedForeground};");
+        expectedMuted.ShouldNotBe(expectedMutedForeground);
+    }
+
+    [Fact]
+    public void ThemeService_GenerateThemeCss_DefaultSlateUsesContrastingDarkPrimaryPair()
+    {
+        var services = new ServiceCollection();
+        services.AddVibeUI();
+        var provider = services.BuildServiceProvider();
+        var themeService = provider.GetRequiredService<IThemeService>();
+
+        var css = themeService.GenerateThemeCss();
+        var darkThemeCss = css[css.IndexOf(".dark", StringComparison.Ordinal)..];
+
+        darkThemeCss.ShouldContain("--vibe-primary: hsl(210 40% 98%);");
+        darkThemeCss.ShouldContain("--vibe-primary-foreground: hsl(222.2 47.4% 11.2%);");
+        darkThemeCss.ShouldContain("--vibe-card: hsl(222.2 84% 4.9%);");
+    }
+
     [Fact]
     public void ThemeService_GenerateThemeCss_IncludesCustomBorderRadius()
     {

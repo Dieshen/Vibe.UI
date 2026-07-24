@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Components.Web;
+
 namespace Vibe.UI.Tests.Components.Inputs;
 
 public class ToggleGroupTests : TestBase
@@ -274,6 +276,154 @@ public class ToggleGroupTests : TestBase
         button.GetAttribute("aria-disabled")!.ShouldBe("true");
     }
 
+    [Fact]
+    public void ToggleGroup_UsesSelectedItemAsOnlyInitialTabStop()
+    {
+        var cut = Render<ToggleGroup>(parameters => parameters
+            .Add(p => p.Value, "center")
+            .AddChildContent(BuildItems("left", "center", "right")));
+
+        var buttons = cut.FindAll("button");
+
+        buttons.Count(button => button.GetAttribute("tabindex") == "0").ShouldBe(1);
+        buttons[0].GetAttribute("tabindex")!.ShouldBe("-1");
+        buttons[1].GetAttribute("tabindex")!.ShouldBe("0");
+        buttons[2].GetAttribute("tabindex")!.ShouldBe("-1");
+    }
+
+    [Fact]
+    public void ToggleGroup_UsesFirstEnabledItemWhenNothingIsSelected()
+    {
+        var cut = Render<ToggleGroup>(parameters => parameters
+            .AddChildContent(BuildItems(("left", true), ("center", false), ("right", false))));
+
+        var buttons = cut.FindAll("button");
+
+        buttons[0].GetAttribute("tabindex")!.ShouldBe("-1");
+        buttons[1].GetAttribute("tabindex")!.ShouldBe("0");
+        buttons[2].GetAttribute("tabindex")!.ShouldBe("-1");
+    }
+
+    [Fact]
+    public void ToggleGroup_HorizontalArrowsMoveFocusWrapAndPreserveSelection()
+    {
+        JSInterop.SetupModule("./_content/Vibe.UI/js/vibe-dom.js");
+        var cut = Render<ToggleGroup>(parameters => parameters
+            .Add(p => p.Value, "left")
+            .AddChildContent(BuildItems("left", "center", "right")));
+
+        cut.FindAll("button")[0].KeyDown("ArrowLeft");
+
+        var buttons = cut.FindAll("button");
+        buttons[2].GetAttribute("tabindex")!.ShouldBe("0");
+        buttons[0].GetAttribute("aria-pressed")!.ShouldBe("true");
+        buttons[2].GetAttribute("aria-pressed")!.ShouldBe("false");
+        JSInterop.Invocations.Last().Identifier.ShouldBe("focusElement");
+        JSInterop.Invocations.Last().Arguments[0].ShouldBe(buttons[2].Id);
+
+        buttons[2].KeyDown("ArrowRight");
+
+        cut.FindAll("button")[0].GetAttribute("tabindex")!.ShouldBe("0");
+    }
+
+    [Fact]
+    public void ToggleGroup_HorizontalNavigationSkipsDisabledItems()
+    {
+        JSInterop.SetupModule("./_content/Vibe.UI/js/vibe-dom.js");
+        var cut = Render<ToggleGroup>(parameters => parameters
+            .AddChildContent(BuildItems(("left", false), ("center", true), ("right", false))));
+
+        cut.FindAll("button")[0].KeyDown("ArrowRight");
+
+        var buttons = cut.FindAll("button");
+        buttons[1].GetAttribute("tabindex")!.ShouldBe("-1");
+        buttons[2].GetAttribute("tabindex")!.ShouldBe("0");
+    }
+
+    [Fact]
+    public void ToggleGroup_VerticalArrowsUseVerticalAxisOnly()
+    {
+        JSInterop.SetupModule("./_content/Vibe.UI/js/vibe-dom.js");
+        var cut = Render<ToggleGroup>(parameters => parameters
+            .Add(p => p.Orientation, ToggleGroup.ToggleGroupOrientation.Vertical)
+            .AddChildContent(BuildItems("top", "middle", "bottom")));
+
+        cut.FindAll("button")[0].KeyDown("ArrowRight");
+        cut.FindAll("button")[0].GetAttribute("tabindex")!.ShouldBe("0");
+
+        cut.FindAll("button")[0].KeyDown("ArrowDown");
+        cut.FindAll("button")[1].GetAttribute("tabindex")!.ShouldBe("0");
+
+        cut.FindAll("button")[1].KeyDown("ArrowUp");
+        cut.FindAll("button")[0].GetAttribute("tabindex")!.ShouldBe("0");
+    }
+
+    [Fact]
+    public void ToggleGroup_HomeAndEndMoveToEnabledBounds()
+    {
+        JSInterop.SetupModule("./_content/Vibe.UI/js/vibe-dom.js");
+        var cut = Render<ToggleGroup>(parameters => parameters
+            .AddChildContent(BuildItems(("first", true), ("second", false), ("third", false))));
+
+        cut.FindAll("button")[1].KeyDown("End");
+        cut.FindAll("button")[2].GetAttribute("tabindex")!.ShouldBe("0");
+
+        cut.FindAll("button")[2].KeyDown("Home");
+        cut.FindAll("button")[1].GetAttribute("tabindex")!.ShouldBe("0");
+    }
+
+    [Fact]
+    public void ToggleGroup_FocusUpdatesTheSingleRovingTabStop()
+    {
+        var cut = Render<ToggleGroup>(parameters => parameters
+            .AddChildContent(BuildItems("left", "center", "right")));
+
+        cut.FindAll("button")[2].TriggerEvent("onfocus", new FocusEventArgs());
+
+        var buttons = cut.FindAll("button");
+        buttons.Count(button => button.GetAttribute("tabindex") == "0").ShouldBe(1);
+        buttons[2].GetAttribute("tabindex")!.ShouldBe("0");
+    }
+
+    [Fact]
+    public void ToggleGroup_DisabledGroupRemovesEveryItemFromTabOrder()
+    {
+        var cut = Render<ToggleGroup>(parameters => parameters
+            .Add(p => p.Disabled, true)
+            .AddChildContent(BuildItems("left", "center", "right")));
+
+        cut.FindAll("button").ShouldAllBe(button => button.GetAttribute("tabindex") == "-1");
+    }
+
+    [Fact]
+    public void ToggleGroup_MultipleModeKeepsOnlyFirstSelectedItemInTabOrder()
+    {
+        var cut = Render<ToggleGroup>(parameters => parameters
+            .Add(p => p.Type, ToggleGroup.ToggleGroupType.Multiple)
+            .Add(p => p.Values, new List<string> { "right", "center" })
+            .AddChildContent(BuildItems("left", "center", "right")));
+
+        var buttons = cut.FindAll("button");
+        buttons.Count(button => button.GetAttribute("tabindex") == "0").ShouldBe(1);
+        buttons[1].GetAttribute("tabindex")!.ShouldBe("0");
+    }
+
+    [Fact]
+    public void ToggleGroup_ReassignsTabStopWhenCurrentItemBecomesDisabled()
+    {
+        var cut = Render<ToggleGroup>(parameters => parameters
+            .AddChildContent(BuildItems(("left", false), ("right", false))));
+
+        cut.FindAll("button")[0].GetAttribute("tabindex")!.ShouldBe("0");
+
+        cut.Render(parameters => parameters
+            .AddChildContent(BuildItems(("left", true), ("right", false))));
+
+        var buttons = cut.FindAll("button");
+        buttons[0].GetAttribute("tabindex")!.ShouldBe("-1");
+        buttons[1].GetAttribute("tabindex")!.ShouldBe("0");
+    }
+
     private static RenderFragment BuildItems(params string[] values)
     {
         return builder =>
@@ -286,6 +436,25 @@ public class ToggleGroupTests : TestBase
                 builder.AddAttribute(sequence++, nameof(ToggleGroupItem.ChildContent), (RenderFragment)(childBuilder =>
                 {
                     childBuilder.AddContent(0, value);
+                }));
+                builder.CloseComponent();
+            }
+        };
+    }
+
+    private static RenderFragment BuildItems(params (string Value, bool Disabled)[] items)
+    {
+        return builder =>
+        {
+            var sequence = 0;
+            foreach (var item in items)
+            {
+                builder.OpenComponent<ToggleGroupItem>(sequence++);
+                builder.AddAttribute(sequence++, nameof(ToggleGroupItem.Value), item.Value);
+                builder.AddAttribute(sequence++, nameof(ToggleGroupItem.Disabled), item.Disabled);
+                builder.AddAttribute(sequence++, nameof(ToggleGroupItem.ChildContent), (RenderFragment)(childBuilder =>
+                {
+                    childBuilder.AddContent(0, item.Value);
                 }));
                 builder.CloseComponent();
             }

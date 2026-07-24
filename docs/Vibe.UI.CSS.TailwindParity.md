@@ -1,137 +1,92 @@
-# Vibe.UI.CSS Tailwind Parity Roadmap
+# Vibe.UI.CSS Tailwind compatibility roadmap
 
-Goal: make `Vibe.UI.CSS` feel like “Tailwind for Blazor/.NET” in day-to-day usage: broad utility coverage, predictable variants, excellent arbitrary-value support, and a great developer experience (DX).
+Vibe.UI.CSS aims to make Tailwind-style utility authoring feel natural in
+Blazor and Razor projects without requiring Node.js. Compatibility is defined
+by a published, versioned matrix rather than by claiming compiler identity with
+Tailwind CSS.
 
-This is intentionally written as a phased checklist so we can ship value early (docs + common app patterns) while steadily closing Tailwind gaps.
+## Release boundaries
 
-## Current Reality Check (Docs Scan)
+### 1.0.0-beta
 
-Command:
+Beta guarantees the complete [beta core profile](Vibe.UI.CSS.CoreProfile.md):
 
-`dotnet run --project src/Vibe.UI.CSS/Vibe.UI.CSS.csproj -- scan "samples/Vibe.UI.Docs" --patterns "*.razor,*.cshtml,*.html,*.cs"`
+- all documented core utility families and variants are tested;
+- strict scanning is available through both CLIs and MSBuild;
+- every utility candidate in the docs application is recognized;
+- practical arbitrary sizing, spacing, color, grid, and CSS-variable values
+  are supported; and
+- generated output is deterministic.
 
-Latest output (summary):
-- Total classes found: `513`
-- Recognized: `378`
-- Unknown: `135`
+The enforced docs scan currently recognizes `407` of `407` utility candidates.
+CI also strict-scans the component and CLI source trees. Scoped component hooks
+and reserved Vibe runtime tokens are classified as non-utilities; intentional
+application hooks remain explicit in the CI ignore list.
 
-The first unknown classes include legacy Bootstrap/nav-template classes (e.g. `navbar`, `nav-item`, `bi-*`) plus some docs-only helpers.
+### Stable 1.0
 
-## Phase 0 — Ship the “Docs Experience” (Immediate ROI)
+Stable 1.0 targets 100% correctness for the expanded, published Vibe.UI.CSS
+Tailwind 4 compatibility matrix. It does not promise Tailwind plugin ABI,
+compiler implementation, or byte-for-byte generated CSS parity.
 
-### Navigation + layout
-- [ ] Remove/replace legacy `NavMenu.razor`/Bootstrap classes in docs if still present.
-- [ ] Ensure all docs pages are centered + readable with only utilities and minimal docs CSS.
+## Completed beta surface
 
-### Typography (“Tailwind typography plugin” equivalent)
-- [x] `vibe-prose` (multi-rule) + `dark:vibe-prose-invert` (minimal but usable)
-- [ ] `vibe-prose-sm`/`vibe-prose-lg` sizing variants (optional)
-- [ ] Better tables in prose (striping, header emphasis, code blocks) while staying minimal
+- [x] Display, position, overflow, z-index, object fit, and visibility
+- [x] Core flexbox, grid, alignment, spacing, and sizing
+- [x] Logical margin and padding plus negative margins
+- [x] Typography, semantic/palette colors, opacity modifiers, borders, radii,
+  rings, shadows, transforms, transitions, and baseline animations
+- [x] Cursor, pointer, selection, touch, resize, scrolling, and screen-reader helpers
+- [x] Responsive, dark, interaction, form-state, disclosure, structural,
+  group, peer, ARIA, data, reduced-motion, contrast, forced-colors,
+  orientation, and print variants
+- [x] Variant stacking across selectors and media queries
+- [x] Practical arbitrary values and arbitrary custom properties
+- [x] Razor markup, Razor expression, C# literal, and code-block scanning
+- [x] Strict unknown-class failure with scoped/reserved classification and explicit app ignores
+- [x] Stable output ordering and deterministic headers
+- [x] CI gates for component source, CLI source, and the docs application's complete utility set
 
-### Docs-only helpers (stay docs-only)
-- [ ] Keep a small `site.css` for hero/background/animations only; avoid “docs.css v2”.
+## Stable 1.0 backlog
 
-## Phase 1 — Core Utility Coverage (Most-used Tailwind set)
+### Utility breadth
 
-### Layout / display
-- [ ] `container` (with breakpoint-aware max widths)
-- [ ] `isolate`, `isolation-auto`
-- [ ] `box-decoration-slice/clone`
+- [ ] Breakpoint-aware `container`, isolation, and box-decoration utilities
+- [ ] Static flex-basis, order, place, auto-grid, and grid-flow scales
+- [ ] Complete child-spacing reverse behavior
+- [ ] Hyphenation, tab size, list, decoration thickness/style, and underline offset
+- [ ] Full outline and ring-offset surface
+- [ ] Complete filter, backdrop-filter, and blend-mode families
+- [ ] Skew, transform origin/GPU, delay, and configurable keyframes
+- [ ] Scroll snap/margin/padding and complete SVG fill/stroke scales
 
-### Flex / grid (fill missing “daily drivers”)
-- [ ] `basis-*` (flex-basis scale + arbitrary)
-- [ ] `order-*`
-- [ ] `place-items-*`, `place-content-*`, `place-self-*`
-- [ ] `auto-cols-*`, `auto-rows-*`, `grid-flow-*`
+### Variant breadth
 
-### Spacing
-- [ ] Negative support everywhere it exists in Tailwind (not just inset)
-- [ ] `space-x-*`/`space-y-*` with reverse variants (`space-x-reverse`, etc.)
-- [ ] Logical spacing utilities (`ps-*`, `pe-*`, `ms-*`, `me-*`) for RTL friendliness
+- [ ] `supports-*` and arbitrary selector variants
+- [ ] Container-query utilities and variants
+- [ ] Remaining pointer, scripting, direction, and modern media variants
+- [ ] Named group/peer and advanced compound selector forms
 
-### Typography
-- [ ] `whitespace-*` full set
-- [ ] `break-*` full set
-- [ ] `hyphens-*`
-- [ ] `tab-size-*`
-- [ ] `list-*` (style + position)
-- [ ] `text-decoration-*` (thickness/style) + `underline-offset-*`
-- [ ] `decoration-*`, `accent-*`, `caret-*`
+### Scanner and arbitrary values
 
-### Borders / outlines / rings
-- [ ] Full `outline-*` surface area (style/width/offset/color)
-- [ ] `ring-offset-*` complete + `ring-inset`
-- [ ] `divide-x-*`/`divide-y-*` width variants + `divide-*-reverse`
+- [ ] Broader interpolated-string and conditional-concatenation analysis
+- [ ] Indirect `@attributes` and dictionary-provided class discovery
+- [ ] Full arbitrary-value type inference and escaping compatibility
+- [ ] Source safelists for classes that cannot be present literally
 
-### Effects / filters
-- [ ] `filter` suite (blur/brightness/contrast/drop-shadow/grayscale/hue-rotate/invert/saturate/sepia)
-- [ ] `backdrop-filter` suite to match Tailwind
-- [ ] `mix-blend-*`, `bg-blend-*`
+### Tooling
 
-### Transforms / transitions / animations
-- [ ] `skew-*`, `transform-origin-*`, `transform-gpu`
-- [ ] `transition-*` variants (`transition`, `transition-colors`, etc.)
-- [ ] `duration-*`, `delay-*`, `ease-*` complete
-- [ ] `animate-*` baseline set (spin/ping/pulse/bounce) + custom keyframes config
+- [ ] Incremental watch caching
+- [ ] Machine-readable JSON reports
+- [ ] Generated supported-utility reference from the tested matrix
+- [ ] Migration diagnostics for unsupported Tailwind classes
 
-### Interactivity / a11y
-- [ ] `sr-only` / `not-sr-only`
-- [ ] `cursor-*` complete
-- [ ] `select-*`, `pointer-events-*`
-- [ ] `scroll-*` (scroll-behavior, snap, margin/padding)
-- [ ] `touch-*`
+## Success criteria
 
-### SVG
-- [ ] `fill-*`, `stroke-*`, `stroke-width-*`
+Beta is complete when the core-profile tests, strict docs scan, package
+validation, and standalone/hosted compatibility suites all pass for the same
+candidate commit.
 
-## Phase 2 — Variants Parity (The “Tailwind Feel”)
-
-### State variants
-- [ ] `checked`, `indeterminate`
-- [ ] `required`, `optional`
-- [ ] `invalid`, `valid`
-- [ ] `open` (details/summary, popovers, dialogs)
-
-### Group / peer
-- [ ] `peer-*` variants (peer-hover, peer-focus, peer-checked, peer-invalid, etc.)
-- [ ] `group-aria-*` / `aria-*` variants (optional, but modern Tailwind feature)
-
-### Structural
-- [ ] `only`, `empty`
-- [ ] `first-of-type`, `last-of-type`, `only-of-type`
-
-### Media / feature queries
-- [ ] `print`
-- [ ] reduced motion (`motion-reduce`, `motion-safe`)
-- [ ] contrast (`contrast-more`, `contrast-less`)
-- [ ] forced colors (`forced-colors`)
-- [ ] orientation (`portrait`, `landscape`)
-- [ ] `supports-*` variants
-
-### Container queries (modern Tailwind)
-- [ ] `@container`-style generation + `container-*`/`cq:*` variants (design TBD)
-
-## Phase 3 — Arbitrary Values + Scanner Robustness
-
-- [ ] Arbitrary value support for most utilities (`bg-[...]`, `shadow-[...]`, etc.)
-- [ ] Better Razor scanning for:
-  - [ ] `class=@(...)` expressions
-  - [ ] interpolated strings / conditional concatenations
-  - [ ] `@attributes` patterns (where class is provided indirectly)
-
-## Phase 4 — DX / Tooling (What makes Tailwind *pleasant*)
-
-- [ ] `--watch` mode (incremental scan + regenerate)
-- [ ] Caching (skip regenerate when no class set changes)
-- [ ] `--fail-on-unknown` (optional strict mode)
-- [ ] Stable output ordering and formatting guarantees
-- [ ] `--report json` (recognized/unknown lists for CI dashboards)
-- [ ] First-class docs: supported utilities + variants + examples
-
-## Success Criteria
-
-- Docs site uses `Vibe.UI` components + `Vibe.UI.CSS` utilities with near-zero custom CSS.
-- Most developers can “translate Tailwind muscle memory” to `vibe-*` with minimal friction.
-- Unknown-class reporting is actionable (either fix the class or implement the utility).
-
-
+Stable 1.0 is complete when every item in the published v1 matrix is tested,
+unsupported Tailwind behavior is listed explicitly, and the migration guide
+shows when to use Vibe.UI.CSS versus the full Tailwind compiler.

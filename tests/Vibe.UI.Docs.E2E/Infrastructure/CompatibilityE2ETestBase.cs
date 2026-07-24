@@ -67,23 +67,34 @@ public abstract class CompatibilityE2ETestBase : IAsyncLifetime
 
     public virtual async Task DisposeAsync()
     {
-        if (Page != null)
+        try
         {
-            await Page.CloseAsync();
-        }
+            if (Page != null)
+            {
+                await Page.CloseAsync();
+            }
 
-        if (Context != null)
+            if (Context != null)
+            {
+                await Context.CloseAsync();
+            }
+
+            if (Browser != null)
+            {
+                await Browser.CloseAsync();
+            }
+        }
+        finally
         {
-            await Context.CloseAsync();
+            try
+            {
+                Playwright?.Dispose();
+            }
+            finally
+            {
+                await CompatibilityServerManager.ReleaseAsync(App, BaseUrl);
+            }
         }
-
-        if (Browser != null)
-        {
-            await Browser.CloseAsync();
-        }
-
-        Playwright?.Dispose();
-        CompatibilityServerManager.Release(App, BaseUrl);
     }
 
     protected async Task NavigateToSmokePageAsync(string path, string smokeTestId)
@@ -114,7 +125,9 @@ public abstract class CompatibilityE2ETestBase : IAsyncLifetime
             $"[data-testid='{prefix}-increment']",
             "Current interaction count: 1");
 
-        await Page.Locator($"[data-testid='{prefix}-dialog']").ClickAsync();
+        var dialogTrigger = Page.Locator($"[data-testid='{prefix}-dialog']");
+        await dialogTrigger.FocusAsync();
+        await dialogTrigger.PressAsync("Enter");
 
         var dialog = Page.Locator("[role='dialog']").First;
         await dialog.WaitForAsync(new() { State = WaitForSelectorState.Visible });
@@ -123,8 +136,74 @@ public abstract class CompatibilityE2ETestBase : IAsyncLifetime
         dialogText.ShouldNotBeNull();
         dialogText.ShouldContain("dialog", Case.Insensitive);
 
+        await Page.WaitForFunctionAsync(
+            "() => document.querySelector(\"[role='dialog']\")?.contains(document.activeElement) === true");
+        await Page.Keyboard.PressAsync("Escape");
+        await dialog.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
+        await Page.WaitForFunctionAsync(
+            $"() => document.activeElement === document.querySelector(\"[data-testid='{prefix}-dialog']\")");
+        (await dialogTrigger.EvaluateAsync<bool>("element => document.activeElement === element")).ShouldBeTrue();
+
+        await dialogTrigger.ClickAsync();
+        await dialog.WaitForAsync(new() { State = WaitForSelectorState.Visible });
         await dialog.Locator("button:has-text('Close')").ClickAsync();
         await dialog.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
+
+        await VerifyBetaInteractionControlsAsync(prefix);
+    }
+
+    private async Task VerifyBetaInteractionControlsAsync(string prefix)
+    {
+        var datePicker = Page.Locator($"[data-testid='{prefix}-date-picker']");
+        var dateInput = datePicker.Locator("input").First;
+        await dateInput.FocusAsync();
+        await dateInput.PressAsync("ArrowDown");
+
+        var dateDialog = datePicker.GetByRole(AriaRole.Dialog);
+        await dateDialog.WaitForAsync(new() { State = WaitForSelectorState.Visible });
+        await Page.WaitForFunctionAsync(
+            "() => document.activeElement?.getAttribute('role') === 'gridcell'");
+        await Page.Keyboard.PressAsync("Escape");
+        await dateDialog.WaitForAsync(new() { State = WaitForSelectorState.Detached });
+        await Page.WaitForFunctionAsync(
+            $"() => document.activeElement === document.querySelector(\"[data-testid='{prefix}-date-picker'] input\")");
+
+        var dropdown = Page.Locator($"[data-testid='{prefix}-dropdown']");
+        var dropdownTrigger = dropdown.Locator(".dropdown-trigger");
+        await dropdownTrigger.FocusAsync();
+        await dropdownTrigger.PressAsync("ArrowDown");
+
+        var dropdownMenu = dropdown.GetByRole(AriaRole.Menu);
+        await dropdownMenu.WaitForAsync(new() { State = WaitForSelectorState.Visible });
+        await Page.WaitForFunctionAsync(
+            "() => document.activeElement?.textContent?.trim() === 'Profile'");
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Page.WaitForFunctionAsync(
+            "() => document.activeElement?.textContent?.trim() === 'Settings'");
+        await Page.Keyboard.PressAsync("Tab");
+        await dropdownMenu.WaitForAsync(new() { State = WaitForSelectorState.Detached });
+
+        var navigationMenu = Page.Locator($"[data-testid='{prefix}-navigation-menu']");
+        var navigationTrigger = navigationMenu.Locator(".navigation-menu-item-trigger");
+        await navigationTrigger.PressAsync("ArrowDown");
+
+        var navigationContent = navigationMenu.Locator(".navigation-menu-item-content");
+        await navigationContent.WaitForAsync(new() { State = WaitForSelectorState.Visible });
+
+        var filter = navigationContent.Locator($"[data-testid='{prefix}-nav-filter']");
+        await filter.FocusAsync();
+        await filter.PressAsync("q");
+        (await filter.InputValueAsync()).ShouldBe("q");
+
+        var sort = navigationContent.Locator($"[data-testid='{prefix}-nav-sort']");
+        await sort.FocusAsync();
+        await sort.PressAsync("ArrowDown");
+        await Page.WaitForFunctionAsync(
+            $"() => document.querySelector(\"[data-testid='{prefix}-nav-sort']\")?.value === 'recent'");
+
+        await filter.FocusAsync();
+        await filter.PressAsync("Escape");
+        await navigationContent.WaitForAsync(new() { State = WaitForSelectorState.Detached });
     }
 
     protected void AssertNoBrowserErrors()

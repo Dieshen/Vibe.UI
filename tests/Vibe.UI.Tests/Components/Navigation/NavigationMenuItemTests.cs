@@ -33,6 +33,10 @@ public class NavigationMenuItemTests : TestBase
         trigger.GetAttribute("aria-haspopup").ShouldBe("true");
         trigger.GetAttribute("aria-expanded").ShouldBe("false");
         trigger.GetAttribute("aria-controls").ShouldBe("products-content");
+        JSInterop.Invocations.ShouldContain(invocation =>
+            invocation.Identifier == "import" &&
+            invocation.Arguments[0] != null &&
+            invocation.Arguments[0]!.ToString() == "./_content/Vibe.UI/js/vibe-menu-keyboard.js");
 
         cut.FindAll(".navigation-menu-item-content").ShouldBeEmpty();
     }
@@ -141,16 +145,77 @@ public class NavigationMenuItemTests : TestBase
         cut.Find(".navigation-menu-item-trigger").KeyDown("ArrowDown");
 
         cut.Find(".navigation-menu-item-content").ShouldNotBeNull();
+        cut.Find(".navigation-menu-item-content").GetAttribute("tabindex").ShouldBe("-1");
         cut.Find(".navigation-menu-item-trigger").GetAttribute("aria-expanded").ShouldBe("true");
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "focusFirstItem");
 
         cut.Find(".navigation-menu-item-content").KeyDown("Escape");
 
         cut.FindAll(".navigation-menu-item-content").ShouldBeEmpty();
 
         cut.Find(".navigation-menu-item-trigger").KeyDown("ArrowUp");
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "focusLastItem");
         cut.Find(".navigation-menu-item-trigger").KeyDown("Escape");
 
         cut.FindAll(".navigation-menu-item-content").ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void NavigationMenuItem_KeyboardActivationFocusesFirstContentControl()
+    {
+        var cut = Render<NavigationMenuItem>(parameters => parameters
+            .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Products"))
+            .Add(p => p.Content, builder => builder.AddMarkupContent(0, "<a href=\"/one\">One</a>")));
+
+        var trigger = cut.Find(".navigation-menu-item-trigger");
+        trigger.KeyDown("Enter");
+        trigger.Click();
+
+        cut.Find(".navigation-menu-item-content").ShouldNotBeNull();
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "focusFirstItem");
+    }
+
+    [Fact]
+    public void NavigationMenuItem_DelegatesContentNavigationAndTypeahead()
+    {
+        var cut = Render<NavigationMenuItem>(parameters => parameters
+            .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Products"))
+            .Add(p => p.Content, builder => builder.AddMarkupContent(0,
+                "<a href=\"/alpha\">Alpha</a><a href=\"/beta\">Beta</a>")));
+
+        cut.Find(".navigation-menu-item-trigger").KeyDown("ArrowDown");
+        var content = cut.Find(".navigation-menu-item-content");
+
+        content.KeyDown("ArrowDown");
+        content.KeyDown("ArrowUp");
+        content.KeyDown("Home");
+        content.KeyDown("End");
+        content.KeyDown("b");
+
+        JSInterop.Invocations.Count(invocation => invocation.Identifier == "moveFocus").ShouldBe(2);
+        JSInterop.Invocations.Count(invocation => invocation.Identifier == "focusFirstItem").ShouldBeGreaterThanOrEqualTo(2);
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "focusLastItem");
+        JSInterop.Invocations.ShouldContain(invocation => invocation.Identifier == "focusByTypeahead");
+    }
+
+    [Fact]
+    public void NavigationMenuItem_DoesNotRerouteKeysFromEditableContent()
+    {
+        var module = JSInterop.SetupModule("./_content/Vibe.UI/js/vibe-menu-keyboard.js");
+        module.Setup<bool>("isActiveElementEditable", _ => true).SetResult(true);
+
+        var cut = Render<NavigationMenuItem>(parameters => parameters
+            .Add(p => p.TriggerContent, builder => builder.AddContent(0, "Products"))
+            .Add(p => p.Content, builder => builder.AddMarkupContent(0, "<input aria-label=\"Search products\" />")));
+
+        cut.Find(".navigation-menu-item-trigger").KeyDown("ArrowDown");
+        var moveCount = JSInterop.Invocations.Count(invocation => invocation.Identifier == "moveFocus");
+
+        cut.Find(".navigation-menu-item-content").KeyDown("ArrowDown");
+        cut.Find(".navigation-menu-item-content").KeyDown("a");
+
+        JSInterop.Invocations.Count(invocation => invocation.Identifier == "moveFocus").ShouldBe(moveCount);
+        JSInterop.Invocations.ShouldNotContain(invocation => invocation.Identifier == "focusByTypeahead");
     }
 
     [Fact]

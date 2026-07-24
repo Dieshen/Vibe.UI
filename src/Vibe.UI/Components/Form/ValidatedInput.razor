@@ -186,7 +186,10 @@
         }
     }
 
-    private string InputCssClass => CombineClasses("validated-input-field", GetValidationClass());
+    private string InputCssClass => CombineClasses(
+        "validated-input-field",
+        GetValidationClass(),
+        ShowValidationIcon && !Disabled && ValidationState.HasValue ? "has-validation-icon" : null);
 
     private Dictionary<string, object>? RootAttributes => BuildRootAttributes();
 

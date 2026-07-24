@@ -177,6 +177,8 @@
     private ElementReference _searchInput;
     private string _searchQuery = string.Empty;
     private int _selectedIndex = 0;
+    private bool _wasOpen;
+    private bool _shouldFocusSearchInput;
 
     private string SearchQuery
     {
@@ -201,6 +203,8 @@
         new("Textarea", "Inputs", "Multi-line text input"),
         new("RadioGroup", "Inputs", "Group of radio button options"),
         new("ColorPicker", "Inputs", "Color selection picker"),
+        new("Rating", "Inputs", "Accessible whole and half-star score"),
+        new("ImageCropper", "Inputs", "Pointer and keyboard image crop editor"),
 
         // Layout
         new("Card", "Layout", "Container for grouping related content"),
@@ -209,8 +213,12 @@
         new("Stack", "Layout", "Flexbox stacking layout"),
         new("Divider", "Layout", "Visual separator between content"),
         new("AspectRatio", "Layout", "Maintain consistent aspect ratios"),
+        new("Sheet", "Layout", "Modal panel from a viewport edge"),
+        new("Splitter", "Layout", "Resizable adjacent panes"),
+        new("Resizable", "Layout", "Pointer and keyboard resizable panel"),
 
         // Overlay
+        new("AlertDialog", "Overlay", "Explicit confirmation for consequential actions"),
         new("Dialog", "Overlay", "Modal dialog for focused interactions"),
         new("Drawer", "Overlay", "Side panel overlay"),
         new("Popover", "Overlay", "Floating content panel"),
@@ -223,9 +231,17 @@
         new("Pagination", "Navigation", "Page navigation controls"),
         new("Stepper", "Navigation", "Multi-step progress indicator"),
         new("Link", "Navigation", "Navigation link component"),
+        new("Sidebar", "Navigation", "Collapsible resizable navigation"),
+
+        // Input
+        new("InputOTP", "Input", "One-time password input with paste and keyboard navigation"),
+        new("Mentions", "Input", "Mention input with autocomplete"),
+        new("ToggleGroup", "Input", "Grouped toggles with roving keyboard focus"),
+        new("TransferList", "Input", "Move items between two searchable lists"),
 
         // Feedback
         new("Alert", "Feedback", "Contextual feedback messages"),
+        new("Confetti", "Feedback", "Canvas celebration effect"),
         new("Toast", "Feedback", "Temporary notification messages"),
         new("Progress", "Feedback", "Progress indicator bar"),
         new("Spinner", "Feedback", "Loading spinner animation"),
@@ -235,7 +251,8 @@
         // Data Display
         new("Avatar", "Data Display", "User profile image"),
         new("Table", "Data Display", "Data table component"),
-        new("DataTable", "Data Display", "Interactive data grid"),
+        new("DataTable", "Data Display", "Searchable, sortable data table"),
+        new("Timeline", "Data Display", "Ordered events with status and timestamps"),
 
         // Disclosure
         new("Accordion", "Disclosure", "Collapsible content sections"),
@@ -269,30 +286,38 @@
             if (string.IsNullOrWhiteSpace(SearchQuery))
                 return new List<ComponentInfo>();
 
-            var query = SearchQuery.ToLower();
+            var query = SearchQuery.Trim();
             return AllComponents
                 .Where(c =>
-                    c.Name.ToLower().Contains(query) ||
-                    c.Description.ToLower().Contains(query) ||
-                    c.Category.ToLower().Contains(query))
-                .OrderByDescending(c => c.Name.ToLower().StartsWith(query) ? 100 :
-                                        c.Name.ToLower().Contains(query) ? 50 : 0)
+                    c.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    c.Description.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    c.Category.Contains(query, StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(c => string.Equals(c.Name, query, StringComparison.OrdinalIgnoreCase) ? 200 :
+                                        c.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase) ? 100 :
+                                        c.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ? 50 : 0)
+                .ThenBy(c => c.Name, StringComparer.OrdinalIgnoreCase)
                 .Take(10)
                 .ToList();
         }
     }
 
+    protected override void OnParametersSet()
+    {
+        if (IsOpen && !_wasOpen)
+        {
+            _shouldFocusSearchInput = true;
+        }
+
+        _wasOpen = IsOpen;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (IsOpen)
-        {
-            await Task.Delay(50); // Wait for render
-            try
-            {
-                await _searchInput.FocusAsync();
-            }
-            catch { }
-        }
+        if (!_shouldFocusSearchInput)
+            return;
+
+        _shouldFocusSearchInput = false;
+        await _searchInput.FocusAsync();
     }
 
     private async Task HandleKeyDown(KeyboardEventArgs e)

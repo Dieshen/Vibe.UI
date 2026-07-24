@@ -1,348 +1,267 @@
+@page "/components/datatable"
 @page "/components/datagrid"
 @using Vibe.UI.Components
 
-<PageTitle>DataGrid - Vibe.UI</PageTitle>
+<PageTitle>DataTable - Vibe.UI</PageTitle>
 
 <div class="vibe-max-w-4xl vibe-mx-auto">
-    <!-- Header -->
     <header class="vibe-mb-8">
         <div class="vibe-flex vibe-items-center vibe-gap-2 vibe-text-sm vibe-text-zinc-500 vibe-mb-2">
             <a href="./" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Docs</a>
             <span>/</span>
             <a href="components" class="hover:vibe-text-zinc-700 dark:hover:vibe-text-zinc-300">Components</a>
             <span>/</span>
-            <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">DataGrid</span>
+            <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">DataTable</span>
         </div>
-        <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">DataGrid</h1>
+        <h1 class="vibe-text-3xl vibe-font-bold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-3">DataTable</h1>
         <p class="vibe-text-lg vibe-text-zinc-600 dark:vibe-text-zinc-400">
-            A powerful data table with sorting, filtering, pagination, and editing capabilities.
+            A searchable, sortable, and paginated table with templated cells and accessible overflow behavior.
         </p>
     </header>
 
-    <!-- Preview Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
-        <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+        <div class="vibe-p-4 sm:vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
             <DataTable TItem="ProductData"
-                      Items="@sampleProducts"
-                      Columns="@productColumns"
-                      ShowSearch="true"
-                      ShowPagination="true"
-                      PageSize="5">
-            </DataTable>
+                       Items="@SampleProducts"
+                       Columns="@ProductColumns"
+                       Caption="Product inventory"
+                       SearchLabel="Search products"
+                       SearchPlaceholder="Search products..."
+                       PageSize="5" />
         </div>
     </section>
 
-    <!-- Examples Section -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">Examples</h2>
 
-        <!-- Basic Usage -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Basic Usage</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Basic table</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Create a basic data grid with column definitions.
+                Define columns in code and pass a concrete list of items.
             </p>
             <CodeBlock Code="@BasicCode" Language="razor" />
         </div>
 
-        <!-- With Sorting -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Sorting</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Search and pagination</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Enable column sorting for better data organization.
+                Search checks the string value of each configured property. Pagination is managed by the table.
             </p>
-            <CodeBlock Code="@SortingCode" Language="razor" />
+            <CodeBlock Code="@SearchCode" Language="razor" />
         </div>
 
-        <!-- With Filtering -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Filtering</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Templated cells</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Add filtering capabilities to allow users to search within columns.
+                Supply a column template when a property needs custom formatting or composed content.
             </p>
-            <CodeBlock Code="@FilteringCode" Language="razor" />
+            <CodeBlock Code="@TemplateCode" Language="razor" />
         </div>
 
-        <!-- With Pagination -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Pagination</h3>
+        <div>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Custom toolbar content</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Handle large datasets with built-in pagination.
+                Add content beside the built-in search field with the named toolbar fragment.
             </p>
-            <CodeBlock Code="@PaginationCode" Language="razor" />
-        </div>
-
-        <!-- Editable Grid -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Editable Grid</h3>
-            <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Enable inline editing for direct data manipulation.
-            </p>
-            <CodeBlock Code="@EditableCode" Language="razor" />
+            <CodeBlock Code="@ToolbarCode" Language="razor" />
         </div>
     </section>
 
-    <!-- API Reference -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-6">API Reference</h2>
 
-        <!-- Properties -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Properties</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">DataTable parameters</h3>
             <div class="vibe-overflow-x-auto">
                 <table class="vibe-w-full vibe-text-sm">
                     <thead>
                         <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Default</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Default</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th>
                         </tr>
                     </thead>
                     <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Items</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="IEnumerable<TItem>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Data items to display</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Sortable</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Enable column sorting</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Filterable</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Enable column filtering</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Pageable</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Enable pagination</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">PageSize</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="int" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">10</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Number of items per page</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Selectable</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Enable row selection</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Loading</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Show loading state</td>
-                        </tr>
+                        @foreach (var row in ParameterRows)
+                        {
+                            <tr>
+                                <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-zinc-900 dark:vibe-text-zinc-100">@row.Name</td>
+                                <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@row.Type" /></td>
+                                <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@row.DefaultValue</td>
+                                <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@row.Description</td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Events -->
-        <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">Events</h3>
+        <div>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-4">DataTableColumn properties</h3>
             <div class="vibe-overflow-x-auto">
                 <table class="vibe-w-full vibe-text-sm">
                     <thead>
                         <tr class="vibe-border-b vibe-border-zinc-200 dark:vibe-border-zinc-700">
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Type</th>
-                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100">Description</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Name</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Type</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Default</th>
+                            <th class="vibe-text-left vibe-py-3 vibe-px-4 vibe-font-medium">Description</th>
                         </tr>
                     </thead>
                     <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnRowClick</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<TItem>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when row is clicked</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnSelectionChanged</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<IEnumerable<TItem>>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when selection changes</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnSort</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<SortEventArgs>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when sort changes</td>
-                        </tr>
+                        @foreach (var row in ColumnRows)
+                        {
+                            <tr>
+                                <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-zinc-900 dark:vibe-text-zinc-100">@row.Name</td>
+                                <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="@row.Type" /></td>
+                                <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">@row.DefaultValue</td>
+                                <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">@row.Description</td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
         </div>
     </section>
 
-    <!-- Installation -->
-    <section class="vibe-mb-12">
-        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
-        <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-            Install the DataGrid component using the Vibe.UI CLI:
-        </p>
-        <CodeBlock Code="vibe add datagrid" Language="bash" />
-    </section>
-
-    <!-- Accessibility -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
-        <div class="vibe-prose dark:vibe-prose-invert vibe-max-w-none">
-            <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Semantic table structure with proper headers
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Keyboard navigation (Arrow keys, Page Up/Down)
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    ARIA grid role with proper labels
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Sort indicators announced to screen readers
-                </li>
-                <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Row selection with keyboard support
-                </li>
-            </ul>
-        </div>
+        <ul class="vibe-flex vibe-flex-col vibe-gap-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
+            <li>Uses native table, header, row, and cell semantics.</li>
+            <li>Supports a visible <code>Caption</code> or an accessible <code>AriaLabel</code>.</li>
+            <li>Exposes sortable headers as buttons with <code>aria-sort</code> state.</li>
+            <li>Makes the labeled horizontal overflow region keyboard focusable.</li>
+            <li>Announces filtered result counts and labels the pagination navigation.</li>
+        </ul>
     </section>
 
-    <!-- Related Components -->
+    <section class="vibe-mb-12">
+        <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Installation</h2>
+        <CodeBlock Code="vibe add datatable" Language="bash" />
+    </section>
+
     <section>
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Related</h2>
         <div class="vibe-grid vibe-grid-cols-1 sm:vibe-grid-cols-3 vibe-gap-4">
             <a href="components/table" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Table</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Simple table component</p>
+                <h3 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Table</h3>
+                <p class="vibe-text-sm vibe-text-zinc-500">Composable semantic tables</p>
             </a>
             <a href="components/pagination" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Pagination</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Page navigation component</p>
+                <h3 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">Pagination</h3>
+                <p class="vibe-text-sm vibe-text-zinc-500">Standalone page navigation</p>
             </a>
             <a href="components/virtualscroll" class="vibe-group vibe-p-4 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 hover:vibe-border-brand-teal dark:hover:vibe-border-brand-teal vibe-transition-colors">
-                <h4 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">VirtualScroll</h4>
-                <p class="vibe-text-sm vibe-text-zinc-500">Efficient large list rendering</p>
+                <h3 class="vibe-font-medium vibe-text-zinc-900 dark:vibe-text-zinc-100 group-hover:vibe-text-brand-teal">VirtualScroll</h3>
+                <p class="vibe-text-sm vibe-text-zinc-500">Large virtualized collections</p>
             </a>
         </div>
     </section>
 </div>
 
 @code {
-    private class ProductData
-    {
-        public string Name { get; set; } = string.Empty;
-        public decimal Price { get; set; }
-        public int Stock { get; set; }
-        public string Category { get; set; } = string.Empty;
-    }
+    private sealed record ProductData(string Name, decimal Price, int Stock, string Category);
 
-    private List<ProductData> sampleProducts = new()
-    {
-        new ProductData { Name = "Laptop Pro", Price = 1299.99m, Stock = 15, Category = "Electronics" },
-        new ProductData { Name = "Wireless Mouse", Price = 29.99m, Stock = 87, Category = "Accessories" },
-        new ProductData { Name = "Mechanical Keyboard", Price = 89.99m, Stock = 42, Category = "Accessories" },
-        new ProductData { Name = "USB-C Hub", Price = 49.99m, Stock = 63, Category = "Accessories" },
-        new ProductData { Name = "Monitor 27\"", Price = 399.99m, Stock = 28, Category = "Electronics" },
-        new ProductData { Name = "Webcam HD", Price = 79.99m, Stock = 54, Category = "Electronics" },
-        new ProductData { Name = "Desk Lamp", Price = 34.99m, Stock = 96, Category = "Office" },
-        new ProductData { Name = "Office Chair", Price = 249.99m, Stock = 12, Category = "Furniture" }
-    };
+    private sealed record ApiRow(string Name, string Type, string DefaultValue, string Description);
 
-    private List<DataTable<ProductData>.DataTableColumn<ProductData>> productColumns = new()
-    {
-        new DataTable<ProductData>.DataTableColumn<ProductData>
-        {
-            Title = "Product Name",
-            PropertyName = nameof(ProductData.Name),
-            IsSortable = true
-        },
-        new DataTable<ProductData>.DataTableColumn<ProductData>
+    private static readonly List<ProductData> SampleProducts =
+    [
+        new("Laptop Pro", 1299.99m, 15, "Electronics"),
+        new("Wireless Mouse", 29.99m, 87, "Accessories"),
+        new("Mechanical Keyboard", 89.99m, 42, "Accessories"),
+        new("USB-C Hub", 49.99m, 63, "Accessories"),
+        new("27-inch Monitor", 399.99m, 28, "Electronics"),
+        new("HD Webcam", 79.99m, 54, "Electronics"),
+        new("Desk Lamp", 34.99m, 96, "Office"),
+        new("Office Chair", 249.99m, 12, "Furniture")
+    ];
+
+    private static readonly List<DataTable<ProductData>.DataTableColumn<ProductData>> ProductColumns =
+    [
+        new() { Title = "Product", PropertyName = nameof(ProductData.Name) },
+        new()
         {
             Title = "Price",
             PropertyName = nameof(ProductData.Price),
-            IsSortable = true,
-            Template = (item) => @<text>$@item.Price.ToString("F2")</text>
+            Template = product => @<text>@product.Price.ToString("C")</text>
         },
-        new DataTable<ProductData>.DataTableColumn<ProductData>
-        {
-            Title = "Stock",
-            PropertyName = nameof(ProductData.Stock),
-            IsSortable = true
-        },
-        new DataTable<ProductData>.DataTableColumn<ProductData>
-        {
-            Title = "Category",
-            PropertyName = nameof(ProductData.Category),
-            IsSortable = true
-        }
-    };
+        new() { Title = "Stock", PropertyName = nameof(ProductData.Stock) },
+        new() { Title = "Category", PropertyName = nameof(ProductData.Category) }
+    ];
 
-    private string BasicCode => @"<DataGrid Items=""@users"">
-    <DataGridColumn Field=""@nameof(User.Name)"" Title=""Name"" />
-    <DataGridColumn Field=""@nameof(User.Email)"" Title=""Email"" />
-    <DataGridColumn Field=""@nameof(User.Role)"" Title=""Role"" />
-</DataGrid>
+    private static readonly ApiRow[] ParameterRows =
+    [
+        new("Items", "List<TItem>", "empty", "Items displayed by the table."),
+        new("Columns", "List<DataTableColumn<TItem>>", "empty", "Column definitions used for headers, values, sorting, and templates."),
+        new("ToolbarContent", "RenderFragment?", "null", "Optional content rendered beside the search field."),
+        new("ShowToolbar", "bool", "true", "Shows or hides the toolbar."),
+        new("ShowSearch", "bool", "true", "Shows or hides the search input within the toolbar."),
+        new("SearchPlaceholder", "string", "Search...", "Placeholder displayed in the search input."),
+        new("SearchLabel", "string", "Search table", "Accessible label for the search input."),
+        new("Caption", "string?", "null", "Visible caption that names the table."),
+        new("AriaLabel", "string?", "null", "Accessible table name used when Caption is not set."),
+        new("ShowPagination", "bool", "true", "Shows pagination and limits rendered rows to the current page."),
+        new("PageSize", "int", "10", "Rows per page. Values below one are treated as one."),
+        new("EmptyMessage", "string", "No data available", "Message shown when no rows match."),
+        new("RowClass", "Func<TItem, string>?", "null", "Returns an optional CSS class for each row.")
+    ];
+
+    private static readonly ApiRow[] ColumnRows =
+    [
+        new("Title", "string", "empty", "Text displayed in the column header."),
+        new("PropertyName", "string", "empty", "Public property used for display, search, and sorting."),
+        new("IsSortable", "bool", "true", "Renders the header as a sortable button."),
+        new("Template", "RenderFragment<TItem>?", "null", "Optional cell template for custom rendering.")
+    ];
+
+    private const string BasicCode = """
+<DataTable TItem="Product"
+           Items="@products"
+           Columns="@columns"
+           Caption="Product inventory" />
 
 @code {
-    private List<User> users = GetUsers();
-}";
-
-    private string SortingCode => @"<DataGrid Items=""@products"" Sortable=""true"">
-    <DataGridColumn Field=""@nameof(Product.Name)"" Title=""Product"" Sortable=""true"" />
-    <DataGridColumn Field=""@nameof(Product.Price)"" Title=""Price"" Sortable=""true"" />
-    <DataGridColumn Field=""@nameof(Product.Stock)"" Title=""Stock"" Sortable=""true"" />
-</DataGrid>";
-
-    private string FilteringCode => @"<DataGrid Items=""@orders"" Filterable=""true"">
-    <DataGridColumn Field=""@nameof(Order.Id)"" Title=""Order ID"" Filterable=""true"" />
-    <DataGridColumn Field=""@nameof(Order.Customer)"" Title=""Customer"" Filterable=""true"" />
-    <DataGridColumn Field=""@nameof(Order.Status)"" Title=""Status"" Filterable=""true"" />
-</DataGrid>";
-
-    private string PaginationCode => @"<DataGrid Items=""@allItems""
-          Pageable=""true""
-          PageSize=""20"">
-    <DataGridColumn Field=""@nameof(Item.Name)"" Title=""Name"" />
-    <DataGridColumn Field=""@nameof(Item.Category)"" Title=""Category"" />
-</DataGrid>";
-
-    private string EditableCode => @"<DataGrid Items=""@employees""
-          Editable=""true""
-          OnRowEdit=""@HandleRowEdit"">
-    <DataGridColumn Field=""@nameof(Employee.Name)"" Title=""Name"" Editable=""true"" />
-    <DataGridColumn Field=""@nameof(Employee.Department)"" Title=""Department"" Editable=""true"" />
-    <DataGridColumn Field=""@nameof(Employee.Salary)"" Title=""Salary"" Editable=""true"" />
-</DataGrid>
-
-@code {
-    private async Task HandleRowEdit(Employee employee)
-    {
-        await SaveEmployee(employee);
-    }
-}";
+    private readonly List<DataTable<Product>.DataTableColumn<Product>> columns =
+    [
+        new() { Title = "Product", PropertyName = nameof(Product.Name) },
+        new() { Title = "Price", PropertyName = nameof(Product.Price) }
+    ];
 }
+""";
 
+    private const string SearchCode = """
+<DataTable TItem="Product"
+           Items="@products"
+           Columns="@columns"
+           SearchLabel="Search products"
+           SearchPlaceholder="Search products..."
+           ShowSearch="true"
+           ShowPagination="true"
+           PageSize="20" />
+""";
 
+    private const string TemplateCode = """
+private readonly List<DataTable<Product>.DataTableColumn<Product>> columns =
+[
+    new() { Title = "Product", PropertyName = nameof(Product.Name) },
+    new()
+    {
+        Title = "Price",
+        PropertyName = nameof(Product.Price),
+        Template = product => @<span>@product.Price.ToString("C")</span>
+    }
+];
+""";
+
+    private const string ToolbarCode = """
+<DataTable TItem="Product" Items="@products" Columns="@columns">
+    <ToolbarContent>
+        <Button Variant="ButtonVariant.Outline" OnClick="ExportProducts">
+            Export
+        </Button>
+    </ToolbarContent>
+</DataTable>
+""";
+}

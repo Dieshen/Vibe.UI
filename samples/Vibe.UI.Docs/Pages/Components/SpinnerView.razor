@@ -90,25 +90,26 @@
                 Add a descriptive label to provide context for the loading state.
             </p>
             <div class="vibe-flex vibe-flex-col vibe-items-center vibe-justify-center vibe-gap-4 vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <Spinner Label="Loading..." />
-                <Spinner Label="Processing" Size="Spinner.SpinnerSize.Large" />
-                <Spinner Label="Please wait" Color="primary" />
+                <Spinner Label="Loading..." ShowLabel="true" />
+                <Spinner Label="Processing" ShowLabel="true" Size="Spinner.SpinnerSize.Large" />
+                <Spinner Label="Please wait" ShowLabel="true" Color="primary" />
             </div>
             <CodeBlock Code="@LabelCode" Language="razor" />
         </div>
 
-        <!-- Page Overlay -->
+        <!-- Loading Button -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Page Overlay</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Inside a Button</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Display a full-page overlay spinner for blocking operations.
+                Compose Spinner with Button to communicate a pending action.
             </p>
-            <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-text-sm vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                    Note: This example shows the pattern. The overlay would cover the entire page in actual use.
-                </div>
+            <div class="vibe-flex vibe-justify-center vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
+                <Button Disabled="true">
+                    <Spinner Decorative="true" />
+                    Saving changes
+                </Button>
             </div>
-            <CodeBlock Code="@OverlayCode" Language="razor" />
+            <CodeBlock Code="@LoadingButtonCode" Language="razor" />
         </div>
     </section>
 
@@ -133,8 +134,8 @@
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Size</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="SpinnerSize" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Medium</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Size of the spinner (Small, Medium, Large)</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Default</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Size of the spinner: Small, Default, Medium, or Large</td>
                         </tr>
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Color</td>
@@ -146,25 +147,31 @@
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Label</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Optional text label to display</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Loading context used for assistive text and optional visible text</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Thickness</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="int" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">4</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Border thickness in pixels</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Speed</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="SpinnerSpeed" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Normal</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Rotation speed (Slow, Normal, Fast)</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ShowOverlay</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ShowLabel</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Show backdrop overlay</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Whether Label is displayed next to the spinner</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">AriaLabel</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Assistive text that takes precedence over Label</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Decorative</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Hides a composed spinner from assistive technology when surrounding text already names the loading state</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Disabled</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Stops animation and reports a non-busy state</td>
                         </tr>
                     </tbody>
                 </table>
@@ -187,33 +194,23 @@
         <div class="vibe-prose dark:vibe-prose-invert vibe-max-w-none">
             <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                     Uses <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">role="status"</code> for screen reader announcements
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                     Includes <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">aria-label</code> or <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">aria-labelledby</code>
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                     Uses <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">aria-live="polite"</code> for dynamic updates
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                     Does not receive keyboard focus
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                     Respects <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">prefers-reduced-motion</code> for animations
                 </li>
             </ul>
@@ -241,11 +238,11 @@
 </div>
 
 @code {
-    private string BasicCode => @"<Spinner />";
+    private string BasicCode => @"<Spinner AriaLabel=""Loading content"" />";
 
-    private string SizesCode => @"<Spinner Size=""SpinnerSize.Small"" />
-<Spinner Size=""SpinnerSize.Medium"" />
-<Spinner Size=""SpinnerSize.Large"" />";
+    private string SizesCode => @"<Spinner Size=""Spinner.SpinnerSize.Small"" />
+<Spinner Size=""Spinner.SpinnerSize.Medium"" />
+<Spinner Size=""Spinner.SpinnerSize.Large"" />";
 
     private string ColorsCode => @"<Spinner Color=""primary"" />
 <Spinner Color=""secondary"" />
@@ -253,31 +250,14 @@
 <Spinner Color=""danger"" />
 <Spinner Color=""warning"" />";
 
-    private string LabelCode => @"<Spinner Label=""Loading..."" />
-<Spinner Label=""Processing"" Size=""SpinnerSize.Large"" />
-<Spinner Label=""Please wait"" Color=""primary"" />";
+    private string LabelCode => @"<Spinner Label=""Loading..."" ShowLabel=""true"" />
+<Spinner Label=""Processing"" ShowLabel=""true"" Size=""Spinner.SpinnerSize.Large"" />
+<Spinner Label=""Please wait"" ShowLabel=""true"" Color=""primary"" />";
 
-    private string OverlayCode => @"@if (isLoading)
-{
-    <Spinner ShowOverlay=""true""
-             Label=""Loading data...""
-             Size=""SpinnerSize.Large"" />
-}
-
-@code {
-    private bool isLoading = true;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadDataAsync();
-    }
-
-    private async Task LoadDataAsync()
-    {
-        await Task.Delay(2000);
-        isLoading = false;
-    }
-}";
+    private string LoadingButtonCode => @"<Button Disabled=""true"">
+    <Spinner Decorative=""true"" />
+    Saving changes
+</Button>";
 }
 
 

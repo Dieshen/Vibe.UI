@@ -58,18 +58,18 @@
 
         <!-- Preset Ranges -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Preset Ranges</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Built-in Quick Ranges</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Add quick preset options for common date ranges.
+                The popup includes Today, Last 7 days, Last 30 days, and Last 90 days shortcuts.
             </p>
             <CodeBlock Code="@PresetsCode" Language="razor" />
         </div>
 
-        <!-- Duration Limits -->
+        <!-- Date Limits -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Min/Max Range Duration</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Selectable Date Limits</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Restrict the minimum and maximum number of days in a range.
+                Restrict both ends of the range to an allowed date window.
             </p>
             <CodeBlock Code="@DurationCode" Language="razor" />
         </div>
@@ -78,16 +78,16 @@
         <div class="vibe-mb-8">
             <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Two Calendar View</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Display two months side-by-side for easier range selection.
+                The picker displays start and end calendars side-by-side on larger screens and stacks them on mobile.
             </p>
             <CodeBlock Code="@TwoCalendarsCode" Language="razor" />
         </div>
 
-        <!-- Analytics Example -->
+        <!-- Compatibility callback -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">In Analytics Dashboard</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Range Change Callback</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Example usage in an analytics dashboard with preset ranges and data loading.
+                Use <code>OnChange</code> when existing code expects one callback containing both dates.
             </p>
             <CodeBlock Code="@AnalyticsCode" Language="razor" />
         </div>
@@ -124,10 +124,16 @@
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">End date of the range</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Placeholder</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">StartDatePlaceholder</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"Select date range"</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Placeholder text when empty</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"Start Date"</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Placeholder for an empty start date</td>
+                        </tr>
+                        <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">EndDatePlaceholder</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"End Date"</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Placeholder for an empty end date</td>
                         </tr>
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">MinDate</td>
@@ -142,22 +148,16 @@
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Maximum selectable date</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">MinDays</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="int?" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Minimum number of days in range</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Format</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"MM/dd/yyyy"</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Date format used by both inputs</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">MaxDays</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="int?" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Maximum number of days in range</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ShowPresets</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Disabled</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Show preset date range options</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Disables the inputs and calendar trigger</td>
                         </tr>
                     </tbody>
                 </table>
@@ -180,17 +180,17 @@
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">StartDateChanged</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<DateTime?>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when start date changes</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Binding callback used by <code>@@bind-StartDate</code></td>
                         </tr>
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">EndDateChanged</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<DateTime?>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when end date changes</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Binding callback used by <code>@@bind-EndDate</code></td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnRangeSelected</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<DateRange>" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Callback when both dates are selected</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">OnChange</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="EventCallback<(DateTime?, DateTime?)>" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Compatibility callback invoked once when the range is applied</td>
                         </tr>
                     </tbody>
                 </table>
@@ -234,7 +234,7 @@
                     <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                     </svg>
-                    Screen reader announces selected range
+                    Calendar grids expose focused and selected dates to assistive technology
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
                     <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -246,7 +246,7 @@
                     <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                     </svg>
-                    Escape key closes popup
+                    Escape closes the popup and restores focus to the opening control
                 </li>
             </ul>
         </div>
@@ -291,78 +291,19 @@
 }";
 
     private string PresetsCode => @"<DateRangePicker @bind-StartDate=""@startDate""
-                 @bind-EndDate=""@endDate""
-                 ShowPresets=""true"">
-    <Presets>
-        <DateRangePreset Label=""Today""
-                        OnClick=""@(() => SetRange(DateTime.Today, DateTime.Today))"" />
-
-        <DateRangePreset Label=""Last 7 Days""
-                        OnClick=""@(() => SetRange(DateTime.Today.AddDays(-6), DateTime.Today))"" />
-
-        <DateRangePreset Label=""Last 30 Days""
-                        OnClick=""@(() => SetRange(DateTime.Today.AddDays(-29), DateTime.Today))"" />
-
-        <DateRangePreset Label=""This Month""
-                        OnClick=""@(() => SetRange(
-                            new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1),
-                            DateTime.Today))"" />
-
-        <DateRangePreset Label=""Last Month""
-                        OnClick=""@SetLastMonth"" />
-    </Presets>
-</DateRangePicker>
+                 @bind-EndDate=""@endDate"" />
 
 @code {
     private DateTime? startDate;
     private DateTime? endDate;
-
-    private void SetRange(DateTime start, DateTime end)
-    {
-        startDate = start;
-        endDate = end;
-    }
-
-    private void SetLastMonth()
-    {
-        var today = DateTime.Today;
-        var firstDayLastMonth = new DateTime(today.Year, today.Month, 1).AddMonths(-1);
-        var lastDayLastMonth = new DateTime(today.Year, today.Month, 1).AddDays(-1);
-        SetRange(firstDayLastMonth, lastDayLastMonth);
-    }
 }";
 
-    private string DurationCode => @"<FormField Label=""Vacation Dates (3-14 days)"">
+    private string DurationCode => @"<FormField Label=""Reporting window"">
     <DateRangePicker @bind-StartDate=""@startDate""
                      @bind-EndDate=""@endDate""
-                     MinDate=""@DateTime.Today""
-                     MinDays=""3""
-                     MaxDays=""14"" />
+                     MinDate=""@DateTime.Today.AddMonths(-1)""
+                     MaxDate=""@DateTime.Today.AddMonths(3)"" />
 </FormField>
-
-@if (startDate.HasValue && endDate.HasValue)
-{
-    var days = (endDate.Value - startDate.Value).Days + 1;
-
-    @if (days < 3)
-    {
-        <Alert Variant=""AlertVariant.Warning"">
-            Vacation must be at least 3 days
-        </Alert>
-    }
-    else if (days > 14)
-    {
-        <Alert Variant=""AlertVariant.Warning"">
-            Vacation cannot exceed 14 days
-        </Alert>
-    }
-    else
-    {
-        <Alert Variant=""AlertVariant.Success"">
-            Vacation: @days days
-        </Alert>
-    }
-}
 
 @code {
     private DateTime? startDate;
@@ -371,7 +312,6 @@
 
     private string TwoCalendarsCode => @"<DateRangePicker @bind-StartDate=""@startDate""
                  @bind-EndDate=""@endDate""
-                 ShowTwoCalendars=""true""
                  MinDate=""@DateTime.Today"" />
 
 @code {
@@ -379,97 +319,17 @@
     private DateTime? endDate;
 }";
 
-    private string AnalyticsCode => @"<div class=""analytics-header"">
-    <h2>Analytics Dashboard</h2>
-
-    <DateRangePicker @bind-StartDate=""@dateRange.Start""
-                     @bind-EndDate=""@dateRange.End""
-                     ShowPresets=""true""
-                     OnRangeSelected=""@LoadAnalytics"">
-        <Presets>
-            <DateRangePreset Label=""Last 7 Days""
-                            OnClick=""@(() => SetPreset(7))"" />
-            <DateRangePreset Label=""Last 30 Days""
-                            OnClick=""@(() => SetPreset(30))"" />
-            <DateRangePreset Label=""Last 90 Days""
-                            OnClick=""@(() => SetPreset(90))"" />
-            <DateRangePreset Label=""Year to Date""
-                            OnClick=""@SetYearToDate"" />
-        </Presets>
-    </DateRangePicker>
-</div>
-
-@if (isLoading)
-{
-    <Spinner Label=""Loading analytics..."" />
-}
-else if (analyticsData != null)
-{
-    <div class=""analytics-cards"">
-        <Card>
-            <CardHeader>
-                <h3>Total Revenue</h3>
-            </CardHeader>
-            <CardBody>
-                <h2>@analyticsData.Revenue.ToString(""C"")</h2>
-                <p class=""trend"">+12% from previous period</p>
-            </CardBody>
-        </Card>
-
-        <Card>
-            <CardHeader>
-                <h3>Page Views</h3>
-            </CardHeader>
-            <CardBody>
-                <h2>@analyticsData.PageViews.ToString(""N0"")</h2>
-                <p class=""trend"">+8% from previous period</p>
-            </CardBody>
-        </Card>
-
-        <Card>
-            <CardHeader>
-                <h3>Conversions</h3>
-            </CardHeader>
-            <CardBody>
-                <h2>@analyticsData.Conversions</h2>
-                <p class=""trend"">+5% from previous period</p>
-            </CardBody>
-        </Card>
-    </div>
-}
+    private string AnalyticsCode => @"<DateRangePicker @bind-StartDate=""@startDate""
+                 @bind-EndDate=""@endDate""
+                 OnChange=""@HandleRangeApplied"" />
 
 @code {
-    private DateRange dateRange = new()
-    {
-        Start = DateTime.Today.AddDays(-7),
-        End = DateTime.Today
-    };
+    private DateTime? startDate;
+    private DateTime? endDate;
 
-    private AnalyticsData analyticsData;
-    private bool isLoading = false;
-
-    protected override async Task OnInitializedAsync()
+    private void HandleRangeApplied((DateTime? StartDate, DateTime? EndDate) range)
     {
-        await LoadAnalytics(dateRange);
-    }
-
-    private async Task LoadAnalytics(DateRange range)
-    {
-        isLoading = true;
-        analyticsData = await AnalyticsService.GetDataAsync(range.Start.Value, range.End.Value);
-        isLoading = false;
-    }
-
-    private void SetPreset(int days)
-    {
-        dateRange.Start = DateTime.Today.AddDays(-days + 1);
-        dateRange.End = DateTime.Today;
-    }
-
-    private void SetYearToDate()
-    {
-        dateRange.Start = new DateTime(DateTime.Today.Year, 1, 1);
-        dateRange.End = DateTime.Today;
+        Console.WriteLine($""Applied {range.StartDate:d} through {range.EndDate:d}"");
     }
 }";
 }

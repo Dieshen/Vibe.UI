@@ -1,3 +1,5 @@
+using Deque.AxeCore.Playwright;
+using Microsoft.Playwright;
 using Shouldly;
 using Vibe.UI.Docs.E2E.Infrastructure;
 using Xunit;
@@ -5,436 +7,269 @@ using Xunit;
 namespace Vibe.UI.Docs.E2E.Tests.Functional;
 
 /// <summary>
-/// Accessibility tests for ARIA attributes, keyboard navigation,
-/// and basic a11y compliance.
+/// Enforceable accessibility contracts for representative documentation and component states.
 /// </summary>
 [Trait("Category", TestCategories.Functional)]
 [Trait("Category", "Accessibility")]
 public class AccessibilityTests : E2ETestBase
 {
-    #region ARIA Attributes
+    private static readonly string[] FlagshipRoutes =
+    [
+        "/components/button",
+        "/components/formfield",
+        "/components/datatable",
+        "/components/kanbanboard",
+        "/components/sidebar",
+        "/components/alertdialog"
+    ];
 
     [Fact]
-    public async Task ModalHasProperAriaAttributes()
+    public async Task FlagshipPagesHaveNoSeriousOrCriticalAxeViolations()
     {
-        // Arrange
-        await NavigateAndWaitForBlazorAsync("/components/modal");
+        var failures = new List<string>();
+        await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
 
-        // Try to open a modal
-        var openButton = Page.Locator("button:has-text('Open'), button:has-text('Show')").First;
-        if (await openButton.IsVisibleAsync())
+        foreach (var theme in new[] { "light", "dark" })
         {
-            await openButton.ClickAsync();
-            await Page.WaitForTimeoutAsync(500);
-        }
-
-        // Act - Check for modal ARIA attributes
-        var modal = Page.Locator("[role='dialog'], .modal, [class*='modal']").First;
-
-        if (await modal.IsVisibleAsync())
-        {
-            // Assert
-            var role = await modal.GetAttributeAsync("role");
-            var ariaModal = await modal.GetAttributeAsync("aria-modal");
-            var ariaLabel = await modal.GetAttributeAsync("aria-label");
-            var ariaLabelledBy = await modal.GetAttributeAsync("aria-labelledby");
-
-            // Modal should have proper role
-            (role == "dialog" || role == "alertdialog").ShouldBeTrue(
-                "Modal should have role='dialog' or role='alertdialog'");
-
-            // Should have aria-modal or similar
-            (ariaModal == "true" || await modal.GetAttributeAsync("data-modal") != null).ShouldBeTrue(
-                "Modal should have aria-modal='true'");
-
-            // Should have accessible name
-            (ariaLabel != null || ariaLabelledBy != null).ShouldBeTrue(
-                "Modal should have aria-label or aria-labelledby");
-        }
-    }
-
-    [Fact]
-    public async Task ButtonsHaveAccessibleNames()
-    {
-        // Arrange
-        await NavigateAndWaitForBlazorAsync("/components/button");
-        await Page.WaitForTimeoutAsync(1000);
-
-        // Act - Find all buttons
-        var buttons = Page.Locator("button");
-        var count = await buttons.CountAsync();
-
-        // Assert
-        for (int i = 0; i < Math.Min(count, 10); i++) // Check first 10 buttons
-        {
-            var button = buttons.Nth(i);
-            if (!await button.IsVisibleAsync()) continue;
-
-            var text = await button.TextContentAsync();
-            var ariaLabel = await button.GetAttributeAsync("aria-label");
-            var title = await button.GetAttributeAsync("title");
-
-            // Button should have accessible name via text content, aria-label, or title
-            var hasAccessibleName = !string.IsNullOrWhiteSpace(text) ||
-                                    !string.IsNullOrWhiteSpace(ariaLabel) ||
-                                    !string.IsNullOrWhiteSpace(title);
-
-            hasAccessibleName.ShouldBeTrue($"Button at index {i} should have an accessible name");
-        }
-    }
-
-    [Fact]
-    public async Task FormInputsHaveLabels()
-    {
-        // Arrange
-        await NavigateAndWaitForBlazorAsync("/components/input");
-        await Page.WaitForTimeoutAsync(1000);
-
-        // Act - Find all input fields
-        var inputs = Page.Locator("input[type='text'], input[type='email'], input[type='password'], textarea");
-        var count = await inputs.CountAsync();
-
-        // Assert
-        for (int i = 0; i < Math.Min(count, 10); i++)
-        {
-            var input = inputs.Nth(i);
-            if (!await input.IsVisibleAsync()) continue;
-
-            var id = await input.GetAttributeAsync("id");
-            var ariaLabel = await input.GetAttributeAsync("aria-label");
-            var ariaLabelledBy = await input.GetAttributeAsync("aria-labelledby");
-            var placeholder = await input.GetAttributeAsync("placeholder");
-
-            // Check for associated label
-            var hasLabel = false;
-            if (!string.IsNullOrEmpty(id))
+            foreach (var route in FlagshipRoutes)
             {
-                var label = Page.Locator($"label[for='{id}']");
-                hasLabel = await label.CountAsync() > 0;
-            }
+                await NavigateAndWaitForBlazorAsync(route);
+                await ApplyThemeAsync(theme);
 
-            var hasAccessibleName = hasLabel ||
-                                    !string.IsNullOrWhiteSpace(ariaLabel) ||
-                                    !string.IsNullOrWhiteSpace(ariaLabelledBy) ||
-                                    !string.IsNullOrWhiteSpace(placeholder);
-
-            hasAccessibleName.ShouldBeTrue($"Input at index {i} should have a label or aria-label");
-        }
-    }
-
-    [Fact]
-    public async Task AlertsHaveProperRole()
-    {
-        // Arrange
-        await NavigateAndWaitForBlazorAsync("/components/alert");
-        await Page.WaitForTimeoutAsync(1000);
-
-        // Act - Find alerts with role='alert' specifically (Vibe.UI Alert components have this)
-        var alertsWithRole = Page.Locator("[role='alert']");
-        var count = await alertsWithRole.CountAsync();
-
-        // Assert - At least some alert components should have the proper role
-        count.ShouldBeGreaterThan(0, "Alert page should have Alert components with role='alert'");
-
-        // Verify first visible alert
-        var firstAlert = alertsWithRole.First;
-        if (await firstAlert.IsVisibleAsync())
-        {
-            var role = await firstAlert.GetAttributeAsync("role");
-            role.ShouldBe("alert", "Alert component should have role='alert'");
-        }
-    }
-
-    [Fact]
-    public async Task TooltipsAreAccessible()
-    {
-        // Arrange
-        await NavigateAndWaitForBlazorAsync("/components/tooltip");
-        await Page.WaitForTimeoutAsync(1000);
-
-        // Find elements with tooltips
-        var tooltipTriggers = Page.Locator("[data-tooltip], [aria-describedby], [title]");
-        var count = await tooltipTriggers.CountAsync();
-
-        if (count > 0)
-        {
-            // Act - Hover over first tooltip trigger
-            var trigger = tooltipTriggers.First;
-            if (await trigger.IsVisibleAsync())
-            {
-                await trigger.HoverAsync();
-                await Page.WaitForTimeoutAsync(500);
-
-                // Assert - Tooltip should be accessible
-                var ariaDescribedBy = await trigger.GetAttributeAsync("aria-describedby");
-                var title = await trigger.GetAttributeAsync("title");
-
-                (ariaDescribedBy != null || title != null).ShouldBeTrue(
-                    "Tooltip trigger should have aria-describedby or title attribute");
+                var result = await Page.RunAxe();
+                failures.AddRange(
+                    result.Violations
+                        .Where(violation =>
+                            string.Equals(violation.Impact, "critical", StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(violation.Impact, "serious", StringComparison.OrdinalIgnoreCase))
+                        .Select(violation => FormatViolation(route, theme, violation)));
             }
         }
+
+        failures.ShouldBeEmpty(
+            "Flagship pages must not ship with serious or critical automated accessibility violations." +
+            Environment.NewLine + string.Join(Environment.NewLine, failures));
     }
 
-    #endregion
+    [Theory]
+    [InlineData("/components/datepicker", ".date-icon", ".date-popup")]
+    [InlineData("/components/daterangepicker", ".daterange-icon", ".daterange-popup")]
+    public async Task OpenDatePickerStatesHaveNoSeriousOrCriticalAxeViolations(
+        string route,
+        string triggerSelector,
+        string popupSelector)
+    {
+        await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
+        await NavigateAndWaitForBlazorAsync(route);
 
-    #region Keyboard Navigation
+        var preview = Page.Locator("main section").First;
+        await preview.Locator(triggerSelector).ClickAsync();
+        var popup = preview.Locator(popupSelector);
+        await popup.WaitForAsync();
+
+        var result = await popup.RunAxe();
+        var failures = result.Violations
+            .Where(violation =>
+                string.Equals(violation.Impact, "critical", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(violation.Impact, "serious", StringComparison.OrdinalIgnoreCase))
+            .Select(violation => FormatViolation($"{route}#open", "light", violation))
+            .ToArray();
+
+        failures.ShouldBeEmpty(
+            $"The open picker state at {route} must not have serious or critical automated accessibility violations." +
+            Environment.NewLine + string.Join(Environment.NewLine, failures));
+    }
 
     [Fact]
-    public async Task TabNavigationWorksCorrectly()
+    public async Task OpenAlertDialogHasNoSeriousOrCriticalAxeViolations()
     {
-        // Arrange
-        await NavigateAndWaitForBlazorAsync("/");
-        await Page.WaitForTimeoutAsync(1000);
+        await Page.EmulateMediaAsync(new() { ReducedMotion = ReducedMotion.Reduce });
+        await NavigateAndWaitForBlazorAsync("/components/alertdialog");
+        await Page.GetByRole(AriaRole.Button, new() { Name = "Delete project", Exact = true }).First.ClickAsync();
 
-        // Act - Tab through focusable elements
-        var focusedElements = new List<string>();
+        var dialog = Page.GetByRole(AriaRole.Alertdialog, new() { Name = "Delete project?", Exact = true });
+        await dialog.WaitForAsync();
 
-        for (int i = 0; i < 10; i++)
+        var result = await dialog.RunAxe();
+        var failures = result.Violations
+            .Where(violation =>
+                string.Equals(violation.Impact, "critical", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(violation.Impact, "serious", StringComparison.OrdinalIgnoreCase))
+            .Select(violation => FormatViolation("/components/alertdialog#open", "light", violation))
+            .ToArray();
+
+        failures.ShouldBeEmpty(
+            "The open alert dialog must not have serious or critical automated accessibility violations." +
+            Environment.NewLine + string.Join(Environment.NewLine, failures));
+    }
+
+    [Fact]
+    public async Task AlertDialogTrapsFocusAndRestoresTheOpener()
+    {
+        await NavigateAndWaitForBlazorAsync("/components/alertdialog");
+
+        var opener = Page.GetByRole(AriaRole.Button, new() { Name = "Delete project", Exact = true }).First;
+        await opener.FocusAsync();
+        await opener.ClickAsync();
+
+        var dialog = Page.GetByRole(AriaRole.Alertdialog, new() { Name = "Delete project?", Exact = true });
+        await dialog.WaitForAsync();
+        (await dialog.GetAttributeAsync("aria-modal")).ShouldBe("true");
+        (await dialog.GetAttributeAsync("aria-labelledby")).ShouldNotBeNullOrWhiteSpace();
+        (await dialog.GetAttributeAsync("aria-describedby")).ShouldNotBeNullOrWhiteSpace();
+
+        for (var index = 0; index < 8; index++)
         {
             await Page.Keyboard.PressAsync("Tab");
-            await Page.WaitForTimeoutAsync(100);
+            (await dialog.EvaluateAsync<bool>(
+                "element => element.contains(document.activeElement)")).ShouldBeTrue(
+                "Focus must remain inside the open alert dialog.");
+        }
 
-            var focused = await Page.EvaluateAsync<string>(@"
-                () => {
-                    const el = document.activeElement;
-                    if (!el) return 'none';
-                    return el.tagName + (el.id ? '#' + el.id : '') + (el.className ? '.' + el.className.split(' ')[0] : '');
+        await Page.Keyboard.PressAsync("Escape");
+        await dialog.WaitForAsync(new() { State = WaitForSelectorState.Detached });
+        (await opener.EvaluateAsync<bool>(
+            "element => document.activeElement === element")).ShouldBeTrue(
+            "Closing the alert dialog must restore focus to its opener.");
+    }
+
+    [Fact]
+    public async Task PreviewFormControlsHaveProgrammaticNames()
+    {
+        await NavigateAndWaitForBlazorAsync("/components/input");
+
+        var controls = Page.Locator("main section").First.Locator("input:visible, textarea:visible, select:visible");
+        var count = await controls.CountAsync();
+        count.ShouldBeGreaterThan(0, "The Input preview must expose form controls.");
+
+        for (var index = 0; index < count; index++)
+        {
+            var hasProgrammaticName = await controls.Nth(index).EvaluateAsync<bool>(
+                """
+                element => {
+                    const labelledBy = element.getAttribute('aria-labelledby');
+                    const labelledByText = labelledBy
+                        ?.split(/\s+/)
+                        .map(id => document.getElementById(id)?.textContent?.trim())
+                        .some(Boolean) ?? false;
+                    const associatedLabel = Array.from(element.labels ?? [])
+                        .some(label => Boolean(label.textContent?.trim()));
+
+                    return associatedLabel ||
+                        Boolean(element.getAttribute('aria-label')?.trim()) ||
+                        labelledByText;
                 }
-            ");
+                """);
 
-            focusedElements.Add(focused);
-        }
-
-        // Assert - Should have navigated through multiple elements
-        var uniqueElements = focusedElements.Distinct().Count();
-        uniqueElements.ShouldBeGreaterThan(3, "Tab navigation should move through multiple focusable elements");
-    }
-
-    [Fact]
-    public async Task EscapeClosesModals()
-    {
-        // Arrange
-        await NavigateAndWaitForBlazorAsync("/components/modal");
-
-        // Open modal
-        var openButton = Page.Locator("button:has-text('Open'), button:has-text('Show')").First;
-        if (await openButton.IsVisibleAsync())
-        {
-            await openButton.ClickAsync();
-            await Page.WaitForTimeoutAsync(500);
-
-            var modalBefore = Page.Locator("[role='dialog'], .modal.open, .modal.show, [data-state='open']").First;
-            var wasOpen = await modalBefore.IsVisibleAsync();
-
-            // Act
-            await Page.Keyboard.PressAsync("Escape");
-            await Page.WaitForTimeoutAsync(500);
-
-            // Assert
-            if (wasOpen)
-            {
-                var modalAfter = Page.Locator("[role='dialog'], .modal.open, .modal.show, [data-state='open']").First;
-                var isStillOpen = await modalAfter.IsVisibleAsync();
-                isStillOpen.ShouldBeFalse("Modal should close when Escape is pressed");
-            }
+            hasProgrammaticName.ShouldBeTrue(
+                $"Visible form control {index} must use a label, aria-label, or aria-labelledby; placeholder text is not a label.");
         }
     }
 
     [Fact]
-    public async Task DropdownKeyboardNavigationWorks()
+    public async Task TabsUseRovingKeyboardFocusAndSelection()
     {
-        // Arrange
-        await NavigateAndWaitForBlazorAsync("/components/dropdown");
-        await Page.WaitForTimeoutAsync(1000);
-
-        // Find dropdown trigger
-        var trigger = Page.Locator("button[aria-haspopup], [data-dropdown-trigger], .dropdown-trigger").First;
-
-        if (await trigger.IsVisibleAsync())
-        {
-            // Act - Open with keyboard
-            await trigger.FocusAsync();
-            await Page.Keyboard.PressAsync("Enter");
-            await Page.WaitForTimeoutAsync(300);
-
-            // Check if menu opened
-            var menu = Page.Locator("[role='menu'], .dropdown-menu, [data-dropdown-content]").First;
-            var isOpen = await menu.IsVisibleAsync();
-
-            if (isOpen)
-            {
-                // Navigate with arrow keys
-                await Page.Keyboard.PressAsync("ArrowDown");
-                await Page.WaitForTimeoutAsync(100);
-                await Page.Keyboard.PressAsync("ArrowDown");
-                await Page.WaitForTimeoutAsync(100);
-
-                // Close with Escape
-                await Page.Keyboard.PressAsync("Escape");
-                await Page.WaitForTimeoutAsync(300);
-
-                var isStillOpen = await menu.IsVisibleAsync();
-                isStillOpen.ShouldBeFalse("Dropdown should close with Escape key");
-            }
-        }
-    }
-
-    [Fact]
-    public async Task TabsKeyboardNavigationWorks()
-    {
-        // Arrange
         await NavigateAndWaitForBlazorAsync("/components/tabs");
-        await Page.WaitForTimeoutAsync(1000);
 
-        // Find tab list
-        var tabList = Page.Locator("[role='tablist']").First;
+        var preview = Page.Locator("main section").First;
+        var account = preview.GetByRole(AriaRole.Tab, new() { Name = "Account", Exact = true });
+        var security = preview.GetByRole(AriaRole.Tab, new() { Name = "Security", Exact = true });
 
-        if (await tabList.IsVisibleAsync())
-        {
-            // Find first tab
-            var firstTab = Page.Locator("[role='tab']").First;
-            if (await firstTab.IsVisibleAsync())
-            {
-                // Act
-                await firstTab.FocusAsync();
-                var initialIndex = await GetFocusedTabIndex();
+        await account.FocusAsync();
+        (await account.GetAttributeAsync("tabindex")).ShouldBe("0");
+        (await account.GetAttributeAsync("aria-selected")).ShouldBe("true");
 
-                await Page.Keyboard.PressAsync("ArrowRight");
-                await Page.WaitForTimeoutAsync(100);
-                var afterRight = await GetFocusedTabIndex();
-
-                await Page.Keyboard.PressAsync("ArrowLeft");
-                await Page.WaitForTimeoutAsync(100);
-                var afterLeft = await GetFocusedTabIndex();
-
-                // Assert
-                afterRight.ShouldBeGreaterThan(initialIndex, "ArrowRight should move to next tab");
-                afterLeft.ShouldBeLessThan(afterRight, "ArrowLeft should move to previous tab");
-            }
-        }
+        await account.PressAsync("ArrowRight");
+        (await security.EvaluateAsync<bool>(
+            "element => document.activeElement === element")).ShouldBeTrue();
+        (await security.GetAttributeAsync("tabindex")).ShouldBe("0");
+        (await security.GetAttributeAsync("aria-selected")).ShouldBe("true");
+        (await account.GetAttributeAsync("tabindex")).ShouldBe("-1");
     }
 
-    #endregion
-
-    #region Focus Management
-
     [Fact]
-    public async Task FocusTrapWorksInModals()
+    public async Task FlagshipPagesKeepControlsUsableAtMobileWidth()
     {
-        // Arrange
-        await NavigateAndWaitForBlazorAsync("/components/modal");
+        await Page.SetViewportSizeAsync(390, 844);
+        var failures = new List<string>();
 
-        // Open modal
-        var openButton = Page.Locator("button:has-text('Open'), button:has-text('Show')").First;
-        if (await openButton.IsVisibleAsync())
+        foreach (var route in FlagshipRoutes)
         {
-            await openButton.ClickAsync();
-            await Page.WaitForTimeoutAsync(500);
+            await NavigateAndWaitForBlazorAsync(route);
 
-            var modal = Page.Locator("[role='dialog'], .modal").First;
-            if (await modal.IsVisibleAsync())
+            var bodyFits = await Page.EvaluateAsync<bool>(
+                "() => document.documentElement.scrollWidth <= window.innerWidth");
+            if (!bodyFits)
             {
-                // Act - Tab multiple times to test focus trap
-                var focusedElements = new List<bool>();
+                failures.Add($"{route}: page content overflows the 390px viewport.");
+            }
 
-                for (int i = 0; i < 15; i++)
+            var controls = Page.Locator(
+                "main section:first-of-type button:visible, " +
+                "main section:first-of-type input:visible, " +
+                "main section:first-of-type select:visible, " +
+                "main section:first-of-type textarea:visible, " +
+                "main section:first-of-type [role='button']:visible, " +
+                "main section:first-of-type [role='tab']:visible");
+            var controlCount = await controls.CountAsync();
+
+            for (var index = 0; index < controlCount; index++)
+            {
+                var box = await controls.Nth(index).BoundingBoxAsync();
+                if (box != null && (box.Width < 23.5 || box.Height < 23.5))
                 {
-                    await Page.Keyboard.PressAsync("Tab");
-                    await Page.WaitForTimeoutAsync(50);
-
-                    var isInModal = await Page.EvaluateAsync<bool>(@"
-                        () => {
-                            const modal = document.querySelector('[role=\'dialog\'], .modal');
-                            const active = document.activeElement;
-                            return modal?.contains(active) ?? false;
-                        }
-                    ");
-
-                    focusedElements.Add(isInModal);
+                    failures.Add(
+                        $"{route}: interactive control {index} is {box.Width:F1}x{box.Height:F1}px; " +
+                        "WCAG 2.2 target size requires at least 24x24px unless an exception applies.");
                 }
-
-                // Assert - Focus should stay within modal
-                var focusEscaped = focusedElements.Any(x => !x);
-                focusEscaped.ShouldBeFalse("Focus should be trapped within the modal");
             }
         }
+
+        failures.ShouldBeEmpty(
+            "Flagship mobile previews must fit the viewport and keep interaction targets usable." +
+            Environment.NewLine + string.Join(Environment.NewLine, failures));
     }
 
     [Fact]
-    public async Task FocusReturnsAfterModalCloses()
+    public async Task AlertsExposeLiveAlertSemantics()
     {
-        // Arrange
-        await NavigateAndWaitForBlazorAsync("/components/modal");
+        await NavigateAndWaitForBlazorAsync("/components/alert");
 
-        var openButton = Page.Locator("button:has-text('Open'), button:has-text('Show')").First;
-        if (await openButton.IsVisibleAsync())
+        var alerts = Page.Locator("main section:first-of-type [role='alert']:visible");
+        (await alerts.CountAsync()).ShouldBeGreaterThan(0);
+
+        foreach (var alert in await alerts.AllAsync())
         {
-            // Focus the open button
-            await openButton.FocusAsync();
-
-            var buttonIdBefore = await Page.EvaluateAsync<string>(@"
-                () => document.activeElement?.id || document.activeElement?.className || 'unknown'
-            ");
-
-            // Open modal
-            await openButton.ClickAsync();
-            await Page.WaitForTimeoutAsync(500);
-
-            // Close modal
-            await Page.Keyboard.PressAsync("Escape");
-            await Page.WaitForTimeoutAsync(500);
-
-            // Assert - Focus should return to trigger
-            var buttonIdAfter = await Page.EvaluateAsync<string>(@"
-                () => document.activeElement?.id || document.activeElement?.className || 'unknown'
-            ");
-
-            // Focus should ideally return to the button that opened the modal
-            // (This is a best practice but not all implementations do this)
+            (await alert.TextContentAsync()).ShouldNotBeNullOrWhiteSpace();
         }
     }
 
-    #endregion
-
-    #region Color Contrast (Basic)
-
-    [Fact]
-    public async Task TextHasAdequateContrast()
+    private async Task ApplyThemeAsync(string theme)
     {
-        // Arrange
-        await NavigateAndWaitForBlazorAsync("/");
-        await Page.WaitForTimeoutAsync(1000);
-
-        // Act - Check a few key text elements
-        var mainContent = Page.Locator("main, .docs-content, article").First;
-
-        if (await mainContent.IsVisibleAsync())
-        {
-            var color = await mainContent.EvaluateAsync<string>(
-                "el => window.getComputedStyle(el).color");
-            var backgroundColor = await mainContent.EvaluateAsync<string>(
-                "el => window.getComputedStyle(el).backgroundColor");
-
-            // Assert - Just verify we can read computed styles (actual contrast calculation would require parsing)
-            color.ShouldNotBeNullOrWhiteSpace();
-            backgroundColor.ShouldNotBeNullOrWhiteSpace();
-        }
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    private async Task<int> GetFocusedTabIndex()
-    {
-        return await Page.EvaluateAsync<int>(@"
-            () => {
-                const tabs = document.querySelectorAll('[role=\'tab\']');
-                const active = document.activeElement;
-                return Array.from(tabs).indexOf(active);
+        await Page.EvaluateAsync(
+            """
+            theme => {
+                const dark = theme === 'dark';
+                document.documentElement.classList.toggle('dark', dark);
+                localStorage.setItem('vibe-theme', theme);
+                localStorage.setItem('theme', theme);
             }
-        ");
+            """,
+            theme);
     }
 
-    #endregion
+    private static string FormatViolation(
+        string route,
+        string theme,
+        Deque.AxeCore.Commons.AxeResultItem violation)
+    {
+        var targets = violation.Nodes
+            .Select(node =>
+                $"{node.Target}: {string.Join(" ", node.Any.Select(check => check.Message))}")
+            .Distinct(StringComparer.Ordinal)
+            .Take(5);
+
+        return $"{route} ({theme}): [{violation.Impact}] {violation.Id} - {violation.Help}. " +
+               $"Targets: {string.Join(" | ", targets)}. {violation.HelpUrl}";
+    }
 }

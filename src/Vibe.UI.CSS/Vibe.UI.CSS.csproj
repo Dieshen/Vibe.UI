@@ -20,9 +20,9 @@
     <PackageTags>css;tailwind;blazor;dotnet;utility-css;jit</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>
-    <RepositoryUrl>https://github.com/Dieshen/Vibe.UI</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Narcoleptic-Fox/Vibe.UI</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/Dieshen/Vibe.UI</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/Narcoleptic-Fox/Vibe.UI</PackageProjectUrl>
     <PackageReadmeFile>README.css.md</PackageReadmeFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
@@ -32,9 +32,14 @@
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 
-  <!-- Embed vibe-base.css as resource -->
+  <!-- Embed the component library's canonical base stylesheet and opt-in preflight. -->
   <ItemGroup>
-    <EmbeddedResource Include="Data\vibe-base.css" LogicalName="Vibe.UI.CSS.vibe-base.css" />
+    <EmbeddedResource Include="..\Vibe.UI\wwwroot\css\vibe-base.css"
+                      LogicalName="Vibe.UI.CSS.vibe-base.css"
+                      Link="Data\vibe-base.css" />
+    <EmbeddedResource Include="..\Vibe.UI\wwwroot\css\vibe-preflight.css"
+                      LogicalName="Vibe.UI.CSS.vibe-preflight.css"
+                      Link="Data\vibe-preflight.css" />
   </ItemGroup>
 
   <!-- Include MSBuild targets -->

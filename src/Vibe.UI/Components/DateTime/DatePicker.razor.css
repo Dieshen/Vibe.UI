@@ -1,16 +1,21 @@
 /* DatePicker baseline styles */
 
-:global(.date-input-wrapper) {
+.vibe-datepicker {
+  position: relative;
+  display: block;
+}
+
+.date-input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-:global(.date-input) {
+::deep .date-input {
   width: 100%;
 }
 
-:global(.date-icon) {
+.date-icon {
   position: absolute;
   right: 0.75rem;
   display: inline-flex;
@@ -23,12 +28,22 @@
   cursor: pointer;
 }
 
-:global(.date-icon:disabled) {
+.date-icon:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-:global(.date-popup) {
+.date-icon:focus-visible,
+.date-nav-btn:focus-visible,
+.date-month-select:focus-visible,
+.date-year-select:focus-visible,
+.date-day:focus-visible,
+.date-today-btn:focus-visible {
+  outline: 2px solid var(--vibe-ring);
+  outline-offset: 2px;
+}
+
+.date-popup {
   position: absolute;
   z-index: 50;
   margin-top: 0.5rem;
@@ -40,13 +55,13 @@
   padding: 0.75rem;
 }
 
-:global(.date-backdrop) {
+.date-backdrop {
   position: fixed;
   inset: 0;
   z-index: 40;
 }
 
-:global(.date-header) {
+.date-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -54,7 +69,7 @@
   margin-bottom: 0.5rem;
 }
 
-:global(.date-nav-btn) {
+.date-nav-btn {
   border: 1px solid var(--vibe-border);
   background: transparent;
   color: var(--vibe-foreground);
@@ -64,14 +79,14 @@
   cursor: pointer;
 }
 
-:global(.date-header-label) {
+.date-header-label {
   display: flex;
   gap: 0.5rem;
   align-items: center;
 }
 
-:global(.date-month-select),
-:global(.date-year-select) {
+.date-month-select,
+.date-year-select {
   border: 1px solid var(--vibe-border);
   background: var(--vibe-background);
   color: var(--vibe-foreground);
@@ -80,28 +95,30 @@
   font-size: 0.85rem;
 }
 
-:global(.date-day-names) {
+.date-day-names {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 0.25rem;
   margin-bottom: 0.25rem;
 }
 
-:global(.date-day-name) {
+.date-day-name {
   text-align: center;
   font-size: 0.75rem;
   color: var(--vibe-muted-foreground);
   padding: 0.25rem 0;
 }
 
-:global(.date-week) {
+.date-week {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 0.25rem;
   margin-bottom: 0.25rem;
 }
 
-:global(.date-day) {
+.date-day {
+  min-width: 2rem;
+  min-height: 2rem;
   border: 1px solid transparent;
   background: transparent;
   color: var(--vibe-foreground);
@@ -110,30 +127,35 @@
   cursor: pointer;
 }
 
-:global(.date-day:hover) {
+.date-day:hover:not(:disabled) {
   background: var(--vibe-muted);
 }
 
-:global(.date-day.selected) {
+.date-day:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.date-day.selected {
   background: var(--vibe-primary);
   color: var(--vibe-primary-foreground);
 }
 
-:global(.date-day.today) {
+.date-day.today {
   border-color: var(--vibe-ring);
 }
 
-:global(.date-day.outside-month) {
+.date-day.outside-month {
   opacity: 0.5;
 }
 
-:global(.date-footer) {
+.date-footer {
   margin-top: 0.5rem;
   display: flex;
   justify-content: flex-end;
 }
 
-:global(.date-today-btn) {
+.date-today-btn {
   border: 1px solid var(--vibe-border);
   background: transparent;
   color: var(--vibe-foreground);
@@ -141,4 +163,3 @@
   padding: 0.4rem 0.6rem;
   cursor: pointer;
 }
-

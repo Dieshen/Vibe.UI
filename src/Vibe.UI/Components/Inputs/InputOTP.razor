@@ -2,14 +2,16 @@
 @inherits VibeComponent
 
 <div @attributes="AdditionalAttributes" class="@CombinedCssClass" role="group" aria-label="@AriaLabel"
-    aria-disabled="@DisabledAriaValue">
+    aria-disabled="@DisabledAriaValue" aria-describedby="@EffectiveDescribedBy" aria-invalid="@AriaInvalidValue"
+    aria-errormessage="@EffectiveErrorMessageId">
     @for (int i = 0; i < _length; i++)
     {
         var index = i;
-        <input @key="index" type="@InputType" @ref="_inputs[index]" class="@GetSlotClass(index)" maxlength="1"
+        <input @key="index" id="@(index == 0 ? EffectiveId : null)" type="@InputType" @ref="_inputs[index]" class="@GetSlotClass(index)" maxlength="@GetMaxLength(index)"
             value="@GetCharAt(index)" @oninput="@(e => HandleInput(index, e))"
             @onkeydown="@(e => HandleKeyDown(index, e))" disabled="@Disabled" readonly="@ReadOnly"
-            inputmode="@InputMode" autocomplete="one-time-code" aria-label="@GetSlotAriaLabel(index)" />
+            inputmode="@InputMode" autocomplete="@GetAutocomplete(index)" aria-label="@GetSlotAriaLabel(index)"
+            aria-invalid="@AriaInvalidValue" required="@EffectiveRequired" aria-required="@(EffectiveRequired ? "true" : null)" />
 
         @if (ShouldRenderSeparator(index))
         {
@@ -24,6 +26,12 @@
     private string _currentValue = string.Empty;
     private string? _lastCompletedValue;
     private int _length;
+
+    /// <summary>
+    /// Gets the relationships cascaded by an ancestor <see cref="FormField{TValue}"/>, if any.
+    /// </summary>
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
 
     [Parameter]
     public string? Value { get; set; }
@@ -63,6 +71,18 @@
     private string InputMode => Pattern == OTPPattern.Numeric ? "numeric" : "text";
 
     private string? DisabledAriaValue => Disabled ? "true" : null;
+
+    private string? EffectiveId => FieldContext?.ControlId;
+
+    private string? EffectiveDescribedBy => FieldContext?.DescribedBy;
+
+    private bool EffectiveRequired => FieldContext?.IsRequired == true;
+
+    private string? AriaInvalidValue => FieldContext?.IsInvalid == true ? "true" : null;
+
+    private string? EffectiveErrorMessageId => FieldContext?.IsInvalid == true && !string.IsNullOrWhiteSpace(FieldContext.ErrorId)
+        ? FieldContext.ErrorId
+        : null;
 
     private bool IsComplete => _length > 0 && _slots.Length == _length && _slots.All(slot => slot.HasValue);
 
@@ -114,6 +134,10 @@
         var label = Pattern == OTPPattern.Numeric ? "Digit" : "Character";
         return $"{label} {index + 1} of {_length}";
     }
+
+    private int GetMaxLength(int index) => Math.Max(1, _length - index);
+
+    private static string GetAutocomplete(int index) => index == 0 ? "one-time-code" : "off";
 
     private bool ShouldRenderSeparator(int index)
     {

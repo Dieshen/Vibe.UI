@@ -3,7 +3,7 @@
    ======================================== */
 
 /* Progress Container (Track/Background) */
-::deep .vibe-progress {
+.vibe-progress {
     position: relative;
     height: 8px;
     width: 100%;
@@ -13,7 +13,7 @@
 }
 
 /* Progress Bar (Indicator) */
-::deep .progress-indicator {
+.progress-indicator {
     height: 100%;
     transition: width 0.2s ease;
     background-color: var(--vibe-primary);
@@ -24,35 +24,35 @@
    Variants
    ======================================== */
 
-::deep .vibe-progress-default .progress-indicator {
+.vibe-progress-default .progress-indicator {
     background-color: var(--vibe-primary);
 }
 
-::deep .vibe-progress-primary .progress-indicator {
+.vibe-progress-primary .progress-indicator {
     background-color: var(--vibe-primary);
 }
 
-::deep .vibe-progress-secondary .progress-indicator {
+.vibe-progress-secondary .progress-indicator {
     background-color: var(--vibe-secondary-foreground);
 }
 
-::deep .vibe-progress-success .progress-indicator {
+.vibe-progress-success .progress-indicator {
     background-color: var(--vibe-success, #10b981);
 }
 
-::deep .vibe-progress-warning .progress-indicator {
+.vibe-progress-warning .progress-indicator {
     background-color: var(--vibe-warning, #f59e0b);
 }
 
-::deep .vibe-progress-info .progress-indicator {
+.vibe-progress-info .progress-indicator {
     background-color: var(--vibe-info, #3b82f6);
 }
 
-::deep .vibe-progress-error .progress-indicator {
+.vibe-progress-error .progress-indicator {
     background-color: var(--vibe-destructive);
 }
 
-::deep .vibe-progress-destructive .progress-indicator {
+.vibe-progress-destructive .progress-indicator {
     background-color: var(--vibe-destructive);
 }
 
@@ -60,17 +60,16 @@
    Indeterminate State (Animation)
    ======================================== */
 
-::deep .vibe-progress.animate .progress-indicator {
+.vibe-progress.animate .progress-indicator {
     animation: indeterminate-progress 1.5s infinite linear;
-    width: 50%;
 }
 
 @keyframes indeterminate-progress {
     0% {
-        transform: translateX(-50%);
+        transform: translateX(-100%);
     }
 
     100% {
-        transform: translateX(100%);
+        transform: translateX(250%);
     }
 }

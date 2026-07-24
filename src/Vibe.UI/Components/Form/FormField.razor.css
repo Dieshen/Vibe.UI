@@ -1,18 +1,45 @@
 /* FormField baseline styles */
 
-:global(.vibe-form-field) {
+.form-field-container {
   display: grid;
+  gap: 0.375rem;
+  width: 100%;
+}
+
+.form-field-label {
+  display: inline-flex;
+  align-items: baseline;
   gap: 0.25rem;
+  width: fit-content;
+  color: var(--vibe-foreground);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.25rem;
 }
 
-:global(.form-field-description),
-:global(.vibe-form-field-description) {
-  font-size: 0.85rem;
-  color: var(--vibe-muted-foreground);
-}
-
-:global(.form-validation-message) {
-  font-size: 0.85rem;
+.form-field-required {
   color: var(--vibe-destructive);
 }
 
+.form-field-input {
+  min-width: 0;
+}
+
+.form-field-description,
+.vibe-form-field-description {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--vibe-muted-foreground);
+}
+
+::deep .form-validation-message {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--vibe-destructive);
+}
+
+.has-error ::deep input,
+.has-error ::deep select,
+.has-error ::deep textarea {
+  border-color: var(--vibe-destructive);
+}

@@ -1,6 +1,6 @@
 /* DialogRoot baseline styles */
 
-:global(.vibe-dialog-overlay) {
+.vibe-dialog-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
@@ -11,7 +11,7 @@
   z-index: 60;
 }
 
-:global(.vibe-dialog) {
+.vibe-dialog {
   width: min(36rem, 100%);
   background: var(--vibe-popover);
   color: var(--vibe-popover-foreground);

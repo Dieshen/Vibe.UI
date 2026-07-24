@@ -2,26 +2,68 @@
 @inherits Vibe.UI.Base.VibeComponent
 
 <label class="@CombinedClass" aria-disabled="@(Disabled ? "true" : null)" @attributes="AdditionalAttributes">
-    <input type="checkbox" id="@Id" name="@Name" value="@Value" class="vibe-checkbox-input" checked="@currentChecked" disabled="@Disabled"
-        required="@Required"
+    <input type="checkbox"
+        id="@EffectiveId"
+        name="@Name"
+        value="@Value"
+        class="vibe-checkbox-input"
+        checked="@currentChecked"
+        disabled="@Disabled"
+        required="@EffectiveRequired"
+        aria-label="@EffectiveAriaLabel"
+        aria-checked="@AriaCheckedValue"
+        aria-invalid="@AriaInvalidValue"
+        aria-errormessage="@EffectiveErrorMessageId"
+        aria-describedby="@EffectiveDescribedBy"
+        aria-required="@(EffectiveRequired ? "true" : null)"
+        data-indeterminate="@IndeterminateValue"
         @onchange="OnCheckboxChange" />
-    <span class="vibe-checkbox-control"></span>
-    @if (ChildContent != null)
+    <span class="vibe-checkbox-control" aria-hidden="true">
+        @if (currentIndeterminate)
+        {
+            <Icon Name="minus" Size="12" />
+        }
+        else if (currentChecked)
+        {
+            <Icon Name="check" Size="12" />
+        }
+    </span>
+    @if (ChildContent != null || NormalizedLabel is not null)
     {
         <span class="vibe-checkbox-label">
-            @ChildContent
+            @if (ChildContent != null)
+            {
+                @ChildContent
+            }
+            else
+            {
+                @NormalizedLabel
+            }
         </span>
     }
 </label>
 
 @code {
     private bool currentChecked;
+    private bool currentIndeterminate;
+
+    /// <summary>
+    /// Gets the relationships cascaded by an ancestor <see cref="FormField{TValue}"/>, if any.
+    /// </summary>
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
 
     /// <summary>
     /// Gets or sets the label content
     /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets a plain-text label. ChildContent takes precedence when both are provided.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
 
     /// <summary>
     /// Gets or sets whether the checkbox is checked
@@ -34,6 +76,24 @@
     /// </summary>
     [Parameter]
     public EventCallback<bool> CheckedChanged { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the checkbox represents a mixed selection.
+    /// </summary>
+    [Parameter]
+    public bool Indeterminate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback invoked when user interaction clears the mixed state.
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> IndeterminateChanged { get; set; }
+
+    /// <summary>
+    /// Gets or sets the native change callback.
+    /// </summary>
+    [Parameter]
+    public EventCallback<ChangeEventArgs> OnChange { get; set; }
 
     /// <summary>
     /// Gets or sets the checkbox input ID.
@@ -65,15 +125,30 @@
     [Parameter]
     public bool Disabled { get; set; }
 
+    /// <summary>
+    /// Gets or sets an accessible name when no visible label is rendered.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the checkbox is in an invalid state.
+    /// </summary>
+    [Parameter]
+    public bool AriaInvalid { get; set; }
+
     /// <inheritdoc/>
     protected override string ComponentClass => new ClassBuilder()
         .Add("vibe-checkbox")
         .AddIf("vibe-checkbox-disabled", Disabled)
+        .AddIf("vibe-checkbox-indeterminate", currentIndeterminate)
+        .AddIf("vibe-checkbox-error", EffectiveAriaInvalid)
         .Build();
 
     protected override void OnParametersSet()
     {
         currentChecked = Checked;
+        currentIndeterminate = Indeterminate;
     }
 
     /// <summary>
@@ -91,10 +166,46 @@
         {
             currentChecked = value;
 
+            if (currentIndeterminate)
+            {
+                currentIndeterminate = false;
+                if (IndeterminateChanged.HasDelegate)
+                {
+                    await IndeterminateChanged.InvokeAsync(false);
+                }
+            }
+
             if (CheckedChanged.HasDelegate)
             {
                 await CheckedChanged.InvokeAsync(value);
             }
+
+            if (OnChange.HasDelegate)
+            {
+                await OnChange.InvokeAsync(e);
+            }
         }
     }
+
+    private string? NormalizedLabel => string.IsNullOrWhiteSpace(Label) ? null : Label.Trim();
+
+    private string? EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel) ? null : AriaLabel.Trim();
+
+    private string AriaCheckedValue => currentIndeterminate ? "mixed" : currentChecked ? "true" : "false";
+
+    private string? EffectiveId => FieldContext?.ControlId ?? Id;
+
+    private string? EffectiveDescribedBy => FieldContext?.DescribedBy;
+
+    private bool EffectiveRequired => Required || FieldContext?.IsRequired == true;
+
+    private bool EffectiveAriaInvalid => AriaInvalid || FieldContext?.IsInvalid == true;
+
+    private string? AriaInvalidValue => EffectiveAriaInvalid ? "true" : null;
+
+    private string? EffectiveErrorMessageId => EffectiveAriaInvalid && !string.IsNullOrWhiteSpace(FieldContext?.ErrorId)
+        ? FieldContext?.ErrorId
+        : null;
+
+    private string IndeterminateValue => currentIndeterminate ? "true" : "false";
 }

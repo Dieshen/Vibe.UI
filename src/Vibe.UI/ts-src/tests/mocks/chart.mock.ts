@@ -9,6 +9,7 @@ import type { ChartConfig, ChartData, ChartOptions, ChartElement } from '../../s
 export class MockChartInstance {
   public data: ChartData;
   public options: ChartOptions;
+  public config: { options?: ChartOptions };
   public destroyed = false;
   public updated = false;
   public resized = false;
@@ -21,6 +22,7 @@ export class MockChartInstance {
   ) {
     this.data = config.data;
     this.options = config.options || {};
+    this.config = { options: this.options };
   }
 
   update(): void {

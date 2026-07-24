@@ -219,14 +219,16 @@ public class CssEmitterTests
     #region CSS Output Format Tests
 
     [Fact]
-    public void GenerateCss_Header_ContainsTimestamp()
+    public void GenerateCss_Header_IsDeterministic()
     {
         var classes = new[] { "vibe-flex" };
 
-        var css = _emitter.GenerateCss(classes, includeBase: false);
+        var firstCss = _emitter.GenerateCss(classes, includeBase: false);
+        var secondCss = _emitter.GenerateCss(classes, includeBase: false);
 
-        Assert.Contains("Generated at:", css);
-        Assert.Contains("UTC", css);
+        Assert.Equal(firstCss, secondCss);
+        Assert.Contains("This file is deterministic. Do not edit by hand.", firstCss);
+        Assert.DoesNotContain("Generated at:", firstCss);
     }
 
     [Fact]

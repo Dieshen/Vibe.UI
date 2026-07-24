@@ -10,19 +10,19 @@
             <div class="toolbar-group" role="group" aria-label="Text formatting">
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("bold"))"
                     title="Bold" aria-label="Bold" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    <strong>B</strong>
+                    <Icon Name="bold" Size="16" />
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("italic"))"
                     title="Italic" aria-label="Italic" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    <em>I</em>
+                    <Icon Name="italic" Size="16" />
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("underline"))"
                     title="Underline" aria-label="Underline" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    <u>U</u>
+                    <Icon Name="underline" Size="16" />
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("strikeThrough"))"
                     title="Strikethrough" aria-label="Strikethrough" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    <s>S</s>
+                    <Icon Name="strikethrough" Size="16" />
                 </button>
             </div>
 
@@ -31,15 +31,15 @@
             <div class="toolbar-group" role="group" aria-label="Block formatting">
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("formatBlock", "h1"))"
                     title="Heading 1" aria-label="Heading 1" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    H1
+                    <Icon Name="heading-1" Size="16" />
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("formatBlock", "h2"))"
                     title="Heading 2" aria-label="Heading 2" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    H2
+                    <Icon Name="heading-2" Size="16" />
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("formatBlock", "p"))"
                     title="Paragraph" aria-label="Paragraph" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    P
+                    <Icon Name="pilcrow" Size="16" />
                 </button>
             </div>
 
@@ -48,11 +48,11 @@
             <div class="toolbar-group" role="group" aria-label="Lists">
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("insertUnorderedList"))"
                     title="Bullet list" aria-label="Bullet list" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    UL
+                    <Icon Name="list" Size="16" />
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("insertOrderedList"))"
                     title="Numbered list" aria-label="Numbered list" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    OL
+                    <Icon Name="list-ordered" Size="16" />
                 </button>
             </div>
 
@@ -61,15 +61,15 @@
             <div class="toolbar-group" role="group" aria-label="Alignment">
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("justifyLeft"))"
                     title="Align left" aria-label="Align left" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    L
+                    <Icon Name="align-left" Size="16" />
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("justifyCenter"))"
                     title="Align center" aria-label="Align center" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    C
+                    <Icon Name="align-center" Size="16" />
                 </button>
                 <button type="button" class="toolbar-button" @onclick="@(() => ExecuteCommand("justifyRight"))"
                     title="Align right" aria-label="Align right" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                    R
+                    <Icon Name="align-right" Size="16" />
                 </button>
             </div>
 
@@ -79,7 +79,7 @@
                 <div class="toolbar-group" role="group" aria-label="Links">
                     <button type="button" class="toolbar-button" @onclick="InsertLink"
                         title="Insert link" aria-label="Insert link" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                        Link
+                        <Icon Name="link" Size="16" />
                     </button>
                 </div>
             }
@@ -90,17 +90,19 @@
                 <div class="toolbar-group" role="group" aria-label="Images">
                     <button type="button" class="toolbar-button" @onclick="InsertImage"
                         title="Insert image" aria-label="Insert image" disabled="@(!IsEditable)" aria-disabled="@DisabledAriaValue">
-                        Img
+                        <Icon Name="image" Size="16" />
                     </button>
                 </div>
             }
         </div>
     }
 
-    <div class="richtext-editor" contenteditable="@IsEditableContentEditableValue" @ref="_editorRef"
+    <div id="@EffectiveId" class="richtext-editor" contenteditable="@IsEditableContentEditableValue" @ref="_editorRef"
         @oninput="HandleInput" @onfocus="HandleFocus" @onblur="HandleBlur"
         data-placeholder="@Placeholder" aria-placeholder="@Placeholder" role="textbox" aria-multiline="true"
         aria-label="@EffectiveAriaLabel" aria-readonly="@ReadOnlyAriaValue" aria-disabled="@DisabledAriaValue"
+        aria-describedby="@EffectiveDescribedBy" aria-invalid="@AriaInvalidValue" aria-errormessage="@EffectiveErrorMessageId"
+        aria-required="@(EffectiveRequired ? "true" : null)"
         tabindex="@EditorTabIndex" spellcheck="@IsEditableContentEditableValue" style="@EditorStyle">
         @if (RenderTrustedHtml)
         {
@@ -127,6 +129,12 @@
     private ElementReference _editorRef;
     private RichTextEditorInterop? _interop;
     private string _content = string.Empty;
+
+    /// <summary>
+    /// Gets the relationships cascaded by an ancestor <see cref="FormField{TValue}"/>, if any.
+    /// </summary>
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
 
     /// <summary>
     /// Gets or sets the editor content. By default this value is rendered as encoded text.
@@ -252,11 +260,19 @@
     private int EditorTabIndex => Disabled ? -1 : 0;
     private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel) ? DefaultAriaLabel : AriaLabel!;
     private string EffectiveToolbarAriaLabel => string.IsNullOrWhiteSpace(ToolbarAriaLabel) ? DefaultToolbarAriaLabel : ToolbarAriaLabel!;
+    private string? EffectiveId => FieldContext?.ControlId;
+    private string? EffectiveDescribedBy => FieldContext?.DescribedBy;
+    private bool EffectiveRequired => FieldContext?.IsRequired == true;
+    private string? AriaInvalidValue => FieldContext?.IsInvalid == true ? "true" : null;
+    private string? EffectiveErrorMessageId => FieldContext?.IsInvalid == true && !string.IsNullOrWhiteSpace(FieldContext.ErrorId)
+        ? FieldContext.ErrorId
+        : null;
 
     private string CombinedCssClass => CombineClasses(
         "vibe-richtext",
         Disabled ? "richtext-disabled" : null,
         ReadOnly ? "richtext-readonly" : null,
+        FieldContext?.IsInvalid == true ? "richtext-error" : null,
         CssClass,
         Class
     );

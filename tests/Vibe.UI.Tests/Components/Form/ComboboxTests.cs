@@ -67,7 +67,8 @@ public class ComboboxTests : TestBase
         var option = cut.Find(".combobox-option");
         option.GetAttribute("id").ShouldBe("choice-option-0");
         option.GetAttribute("role").ShouldBe("option");
-        option.GetAttribute("aria-selected").ShouldBe("true");
+        option.GetAttribute("aria-selected").ShouldBe("false");
+        option.ClassList.ShouldContain("highlighted");
     }
 
     [Fact]
@@ -94,7 +95,8 @@ public class ComboboxTests : TestBase
 
         var option = cut.Find(".combobox-option");
         option.TextContent.Trim().ShouldBe("Gamma");
-        option.ClassList.ShouldContain("selected");
+        option.ClassList.ShouldContain("highlighted");
+        option.ClassList.ShouldNotContain("selected");
     }
 
     [Fact]
@@ -237,6 +239,12 @@ public class ComboboxTests : TestBase
             .Add(p => p.Value, "gamma"));
 
         cut.Find("input").GetAttribute("value").ShouldBe("Gamma");
+
+        cut.Find("input").Focus();
+        var selected = cut.Find(".combobox-option.selected");
+        selected.TextContent.Trim().ShouldBe("Gamma");
+        selected.GetAttribute("aria-selected").ShouldBe("true");
+        selected.QuerySelector("svg").ShouldNotBeNull();
     }
 
     [Fact]

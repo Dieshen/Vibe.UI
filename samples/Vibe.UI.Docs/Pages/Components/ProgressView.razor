@@ -67,10 +67,14 @@
         <div class="vibe-mb-8">
             <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">With Label</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Display the current progress percentage as a label.
+                Pair the progress bar with a visible label while keeping an accessible name on the control.
             </p>
             <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <Progress Value="@progress" ShowLabel="true" />
+                <div class="vibe-flex vibe-items-center vibe-justify-between vibe-mb-2 vibe-text-sm">
+                    <span class="vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200">Upload progress</span>
+                    <span class="vibe-text-zinc-500">@progress%</span>
+                </div>
+                <Progress Value="@progress" AriaLabel="Upload progress" />
             </div>
             <CodeBlock Code="@LabelCode" Language="razor" />
         </div>
@@ -87,36 +91,28 @@
             <CodeBlock Code="@IndeterminateCode" Language="razor" />
         </div>
 
-        <!-- Sizes and Colors -->
+        <!-- Variants -->
         <div class="vibe-mb-8">
-            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Sizes and Colors</h3>
+            <h3 class="vibe-text-lg vibe-font-medium vibe-text-zinc-800 dark:vibe-text-zinc-200 vibe-mb-3">Variants</h3>
             <p class="vibe-text-zinc-600 dark:vibe-text-zinc-400 vibe-mb-4">
-                Different sizes and color variants to match your design.
+                Use semantic color variants when progress also communicates status.
             </p>
             <div class="vibe-flex vibe-flex-col vibe-gap-4 vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
                 <div>
-                    <div class="vibe-mb-2 vibe-text-xs vibe-text-zinc-500">Small</div>
-                    <Progress Value="60" Size="ProgressSize.Small" />
+                    <div class="vibe-mb-2 vibe-text-xs vibe-text-zinc-500">Default</div>
+                    <Progress Value="60" />
                 </div>
                 <div>
-                    <div class="vibe-mb-2 vibe-text-xs vibe-text-zinc-500">Medium</div>
-                    <Progress Value="60" Size="ProgressSize.Medium" />
-                </div>
-                <div>
-                    <div class="vibe-mb-2 vibe-text-xs vibe-text-zinc-500">Large</div>
-                    <Progress Value="60" Size="ProgressSize.Large" />
-                </div>
-                <div class="vibe-pt-4 vibe-border-t vibe-border-zinc-200 dark:vibe-border-zinc-700">
                     <div class="vibe-mb-2 vibe-text-xs vibe-text-zinc-500">Success</div>
-                    <Progress Value="60" Variant="ProgressVariant.Success" />
+                    <Progress Value="60" Variant="success" />
                 </div>
                 <div>
                     <div class="vibe-mb-2 vibe-text-xs vibe-text-zinc-500">Warning</div>
-                    <Progress Value="60" Variant="ProgressVariant.Warning" />
+                    <Progress Value="60" Variant="warning" />
                 </div>
                 <div>
-                    <div class="vibe-mb-2 vibe-text-xs vibe-text-zinc-500">Danger</div>
-                    <Progress Value="60" Variant="ProgressVariant.Danger" />
+                    <div class="vibe-mb-2 vibe-text-xs vibe-text-zinc-500">Destructive</div>
+                    <Progress Value="60" Variant="destructive" />
                 </div>
             </div>
             <CodeBlock Code="@StylesCode" Language="razor" />
@@ -143,7 +139,7 @@
                     <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Value</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="double" /></td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="int" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">0</td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Progress value (0-100)</td>
                         </tr>
@@ -154,22 +150,10 @@
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Animate as indeterminate</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ShowLabel</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="bool" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">false</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Show percentage label</td>
-                        </tr>
-                        <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Size</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="ProgressSize" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Medium</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Progress bar size</td>
-                        </tr>
-                        <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Variant</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="ProgressVariant" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Default</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Color variant of the progress bar</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"default"</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Color variant: default, primary, secondary, success, warning, info, error, or destructive</td>
                         </tr>
                     </tbody>
                 </table>
@@ -235,21 +219,22 @@
     private string BasicCode => @"<Progress Value=""50"" />
 <Progress Value=""75"" />";
 
-    private string LabelCode => @"<Progress Value=""@progress"" ShowLabel=""true"" />
+    private string LabelCode => @"<div class=""progress-label"">
+    <span>Upload progress</span>
+    <span>@progress%</span>
+</div>
+<Progress Value=""@progress"" AriaLabel=""Upload progress"" />
 
 @code {
-    private double progress = 65;
+    private int progress = 65;
 }";
 
     private string IndeterminateCode => @"<Progress IndeterminateAnimation=""true"" />";
 
-    private string StylesCode => @"<Progress Value=""60"" Size=""ProgressSize.Small"" />
-<Progress Value=""60"" Size=""ProgressSize.Medium"" />
-<Progress Value=""60"" Size=""ProgressSize.Large"" />
-
-<Progress Value=""60"" Variant=""ProgressVariant.Success"" />
-<Progress Value=""60"" Variant=""ProgressVariant.Warning"" />
-<Progress Value=""60"" Variant=""ProgressVariant.Danger"" />";
+    private string StylesCode => @"<Progress Value=""60"" />
+<Progress Value=""60"" Variant=""success"" />
+<Progress Value=""60"" Variant=""warning"" />
+<Progress Value=""60"" Variant=""destructive"" />";
 }
 
 

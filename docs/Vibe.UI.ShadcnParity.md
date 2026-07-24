@@ -1,140 +1,89 @@
-# Vibe.UI shadcn/ui Parity Roadmap
+# Vibe.UI shadcn/ui compatibility roadmap
 
-Goal: make `Vibe.UI` feel like “shadcn/ui for Blazor/.NET”: beautiful defaults, composable primitives, predictable APIs, and a copy‑into‑your‑app workflow that stays ergonomic as the library grows.
+Vibe.UI aims to provide the shadcn/ui experience for Blazor: strong defaults,
+composable source-owned components, predictable APIs, and an ergonomic CLI.
+Compatibility is measured by behavior and workflow, not by copying React APIs
+or generated markup exactly.
 
-This document is a pragmatic checklist (phased) rather than a strict 1:1 port. Some shadcn/ui pieces map to `Vibe.UI.CSS` (utilities) and some map to `Vibe.UI` (components + patterns).
+## Release boundaries
 
-## Current Inventory (Repo Snapshot)
+### 1.0.0-beta
 
-`src/Vibe.UI/Components` currently contains ~`110` Razor components grouped into:
-- Layout, Inputs, Form, DataDisplay, Navigation, Overlay, Feedback, Disclosure, DateTime, Utility, Theme, Advanced
+Beta guarantees the documented
+[component beta profile](Vibe.UI.ComponentBetaProfile.md). It is a dogfooding
+release for supported Blazor hosting models, not a claim of complete shadcn/ui
+parity or formal WCAG conformance.
 
-Examples present already:
-- Core primitives: `Button`, `Card`, `Input`, `Tabs`, `Dialog`, `Popover`, `Tooltip`, `DropdownMenu`, `Toast`
-- “Shadcn-ish” patterns: `Command`, `Menubar`, `NavigationMenu`, `AlertDialog`
-- Extras beyond shadcn: `Chart`, `KanbanBoard`, `RichTextEditor`, `VirtualScroll`
+The repository contains 111 Razor component files. That count includes roots,
+items, helpers, and composed primitives; it must not be read as 111 independent
+catalog products. Every source component has a direct unit-test file, while
+browser, visual, and accessibility depth is risk-based and tracked separately.
 
-## Phase 0 — Define “Parity” and Guardrails
+### Stable 1.0
 
-This repo already made several “shadcn-style” decisions. Phase 0 is about documenting them explicitly (and closing the few remaining gaps), so new components and CLI installs stay consistent.
+Stable 1.0 targets 100% of the published Vibe.UI shadcn compatibility matrix.
+Each supported equivalent must have:
 
-In this context:
-- “Parity” means we deliver the same *developer experience* as shadcn/ui, not necessarily a 1:1 clone:
-  - API feel: naming, variants/sizes, slot/composition patterns, defaults
-  - UX/a11y: keyboard behavior, focus management, aria labeling, escape handling
-  - Visual language: radii, spacing, shadows, typography, light/dark behavior
-  - Workflow: the CLI-based “copy into your app” path stays the primary, ergonomic path
-- “Guardrails” are the non-negotiable conventions that keep the above consistent:
-  - theming contract (tokens + `.dark`)
-  - component parameter patterns and class composition rules
-  - JS usage policy
-  - CLI install/update behavior and file layout conventions
+1. a documented public API and copyable compiling example;
+2. equivalent pointer and keyboard behavior for the supported feature set;
+3. focus, ARIA, disabled, error, loading, and empty-state coverage;
+4. reviewed light/dark and responsive visual evidence; and
+5. package and CLI source-install coverage.
 
-### What we already have (today)
+Features that do not map cleanly to Blazor may use an idiomatic Vibe API, but
+the difference must be explicit in the matrix and migration documentation.
 
-- Theming model: CSS variables (`--vibe-*`) + `.dark` class toggling (shadcn-like).
-  - Source: `src/Vibe.UI.CSS/Data/vibe-base.css` (tokens + reset) and component styles using `var(--vibe-*)`.
-  - Runtime toggling: `src/Vibe.UI/wwwroot/js/vibe-theme.js` + `ThemeToggle`/`ThemeProvider` components.
-- Styling approach: components ship with `.razor.css` and are designed to work with tokens out of the box.
-- Component class/attrs model: common `Class` + `AdditionalAttributes` pattern via `src/Vibe.UI/Base/VibeComponent.cs` (`VibeComponent`).
-- Copy/paste workflow (“shadcn for Blazor”):
-  - `vibe init` copies infrastructure to `Vibe/` and CSS foundation files to `wwwroot/css/`.
-  - `vibe add <component>` installs components (flat by default) and installs dependencies first.
-  - Config stored in `vibe.json` (`ComponentsDirectory`, theme, etc.).
-  - Source: `src/Vibe.UI.CLI/Commands/InitCommand.cs`, `src/Vibe.UI.CLI/Commands/AddCommand.cs`, `src/Vibe.UI.CLI/Services/ComponentService.cs`.
+## Beta surface
 
-### Guardrails to document (so it stays consistent)
+- [x] CSS-variable theming with a `.dark` root contract
+- [x] Scoped component styles and shared `Class`/`AdditionalAttributes` base API
+- [x] Package consumption and CLI source ownership workflows
+- [x] Standalone WebAssembly and Blazor Web App static/server/client/auto fixtures
+- [x] Core input, form, disclosure, dialog, tabs, date, and basic menu contracts
+- [x] Direct unit-test files for all 111 source Razor components
+- [x] Automated serious/critical Axe checks on representative high-risk routes
+- [x] Reviewed light/dark desktop/mobile baselines for six high-risk surfaces
+- [ ] Formal WCAG conformance evidence
+- [ ] Reviewed visual and browser interaction coverage for every catalog surface
 
-- Class handling: every component should expose `Class` and `AdditionalAttributes` and use `VibeComponent.CombineClasses(...)` or `CombinedClass` consistently.
-- Naming conventions:
-  - parameters: `Variant`, `Size`, `Disabled`, `Class`, `ChildContent` (where applicable)
-  - enums: `XxxVariant`, `XxxSize` (or a shared pattern)
-  - files: `Component.razor` + optional `Component.razor.css`
-- Composition patterns:
-  - overlays/menus: Root/Trigger/Content (you already have `DialogRoot`, `DialogTrigger`, etc.)
-  - table/menu item composition: consistent slot patterns vs monolithic components
-- JS policy:
-  - minimal JS, only where needed (positioning, measuring, drag/resize); ship JS via CLI templates when required.
-- CLI install contract:
-  - “flat install by default” is the baseline; docs and examples should assume this.
-  - dependency metadata must be accurate (CLI currently hardcodes component list + deps in `ComponentService`).
+## Stable 1.0 parity work
 
-### Remaining decisions (worth making explicit)
+### API and composition
 
-- Are components primarily “styled components” (CSS in `.razor.css`) or should more move toward composition with `vibe-*` utilities?
-- How strict should CLI updates be:
-  - overwrite-only (current)
-  - diff/patch workflow (future)
-- What is the canonical “import story”:
-  - `@using MyApp.Components.vibe` (current default) vs a different namespace/layout.
+- [ ] Publish a versioned component-by-component shadcn compatibility matrix
+- [ ] Normalize `Variant`, `Size`, `Class`, attributes, callbacks, and bindable APIs
+- [ ] Finish root/trigger/content/item composition consistency across primitives
+- [ ] Define headless and full-style override guidance
 
-## Phase 1 — Core shadcn/ui Primitives (Highest adoption)
+### Interaction and accessibility
 
-### Buttons and inputs (polish + completeness)
-- [ ] `Button` parity: icon buttons, loading state, as-child/link behavior, focus-ring consistency
-- [ ] `Input` parity: `disabled/invalid`, prefix/suffix slots, consistent heights with Select/TextArea
-- [ ] `Textarea` parity: resize rules, consistent spacing and error state
-- [ ] `Select` parity: keyboard nav, searchable select (if desired), consistent item spacing
-- [ ] `Checkbox`/`Radio` parity: hit target sizing, label alignment, indeterminate
-- [ ] `Switch` parity: animations, disabled/checked styles
+- [ ] Complete advanced menu submenus, hover intent, and compound typeahead behavior
+- [ ] Verify every interactive component at keyboard-only, 200% zoom, and forced colors
+- [ ] Complete manual screen-reader passes for supported desktop and mobile flows
+- [ ] Add performance budgets for DataTable, VirtualScroll, Chart, and other heavy surfaces
 
-### Overlay primitives (composition model)
-- [ ] `Dialog`/`AlertDialog` parity: focus trap, scroll lock, escape handling, aria labeling
-- [ ] `Popover` parity: collision handling, focus behavior
-- [ ] `Tooltip` parity: delay, hover/focus behavior, portal positioning
-- [ ] `DropdownMenu`/`ContextMenu` parity: keyboard nav, submenus, typeahead
+### Visual and documentation quality
 
-### Navigation primitives
-- [ ] `Tabs` parity: keyboard nav, disabled tabs, vertical orientation
-- [ ] `Breadcrumb` parity: separators, truncation
-- [ ] `Pagination` parity: a11y labels + responsive collapse
-- [ ] `NavigationMenu` parity: hover intent, focus management
+- [ ] Review every catalog surface in light/dark desktop/mobile states
+- [ ] Ensure every public example compiles against the shipped API
+- [ ] Publish recipes for auth, settings, dashboards, forms, and table/filter flows
+- [ ] Keep component counts and catalog routes generated or test-verified
 
-## Phase 2 — shadcn/ui “Patterns” Components (Docs site feel)
+### CLI workflow
 
-These are often what makes a shadcn site feel like a shadcn site.
+- [x] `vibe init` detects standalone and hosted client/server topology
+- [x] `vibe add` installs dependencies and required JS assets
+- [x] Package validation builds generated standalone and hosted consumers
+- [ ] Add a reviewable `vibe diff` workflow
+- [ ] Publish registry metadata for dependencies, files, and documentation links
+- [ ] Define safe update/merge behavior for locally customized components
 
-- [ ] `Command` (command palette) parity: filtering, groups, shortcuts, empty state, accessibility
-- [ ] `DataTable` parity: sorting, filtering, pagination, selection (if you want TanStack‑like features)
-- [ ] `Toast/Sonner` parity: stacking behavior, swipe to dismiss, variants
-- [ ] `Accordion/Collapsible` parity: keyboard behavior and aria
-- [ ] `Carousel` parity: touch, snap, buttons, dots
-- [ ] `Sheet/Drawer` parity: placement variants, focus/scroll
+## Success criteria
 
-## Phase 3 — Theming + Styling Model (Vibe.UI ↔ Vibe.UI.CSS contract)
+Beta is complete when the component beta profile, CSS beta core profile,
+package validation, hosting fixtures, and release dry-run pass for the same
+candidate commit.
 
-- [ ] Define the contract between Vibe.UI and Vibe.UI.CSS:
-  - Vibe.UI uses semantic tokens (`--vibe-*`) and/or `vibe-*` utilities
-  - minimal bespoke component CSS where possible
-- [ ] Ensure every component has:
-  - consistent `dark` support
-  - consistent focus rings
-  - consistent disabled/readonly states
-- [ ] Add a “headless mode” guideline (optional): allow consumers to fully override classes
-
-## Phase 4 — Copy/Paste Workflow (shadcn CLI parity)
-
-shadcn/ui parity is as much workflow as it is visuals.
-
-- [ ] CLI parity:
-  - [ ] `vibe add <component>` supports dependencies graph (adds required peers)
-  - [ ] `vibe diff` and `vibe update` (optional but huge DX win)
-  - [ ] component registry metadata (name, deps, files, docs links)
-- [ ] Provide canonical “recipes” (patterns):
-  - auth forms, settings pages, dashboards
-  - modal + form flows
-  - table + filters
-
-## Phase 5 — Quality Bar (What makes it “shadcn quality”)
-
-- [ ] Accessibility conformance tests for key components (keyboard + aria)
-- [ ] Visual regression screenshots for docs (light/dark)
-- [ ] Performance checks for heavy components (DataTable, VirtualScroll, Chart)
-- [ ] API consistency review (naming: `Variant`, `Size`, `Class`, slots)
-
-## Suggested Next Steps
-
-1) Pick 10 “flagship” components to perfect first (the ones used on the docs landing + component pages).
-2) Add visual regression screenshots to CI for those pages (home/components/button/input + overlays).
-3) Iterate tokens + focus/disabled states until the suite looks consistently “shadcn”.
-
+Stable 1.0 is complete when the published shadcn and Tailwind compatibility
+matrices are both at 100%, every supported row has automated and reviewed
+evidence, and all intentional differences are documented.

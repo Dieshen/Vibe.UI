@@ -2,6 +2,8 @@ namespace Vibe.UI.Tests.Components.Overlay;
 
 public class DrawerTests : TestBase
 {
+    private static readonly TimeSpan TransitionTimeout = TimeSpan.FromSeconds(5);
+
     [Fact]
     public void Drawer_DoesNotRender_WhenClosed()
     {
@@ -196,7 +198,7 @@ public class DrawerTests : TestBase
         cut.Find(".drawer-close").Click();
 
         // Assert
-        cut.WaitForAssertion(() => changedValue.ShouldBe(false));
+        cut.WaitForAssertion(() => changedValue.ShouldBe(false), TransitionTimeout);
         cut.Instance.IsOpen.ShouldBeTrue();
         cut.FindAll(".vibe-drawer").ShouldBeEmpty();
     }
@@ -215,7 +217,7 @@ public class DrawerTests : TestBase
         cut.Find(".drawer-overlay").Click();
 
         // Assert
-        cut.WaitForAssertion(() => changedValue.ShouldBe(false));
+        cut.WaitForAssertion(() => changedValue.ShouldBe(false), TransitionTimeout);
     }
 
     [Fact]
@@ -250,7 +252,7 @@ public class DrawerTests : TestBase
         cut.Find(".vibe-drawer").KeyDown("Escape");
 
         // Assert
-        cut.WaitForAssertion(() => changedValue.ShouldBe(false));
+        cut.WaitForAssertion(() => changedValue.ShouldBe(false), TransitionTimeout);
     }
 
     [Fact]

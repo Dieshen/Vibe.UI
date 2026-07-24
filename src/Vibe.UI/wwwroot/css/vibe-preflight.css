@@ -1,0 +1,152 @@
+/* ========================================
+   VIBE.UI PREFLIGHT (opt-in)
+
+   A Tailwind-compatible base reset that normalizes native element styling so
+   utility classes behave predictably (e.g. `vibe-border` only sets width
+   because the border style/color are reset here).
+
+   THIS IS OPT-IN. It is NOT part of vibe-base.css, because it restyles native
+   HTML across the whole page (borders, headings, lists, links, form controls).
+   Include it only if you want Tailwind-style normalization app-wide:
+
+     <link rel="stylesheet" href="_content/Vibe.UI/css/vibe-preflight.css" />
+
+   or, when generating with Vibe.UI.CSS, pass --with-preflight (MSBuild:
+   <VibeCssIncludePreflight>true</VibeCssIncludePreflight>).
+
+   Load it BEFORE your generated utilities so utilities win the cascade.
+   ======================================== */
+
+*,
+*::before,
+*::after,
+*::backdrop,
+*::file-selector-button {
+  border-width: 0;
+  border-style: solid;
+  border-color: currentColor;
+}
+
+hr {
+  height: 0;
+  color: inherit;
+  border-top-width: 1px;
+}
+
+abbr:where([title]) {
+  text-decoration: underline dotted;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+b,
+strong {
+  font-weight: bolder;
+}
+
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--vibe-font-mono);
+  font-size: 1em;
+}
+
+small {
+  font-size: 80%;
+}
+
+sub,
+sup {
+  position: relative;
+  vertical-align: baseline;
+  font-size: 75%;
+  line-height: 0;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+sup {
+  top: -0.5em;
+}
+
+table {
+  border-color: inherit;
+  border-collapse: collapse;
+  text-indent: 0;
+}
+
+button,
+input,
+optgroup,
+select,
+textarea,
+::file-selector-button {
+  margin: 0;
+  border-radius: 0;
+  background-color: transparent;
+  color: inherit;
+  font: inherit;
+  font-feature-settings: inherit;
+  font-variation-settings: inherit;
+  letter-spacing: inherit;
+  opacity: 1;
+}
+
+button,
+select {
+  text-transform: none;
+}
+
+button,
+input:where([type="button"], [type="reset"], [type="submit"]),
+::file-selector-button {
+  appearance: button;
+}
+
+ol,
+ul,
+menu {
+  list-style: none;
+}
+
+img,
+svg,
+video,
+canvas,
+audio,
+iframe,
+embed,
+object {
+  display: block;
+  vertical-align: middle;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+[hidden]:where(:not([hidden="until-found"])) {
+  display: none !important;
+}
+
+[tabindex="-1"]:focus {
+  outline: none;
+}

@@ -25,31 +25,33 @@
             <div class="vibe-space-y-4 vibe-max-w-md">
                 <div class="vibe-flex vibe-items-center vibe-justify-between">
                     <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Default (off)</span>
-                    <Switch />
+                    <Switch Label="Default off" />
                 </div>
                 <div class="vibe-flex vibe-items-center vibe-justify-between">
                     <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Default (on)</span>
-                    <Switch Checked="true" />
+                    <Switch Label="Default on" Checked="true" />
                 </div>
                 <div class="vibe-flex vibe-items-center vibe-justify-between">
                     <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Enable notifications</span>
-                    <Switch Checked="@notificationsEnabled" CheckedChanged="@OnNotificationsChanged" />
+                    <Switch Label="Enable notifications" Checked="@notificationsEnabled" CheckedChanged="@OnNotificationsChanged" />
                 </div>
                 @if (notificationsEnabled)
                 {
-                    <p class="vibe-ml-6 vibe-text-brand-teal">✓ Notifications enabled</p>
+                    <div class="vibe-flex vibe-justify-end">
+                        <Badge Variant="success"><Vibe.UI.Components.Icon Name="check" />Notifications enabled</Badge>
+                    </div>
                 }
                 <div class="vibe-flex vibe-items-center vibe-justify-between">
                     <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Dark mode</span>
-                    <Switch Checked="@darkModeEnabled" CheckedChanged="@((bool val) => darkModeEnabled = val)" />
+                    <Switch Label="Dark mode" Checked="@darkModeEnabled" CheckedChanged="@((bool val) => darkModeEnabled = val)" />
                 </div>
                 <div class="vibe-flex vibe-items-center vibe-justify-between vibe-opacity-50">
                     <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Disabled (off)</span>
-                    <Switch Disabled="true" />
+                    <Switch Label="Disabled off" Disabled="true" />
                 </div>
                 <div class="vibe-flex vibe-items-center vibe-justify-between vibe-opacity-50">
                     <span class="vibe-text-zinc-900 dark:vibe-text-zinc-100">Disabled (on)</span>
-                    <Switch Checked="true" Disabled="true" />
+                    <Switch Label="Disabled on" Checked="true" Disabled="true" />
                 </div>
             </div>
         </div>
@@ -66,8 +68,8 @@
                 Simple toggle switch with on and off states.
             </p>
             <div class="vibe-flex vibe-items-center vibe-gap-4 vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <Switch />
-                <Switch Checked="true" />
+                <Switch Label="Feature disabled" />
+                <Switch Label="Feature enabled" Checked="true" />
             </div>
             <CodeBlock Code="@BasicCode" Language="razor" />
         </div>
@@ -99,15 +101,15 @@
             </p>
             <div class="vibe-flex vibe-items-center vibe-gap-6 vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
                 <div class="vibe-flex vibe-flex-col vibe-items-center vibe-gap-2">
-                    <Switch Size="SwitchSize.Small" Checked="true" />
+                    <Switch Size="sm" Label="Small switch" Checked="true" />
                     <span class="vibe-text-xs vibe-text-zinc-500">Small</span>
                 </div>
                 <div class="vibe-flex vibe-flex-col vibe-items-center vibe-gap-2">
-                    <Switch Size="SwitchSize.Medium" Checked="true" />
+                    <Switch Label="Default switch" Checked="true" />
                     <span class="vibe-text-xs vibe-text-zinc-500">Medium</span>
                 </div>
                 <div class="vibe-flex vibe-flex-col vibe-items-center vibe-gap-2">
-                    <Switch Size="SwitchSize.Large" Checked="true" />
+                    <Switch Size="lg" Label="Large switch" Checked="true" />
                     <span class="vibe-text-xs vibe-text-zinc-500">Large</span>
                 </div>
             </div>
@@ -174,10 +176,16 @@
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Label text for the switch</td>
                         </tr>
                         <tr>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">AriaLabel</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Accessible name that takes precedence over Label</td>
+                        </tr>
+                        <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Size</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="SwitchSize" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Medium</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Size of the switch</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"default"</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Switch size: sm, default, or lg</td>
                         </tr>
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Name</td>
@@ -228,33 +236,23 @@
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Accessibility</h2>
         <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
             <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                 Uses semantic switch role with proper ARIA attributes
             </li>
             <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                 Keyboard accessible (Space to toggle)
             </li>
             <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
-                Label associated with switch for clickable area
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
+                Label or AriaLabel provides the switch's accessible name
             </li>
             <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                 Focus visible styles for keyboard navigation
             </li>
             <li class="vibe-flex vibe-items-start vibe-gap-2">
-                <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
+                <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
                 Screen reader announces state changes
             </li>
         </ul>
@@ -285,15 +283,15 @@
         notificationsEnabled = value;
     }
 
-    private string BasicCode => @"<Switch />
-<Switch Checked=""true"" />";
+    private string BasicCode => @"<Switch Label=""Feature disabled"" />
+<Switch Label=""Feature enabled"" Checked=""true"" />";
 
     private string LabelCode => @"<Switch Label=""Enable notifications"" />
 <Switch Label=""Dark mode"" Checked=""true"" />";
 
-    private string SizesCode => @"<Switch Size=""SwitchSize.Small"" Label=""Small"" />
-<Switch Size=""SwitchSize.Medium"" Label=""Medium"" />
-<Switch Size=""SwitchSize.Large"" Label=""Large"" />";
+    private string SizesCode => @"<Switch Size=""sm"" Label=""Small switch"" />
+<Switch Label=""Default switch"" />
+<Switch Size=""lg"" Label=""Large switch"" />";
 
     private string DisabledCode => @"<Switch Label=""Disabled off"" Disabled=""true"" />
 <Switch Label=""Disabled on"" Checked=""true"" Disabled=""true"" />";

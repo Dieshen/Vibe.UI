@@ -1,20 +1,22 @@
 # Vibe.UI
-[![build](https://img.shields.io/github/actions/workflow/status/Dieshen/Vibe.UI/ci.yml
-)](https://github.com/Dieshen/Vibe.UI/actions/workflows/ci.yml)
+[![build](https://img.shields.io/github/actions/workflow/status/Narcoleptic-Fox/Vibe.UI/ci.yml
+)](https://github.com/Narcoleptic-Fox/Vibe.UI/actions/workflows/ci.yml)
 [![NuGet](https://img.shields.io/nuget/v/Vibe.UI.svg)](https://www.nuget.org/packages/Vibe.UI/)
-[![codecov](https://codecov.io/gh/Dieshen/Vibe.UI/branch/main/graph/badge.svg)](https://codecov.io/gh/Dieshen/Vibe.UI)
+[![codecov](https://codecov.io/gh/Narcoleptic-Fox/Vibe.UI/branch/main/graph/badge.svg)](https://codecov.io/gh/Narcoleptic-Fox/Vibe.UI)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 > **Beta Release (1.0.0-beta)** - This library is ready for broader dogfooding across supported Blazor hosting models. APIs may still change before stable 1.0. See [Known Limitations](#known-limitations) below.
 
-A comprehensive Blazor component library inspired by Shadcn UI, built with Razor components and C#. Complete with **110 components**, comprehensive theming, Chart.js integration, form validation, icon library, testing infrastructure, CLI tooling, and IDE extensions.
+A comprehensive Blazor component library inspired by shadcn/ui, built with Razor components and C#. It includes **111 Razor component files**, theming, Chart.js integration, form validation, icons, testing infrastructure, and CLI tooling.
+
+Project documentation is indexed in [`docs/README.md`](docs/README.md).
 
 > **Built for developers who want full control.** Copy components into your project and customize them, or use our NuGet package for quick integration.
 
 ## Features
 
 ### Components & Features
-- **110 UI Components** - Comprehensive component library with accessibility-minded Input, Form, Data Display, Navigation, Overlay, Feedback, and Advanced components
+- **111 UI Components** - Comprehensive component library with accessibility-minded Input, Form, Data Display, Navigation, Overlay, Feedback, and Advanced components
 - **Chart.js Integration** - Full-featured data visualization with 7 chart types (Line, Bar, Pie, Doughnut, Radar, PolarArea, Area)
 - **Icon Library** - 70+ Lucide icons built-in with SVG support and customizable styling
 - **Form Validation** - Built-in validators (email, phone, password strength, credit card, etc.) with real-time feedback
@@ -28,23 +30,27 @@ A comprehensive Blazor component library inspired by Shadcn UI, built with Razor
 - **Theme Persistence** - Save user theme preferences across sessions
 
 ### Developer Tools
-- **Vibe CLI** - Command-line tool to add components like shadcn (`vibe add button`)
-- **VS Code Extension** - Snippets, commands, and IntelliSense support
-- **Visual Studio 2022 Extension** - Project templates, item templates, and integrated tooling
+- **Vibe CLI** - Command-line tool to add components like shadcn (`vibe add button`); see the [CLI guide](docs/CLI.md)
 - **Comprehensive Testing** - Unit and integration tests with bUnit and xUnit
-- **Demo Application** - Interactive showcase of all components
+- **Demo Application** - Routed component catalog with interactive examples
 
 ## Vibe.UI.CSS
 
 Vibe.UI.CSS is the utility-first companion (Tailwind-style) for Vibe.UI.
 
-- Tailwind parity roadmap: `docs/Vibe.UI.CSS.TailwindParity.md`
+- [Vibe.UI.CSS architecture and reference](docs/VIBE-UI-CSS.md)
+- [Vibe.UI.CSS beta core profile](docs/Vibe.UI.CSS.CoreProfile.md)
+- [Tailwind parity roadmap](docs/Vibe.UI.CSS.TailwindParity.md)
 
 ## shadcn/ui Parity
 
-- Vibe.UI parity roadmap: `docs/Vibe.UI.ShadcnParity.md`
+- [Vibe.UI parity roadmap](docs/Vibe.UI.ShadcnParity.md)
+- [Vibe.UI component beta profile](docs/Vibe.UI.ComponentBetaProfile.md)
 
 ## Installation
+
+Vibe.UI `1.0.0-beta` targets .NET 10. Install the .NET 10 SDK before using the
+packages or CLI.
 
 ### Option 1: CLI (Recommended - Full Control)
 
@@ -70,7 +76,8 @@ vibe add card
 - ✅ Zero package dependencies
 - ✅ shadcn/ui style workflow
 
-Infrastructure goes in `Vibe/`, components in `Components/`.
+Infrastructure goes in `Vibe/`, and components go in `Components/vibe/` by
+default.
 
 ### Option 2: NuGet Package
 
@@ -79,6 +86,25 @@ Use pre-built components from package:
 ```bash
 dotnet add package Vibe.UI --version 1.0.0-beta
 ```
+
+Load the required base and scoped component styles in `Components/App.razor`,
+`index.html`, `_Host.cshtml`, or the equivalent root document for your hosting
+model:
+
+```html
+<link href="_content/Vibe.UI/css/vibe-base.css" rel="stylesheet" />
+<link href="_content/Vibe.UI/Vibe.UI.bundle.scp.css" rel="stylesheet" />
+```
+
+Register Vibe.UI in each server or client process that renders components:
+
+```csharp
+builder.Services.AddVibeUI();
+```
+
+See [CSS setup](docs/CSS-SETUP.md) and
+[hosting compatibility](docs/Compatibility.md) for standalone WebAssembly and
+hosted Blazor Web App layouts.
 
 **Benefits:**
 - ✅ Quick setup
@@ -89,7 +115,8 @@ dotnet add package Vibe.UI --version 1.0.0-beta
 
 ### Step 1: Add Components
 
-Components work standalone using CSS variables - perfect for getting started:
+After completing the package CSS and service setup above, use components from
+`Vibe.UI.Components`:
 
 ```razor
 @page "/"
@@ -102,7 +129,7 @@ Components work standalone using CSS variables - perfect for getting started:
 </Card>
 ```
 
-**That's it!** Components render with sensible defaults using CSS variables.
+Components render with the shared design tokens and scoped component styles.
 
 ### Step 2: Add Theme Toggle (Optional)
 
@@ -120,20 +147,19 @@ The ThemeToggle component:
 - ✅ Automatically detects system preference
 - ✅ Persists user choice to localStorage
 - ✅ Works without any service registration
-- ✅ Pure CSS - no JavaScript dependencies
+- ✅ Uses the packaged `vibe-theme.js` module for document-level theme state
 
-### Step 3: Service Registration (Optional)
+### Step 3: Service Registration
 
-Only needed for Toast and Dialog services:
+Register Vibe.UI in each process that renders components. This is required for
+service-backed components such as Toast and Dialog and keeps hosting behavior
+consistent:
 
 ```csharp
 using Vibe.UI;
 
-// Optional - only for Toast/Dialog services
 builder.Services.AddVibeUI();
 ```
-
-**Note:** Theming is handled via pure CSS - no service registration required!
 
 ## Using Vibe.UI Components
 
@@ -299,7 +325,7 @@ Extend the `VibeComponent` class to create your own themed components:
 
 ## Theme Customization
 
-Vibe.UI uses **pure CSS theming** following shadcn/ui patterns - no complex service layer required!
+Vibe.UI theming follows shadcn/ui-style CSS variables. The theme service and small JavaScript module coordinate runtime switching and persistence.
 
 ### How Theming Works
 
@@ -387,7 +413,8 @@ Vibe.UI uses CSS variables for theming. Here are the main variables:
 
 ## Available Components
 
-Vibe.UI includes a comprehensive set of **110 production-ready components**:
+Vibe.UI beta includes **111 Razor component files**, including composed roots,
+items, and helper primitives:
 
 ### Layout Components
 - **AspectRatio** - Container maintaining a specific aspect ratio
@@ -571,8 +598,8 @@ Please read our [Code of Conduct](.github/CODE_OF_CONDUCT.md) before contributin
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/Dieshen/Vibe.UI/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/Dieshen/Vibe.UI/discussions)
+- **Issues**: [GitHub Issues](https://github.com/Narcoleptic-Fox/Vibe.UI/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Narcoleptic-Fox/Vibe.UI/discussions)
 - **Documentation**: [Full Documentation](https://narcoleptic-fox.github.io/Vibe.UI/)
 
 ## Project Structure
@@ -602,22 +629,29 @@ Found a security vulnerability? Please review our [Security Policy](.github/SECU
 As a beta release, Vibe.UI has some known limitations we're actively working on:
 
 ### Components
-- **Error states**: Not all form components fully support `[aria-invalid]` styling yet
-- **Dark mode**: Some components rely on CSS variable inheritance rather than explicit dark mode rules
-- **Accessibility**: Continuous improvements to ARIA attributes and keyboard navigation
+- **Accessibility evidence**: automated serious/critical Axe, keyboard, focus,
+  and ARIA gates are in place, but formal WCAG conformance still requires
+  manual screen-reader, 200% zoom/reflow, and forced-colors evaluation
+- **Visual coverage**: reviewed Chromium/Windows baselines cover the six
+  highest-risk surfaces; all 111 source components have direct test-file
+  coverage, which is not a claim of equal visual or behavioral depth
 
 ### Vibe.UI.CSS
-- **Utility coverage**: Not all Tailwind utilities are implemented yet (see `docs/Vibe.UI.CSS.TailwindParity.md`)
-- **Responsive variants**: Some responsive breakpoint variants are still in progress
+- **Compatibility scope**: beta guarantees the documented
+  [core profile](docs/Vibe.UI.CSS.CoreProfile.md), not the complete Tailwind
+  compiler or plugin ecosystem
+- **Scanning**: complete class names must be present in scanned source; runtime
+  concatenation and indirect attribute dictionaries are v1 roadmap work
 
 ### CLI
 - **Template packaging**: CLI templates are bundled in the NuGet package; local development requires packaging first
 
 For detailed roadmaps, see:
-- `docs/Vibe.UI.ShadcnParity.md` - Component parity with shadcn/ui
-- `docs/Vibe.UI.CSS.TailwindParity.md` - Utility parity with Tailwind CSS
-- `docs/Beta-Readiness-Checklist.md` - Beta release checklist
-- `docs/Alpha-0.1.0-Checklist.md` - Historical alpha release checklist
+- [Documentation index](docs/README.md)
+- [Component parity with shadcn/ui](docs/Vibe.UI.ShadcnParity.md)
+- [Utility parity with Tailwind CSS](docs/Vibe.UI.CSS.TailwindParity.md)
+- [Beta release checklist](docs/Beta-Readiness-Checklist.md)
+- [Historical alpha release](docs/Alpha-0.1.0-Checklist.md)
 
 ## Sponsorship
 

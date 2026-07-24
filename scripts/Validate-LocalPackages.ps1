@@ -92,6 +92,16 @@ function Write-NuGetConfig {
     <add key="local" value="$escapedSource" />
     <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
   </packageSources>
+  <packageSourceMapping>
+    <clear />
+    <packageSource key="local">
+      <package pattern="Vibe.UI" />
+      <package pattern="Vibe.UI.*" />
+    </packageSource>
+    <packageSource key="nuget.org">
+      <package pattern="*" />
+    </packageSource>
+  </packageSourceMapping>
 </configuration>
 "@
 
@@ -130,6 +140,7 @@ function Restore-And-BuildPackageFixture {
     $packageProperties = @(
         "-p:VibeUsePackageReferences=true",
         "-p:VibePackageVersion=$PackageVersion",
+        "-p:VibeCssFailOnUnknown=true",
         "-p:VibeCssFailOnMissingTool=true"
     )
 
@@ -180,7 +191,6 @@ function Restore-And-BuildPackageFixture {
 function Validate-CliToolPackage {
     param(
         [Parameter(Mandatory = $true)][string]$NuGetConfigPath,
-        [Parameter(Mandatory = $true)][string]$LocalSource,
         [Parameter(Mandatory = $true)][string]$TempRoot,
         [Parameter(Mandatory = $true)][string]$PackageVersion
     )
@@ -197,9 +207,7 @@ function Validate-CliToolPackage {
         "--tool-path",
         $toolPath,
         "--configfile",
-        $NuGetConfigPath,
-        "--add-source",
-        $LocalSource
+        $NuGetConfigPath
     )
 
     $runningOnWindows = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
@@ -242,6 +250,7 @@ function Validate-CliToolPackage {
     Assert-FileExists (Join-Path $cliProject "Vibe/Base/VibeComponent.cs")
     Assert-FileExists (Join-Path $cliProject "Components/vibe/Button.razor")
     Assert-FileExists (Join-Path $cliProject "wwwroot/js/vibe-dialog.js")
+    Assert-FileExists (Join-Path $cliProject "wwwroot/js/vibe-menu-keyboard.js")
     Assert-FileExists (Join-Path $cliProject "wwwroot/js/vibe-richtext.js")
 
     Invoke-Checked $toolExecutable @("add", "dialog", "--yes", "--path", $cliProject)
@@ -257,6 +266,27 @@ function Validate-CliToolPackage {
     if ($dialogComponentContent -match '_content/Vibe\.UI/js') {
         throw "Generated dialog component still references _content/Vibe.UI/js."
     }
+
+    Invoke-Checked $toolExecutable @("add", "dropdownmenu", "--yes", "--path", $cliProject)
+
+    $menuComponentPath = Join-Path $cliProject "Components/vibe/DropdownMenu.razor"
+    Assert-FileExists $menuComponentPath
+
+    $menuComponentContent = Get-Content -LiteralPath $menuComponentPath -Raw
+    if ($menuComponentContent -notmatch '\./js/vibe-menu-keyboard\.js') {
+        throw "Expected generated dropdown menu component to reference ./js/vibe-menu-keyboard.js."
+    }
+
+    if ($menuComponentContent -match '_content/Vibe\.UI/js') {
+        throw "Generated dropdown menu component still references _content/Vibe.UI/js."
+    }
+
+    Invoke-Checked $toolExecutable @(
+        "css",
+        $cliProject,
+        "--scan-only",
+        "--fail-on-unknown"
+    )
 
     $cliCssOutput = Join-Path $TempRoot "cli-generated.css"
     Invoke-Checked $toolExecutable @(
@@ -329,6 +359,13 @@ function Validate-CliToolPackage {
 
     Assert-FileExists (Join-Path $hostedRoot "CliHosted.Client/vibe.json")
 
+    Invoke-Checked $toolExecutable @(
+        "css",
+        $hostedRoot,
+        "--scan-only",
+        "--fail-on-unknown"
+    )
+
     Invoke-Checked "dotnet" @(
         "restore",
         $hostedServerProject,
@@ -343,6 +380,7 @@ function Validate-CliToolPackage {
             "--configuration",
             "Release",
             "--no-restore",
+            "-p:VibeCssFailOnUnknown=true",
             "-p:TreatWarningsAsErrors=true"
         )
     }
@@ -392,7 +430,9 @@ $requiredEntries = @{
         "icon.png",
         "tools/net10.0/any/Vibe.UI.CLI.dll",
         "Templates/Infrastructure/ServiceCollectionExtensions.cs",
+        "Templates/Components/Utility/DropdownMenu.razor",
         "Templates/wwwroot/js/vibe-dialog.js",
+        "Templates/wwwroot/js/vibe-menu-keyboard.js",
         "Templates/wwwroot/js/vibe-richtext.js"
     )
 }
@@ -433,7 +473,6 @@ try {
 
     Validate-CliToolPackage `
         -NuGetConfigPath $nugetConfig `
-        -LocalSource $packagesFullPath `
         -TempRoot $tempRoot `
         -PackageVersion $Version
 

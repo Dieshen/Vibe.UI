@@ -22,14 +22,17 @@
     <!-- Preview -->
     <section class="vibe-mb-12">
         <h2 class="vibe-text-xl vibe-font-semibold vibe-text-zinc-900 dark:vibe-text-zinc-100 vibe-mb-4">Preview</h2>
-        <div class="vibe-flex vibe-items-center vibe-gap-6 vibe-flex-wrap vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
-            <Avatar ImageUrl="icon-192.png" Size="32" />
-            <Avatar ImageUrl="icon-512.png" Size="40" />
-            <Avatar ImageUrl="logo.png" Size="48" />
-            <Avatar ImageUrl="favicon.png" Size="64" />
-            <Avatar Initials="JD" Size="48" />
-            <Avatar Initials="AS" Size="48" />
-            <Avatar FallbackIcon="👤" Size="48" />
+        <div class="vibe-flex vibe-items-center vibe-gap-4 vibe-flex-wrap vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700">
+            <Avatar ImageUrl="logo.png" Alt="Vibe.UI" Size="40" />
+            <Avatar Initials="JD" Alt="Jordan Diaz" Size="40" />
+            <Avatar Initials="AS" Alt="Avery Singh" Size="48" />
+            <Avatar Initials="MK" Alt="Morgan Kim" Size="56" />
+            <Avatar Alt="Default profile" Size="48">
+                <FallbackContent>
+                    <Vibe.UI.Components.Icon Name="user" Size="20" />
+                </FallbackContent>
+            </Avatar>
+            <Avatar ImageUrl="favicon.png" Alt="Square Vibe.UI avatar" Shape="square" Size="48" />
         </div>
     </section>
 
@@ -44,7 +47,7 @@
                 Display a user avatar with an image source.
             </p>
             <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <Avatar Src="icon-192.png" Alt="User Avatar" />
+                <Avatar ImageUrl="logo.png" Alt="Vibe.UI profile" />
             </div>
             <CodeBlock Code="@BasicCode" Language="razor" />
         </div>
@@ -56,10 +59,10 @@
                 Avatars come in multiple sizes to fit different contexts.
             </p>
             <div class="vibe-flex vibe-items-center vibe-gap-4 vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <Avatar Size="24" Src="icon-192.png" />
-                <Avatar Size="32" Src="icon-512.png" />
-                <Avatar Size="48" Src="logo.png" />
-                <Avatar Size="64" Src="favicon.png" />
+                <Avatar Size="24" Initials="CN" Alt="Casey Nguyen" />
+                <Avatar Size="32" Initials="JD" Alt="Jordan Diaz" />
+                <Avatar Size="48" Initials="AS" Alt="Avery Singh" />
+                <Avatar Size="64" Initials="MK" Alt="Morgan Kim" />
             </div>
             <CodeBlock Code="@SizesCode" Language="razor" />
         </div>
@@ -85,8 +88,10 @@
                 Use an icon as fallback content when no image or initials are provided.
             </p>
             <div class="vibe-flex vibe-items-center vibe-gap-4 vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <Avatar>
-                    <span class="icon">👤</span>
+                <Avatar Alt="Default profile">
+                    <FallbackContent>
+                        <Vibe.UI.Components.Icon Name="user" Size="18" />
+                    </FallbackContent>
                 </Avatar>
             </div>
             <CodeBlock Code="@IconCode" Language="razor" />
@@ -99,12 +104,11 @@
                 Group multiple avatars together with a maximum display count.
             </p>
             <div class="vibe-p-6 vibe-bg-zinc-50 dark:vibe-bg-zinc-800/50 vibe-rounded-lg vibe-border vibe-border-zinc-200 dark:vibe-border-zinc-700 vibe-mb-3">
-                <div class="vibe-flex vibe-items-center -space-x-3">
-                    <Avatar Src="icon-192.png" />
-                    <Avatar Src="icon-512.png" />
-                    <Avatar Src="logo.png" />
-                    <Avatar Src="favicon.png" />
-                    <Avatar Initials="MK" />
+                <div class="vibe-flex vibe-items-center vibe-gap-2" role="group" aria-label="Release team">
+                    <Avatar ImageUrl="logo.png" Alt="Vibe.UI" />
+                    <Avatar Initials="JD" Alt="Jordan Diaz" />
+                    <Avatar Initials="AS" Alt="Avery Singh" />
+                    <Avatar Initials="MK" Alt="Morgan Kim" />
                 </div>
             </div>
             <CodeBlock Code="@GroupCode" Language="razor" />
@@ -130,7 +134,7 @@
                     </thead>
                     <tbody class="vibe-divide-y vibe-divide-zinc-100 dark:vibe-divide-zinc-800">
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Src</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">ImageUrl</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Image source URL</td>
@@ -139,13 +143,13 @@
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Alt</td>
                             <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
                             <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Alt text for the image</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Accessible name for the avatar</td>
                         </tr>
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Size</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="AvatarSize" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Medium</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Size of the avatar</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="int" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">40</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Avatar width and height in pixels</td>
                         </tr>
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Initials</td>
@@ -155,15 +159,15 @@
                         </tr>
                         <tr>
                             <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">Shape</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="AvatarShape" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">Circle</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Shape of the avatar (Circle, Square, Rounded)</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="string" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">"circle"</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Avatar shape: circle or square</td>
                         </tr>
                         <tr>
-                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">StatusIndicator</td>
-                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="AvatarStatus" /></td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">None</td>
-                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Status indicator (None, Online, Offline, Away, Busy)</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-font-mono vibe-text-sm vibe-text-zinc-900 dark:vibe-text-zinc-100">FallbackContent</td>
+                            <td class="vibe-py-3 vibe-px-4"><TypeBadge Type="RenderFragment" /></td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-500">null</td>
+                            <td class="vibe-py-3 vibe-px-4 vibe-text-zinc-600 dark:vibe-text-zinc-400">Custom fallback rendered after image and initials</td>
                         </tr>
                     </tbody>
                 </table>
@@ -186,28 +190,20 @@
         <div class="vibe-prose dark:vibe-prose-invert vibe-max-w-none">
             <ul class="vibe-space-y-2 vibe-text-zinc-600 dark:vibe-text-zinc-400">
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Uses semantic <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">&lt;img&gt;</code> with proper alt text
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
+                    The root uses <code class="vibe-text-sm vibe-bg-zinc-100 dark:vibe-bg-zinc-800 vibe-px-1 vibe-py-0.5 vibe-rounded">role="img"</code> with a name from Alt or Initials
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Fallback content is screen reader accessible
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
+                    The nested image and visual fallback are decorative so the accessible name is announced once
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Status indicators have appropriate ARIA labels
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
+                    Failed image loads automatically switch to initials, custom fallback content, or the empty state
                 </li>
                 <li class="vibe-flex vibe-items-start vibe-gap-2">
-                    <svg class="vibe-w-5 vibe-h-5 vibe-text-green-500 vibe-mt-0.5 vibe-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    Proper contrast for text fallbacks
+                    <Vibe.UI.Components.Icon Name="check-circle" Size="20" Color="var(--vibe-success)" CssClass="vibe-mt-0.5 vibe-shrink-0" />
+                    Caller-provided aria-label, aria-labelledby, and role attributes are preserved
                 </li>
             </ul>
         </div>
@@ -230,27 +226,28 @@
 </div>
 
 @code {
-    private string BasicCode => @"<Avatar Src=""icon-192.png"" Alt=""User Avatar"" />";
+    private string BasicCode => @"<Avatar ImageUrl=""logo.png"" Alt=""Vibe.UI profile"" />";
 
-    private string SizesCode => @"<Avatar Size=""24"" Src=""icon-192.png"" />
-<Avatar Size=""32"" Src=""icon-512.png"" />
-<Avatar Size=""48"" Src=""logo.png"" />
-<Avatar Size=""64"" Src=""favicon.png"" />";
+    private string SizesCode => @"<Avatar Size=""24"" Initials=""CN"" Alt=""Casey Nguyen"" />
+<Avatar Size=""32"" Initials=""JD"" Alt=""Jordan Diaz"" />
+<Avatar Size=""48"" Initials=""AS"" Alt=""Avery Singh"" />
+<Avatar Size=""64"" Initials=""MK"" Alt=""Morgan Kim"" />";
 
     private string InitialsCode => @"<Avatar Initials=""JD"" />
 <Avatar Initials=""AS"" />
 <Avatar Initials=""MK"" />";
 
-    private string IconCode => @"<Avatar>
-    <span class=""icon"">👤</span>
+    private string IconCode => @"<Avatar Alt=""Default profile"">
+    <FallbackContent>
+        <Vibe.UI.Components.Icon Name=""user"" Size=""18"" />
+    </FallbackContent>
 </Avatar>";
 
-    private string GroupCode => @"<div class=""vibe-flex vibe-items-center -space-x-3"">
-    <Avatar Src=""icon-192.png"" />
-    <Avatar Src=""icon-512.png"" />
-    <Avatar Src=""logo.png"" />
-    <Avatar Src=""favicon.png"" />
-    <Avatar Initials=""MK"" />
+    private string GroupCode => @"<div class=""vibe-flex vibe-items-center vibe-gap-2"" role=""group"" aria-label=""Release team"">
+    <Avatar ImageUrl=""logo.png"" Alt=""Vibe.UI"" />
+    <Avatar Initials=""JD"" Alt=""Jordan Diaz"" />
+    <Avatar Initials=""AS"" Alt=""Avery Singh"" />
+    <Avatar Initials=""MK"" Alt=""Morgan Kim"" />
 </div>";
 }
 

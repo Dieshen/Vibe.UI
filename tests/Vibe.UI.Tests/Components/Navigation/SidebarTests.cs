@@ -124,6 +124,23 @@ public class SidebarTests : TestBase
     }
 
     [Fact]
+    public void Sidebar_ClosedState_MakesHiddenContentInert()
+    {
+        var cut = Render<Sidebar>(parameters => parameters
+            .Add(p => p.IsOpen, false)
+            .Add(p => p.Title, "Navigation")
+            .Add(p => p.Footer, builder => builder.AddContent(0, "Footer"))
+            .AddChildContent("Content"));
+
+        var content = cut.Find(".sidebar-content");
+        content.GetAttribute("aria-hidden").ShouldBe("true");
+        content.HasAttribute("inert").ShouldBeTrue();
+        cut.Find(".sidebar-header-content").HasAttribute("inert").ShouldBeTrue();
+        cut.Find(".sidebar-footer").HasAttribute("inert").ShouldBeTrue();
+        cut.FindAll(".sidebar-resize-handle").ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task Sidebar_PublicOpenCloseMethods_OnlyInvokeOnStateChange()
     {
         // Arrange
@@ -232,6 +249,45 @@ public class SidebarTests : TestBase
         resize.GetAttribute("role").ShouldBe("separator");
         resize.GetAttribute("aria-orientation").ShouldBe("vertical");
         resize.GetAttribute("aria-disabled").ShouldBe("false");
+        resize.GetAttribute("tabindex").ShouldBe("0");
+        resize.GetAttribute("aria-valuenow").ShouldBe("280");
+        resize.GetAttribute("aria-valuemin").ShouldBe("200");
+        resize.GetAttribute("aria-valuemax").ShouldBe("600");
+    }
+
+    [Fact]
+    public async Task Sidebar_SetWidthAndKeyboardResize_ClampAndInvokeBindingCallback()
+    {
+        var widths = new List<int>();
+        var cut = Render<Sidebar>(parameters => parameters
+            .Add(p => p.Resizable, true)
+            .Add(p => p.PersistState, false)
+            .Add(p => p.MinWidth, 200)
+            .Add(p => p.MaxWidth, 320)
+            .Add(p => p.WidthChanged, widths.Add)
+            .AddChildContent("Content"));
+
+        await cut.InvokeAsync(() => cut.Instance.SetWidth(999));
+        cut.Find(".vibe-sidebar").GetAttribute("style").ShouldBe("width: 320px;");
+        widths.ShouldBe(new[] { 320 });
+
+        cut.Find(".sidebar-resize-handle").KeyDown("ArrowLeft");
+        cut.Find(".sidebar-resize-handle").GetAttribute("aria-valuenow").ShouldBe("310");
+        widths.ShouldBe(new[] { 320, 310 });
+    }
+
+    [Fact]
+    public void Sidebar_RightPosition_UsesMirroredKeyboardResizeDirection()
+    {
+        var cut = Render<Sidebar>(parameters => parameters
+            .Add(p => p.Position, Sidebar.SidebarPosition.Right)
+            .Add(p => p.Resizable, true)
+            .Add(p => p.PersistState, false)
+            .AddChildContent("Content"));
+
+        cut.Find(".sidebar-resize-handle").KeyDown("ArrowLeft");
+
+        cut.Find(".sidebar-resize-handle").GetAttribute("aria-valuenow").ShouldBe("290");
     }
 
     [Fact]

@@ -1,36 +1,47 @@
 @using Microsoft.AspNetCore.Components.Forms
 @namespace Vibe.UI.Components
 @inherits VibeComponent
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
 <div @attributes="AdditionalAttributes"
+     @ref="_rootElement"
      class="@CombinedCssClass"
      role="group"
      aria-label="@AriaLabel"
      aria-describedby="@RootDescribedBy"
+     aria-invalid="@AriaInvalidValue"
      aria-disabled="@Disabled.ToString().ToLowerInvariant()"
      @ondragenter="HandleDragEnter"
      @ondragleave="HandleDragLeave"
      @ondrop="HandleDrop"
+     @ondrop:preventDefault="@(!Disabled)"
      @ondragover:preventDefault="@(!Disabled)">
 
     @if (_files.Count == 0)
     {
         <div class="file-upload-empty">
-            <InputFile id="@_inputId"
+            <InputFile id="@EffectiveInputId"
                        class="file-upload-input"
                        multiple="@Multiple"
                        accept="@Accept"
                        disabled="@IsFileInputDisabled"
                        OnChange="HandleFileSelect"
                        aria-label="@AriaLabel"
-                       aria-describedby="@InputDescribedBy" />
+                       aria-describedby="@InputDescribedBy"
+                       aria-invalid="@AriaInvalidValue"
+                       aria-errormessage="@EffectiveErrorMessageId"
+                       required="@EffectiveRequired"
+                       aria-required="@(EffectiveRequired ? "true" : null)" />
             <div class="file-upload-empty-content">
-                <div class="file-upload-icon" aria-hidden="true">📁</div>
+                <div class="file-upload-icon" aria-hidden="true">
+                    <Icon Name="upload" Size="28" CssClass="file-upload-icon-svg" />
+                </div>
                 <div class="file-upload-text">
                     <p class="file-upload-title">@DropText</p>
                     <p id="@_hintId" class="file-upload-hint">@HintText</p>
                 </div>
-                <span class="file-upload-button" aria-hidden="true">Browse Files</span>
+                <span class="file-upload-button" aria-hidden="true">Browse files</span>
             </div>
         </div>
     }
@@ -40,29 +51,38 @@
             @foreach (var file in _files)
             {
                 <div class="file-upload-item" @key="file">
-                    <div class="file-item-icon" aria-hidden="true">📄</div>
+                    <Icon Name="file" Size="20" CssClass="file-item-icon" />
                     <div class="file-item-info">
                         <div class="file-item-name">@file.Name</div>
                         <div class="file-item-size">@FormatFileSize(file.Size)</div>
                     </div>
                     @if (!Disabled)
                     {
-                        <button type="button" class="file-item-remove" aria-label="@($"Remove {file.Name}")" @onclick="() => RemoveFile(file)">×</button>
+                        <button type="button" class="file-item-remove" aria-label="@($"Remove {file.Name}")" @onclick="() => RemoveFile(file)">
+                            <Icon Name="x" Size="16" />
+                        </button>
                     }
                 </div>
             }
             @if (CanAddMoreFiles)
             {
                 <div class="file-upload-add-wrapper">
-                    <InputFile id="@_inputId"
+                    <InputFile id="@EffectiveInputId"
                                class="file-upload-input"
                                multiple="@Multiple"
                                accept="@Accept"
                                disabled="@IsFileInputDisabled"
                                OnChange="HandleFileSelect"
                                aria-label="Add more files"
-                               aria-describedby="@InputDescribedBy" />
-                    <span class="file-upload-add" aria-hidden="true">+ Add More Files</span>
+                               aria-describedby="@InputDescribedBy"
+                               aria-invalid="@AriaInvalidValue"
+                               aria-errormessage="@EffectiveErrorMessageId"
+                               required="@EffectiveRequired"
+                               aria-required="@(EffectiveRequired ? "true" : null)" />
+                    <span class="file-upload-add" aria-hidden="true">
+                        <Icon Name="plus" Size="16" />
+                        Add more files
+                    </span>
                 </div>
             }
             else if (!Disabled)
@@ -81,10 +101,19 @@
 @code {
     private List<UploadedFile> _files = new();
     private bool _isDragging;
+    private ElementReference _rootElement;
+    private IJSObjectReference? _module;
+    private bool _disposed;
     private readonly string _inputId = $"vibe-file-upload-{Guid.NewGuid():N}";
     private readonly string _hintId = $"vibe-file-upload-hint-{Guid.NewGuid():N}";
     private readonly string _errorId = $"vibe-file-upload-error-{Guid.NewGuid():N}";
     private string? _validationMessage;
+
+    /// <summary>
+    /// Gets the relationships cascaded by an ancestor <see cref="FormField{TValue}"/>, if any.
+    /// </summary>
+    [CascadingParameter]
+    private FormFieldContext? FieldContext { get; set; }
 
     [Parameter]
     public List<UploadedFile> Files { get; set; } = new();
@@ -130,18 +159,25 @@
 
     private string? ActiveErrorMessage => !string.IsNullOrWhiteSpace(ErrorMessage) ? ErrorMessage : _validationMessage;
     private bool HasError => !string.IsNullOrWhiteSpace(ActiveErrorMessage);
+    private bool EffectiveHasError => HasError || FieldContext?.IsInvalid == true;
+    private bool EffectiveRequired => FieldContext?.IsRequired == true;
+    private string EffectiveInputId => FieldContext?.ControlId ?? _inputId;
+    private string? AriaInvalidValue => EffectiveHasError ? "true" : null;
+    private string? EffectiveErrorMessageId => EffectiveHasError
+        ? (HasError ? _errorId : FieldContext?.ErrorId)
+        : null;
     private int EffectiveMaxFiles => Math.Max(0, Multiple ? MaxFiles : Math.Min(MaxFiles, 1));
     private bool CanAddMoreFiles => !Disabled && _files.Count < EffectiveMaxFiles;
     private bool IsFileInputDisabled => Disabled || _files.Count >= EffectiveMaxFiles;
     private string MaxFilesMessage => EffectiveMaxFiles == 1 ? "Maximum 1 file selected" : $"Maximum {EffectiveMaxFiles} files selected";
-    private string? InputDescribedBy => CombineIds(_files.Count == 0 ? _hintId : null, HasError ? _errorId : null);
-    private string? RootDescribedBy => HasError ? _errorId : null;
+    private string? InputDescribedBy => CombineIds(_files.Count == 0 ? _hintId : null, HasError ? _errorId : null, FieldContext?.DescribedBy);
+    private string? RootDescribedBy => CombineIds(HasError ? _errorId : null, FieldContext?.DescribedBy);
 
     private string CombinedCssClass => CombineClasses(
     "vibe-file-upload",
     _isDragging ? "file-upload-dragging" : null,
     Disabled ? "vibe-file-upload-disabled" : null,
-    HasError ? "file-upload-error" : null,
+    EffectiveHasError ? "file-upload-error" : null,
     CssClass,
     Class
     );
@@ -151,6 +187,17 @@
     protected override void OnParametersSet()
     {
         _files = Files?.ToList() ?? new();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_disposed)
+        {
+            _module = await JSRuntime.InvokeAsync<IJSObjectReference>(
+                "import",
+                "./_content/Vibe.UI/js/fileUpload.js");
+            await _module.InvokeVoidAsync("connect", _rootElement);
+        }
     }
 
     private void HandleDragEnter(DragEventArgs _)
@@ -338,6 +385,29 @@
             len /= 1024;
         }
         return $"{len:0.##} {sizes[order]}";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        if (_module is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _module.InvokeVoidAsync("disconnect", _rootElement);
+            await _module.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+        }
     }
 
     public class UploadedFile

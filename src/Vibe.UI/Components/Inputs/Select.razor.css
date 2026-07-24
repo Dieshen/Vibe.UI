@@ -19,7 +19,7 @@
     transition: border-color 0.2s ease;
 }
 
-.vibe-select-wrapper:hover:not(.vibe-select-disabled) {
+.vibe-select:not(.vibe-select-disabled) .vibe-select-wrapper:hover {
     border-color: color-mix(in srgb, var(--vibe-border) 70%, var(--vibe-foreground));
 }
 
@@ -38,7 +38,7 @@
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    transition: all 0.2s ease;
+    transition: color 0.2s ease, background-color 0.2s ease;
 }
 
 .vibe-select-input:disabled {
@@ -79,7 +79,7 @@
 /* ==================== Focus State ==================== */
 .vibe-select-wrapper:focus-within {
     border-color: var(--vibe-ring);
-    border-width: 2px;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--vibe-ring) 20%, transparent);
 }
 
 .vibe-select-wrapper:focus-within .vibe-select-label {
@@ -88,7 +88,7 @@
 }
 
 /* ==================== Dropdown Icon ==================== */
-.vibe-select-icon {
+.vibe-select-wrapper ::deep .vibe-select-icon {
     position: absolute;
     right: 0.75rem;
     top: 50%;
@@ -96,17 +96,7 @@
     pointer-events: none;
     width: 1rem;
     height: 1rem;
-}
-
-.vibe-select-icon::before {
-    content: '';
-    position: absolute;
-    width: 0.75rem;
-    height: 0.75rem;
-    border-right: 2px solid var(--vibe-muted-foreground);
-    border-bottom: 2px solid var(--vibe-muted-foreground);
-    transform: rotate(45deg);
-    top: -0.125rem;
+    color: var(--vibe-muted-foreground);
 }
 
 /* ==================== Helper Text ==================== */
@@ -133,41 +123,44 @@
 
 /* ==================== Error/Invalid State ==================== */
 .vibe-select-wrapper.vibe-select-error,
+.vibe-select-error .vibe-select-wrapper,
 .vibe-select-wrapper:has(.vibe-select-input[aria-invalid="true"]) {
     border-color: var(--vibe-destructive);
 }
 
 .vibe-select-wrapper.vibe-select-error:focus-within,
+.vibe-select-error .vibe-select-wrapper:focus-within,
 .vibe-select-wrapper:has(.vibe-select-input[aria-invalid="true"]):focus-within {
     border-color: var(--vibe-destructive);
     box-shadow: 0 0 0 2px var(--vibe-background), 0 0 0 4px var(--vibe-destructive);
 }
 
 .vibe-select-wrapper.vibe-select-error .vibe-select-label,
+.vibe-select-error .vibe-select-label,
 .vibe-select-wrapper:has(.vibe-select-input[aria-invalid="true"]) .vibe-select-label {
     color: var(--vibe-destructive);
 }
 
 /* ==================== Dark Mode Support ==================== */
-:global(.dark) .vibe-select-input {
+.dark .vibe-select-input {
     background-color: var(--vibe-background);
     color: var(--vibe-foreground);
     border-color: var(--vibe-border);
 }
 
-:global(.dark) .vibe-select-input option {
+.dark .vibe-select-input option {
     background-color: var(--vibe-background);
     color: var(--vibe-foreground);
 }
 
-:global(.dark) .vibe-select-label {
+.dark .vibe-select-label {
     background-color: var(--vibe-background);
 }
 
-:global(.dark) .vibe-select-wrapper {
+.dark .vibe-select-wrapper {
     border-color: var(--vibe-border);
 }
 
-:global(.dark) .vibe-select-wrapper:focus-within {
+.dark .vibe-select-wrapper:focus-within {
     border-color: var(--vibe-ring);
 }

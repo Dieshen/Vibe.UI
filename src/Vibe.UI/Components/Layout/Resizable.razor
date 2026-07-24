@@ -3,7 +3,7 @@
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
 
-<div class="@RootClass" style="@RootStyle" @attributes="RootAttributes">
+<div class="@RootClass" style="@RootStyle" @ref="_rootReference" @attributes="RootAttributes">
     <div class="resizable-panel">
         @ChildContent
     </div>
@@ -16,10 +16,9 @@
          aria-valuemin="@CurrentMinAriaValue"
          aria-valuemax="@CurrentMaxAriaValue"
          tabindex="0"
-         @onmousedown="HandleDragStart"
          @onkeydown="HandleKeyDown"
          @ref="_handleReference">
-        <div class="resizable-handle-bar"></div>
+        <Icon Name="@(IsHorizontal ? "grip-vertical" : "grip-horizontal")" Size="16" />
     </div>
 </div>
 
@@ -114,6 +113,7 @@
     /// Reference to the handle element.
     /// </summary>
     private ElementReference _handleReference;
+    private ElementReference _rootReference;
 
     private bool _hasInitializedParameters;
     private double _lastDefaultWidth;
@@ -124,7 +124,11 @@
     /// </summary>
     protected override string ComponentClass => "vibe-resizable";
 
-    private string RootClass => CombineClasses(ComponentClass, Class?.Trim(), AdditionalClass);
+    private string RootClass => CombineClasses(
+        ComponentClass,
+        IsHorizontal ? "resizable-horizontal" : "resizable-vertical",
+        Class?.Trim(),
+        AdditionalClass);
 
     private string? RootStyle => CombineStyles(
         AdditionalStyle,
@@ -185,6 +189,8 @@
     /// JavaScript object reference for cleanup.
     /// </summary>
     private IJSObjectReference? _dragRef;
+    private bool? _connectedIsHorizontal;
+    private bool _disposed;
 
     /// <summary>
     /// Initializes the component.
@@ -226,34 +232,56 @@
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (firstRender)
+        if (_disposed)
         {
-            _dotNetRef = DotNetObjectReference.Create(this);
-            try
+            return;
+        }
+
+        try
+        {
+            _dotNetRef ??= DotNetObjectReference.Create(this);
+
+            if (_dragModule is null)
             {
-                // Import the resizable JS module
-                _dragModule = await JSRuntime.InvokeAsync<IJSObjectReference>(
+                var importedModule = await JSRuntime.InvokeAsync<IJSObjectReference>(
                     "import", "./_content/Vibe.UI/js/vibe-resizable.js");
 
-                // Create the drag handler
-                _dragRef = await _dragModule.InvokeAsync<IJSObjectReference>(
-                    "createDragHandler", _dotNetRef, IsHorizontal);
+                if (_disposed)
+                {
+                    // Disposal landed while the import was in flight; the component
+                    // never gets to see this reference, so we own cleaning it up.
+                    await DisposeModuleSafelyAsync(importedModule);
+                    return;
+                }
+
+                _dragModule = importedModule;
             }
-            catch
+
+            if (_dragRef is null || _connectedIsHorizontal != IsHorizontal)
             {
-                // Module not available - component will work without JS enhancements
+                await DisposeDragHandlerAsync();
+
+                var dragRef = await _dragModule.InvokeAsync<IJSObjectReference>(
+                    "createDragHandler",
+                    _rootReference,
+                    _handleReference,
+                    _dotNetRef,
+                    IsHorizontal);
+
+                if (_disposed)
+                {
+                    // Disposal landed while the handler was being wired up, attaching
+                    // live pointer listeners to a disposed component; tear it back down.
+                    await DisposeHandlerReferenceAsync(dragRef);
+                    return;
+                }
+
+                _dragRef = dragRef;
+                _connectedIsHorizontal = IsHorizontal;
             }
         }
-    }
-
-    /// <summary>
-    /// Handles the start of drag operations.
-    /// </summary>
-    private async Task HandleDragStart()
-    {
-        if (_dragRef != null)
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
         {
-            await _dragRef.InvokeVoidAsync("startDrag");
         }
     }
 
@@ -261,15 +289,15 @@
     /// Callback from JavaScript when dragging moves.
     /// </summary>
     [JSInvokable]
-    public void HandleDragMove(double clientX, double clientY)
+    public void HandleDragMove(double size)
     {
         if (IsHorizontal)
         {
-            Width = ClampWidth(clientX);
+            Width = ClampWidth(size);
         }
         else
         {
-            Height = ClampHeight(clientY);
+            Height = ClampHeight(size);
         }
 
         StateHasChanged();
@@ -416,31 +444,59 @@
     /// </summary>
     public async ValueTask DisposeAsync()
     {
-        if (_dragRef != null)
+        if (_disposed)
         {
-            try
-            {
-                await _dragRef.InvokeVoidAsync("dispose");
-                await _dragRef.DisposeAsync();
-            }
-            catch
-            {
-                // Ignore disposal errors
-            }
+            return;
         }
+
+        _disposed = true;
+
+        await DisposeDragHandlerAsync();
 
         if (_dragModule != null)
         {
-            try
-            {
-                await _dragModule.DisposeAsync();
-            }
-            catch
-            {
-                // Ignore disposal errors
-            }
+            await DisposeModuleSafelyAsync(_dragModule);
         }
 
         _dotNetRef?.Dispose();
     }
+
+    private async Task DisposeDragHandlerAsync()
+    {
+        if (_dragRef is null)
+        {
+            return;
+        }
+
+        await DisposeHandlerReferenceAsync(_dragRef);
+
+        _dragRef = null;
+        _connectedIsHorizontal = null;
+    }
+
+    private static async Task DisposeHandlerReferenceAsync(IJSObjectReference dragRef)
+    {
+        try
+        {
+            await dragRef.InvokeVoidAsync("dispose");
+            await dragRef.DisposeAsync();
+        }
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+        {
+        }
+    }
+
+    private static async Task DisposeModuleSafelyAsync(IJSObjectReference module)
+    {
+        try
+        {
+            await module.DisposeAsync();
+        }
+        catch (Exception exception) when (IsRecoverableJsInteropException(exception))
+        {
+        }
+    }
+
+    private static bool IsRecoverableJsInteropException(Exception exception) =>
+        exception is JSException or JSDisconnectedException or InvalidOperationException or TaskCanceledException;
 }

@@ -45,6 +45,36 @@
                     Open dialog
                 </Button>
             </div>
+
+            <div class="compat-grid">
+                <DatePicker @bind-Date="_selectedDate"
+                            Placeholder="Compatibility date"
+                            data-testid="standalone-date-picker" />
+
+                <DropdownMenu data-testid="standalone-dropdown">
+                    <TriggerContent>Compatibility actions</TriggerContent>
+                    <Content>
+                        <button type="button" class="dropdown-item" role="menuitem">Profile</button>
+                        <button type="button" class="dropdown-item" role="menuitem">Settings</button>
+                    </Content>
+                </DropdownMenu>
+
+                <NavigationMenu data-testid="standalone-navigation-menu">
+                    <NavigationMenuItem TriggerAriaLabel="Open compatibility navigation"
+                                        ContentAriaLabel="Compatibility form controls">
+                        <TriggerContent>Navigation controls</TriggerContent>
+                        <Content>
+                            <label for="standalone-nav-filter">Filter</label>
+                            <input id="standalone-nav-filter" data-testid="standalone-nav-filter" @bind="_navigationFilter" />
+                            <label for="standalone-nav-sort">Sort</label>
+                            <select id="standalone-nav-sort" data-testid="standalone-nav-sort" @bind="_navigationSort">
+                                <option value="alpha">Alphabetical</option>
+                                <option value="recent">Most recent</option>
+                            </select>
+                        </Content>
+                    </NavigationMenuItem>
+                </NavigationMenu>
+            </div>
         </ChildContent>
     </Card>
 
@@ -66,6 +96,9 @@
     private string _name = "Vibe";
     private bool _confirmed = true;
     private bool _dialogOpen;
+    private DateTime? _selectedDate = DateTime.Today;
+    private string _navigationFilter = string.Empty;
+    private string _navigationSort = "alpha";
 
     private void Increment(MouseEventArgs _)
     {

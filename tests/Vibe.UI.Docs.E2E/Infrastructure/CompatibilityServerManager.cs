@@ -37,6 +37,83 @@ internal static class CompatibilityServerManager
             return;
         }
 
+        var state = GetOrCreateState(app);
+        await state.LifecycleGate.WaitAsync(cancellationToken);
+
+        lock (Lock)
+        {
+            state.ActiveUsers += 1;
+        }
+
+        try
+        {
+            EnsureStarted(app, baseUrl, state, cancellationToken);
+        }
+        catch
+        {
+            lock (Lock)
+            {
+                state.ActiveUsers = Math.Max(0, state.ActiveUsers - 1);
+            }
+
+            throw;
+        }
+        finally
+        {
+            state.LifecycleGate.Release();
+        }
+
+        try
+        {
+            await WaitForReadyAsync(app, baseUrl, state, cancellationToken);
+        }
+        catch
+        {
+            await ReleaseAsync(app, baseUrl);
+            throw;
+        }
+    }
+
+    internal static async Task ReleaseAsync(CompatibilityApp app, string baseUrl)
+    {
+        if (!ShouldManageServer(app, baseUrl))
+        {
+            return;
+        }
+
+        ServerState? state;
+
+        lock (Lock)
+        {
+            if (!Servers.TryGetValue(app, out state))
+            {
+                return;
+            }
+        }
+
+        await state.LifecycleGate.WaitAsync();
+
+        try
+        {
+            lock (Lock)
+            {
+                state.ActiveUsers = Math.Max(0, state.ActiveUsers - 1);
+                if (state.ActiveUsers != 0)
+                {
+                    return;
+                }
+            }
+
+            await StopServerAsync(app, state);
+        }
+        finally
+        {
+            state.LifecycleGate.Release();
+        }
+    }
+
+    private static ServerState GetOrCreateState(CompatibilityApp app)
+    {
         lock (Lock)
         {
             if (!Servers.TryGetValue(app, out var state))
@@ -45,52 +122,7 @@ internal static class CompatibilityServerManager
                 Servers[app] = state;
             }
 
-            state.ActiveUsers++;
-        }
-
-        await EnsureStartedAsync(app, baseUrl, cancellationToken);
-        await WaitForReadyAsync(app, baseUrl, cancellationToken);
-    }
-
-    internal static void Release(CompatibilityApp app, string baseUrl)
-    {
-        if (!ShouldManageServer(app, baseUrl))
-        {
-            return;
-        }
-
-        ServerState? state;
-        var shouldStop = false;
-
-        lock (Lock)
-        {
-            if (!Servers.TryGetValue(app, out state))
-            {
-                return;
-            }
-
-            state.ActiveUsers = Math.Max(0, state.ActiveUsers - 1);
-
-            if (state.ActiveUsers == 0
-                && state.Process != null
-                && !state.Process.HasExited)
-            {
-                shouldStop = true;
-            }
-        }
-
-        if (!shouldStop)
-        {
-            return;
-        }
-
-        try
-        {
-            state?.Process?.Kill(entireProcessTree: true);
-        }
-        catch
-        {
-            // Ignore shutdown failures; test runner is exiting anyway.
+            return state;
         }
     }
 
@@ -118,70 +150,109 @@ internal static class CompatibilityServerManager
             StringComparison.OrdinalIgnoreCase);
     }
 
-    private static Task EnsureStartedAsync(CompatibilityApp app, string baseUrl, CancellationToken cancellationToken)
+    private static void EnsureStarted(
+        CompatibilityApp app,
+        string baseUrl,
+        ServerState state,
+        CancellationToken cancellationToken)
     {
-        lock (Lock)
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (state.Process != null)
         {
-            var state = Servers[app];
-            if (state.Process != null && !state.Process.HasExited)
+            if (!state.Process.HasExited)
             {
-                return Task.CompletedTask;
+                return;
             }
 
-            var repoRoot = GetRepoRoot();
-            var projectPath = GetProjectPath(app);
-            var profileRoot = Path.Combine(
-                Path.GetTempPath(),
-                "Vibe.UI.CompatibilityE2E",
-                Environment.ProcessId.ToString(),
-                app.ToString());
-            var localAppDataPath = Path.Combine(profileRoot, "LocalAppData");
-            var appDataPath = Path.Combine(profileRoot, "AppData");
-            var dataProtectionPath = Path.Combine(profileRoot, "DataProtectionKeys");
-
-            Directory.CreateDirectory(localAppDataPath);
-            Directory.CreateDirectory(appDataPath);
-            Directory.CreateDirectory(dataProtectionPath);
-
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = "dotnet",
-                Arguments = $"run --project \"{projectPath}\" -c Release --no-build --no-launch-profile --urls \"{baseUrl}\"",
-                WorkingDirectory = repoRoot,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-
-            startInfo.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Development";
-            startInfo.EnvironmentVariables["DOTNET_ENVIRONMENT"] = "Development";
-            startInfo.EnvironmentVariables["Logging__EventLog__LogLevel__Default"] = "None";
-            startInfo.EnvironmentVariables["LOCALAPPDATA"] = localAppDataPath;
-            startInfo.EnvironmentVariables["APPDATA"] = appDataPath;
-            startInfo.EnvironmentVariables["VIBE_COMPATIBILITY_DATA_PROTECTION_PATH"] = dataProtectionPath;
-
-            state.Process = Process.Start(startInfo);
-            if (state.Process == null)
-            {
-                throw new InvalidOperationException($"Failed to start {app} compatibility server.");
-            }
-
-            state.Process.OutputDataReceived += (_, e) => state.AddOutput(e.Data);
-            state.Process.ErrorDataReceived += (_, e) => state.AddOutput(e.Data);
-            state.Process.BeginOutputReadLine();
-            state.Process.BeginErrorReadLine();
-
-            AppDomain.CurrentDomain.ProcessExit += (_, __) =>
-            {
-                try { state.Process?.Kill(entireProcessTree: true); } catch { }
-            };
+            state.Process.Dispose();
+            state.Process = null;
         }
 
-        cancellationToken.ThrowIfCancellationRequested();
-        return Task.CompletedTask;
+        var repoRoot = GetRepoRoot();
+        var projectPath = GetProjectPath(app);
+        var profileRoot = Path.Combine(
+            Path.GetTempPath(),
+            "Vibe.UI.CompatibilityE2E",
+            Environment.ProcessId.ToString(),
+            app.ToString());
+        var localAppDataPath = Path.Combine(profileRoot, "LocalAppData");
+        var appDataPath = Path.Combine(profileRoot, "AppData");
+        var dataProtectionPath = Path.Combine(profileRoot, "DataProtectionKeys");
+
+        Directory.CreateDirectory(localAppDataPath);
+        Directory.CreateDirectory(appDataPath);
+        Directory.CreateDirectory(dataProtectionPath);
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "dotnet",
+            Arguments = $"run --project \"{projectPath}\" -c Release --no-build --no-launch-profile --urls \"{baseUrl}\"",
+            WorkingDirectory = repoRoot,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+
+        startInfo.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Development";
+        startInfo.EnvironmentVariables["DOTNET_ENVIRONMENT"] = "Development";
+        startInfo.EnvironmentVariables["Logging__EventLog__LogLevel__Default"] = "None";
+        startInfo.EnvironmentVariables["LOCALAPPDATA"] = localAppDataPath;
+        startInfo.EnvironmentVariables["APPDATA"] = appDataPath;
+        startInfo.EnvironmentVariables["VIBE_COMPATIBILITY_DATA_PROTECTION_PATH"] = dataProtectionPath;
+
+        var process = Process.Start(startInfo)
+            ?? throw new InvalidOperationException($"Failed to start {app} compatibility server.");
+        state.Process = process;
+
+        process.OutputDataReceived += (_, e) => state.AddOutput(e.Data);
+        process.ErrorDataReceived += (_, e) => state.AddOutput(e.Data);
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+
+        AppDomain.CurrentDomain.ProcessExit += (_, __) =>
+        {
+            try { process.Kill(entireProcessTree: true); } catch { }
+        };
     }
 
-    private static async Task WaitForReadyAsync(CompatibilityApp app, string baseUrl, CancellationToken cancellationToken)
+    private static async Task StopServerAsync(CompatibilityApp app, ServerState state)
+    {
+        var process = state.Process;
+        if (process == null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                try
+                {
+                    await process.WaitForExitAsync(timeout.Token);
+                }
+                catch (OperationCanceledException ex)
+                {
+                    throw new TimeoutException($"Timed out stopping the {app} compatibility server.", ex);
+                }
+            }
+        }
+        finally
+        {
+            state.Process = null;
+            process.Dispose();
+        }
+    }
+
+    private static async Task WaitForReadyAsync(
+        CompatibilityApp app,
+        string baseUrl,
+        ServerState state,
+        CancellationToken cancellationToken)
     {
         using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
 
@@ -208,9 +279,7 @@ internal static class CompatibilityServerManager
             await Task.Delay(500, cancellationToken);
         }
 
-        var output = Servers.TryGetValue(app, out var state)
-            ? string.Join(Environment.NewLine, state.RecentOutput)
-            : string.Empty;
+        var output = string.Join(Environment.NewLine, state.RecentOutput);
 
         throw new TimeoutException(
             $"{app} compatibility server did not become ready at {baseUrl} within 90s. Recent output:{Environment.NewLine}{output}",
@@ -247,9 +316,20 @@ internal static class CompatibilityServerManager
     {
         private readonly Queue<string> _recentOutput = new();
 
+        // A new test must not reuse a process while the previous test is still stopping it.
+        internal SemaphoreSlim LifecycleGate { get; } = new(1, 1);
         internal Process? Process { get; set; }
         internal int ActiveUsers { get; set; }
-        internal IReadOnlyCollection<string> RecentOutput => _recentOutput.ToArray();
+        internal IReadOnlyCollection<string> RecentOutput
+        {
+            get
+            {
+                lock (_recentOutput)
+                {
+                    return _recentOutput.ToArray();
+                }
+            }
+        }
 
         internal void AddOutput(string? line)
         {

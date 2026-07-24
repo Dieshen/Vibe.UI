@@ -1,12 +1,21 @@
 @namespace Vibe.UI.Components
 @inherits VibeComponent
+@implements IDisposable
 
-<button type="button" @attributes="AdditionalAttributes" class="@CombinedCssClass" disabled="@IsDisabled"
-    aria-pressed="@AriaBool(IsPressed)" aria-disabled="@AriaBool(IsDisabled)" @onclick="HandleClick">
+<button id="@ElementId" type="button" @attributes="AdditionalAttributes" class="@CombinedCssClass"
+    disabled="@IsEffectivelyDisabled" aria-pressed="@AriaBool(IsPressed)"
+    aria-disabled="@AriaBool(IsEffectivelyDisabled)" tabindex="@TabIndex"
+    @onclick="HandleClick" @onfocus="HandleFocus" @onkeydown="HandleKeyDown">
     @ChildContent
 </button>
 
 @code {
+    private readonly string _generatedId = $"vibe-toggle-item-{Guid.NewGuid():N}";
+    private ToggleGroup? _registeredParent;
+    private string? _registeredValue;
+    private bool _registeredDisabled;
+    private bool _hasRegisteredState;
+
     /// <summary>
     /// The content of the toggle item.
     /// </summary>
@@ -34,15 +43,17 @@
     [CascadingParameter]
     private ToggleGroup? Parent { get; set; }
 
-    private string EffectiveValue => Value ?? string.Empty;
+    internal string EffectiveValue => Value ?? string.Empty;
+    internal string ElementId => GetAdditionalAttributeId() ?? _generatedId;
 
     private bool IsPressed => Parent?.IsSelected(EffectiveValue) ?? false;
-    private bool IsDisabled => Disabled || (Parent?.Disabled ?? false);
+    internal bool IsEffectivelyDisabled => Disabled || (Parent?.Disabled ?? false);
+    private int TabIndex => Parent?.GetItemTabIndex(this) ?? (IsEffectivelyDisabled ? -1 : 0);
 
     private string CombinedCssClass => CombineClasses(
     "vibe-toggle-group-item",
     IsPressed ? "vibe-toggle-group-item-pressed" : null,
-    IsDisabled ? "vibe-toggle-group-item-disabled" : null,
+    IsEffectivelyDisabled ? "vibe-toggle-group-item-disabled" : null,
     Class,
     CssClass
     );
@@ -51,11 +62,58 @@
 
     private static string AriaBool(bool value) => value ? "true" : "false";
 
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (!ReferenceEquals(_registeredParent, Parent))
+        {
+            _registeredParent?.RemoveItem(this);
+            _registeredParent = Parent;
+            _registeredParent?.RegisterItem(this);
+            _hasRegisteredState = false;
+        }
+
+        if (_hasRegisteredState
+            && (_registeredValue != EffectiveValue || _registeredDisabled != Disabled))
+        {
+            _registeredParent?.NotifyItemChanged(this);
+        }
+
+        _registeredValue = EffectiveValue;
+        _registeredDisabled = Disabled;
+        _hasRegisteredState = true;
+    }
+
     private async Task HandleClick()
     {
-        if (Parent != null && !IsDisabled)
+        if (Parent != null && !IsEffectivelyDisabled)
         {
+            Parent.HandleItemFocus(this);
             await Parent.HandleItemToggle(EffectiveValue);
         }
+    }
+
+    private void HandleFocus() => Parent?.HandleItemFocus(this);
+
+    private Task HandleKeyDown(KeyboardEventArgs args) =>
+        Parent?.HandleItemKeyDown(this, args) ?? Task.CompletedTask;
+
+    private string? GetAdditionalAttributeId()
+    {
+        if (AdditionalAttributes?.TryGetValue("id", out var id) == true
+            && id is not null
+            && !string.IsNullOrWhiteSpace(id.ToString()))
+        {
+            return id.ToString();
+        }
+
+        return null;
+    }
+
+    public void Dispose()
+    {
+        _registeredParent?.RemoveItem(this);
+        _registeredParent = null;
     }
 }

@@ -2,12 +2,17 @@
 @inherits VibeComponent
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
+@using System.Globalization
 
 <div @attributes="AdditionalAttributes" class="@CombinedClass">
-    @if (NormalizedTitle is not null)
+    @if (NormalizedTitle is not null || NormalizedDescription is not null)
     {
         <div class="vibe-chart-header">
-            <h3 id="@_titleId" class="vibe-chart-title">@NormalizedTitle</h3>
+            @if (NormalizedTitle is not null)
+            {
+                <h3 id="@_titleId" class="vibe-chart-title">@NormalizedTitle</h3>
+            }
+
             @if (NormalizedDescription is not null)
             {
                 <p id="@_descriptionId" class="vibe-chart-description">@NormalizedDescription</p>
@@ -32,14 +37,49 @@
         }
     </div>
 
-    @if (ShowLegend && HasRenderableData && !UseBuiltInLegend)
+    @if (HasRenderableData)
     {
-        <div class="vibe-chart-legend" role="list" aria-label="@LegendAriaLabel">
-            @foreach (var dataset in _datasets)
+        <div class="vibe-chart-accessible-data">
+            <p id="@_dataSummaryId">@DataSummary</p>
+            <table>
+                <caption>Data table for @AccessibleChartName</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Category</th>
+                        @for (var datasetIndex = 0; datasetIndex < _datasets.Count; datasetIndex++)
+                        {
+                            <th scope="col">@GetAccessibleDatasetLabel(_datasets[datasetIndex], datasetIndex)</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var dataPointIndex = 0; dataPointIndex < DataPointCount; dataPointIndex++)
+                    {
+                        <tr>
+                            <th scope="row">@GetDataPointLabel(dataPointIndex)</th>
+                            @foreach (var dataset in _datasets)
+                            {
+                                <td>@GetFormattedDataPointValue(dataset, dataPointIndex)</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    @if (ShowLegend && HasRenderableData)
+    {
+        <div class="@LegendCssClass" role="list" aria-label="@LegendAriaLabel">
+            @foreach (var entry in GetLegendEntries())
             {
-                <div class="vibe-chart-legend-item" role="listitem" @key="dataset">
-                    <span class="vibe-chart-legend-color" style="@GetLegendColorStyle(dataset)" aria-hidden="true"></span>
-                    <span class="vibe-chart-legend-label">@GetDatasetLabel(dataset)</span>
+                <div class="vibe-chart-legend-item" role="listitem" @key="entry">
+                    <span class="vibe-chart-legend-color" style="background-color: @entry.Color;" aria-hidden="true"></span>
+                    <span class="vibe-chart-legend-label">@entry.Label</span>
+                    @if (entry.Value is not null)
+                    {
+                        <span class="vibe-chart-legend-value">@entry.Value</span>
+                    }
                 </div>
             }
         </div>
@@ -69,6 +109,7 @@
     private readonly string _canvasId = $"chart-{Guid.NewGuid():N}";
     private readonly string _titleId = $"chart-title-{Guid.NewGuid():N}";
     private readonly string _descriptionId = $"chart-description-{Guid.NewGuid():N}";
+    private readonly string _dataSummaryId = $"chart-summary-{Guid.NewGuid():N}";
     private IReadOnlyList<string> _labels = Array.Empty<string>();
     private IReadOnlyList<ChartDataset> _datasets = Array.Empty<ChartDataset>();
     private ChartType _effectiveType = ChartType.Line;
@@ -173,13 +214,39 @@
 
     private string LegendAriaLabel => NormalizedTitle is null ? "Chart legend" : $"{NormalizedTitle} legend";
 
+    private string LegendCssClass => UseBuiltInLegend
+        ? "vibe-chart-legend vibe-chart-legend--screen-reader-only"
+        : "vibe-chart-legend";
+
     private string? CanvasLabelledBy => NormalizedTitle is null ? null : _titleId;
 
-    private string? CanvasDescribedBy => NormalizedDescription is null ? null : _descriptionId;
+    private string CanvasDescribedBy => NormalizedDescription is null
+        ? _dataSummaryId
+        : $"{_descriptionId} {_dataSummaryId}";
 
     private string? CanvasAriaLabel => CanvasLabelledBy is null
-        ? NormalizeOptionalText(AriaLabel) ?? $"{_effectiveType} chart"
+        ? NormalizeOptionalText(AriaLabel) ?? AccessibleChartName
         : null;
+
+    private bool IsCircularChart => _effectiveType is ChartType.Pie or ChartType.Doughnut or ChartType.PolarArea;
+
+    private int DataPointCount => Math.Max(
+        _labels.Count,
+        _datasets.Select(dataset => dataset.Data?.Count ?? 0).DefaultIfEmpty(0).Max());
+
+    private string AccessibleChartName => NormalizedTitle
+        ?? NormalizeOptionalText(AriaLabel)
+        ?? $"{GetChartDisplayName(_effectiveType)} chart";
+
+    private string DataSummary
+    {
+        get
+        {
+            var pointNoun = DataPointCount == 1 ? "data point" : "data points";
+            var seriesNoun = _datasets.Count == 1 ? "series" : "series";
+            return $"{AccessibleChartName} has {DataPointCount} {pointNoun} across {_datasets.Count} {seriesNoun}.";
+        }
+    }
 
     protected override void OnParametersSet()
     {
@@ -442,13 +509,72 @@
             ? colors.ToArray()
             : GetDatasetBorderColor(dataset);
 
-    private string GetLegendColorStyle(ChartDataset dataset) =>
-        $"background-color: {GetLegendColor(dataset)};";
+    private IEnumerable<ChartLegendEntry> GetLegendEntries()
+    {
+        if (IsCircularChart)
+        {
+            for (var datasetIndex = 0; datasetIndex < _datasets.Count; datasetIndex++)
+            {
+                var dataset = _datasets[datasetIndex];
+                var values = dataset.Data;
+                if (values is null)
+                {
+                    continue;
+                }
 
-    private static string GetLegendColor(ChartDataset dataset) =>
-        NormalizeColorValues(dataset.BackgroundColors)?.FirstOrDefault()
-        ?? NormalizeOptionalText(dataset.BackgroundColor)
-        ?? GetDatasetColor(dataset);
+                for (var dataPointIndex = 0; dataPointIndex < values.Count; dataPointIndex++)
+                {
+                    var category = GetDataPointLabel(dataPointIndex);
+                    var label = _datasets.Count > 1
+                        ? $"{GetAccessibleDatasetLabel(dataset, datasetIndex)}: {category}"
+                        : category;
+
+                    yield return new ChartLegendEntry(
+                        label,
+                        GetLegendColor(dataset, dataPointIndex),
+                        FormatDataValue(values[dataPointIndex]));
+                }
+            }
+
+            yield break;
+        }
+
+        for (var datasetIndex = 0; datasetIndex < _datasets.Count; datasetIndex++)
+        {
+            var dataset = _datasets[datasetIndex];
+            yield return new ChartLegendEntry(
+                GetAccessibleDatasetLabel(dataset, datasetIndex),
+                GetLegendColor(dataset),
+                null);
+        }
+    }
+
+    private static string GetLegendColor(ChartDataset dataset, int? dataPointIndex = null)
+    {
+        var colors = NormalizeColorValues(dataset.BackgroundColors);
+        if (dataPointIndex is { } index && colors is { Count: > 0 } && index < colors.Count)
+        {
+            return colors[index];
+        }
+
+        return colors?.FirstOrDefault()
+            ?? NormalizeOptionalText(dataset.BackgroundColor)
+            ?? GetDatasetColor(dataset);
+    }
+
+    private string GetDataPointLabel(int index) => index < _labels.Count && !string.IsNullOrWhiteSpace(_labels[index])
+        ? _labels[index]
+        : $"Data point {index + 1}";
+
+    private static string GetAccessibleDatasetLabel(ChartDataset dataset, int datasetIndex) =>
+        NormalizeOptionalText(dataset.Label) ?? $"Series {datasetIndex + 1}";
+
+    private static string GetFormattedDataPointValue(ChartDataset dataset, int index) =>
+        dataset.Data is { } data && index < data.Count
+            ? FormatDataValue(data[index])
+            : "No value";
+
+    private static string FormatDataValue(double value) => value.ToString("G", CultureInfo.CurrentCulture);
 
     private static string GetChartClassType(ChartType type) =>
         Enum.IsDefined(type) ? type.ToString().ToLowerInvariant() : ChartType.Line.ToString().ToLowerInvariant();
@@ -462,6 +588,12 @@
         ChartType.PolarArea => "polarArea",
         ChartType.Area => "line",
         _ => "line"
+    };
+
+    private static string GetChartDisplayName(ChartType type) => type switch
+    {
+        ChartType.PolarArea => "Polar area",
+        _ => type.ToString()
     };
 
     private static string? NormalizeOptionalText(string? value) =>
@@ -523,6 +655,8 @@
         public string Mode { get; set; } = "index";
         public bool Intersect { get; set; } = false;
     }
+
+    private sealed record ChartLegendEntry(string Label, string Color, string? Value);
 
     public enum ChartType
     {

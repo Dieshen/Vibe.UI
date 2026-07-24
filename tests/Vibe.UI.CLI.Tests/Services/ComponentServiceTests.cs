@@ -162,6 +162,9 @@ public class ComponentServiceTests : IDisposable
     [InlineData("resizable", "Resizable", "vibe-resizable.js")]
     [InlineData("tabs", "Tabs", "vibe-dom.js")]
     [InlineData("themetoggle", "ThemeToggle", "vibe-theme.js")]
+    [InlineData("dropdownmenu", "DropdownMenu", "vibe-menu-keyboard.js")]
+    [InlineData("contextmenu", "ContextMenu", "vibe-menu-keyboard.js")]
+    [InlineData("navigationmenuitem", "NavigationMenuItem", "vibe-menu-keyboard.js")]
     public async Task InstallComponentAsync_RewritesPackageModulePathForSourceMode(
         string componentName,
         string outputName,

@@ -5,9 +5,16 @@
 
 import { createHighlighter as createShikiHighlighter } from 'shiki/bundle/web';
 
+// Theme type
+export type Theme = 'light' | 'dark';
+
 // Type definitions for Shiki
 interface ShikiHighlighter {
-  codeToHtml(code: string, options: { lang: string; theme: string }): string;
+  codeToHtml(code: string, options: {
+    lang: string;
+    themes: Record<Theme, string>;
+    defaultColor: Theme;
+  }): string;
 }
 
 // Supported languages (type-safe)
@@ -21,9 +28,6 @@ export type SupportedLanguage =
   | 'yaml'
   | 'xml'
   | 'text';
-
-// Theme type
-export type Theme = 'light' | 'dark';
 
 // Extend window interface
 declare global {
@@ -148,20 +152,19 @@ function normalizeLanguage(language: string): SupportedLanguage {
 window.highlightCode = async function (
   code: string,
   language: string,
-  theme: string
+  _theme: string
 ): Promise<string> {
   try {
     const hl = await initHighlighter();
 
     // Normalize language name
     const lang = normalizeLanguage(language);
-    const themeName = theme === 'dark' ? THEMES.dark : THEMES.light;
-
-    console.log(`[Shiki] Highlighting as '${lang}' with theme '${themeName}'`);
+    console.log(`[Shiki] Highlighting as '${lang}' with dual themes`);
 
     const html = hl.codeToHtml(code, {
       lang: lang,
-      theme: themeName
+      themes: THEMES,
+      defaultColor: 'light'
     });
 
     return html;
